@@ -28,9 +28,5 @@
     "latex-workshop.latex.rootFile.useSubFileAsRoot": false,
     "workbench.editorAssociations": {
         "*.pdf": "default"
-    },
-    // ── Deshabilitar GitKraken MCP (causa del bug de staged deletions) ──────
-    "gitlens.gitKraken.enabled": false,
-    "gitlens.cloudIntegrations.enabled": false,
-    "gitlens.launchpad.enabled": false
+    }
 }

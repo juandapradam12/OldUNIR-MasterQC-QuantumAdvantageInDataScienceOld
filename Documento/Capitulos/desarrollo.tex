@@ -1,36 +1,7 @@
 % !TEX root = ../main.tex
-\chapter{Metodología de Diseño e Implementación de las Pruebas de Concepto}
+\chapter{Diseño e Implementación de las Pruebas de Concepto}
 
-Este capítulo describe la metodología adoptada y el diseño experimental de las pruebas de concepto (PoC) desarrolladas para comparar algoritmos cuánticos y clásicos en tres familias de problemas: clasificación supervisada, regresión y optimización combinatoria. Para cada caso de uso se evalúan tres tipos de conjuntos de datos: (i) un dataset diseñado con estructura cuántica explícita (\textit{cuántico-nativo}), (ii) un dataset real de SKG Tecnología, y (iii) un dataset de referencia de dominio público. Esta triple perspectiva permite distinguir los escenarios donde la computación cuántica ofrece ventaja teórica genuina de aquellos donde los algoritmos clásicos siguen siendo superiores en la práctica.
-
-% =====================================================================
-\section{Metodología general}
-% =====================================================================
-
-La metodología adoptada combina un enfoque experimental cuantitativo con un análisis crítico de los resultados desde la perspectiva de la aplicabilidad empresarial. Se articula en las siguientes fases:
-
-\subsection{Fase 1: Selección y preparación de datos}
-
-Se utilizaron conjuntos de datos reales procedentes de SKG Tecnología, relacionados con problemas de clasificación de incidentes y optimización de asignación de recursos, complementados con datasets de referencia de dominio público para validación cruzada. Los datasets fueron preprocesados siguiendo técnicas estándar: normalización, tratamiento de valores ausentes, codificación de variables categóricas y reducción de dimensionalidad mediante PCA cuando fue necesario para adaptar los datos a los simuladores cuánticos \citep{jordan2015}.
-
-\subsection{Fase 2: Implementación de algoritmos}
-
-Los algoritmos cuánticos se implementaron en simulación clásica exacta mediante \textit{Qiskit 2.4.1} \citep{Qiskit}, que permite simular circuitos cuánticos deterministas sin ruido. Para los problemas de clasificación y regresión se implementaron modelos basados en kernels cuánticos (\texttt{FidelityQuantumKernel} con \texttt{ZZFeatureMap}) \citep{schuld2021}. Para los problemas de optimización se implementó el QAOA con profundidad $p=1$ \citep{farhi2014} y el VQE con \textit{ansätze} variacionales \citep{cerezo2021}. Los algoritmos clásicos de referencia se implementaron con \textit{scikit-learn 1.8.0} y \textit{XGBoost 3.2.0}.
-
-\subsection{Fase 3: Diseño experimental y métricas de evaluación}
-
-Los experimentos se diseñaron siguiendo un protocolo de \textbf{triple dataset} por caso de uso, con semillas aleatorias controladas (\texttt{RANDOM\_STATE=42}) para garantizar la reproducibilidad. Las métricas de evaluación principales fueron:
-
-\begin{itemize}
-    \item \textbf{Clasificación}: exactitud (\textit{accuracy}), F1-score ponderado, AUC-ROC.
-    \item \textbf{Regresión}: coeficiente de determinación ($R^2$), RMSE, MAE.
-    \item \textbf{Optimización}: coste total de la solución, reducción porcentual respecto a la heurística clásica, tiempo de convergencia.
-    \item \textbf{Escalabilidad}: evolución del rendimiento en función del tamaño del problema ($n \in [30, 200]$ para clasificación; $n \in [50, 200]$ para análisis de umbral).
-\end{itemize}
-
-\subsection{Fase 4: Diseño del prototipo híbrido conceptual}
-
-A partir de los resultados, se diseñó un flujo de trabajo conceptual que integra el módulo cuántico de mejor rendimiento dentro de una arquitectura de análisis de datos clásica, ilustrando los puntos de integración, los requisitos de interfaz y las condiciones de activación del módulo cuántico orientadas a la adopción tecnológica futura \citep{cerezo2021}.
+Este capítulo describe en detalle el diseño, la implementación y el procedimiento experimental de las pruebas de concepto (PoC) desarrolladas para comparar algoritmos cuánticos y clásicos en tres familias de problemas: clasificación supervisada, regresión y optimización combinatoria. Para cada caso de uso se evalúan tres tipos de conjuntos de datos: (i) un dataset diseñado con estructura cuántica explícita (\textit{cuántico-nativo}), (ii) un dataset real de SKG Tecnología, y (iii) un dataset de referencia de dominio público. Esta triple perspectiva permite distinguir los escenarios donde la computación cuántica ofrece ventaja teórica genuina de aquellos donde los algoritmos clásicos siguen siendo superiores en la práctica.
 
 % =====================================================================
 \section{Entorno tecnológico y arquitectura experimental}
