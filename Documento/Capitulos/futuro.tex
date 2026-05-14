@@ -1,0 +1,63 @@
+% !TEX root = ../main.tex
+\chapter{Trabajo Futuro}
+
+Los resultados obtenidos en este trabajo abren múltiples líneas de investigación y desarrollo que no han podido abordarse en el marco temporal y de recursos del TFM. Este capítulo describe de forma detallada las limitaciones identificadas y las extensiones más prometedoras.
+
+\section{Ejecución en hardware cuántico real}
+
+La limitación más significativa de este trabajo es que todos los experimentos se han realizado en simulación clásica mediante el simulador de vectores de estado de Qiskit. Si bien la simulación exacta garantiza resultados sin ruido y es reproducible, no refleja las condiciones reales del hardware cuántico actual. Las siguientes extensiones son prioritarias:
+
+\begin{itemize}
+    \item \textbf{Ejecución en IBM Quantum (procesadores Eagle/Osprey/Heron):} los notebooks están diseñados para ser ejecutados directamente en hardware real mediante el cambio del backend de simulación a un procesador IBM Quantum. El principal desafío será el ruido de decoherencia, que degradará la calidad del kernel cuántico. Se necesitará implementar técnicas de mitigación de errores (\textit{error mitigation}) como ZNE (\textit{Zero-Noise Extrapolation}) o técnicas de regularización del kernel \citep{haug2023}.
+    \item \textbf{Análisis de la degradación del rendimiento con ruido:} comparar sistemáticamente los resultados obtenidos con el simulador ideal frente al hardware ruidoso para cuantificar la reducción de ventaja cuántica debida al ruido.
+    \item \textbf{Acceso a hardware cuántico de SKG:} si la empresa obtiene acceso a servicios de computación cuántica en la nube (IBM Quantum, Azure Quantum, Amazon Braket), sería posible ejecutar los experimentos de optimización QAOA sobre los datos reales de movilidad directamente en hardware.
+\end{itemize}
+
+\section{Escalabilidad del kernel cuántico}
+
+El coste $O(n^2)$ de la evaluación del kernel cuántico es el principal obstáculo para su aplicación a datasets grandes. Las siguientes líneas permitirían abordar este problema:
+
+\begin{itemize}
+    \item \textbf{Kernels cuánticos aleatorizados (RFF-QK):} aplicar la técnica de características aleatorias de Fourier (\textit{Random Fourier Features}) adaptada al contexto cuántico \citep{haug2023}, que permite aproximar el kernel cuántico en tiempo $O(n)$.
+    \item \textbf{Particionado y agregación (\textit{ensemble} cuántico):} entrenar múltiples QSVM sobre subconjuntos del dataset y combinar sus predicciones, reduciendo el tamaño efectivo del problema de kernel.
+    \item \textbf{Caché y precómputo de kernels:} para experimentos repetitivos, el almacenamiento de las matrices de kernel evaluadas en disco permitiría reutilizar los cálculos sin necesidad de re-ejecutar las simulaciones cuánticas.
+\end{itemize}
+
+\section{Ampliación de casos de uso en SKG Tecnología}
+
+Los datasets de SKG Tecnología utilizados en este trabajo son una fracción de la información disponible en el sistema de gestión de movilidad urbana. Las siguientes extensiones son directamente aplicables:
+
+\begin{itemize}
+    \item \textbf{Clasificación multiclase de gravedad de incidentes:} ampliar el problema binario actual a una clasificación de tres clases (simple, con lesionado, fatal), lo que requeriría estrategias de kernel multiclase (\textit{one-vs-rest} o \textit{one-vs-one}).
+    \item \textbf{Optimización de rutas de respuesta a emergencias:} formular el problema de asignación de vehículos de emergencia como un TSP con restricciones de tiempo (VRP-TW) y resolverlo con SA-QUBO, usando los datos geográficos reales de Bogotá (\texttt{bctraveltimes\_geom.csv}).
+    \item \textbf{Predicción de nivel de servicio (clasificación temporal):} usar los datos de tiempos de viaje para predecir el nivel de servicio futuro (verde/amarillo/rojo) como un problema de clasificación con features temporales, evaluando si el kernel cuántico captura patrones de congestión recurrente.
+\end{itemize}
+
+\section{Mejora de los algoritmos variacionales}
+
+Los experimentos con VQC y QAOA utilizaron configuraciones conservadoras ($p=1$, \texttt{reps=2}) para garantizar la ejecución en simulación. Las siguientes mejoras podrían incrementar la ventaja cuántica:
+
+\begin{itemize}
+    \item \textbf{QAOA con mayor profundidad ($p > 1$):} estudios previos \citep{zhou2020} demuestran que la calidad de la solución mejora monotónamente con $p$. Evaluar $p \in \{2, 3, 4\}$ sobre las instancias de optimización de SKG.
+    \item \textbf{Optimizadores avanzados:} sustituir COBYLA por optimizadores cuánticos más eficientes como SPSA (\textit{Simultaneous Perturbation Stochastic Approximation}) o métodos de gradiente analítico (\textit{parameter-shift rule}) para acelerar la convergencia.
+    \item \textbf{Ansätze específicos del problema:} diseñar circuitos variacionales adaptados a la estructura del problema de optimización (por ejemplo, ansätze con simetría de permutación para problemas de asignación).
+\end{itemize}
+
+\section{Integración en pipelines productivos}
+
+El prototipo híbrido cuántico-clásico conceptual diseñado en este trabajo requiere trabajo de ingeniería adicional para su integración real en los sistemas de SKG:
+
+\begin{itemize}
+    \item \textbf{API de inferencia cuántica:} desarrollar un microservicio REST que encapsule el QSVM entrenado y exponga un endpoint de predicción, integrable en el pipeline de análisis de incidentes existente.
+    \item \textbf{Monitorización de la degradación del modelo:} implementar métricas de \textit{data drift} que detecten cuando los datos de entrada se alejan de la distribución de entrenamiento, desactivando el módulo cuántico en favor del clásico cuando la confianza es baja.
+    \item \textbf{A/B testing cuántico-clásico:} diseñar un experimento controlado en producción que evalúe el rendimiento del QSVM frente al Gradient Boosting sobre datos reales en tiempo real.
+\end{itemize}
+
+\section{Extensión del análisis teórico}
+
+Finalmente, desde una perspectiva académica, las siguientes extensiones teóricas complementarían los resultados empíricos:
+
+\begin{itemize}
+    \item \textbf{Certificación de ventaja cuántica:} aplicar los tests estadísticos propuestos por \cite{huang2021} para certificar formalmente si los datasets reales de SKG presentan la propiedad de separación cuántica-clásica necesaria para garantizar ventaja.
+    \item \textbf{Análisis de barren plateaus:} estudiar la presencia de gradientes exponencialmente pequeños en los VQC entrenados, evaluando si las configuraciones utilizadas están afectadas por este fenómeno \citep{cerezo2023}.
+\end{itemize}

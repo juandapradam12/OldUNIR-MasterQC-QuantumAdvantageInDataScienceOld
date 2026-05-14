@@ -1,0 +1,36 @@
+{
+    "latex-workshop.latex.tools": [
+        {
+            "name": "pdflatex",
+            "command": "/usr/local/texlive/2026basic/bin/universal-darwin/pdflatex",
+            "args": [
+                "-synctex=1",
+                "-interaction=nonstopmode",
+                "-file-line-error",
+                "%DOC%"
+            ],
+            "env": {}
+        }
+    ],
+    "latex-workshop.latex.recipes": [
+        {
+            "name": "pdflatex x2",
+            "tools": ["pdflatex", "pdflatex"]
+        }
+    ],
+    "latex-workshop.latex.outDir": "%DIR%",
+    "latex-workshop.view.pdf.viewer": "external",
+    "latex-workshop.view.pdf.external.viewer.command": "open",
+    "latex-workshop.view.pdf.external.viewer.args": ["-a", "Preview", "%PDF%"],
+    "latex-workshop.latex.autoBuild.run": "onSave",
+    "latex-workshop.latex.autoBuild.recipe.name": "pdflatex x2",
+    "latex-workshop.latex.rootFile.indicator": "\\begin{document}",
+    "latex-workshop.latex.rootFile.useSubFileAsRoot": false,
+    "workbench.editorAssociations": {
+        "*.pdf": "default"
+    },
+    // ── Deshabilitar GitKraken MCP (causa del bug de staged deletions) ──────
+    "gitlens.gitKraken.enabled": false,
+    "gitlens.cloudIntegrations.enabled": false,
+    "gitlens.launchpad.enabled": false
+}

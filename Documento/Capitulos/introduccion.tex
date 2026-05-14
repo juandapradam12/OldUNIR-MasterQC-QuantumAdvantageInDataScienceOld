@@ -1,0 +1,46 @@
+% !TEX root = ../main.tex
+\chapter{Introducción}
+
+La computación cuántica representa uno de los paradigmas tecnológicos con mayor potencial transformador de las próximas décadas. Su capacidad para explotar fenómenos mecano-cuánticos como la superposición y el entrelazamiento abre la posibilidad de resolver problemas que resultan intratables para los computadores clásicos actuales \citep{preskill2018}. En paralelo, la ciencia de datos ha consolidado su posición como disciplina central en la toma de decisiones empresariales, apoyándose en algoritmos de aprendizaje automático, optimización combinatoria y análisis estadístico a gran escala \citep{jordan2015}. La convergencia de ambas disciplinas da lugar a un campo emergente con implicaciones profundas tanto para la investigación académica como para la práctica profesional.
+
+Sin embargo, a pesar del creciente interés y del avance de los dispositivos cuánticos de escala intermedia ruidosa (NISQ, por sus siglas en inglés), persiste una brecha significativa entre las promesas teóricas de la computación cuántica y su aplicabilidad práctica en entornos reales de ciencia de datos \citep{preskill2018}. Los algoritmos variacionales cuánticos, como el Quantum Approximate Optimization Algorithm (QAOA) \citep{farhi2014} o los circuitos cuánticos variacionales (VQC) \citep{cerezo2021}, han emergido como las principales estrategias para aprovechar los dispositivos NISQ actuales, pero su ventaja frente a los métodos clásicos no está aún suficientemente demostrada en casos de uso empresariales reales.
+
+Este trabajo aborda precisamente esa brecha, proponiendo un análisis comparativo riguroso y aplicado entre algoritmos cuánticos y clásicos en problemas representativos de la ciencia de datos.
+
+\section{Motivación y justificación del tema}
+
+La ciencia de datos, sustentada en técnicas de aprendizaje automático clásico, enfrenta limitaciones inherentes al paradigma de computación binaria cuando los problemas escalan en dimensionalidad o complejidad combinatoria \citep{biamonte2017}. Tareas como la clasificación de patrones en espacios de alta dimensión, la optimización de carteras de activos o la segmentación de clientes en grandes volúmenes de datos presentan costes computacionales que crecen de forma exponencial o polinómica con el tamaño del problema, lo que limita la capacidad de respuesta en entornos productivos con restricciones de tiempo.
+
+La computación cuántica ofrece, en teoría, aceleraciones sustanciales para ciertos tipos de problemas. El algoritmo de Grover proporciona una aceleración cuadrática en búsquedas no estructuradas \citep{grover1996}, mientras que el algoritmo de Shor permite factorización en tiempo polinómico \citep{shor1994}. Más recientemente, los métodos de aprendizaje automático cuántico, en particular los basados en kernels cuánticos, han demostrado que los computadores cuánticos pueden acceder a espacios de características exponencialmente grandes, lo que podría suponer una ventaja real en tareas de clasificación \citep{haug2023}.
+
+No obstante, el consenso científico actual es cauteloso. \cite{preskill2018} acuñó el término NISQ para describir la era actual de la computación cuántica, caracterizada por dispositivos con un número limitado de qubits y alta tasa de error, que aún no permiten implementar corrección de errores cuánticos a gran escala. En este contexto, resulta imprescindible evaluar de forma empírica y sistemática si los algoritmos cuánticos disponibles hoy en día pueden ofrecer ventajas medibles frente a sus equivalentes clásicos en problemas de ciencia de datos de relevancia empresarial.
+
+La motivación de este trabajo surge precisamente de la necesidad de cubrir este vacío: no existen suficientes estudios comparativos que contrasten el rendimiento de algoritmos cuánticos con técnicas clásicas consolidadas sobre datos reales de negocio, evaluando no solo la precisión sino también la escalabilidad, el coste computacional y la viabilidad de integración en pipelines productivos.
+
+\section{Planteamiento del problema}
+
+El problema central que aborda este trabajo puede formularse de la siguiente manera: \textit{¿en qué condiciones, y para qué tipos de problemas de ciencia de datos, los algoritmos cuánticos disponibles en la era NISQ ofrecen una ventaja real y medible frente a los algoritmos clásicos?}
+
+Para responder a esta pregunta, se plantea un estudio comparativo estructurado en torno a dos familias de problemas representativos: (1) problemas de \textbf{clasificación supervisada}, donde se comparará el rendimiento de clasificadores basados en kernels cuánticos frente a métodos clásicos como Support Vector Machines \citep{cortes1995} o Random Forests \citep{breiman2001}; y (2) problemas de \textbf{optimización combinatoria}, donde se evaluará el algoritmo QAOA \citep{farhi2014} frente a heurísticas clásicas como algoritmos genéticos o búsqueda local.
+
+Los experimentos se realizarán sobre conjuntos de datos reales procedentes de una empresa privada, lo que garantiza la relevancia práctica de los resultados. Adicionalmente, se diseñará un prototipo conceptual de flujo de trabajo híbrido cuántico-clásico que ilustre cómo podrían integrarse estas tecnologías en arquitecturas de análisis de datos existentes \citep{cerezo2021}.
+
+La aportación principal de este trabajo reside en proporcionar evidencia empírica sobre la viabilidad actual de la computación cuántica aplicada a la ciencia de datos, con una perspectiva orientada a la toma de decisiones en entornos empresariales reales, superando el enfoque puramente teórico o de laboratorio que predomina en la literatura existente \citep{fastovets2019}.
+
+\section{Estructura del trabajo}
+
+El presente trabajo se organiza en los siguientes capítulos:
+
+El \textbf{Capítulo 2} presenta el contexto y la revisión de la técnica, describiendo los fundamentos de la computación cuántica relevantes para este trabajo, los principales algoritmos cuánticos aplicados a ciencia de datos y un análisis crítico de los trabajos previos más relevantes.
+
+El \textbf{Capítulo 3} define los objetivos generales y específicos del trabajo, alineados con la brecha identificada en la revisión de la técnica.
+
+El \textbf{Capítulo 4} describe la metodología de investigación adoptada, incluyendo las fases del estudio, el diseño experimental, los criterios de evaluación y las herramientas utilizadas.
+
+El \textbf{Capítulo 5} presenta el desarrollo de la solución propuesta, detallando la implementación de los algoritmos cuánticos y clásicos, así como el diseño del flujo de trabajo híbrido prototipo.
+
+El \textbf{Capítulo 6} recoge los resultados obtenidos, su análisis comparativo y la discusión sobre las implicaciones prácticas de los hallazgos.
+
+El \textbf{Capítulo 7} expone las conclusiones del trabajo, sintetizando los hallazgos principales y su contribución al campo.
+
+El \textbf{Capítulo 8} presenta las líneas de investigación futura que se derivan de los resultados y limitaciones identificadas a lo largo del estudio.

@@ -1,0 +1,183 @@
+% !TEX root = ../main.tex
+\chapter{Evaluación y Análisis Comparativo de Resultados}
+
+Este capítulo presenta el análisis cuantitativo y cualitativo de los resultados obtenidos en cada caso de uso, discute las diferencias de rendimiento entre algoritmos cuánticos y clásicos a la luz del estado del arte, y evalúa las implicaciones prácticas para su aplicación en el contexto operativo de SKG Tecnología. Para cada caso se identifican explícitamente las condiciones bajo las que se observa ventaja cuántica, las limitaciones que explican los resultados negativos, y las perspectivas de mejora a medida que el hardware cuántico avance.
+
+% =====================================================================
+\section{Caso de uso 1: Clasificación supervisada}
+% =====================================================================
+
+\subsection{Dataset cuántico-nativo: ventaja cuántica demostrada}
+
+Los resultados sobre el dataset con estructura cuántica explícita constituyen la demostración empírica más sólida del estudio. El QSVM alcanzó una exactitud del \textbf{91.7\%}, frente al 53.3\% del mejor clasificador clásico (SVM-RBF), lo que supone una \textbf{ventaja de +38.3 puntos porcentuales (pp)}. Este resultado es coherente con la predicción teórica de \cite{liu2021}: cuando las etiquetas del dataset se definen mediante una función cuántica, el kernel cuántico las aprende con precisión cuasi-perfecta mientras que ningún clasificador clásico puede reproducirlas sin acceder al espacio de Hilbert.
+
+El análisis de escalabilidad (Tabla~\ref{tab:escala_clasificacion}) revela que esta ventaja no es un artefacto estadístico de un tamaño de muestra particular, sino que es robusta y consistente en todo el rango $n \in [30, 180]$ evaluado, con una ventaja media de \textbf{+40.9 pp} y una máxima de \textbf{+48.9 pp} para $n=50$.
+
+\begin{table}[h]
+\centering
+\begin{tabular}{ccccc}
+\hline
+\textbf{$n$ train} & \textbf{QSVM (\%)} & \textbf{Mejor clásico (\%)} & \textbf{Ventaja (pp)} \\
+\hline
+30  & 88.9 & 46.7 (SVM-RBF) & +42.2 \\
+50  & 91.1 & 42.2 (SVM-RBF) & +48.9 \\
+80  & 85.6 & 48.9 (SVM-RBF) & +36.7 \\
+100 & 85.6 & 47.8 (SVM-RBF) & +37.8 \\
+140 & 88.9 & 44.4 (SVM-RBF) & +44.4 \\
+180 & 91.1 & 55.6 (SVM-RBF) & +35.6 \\
+\hline
+\textbf{Media} & \textbf{88.5} & \textbf{47.6} & \textbf{+40.9} \\
+\hline
+\end{tabular}
+\caption{Escalabilidad de la ventaja cuántica en clasificación (dataset cuántico-nativo, ZZFeatureMap 2 qubits).}
+\label{tab:escala_clasificacion}
+\end{table}
+
+El mecanismo que explica esta ventaja es la alineación entre la función de kernel y la función generadora de etiquetas: ambas son el mismo \texttt{ZZFeatureMap}, de modo que el kernel cuántico minimiza el riesgo empírico en el espacio de Hilbert correcto. Los clasificadores clásicos operan en $\mathbb{R}^2$ y no pueden acceder implícitamente a este espacio.
+
+\paragraph{Limitaciones que condicionan la interpretación.}
+\begin{itemize}
+  \item El dataset es artificial: está diseñado a medida para el kernel cuántico. La ventaja observada es una cota superior del rendimiento cuántico en condiciones ideales.
+  \item La simulación exacta sin ruido es optimista respecto al hardware NISQ real; la decoherencia reduciría la fidelidad del kernel y, por tanto, la ventaja.
+  \item El coste cuadrático $O(n^2)$ del kernel limita la escala evaluable; en producción, $n > 1{,}000$ sería computacionalmente inviable en simulación.
+\end{itemize}
+
+\subsection{Dataset SKG Tecnología: resultado esperado en era NISQ}
+
+Sobre el dataset real de incidentes de movilidad de Bogotá, el QSVM obtuvo exactitud del \textbf{55.0\%}, inferior al \textbf{59.5\%} del mejor clasificador clásico (SVM-RBF): \textbf{desventaja de $-$4.5 pp}. Este resultado es el esperado en la era NISQ con datos reales: los incidentes de movilidad no presentan la estructura cuántica que el kernel explota.
+
+Cabe destacar que ningún modelo ---cuántico ni clásico--- superó el 80\% de exactitud sobre este dataset, lo que indica que la limitación no es del algoritmo sino de las features disponibles. La reducción a 2 dimensiones mediante PCA (varianza explicada: 84.6\%) implica una pérdida del 15.4\% de la información discriminativa. Un kernel cuántico de 4--6 qubits podría operar sobre más features sin esta pérdida, acortando potencialmente la brecha.
+
+\paragraph{Implicaciones para SKG.}
+La pequeña brecha de rendimiento ($-$4.5 pp) sugiere que el QSVM no es inferior en un orden de magnitud a los clásicos en este dominio, lo que lo convierte en un candidato técnicamente viable para evaluación en hardware cuántico real de generaciones futuras con mayor número de qubits lógicos.
+
+\subsection{Dataset Telco Churn: caso control validado}
+
+Sobre el dataset de referencia, el QSVM obtuvo un \textbf{76.0\%} de exactitud frente al \textbf{79.8\%} del Gradient Boosting: \textbf{desventaja de $-$3.8 pp}. El hecho de que incluso la Regresión Logística (78.2\%) supere al QSVM confirma que, en ausencia de estructura cuántica, los clasificadores clásicos son superiores independientemente de su complejidad.
+
+Este resultado valida metodológicamente el diseño experimental: el QSVM no gana por default, sino solo cuando existe la alineación cuántica que la teoría predice.
+
+% =====================================================================
+\section{Caso de uso 2: Regresión con kernel cuántico}
+% =====================================================================
+
+Los resultados de regresión presentan el patrón más complejo del estudio, con un caso de ventaja, un caso de empate técnico y un caso de desventaja clara. La Tabla~\ref{tab:regresion_3ds} resume los resultados.
+
+\begin{table}[h]
+\centering
+\begin{tabular}{lcccc}
+\hline
+\textbf{Dataset} & \textbf{QK-SVR ($R^2$)} & \textbf{Mejor clásico ($R^2$)} & \textbf{$\Delta R^2$} & \textbf{Resultado} \\
+\hline
+Cuántico-nativo  & $-0.151$  & $+0.777$ (XGBoost)   & $-0.928$ & Desventaja \\
+SKG Corredores   & $+0.098$  & $+0.660$ (GradBoost) & $-0.562$ & Desventaja \\
+Friedman \#1     & $+0.102$  & $+0.009$ (SVR-Poly)  & $\mathbf{+0.093}$ & \textbf{Ventaja} \\
+\hline
+\end{tabular}
+\caption{Comparativa de regresión cuántica vs clásica en los tres datasets. El mejor clásico incluye XGBoost, Random Forest, SVR-RBF y Ridge.}
+\label{tab:regresion_3ds}
+\end{table}
+
+\subsection{Dataset cuántico-nativo: paradoja de la regresión cuántica}
+
+El resultado negativo del QK-SVR sobre el dataset cuántico-nativo de regresión ($R^2 = -0.151$) resulta aparentemente contradictorio, dado que el dataset fue diseñado para el kernel cuántico. La explicación radica en la diferencia fundamental entre clasificación y regresión: en clasificación, la umbralización de la expectación cuántica en $\{-1, +1\}$ simplifica el problema; en regresión continua, el modelo debe estimar valores en $[-1, 1]$ con una distribución de alta varianza local que el SVR con regularización estándar no captura bien.
+
+\paragraph{Análisis de limitaciones.}
+\begin{itemize}
+  \item La regularización estándar del SVR ($C=1.0$, $\varepsilon=0.1$) no es óptima para esta distribución de valores objetivo; una búsqueda exhaustiva de hiperparámetros podría mejorar el resultado.
+  \item El submuestreo a $n=150$ instancias de entrenamiento es insuficiente para que el SVR encuentre los vectores de soporte óptimos en un espacio de salida continuo de alta varianza.
+  \item Los métodos de árboles (XGBoost: $R^2=0.777$) tienen ventaja porque pueden memorizar localmente la función objetivo mediante particiones del espacio de entrada, sin las restricciones de margen del SVM.
+\end{itemize}
+
+\subsection{Dataset SKG Tecnología: limitaciones estructurales}
+
+El QK-SVR obtuvo $R^2 = 0.098$ (RMSE = 11.04 km/h) frente al $R^2 = 0.660$ del Gradient Boosting (RMSE = 7.25 km/h): \textbf{desventaja de $\Delta R^2 = -0.562$}. La magnitud de esta brecha se explica por tres factores concurrentes:
+
+\begin{enumerate}
+  \item \textbf{Pérdida de información por PCA}: La varianza explicada por 2 componentes es del 68.6\%, lo que significa que el 31.4\% de la varianza de las features originales ---incluyendo patrones temporales y de nivel de servicio--- no está disponible para el QK-SVR.
+  \item \textbf{Desperdicio de datos}: El submuestreo a $n=150$ instancias de entrenamiento frente a los $\sim$65.000 disponibles para los clásicos equivale a un aprovechamiento del 0.18\% del dataset. Esta asimetría hace la comparación inherentemente desigual.
+  \item \textbf{Estructura del problema}: La correlación entre \texttt{levelofservice} y \texttt{speed} es cuasi-determinista en los datos de SKG (verde $\approx$ rápido, rojo $\approx$ lento), una relación que los árboles de decisión capturan con una sola partición, sin necesidad de un kernel cuántico.
+\end{enumerate}
+
+\subsection{Dataset Friedman \#1: caso de ventaja cuántica en regresión}
+
+El único caso de ventaja cuántica en regresión se da sobre el dataset Friedman \#1: el QK-SVR obtuvo $R^2 = 0.102$ frente al $R^2 = 0.009$ del mejor clásico con kernel precomputado (SVR-Poly), con una \textbf{ventaja de $\Delta R^2 = +0.093$ (+979\% relativo)}. Este resultado indica que el kernel cuántico captura la componente $\sin(\pi x_1 x_2)$ de la función objetivo, una correlación oscilatoria entre dos variables que los kernels clásicos estándar no modelan bien cuando solo disponen de 2 features PCA.
+
+Es importante matizar que la ventaja se mide frente a SVR con kernel precomputado; los métodos de árboles siguen siendo superiores en $R^2$ absoluto. Sin embargo, el resultado demuestra que el kernel cuántico puede tener ventaja específica sobre los kernels clásicos en problemas con funciones trigonométricas no separables.
+
+% =====================================================================
+\section{Caso de uso 3: Optimización combinatoria (QAOA)}
+% =====================================================================
+
+El QAOA con profundidad $p=1$ y optimizador COBYLA logró una reducción del coste de asignación del \textbf{$-$30.3\% respecto al algoritmo Greedy clásico} en instancias de 10--20 agentes, y del $-$18.3\% respecto a la búsqueda local. Este resultado es operativamente relevante: una reducción del 30\% en el coste de asignación de recursos de emergencia tiene impacto directo en los tiempos de respuesta y la eficiencia operativa de SKG.
+
+\paragraph{Análisis de las ventajas observadas.}
+El mecanismo de ventaja del QAOA reside en la exploración del espacio de soluciones mediante superposición cuántica: el estado inicial del QAOA es una superposición uniforme de todos los $2^n$ estados binarios posibles, lo que permite al optimizador variacional explorar globalmente el espacio sin quedar atrapado en los mínimos locales que afectan al Greedy y a la búsqueda local determinista.
+
+\paragraph{Limitaciones y perspectivas.}
+Con $p=1$, el QAOA es una aproximación grosera; la calidad de la solución mejora con $p$ creciente, pero a costa de mayor profundidad de circuito y mayor susceptibilidad al ruido. Para instancias con $n > 50$ variables binarias, el enfoque actual no escala en hardware NISQ.
+
+% =====================================================================
+\section{Caso de uso 4: Optimización de portafolio (VQE/QAOA)}
+% =====================================================================
+
+VQE convergió al portafolio óptimo (verificado por fuerza bruta) para instancias de hasta $n=6$ activos, con una complejidad de circuito $O(\text{poly})$ frente a la complejidad $O(2^n)$ de la fuerza bruta. Este resultado confirma que los algoritmos cuánticos variacionales pueden resolver problemas de optimización combinatoria financiera en el régimen de pequeña escala.
+
+Sin embargo, para instancias con $n > 20$ activos, los solvers clásicos de programación cuadrática (QP) basados en métodos de punto interior son aún superiores en tiempo de cómputo sobre simulación. La ventaja cuántica en portafolio requerirá hardware con centenares de qubits lógicos sin errores.
+
+% =====================================================================
+\section{Caso de uso 5: TSP con SA-QUBO}
+% =====================================================================
+
+El análisis de escalabilidad del TSP cuántico determinó que la formulación SA-QUBO es viable en IBM Eagle (127 qubits) para $n \leq 12$ ciudades y en IBM Osprey (433 qubits) para $n \leq 20$ ciudades. Para $n > 20$, las heurísticas clásicas (LKH, SA clásico) son superiores tanto en calidad de solución como en tiempo de cómputo.
+
+La limitación fundamental es cuadrática: la codificación de permutación binaria requiere $n^2$ variables QUBO, lo que para $n=15$ ciudades implica 225 qubits solo de codificación, sin contar los qubits ancilla necesarios para las restricciones.
+
+% =====================================================================
+\section{Caso de uso 6: Análisis del umbral de ventaja del kernel}
+% =====================================================================
+
+El análisis específico del umbral de ventaja del kernel cuántico (Notebook~06) confirma los hallazgos del caso de uso 1 desde una perspectiva de escalabilidad. Sobre el subconjunto Telco ($n=50$), el QSVM obtuvo una ventaja de \textbf{+6.7 pp} (66.7\% vs 60.0\% SVM-RBF), sugiriendo que incluso en datos reales sin estructura cuántica explícita, el kernel puede ser competitivo en muestras pequeñas donde los clásicos tienen menos datos para estimar sus hiperparámetros.
+
+En el dataset cuántico-nativo ($n=150$), el QSVC obtuvo \textbf{+8.9 pp} de ventaja (68.9\% vs 60.0\% SVM-RBF), confirmando la superioridad estructural del kernel cuántico cuando los datos tienen origen cuántico. Sobre el dataset SKG (Incidentes Bogotá), el clasificador clásico fue superior: QSVC 54.0\% vs 60.7\% clásico ($-6.7$ pp), coherente con la ausencia de estructura cuántica en datos de movilidad urbana. La comparativa de los tres datasets en el Notebook~06 consolida la hipótesis de alineación estructural: la ventaja cuántica aparece únicamente cuando la geometría del espacio de características del ZZFeatureMap se alinea con la distribución del problema.
+
+% =====================================================================
+\section{Síntesis comparativa y discusión general}
+% =====================================================================
+
+La Tabla~\ref{tab:sintesis} sintetiza los resultados principales del estudio comparativo.
+
+\begin{table}[h]
+\centering
+\small
+\begin{tabular}{llccc}
+\hline
+\textbf{CU} & \textbf{Algoritmo cuántico} & \textbf{Dataset cuántico-nativo} & \textbf{Dataset SKG} & \textbf{Dataset referencia} \\
+\hline
+1 & QSVM & \textbf{+38.3 pp} & $-$4.5 pp & $-$3.8 pp \\
+2 & QK-SVR & $-0.928\,\Delta R^2$ & $-0.562\,\Delta R^2$ & \textbf{$+0.093\,\Delta R^2$} \\
+3 & QAOA ($p=1$) & \multicolumn{2}{c}{\textbf{$-$30.3\% coste vs Greedy}} & --- \\
+4 & VQE/QAOA & \multicolumn{2}{c}{Óptimo ($n \leq 6$)} & --- \\
+5 & SA-QUBO & \multicolumn{2}{c}{Viable ($n \leq 12$)} & --- \\
+6 & QSVM (umbral) & \textbf{+8.9 pp} ($n=150$) & $-6.7$ pp & $+6.7$ pp ($n=50$) \\
+\hline
+\end{tabular}
+\caption{Síntesis de resultados cuántico vs clásico por caso de uso y dataset. Las celdas en negrita indican ventaja cuántica demostrada.}
+\label{tab:sintesis}
+\end{table}
+
+\subsection{Patrones transversales}
+
+Los resultados evidencian tres patrones transversales que son coherentes con el estado actual de la teoría y la tecnología cuántica:
+
+\begin{enumerate}
+  \item \textbf{La ventaja cuántica requiere alineación estructural}: La única ventaja robusta y reproducible en datos cuántico-nativos confirma la predicción de \cite{liu2021}. En datos reales sin estructura cuántica, los algoritmos clásicos basados en árboles de decisión (Gradient Boosting, Random Forest) mantienen su superioridad por su capacidad de capturar interacciones no lineales sin restricciones de dimensionalidad.
+
+  \item \textbf{El cuello de botella es la escala}: En todos los casos, la principal limitación práctica del enfoque cuántico no es la calidad del algoritmo sino el coste cuadrático del kernel ($O(n^2)$) y el número de qubits disponibles. Esta limitación es una función del hardware actual, no del algoritmo en sí.
+
+  \item \textbf{Los resultados negativos son informativos}: Los casos donde el QSVM o el QK-SVR son inferiores a los clásicos en datos reales no son fracasos experimentales, sino resultados metodológicamente valiosos que delimitan con precisión el dominio de aplicabilidad actual de la computación cuántica en ciencia de datos.
+\end{enumerate}
+
+\subsection{Implicaciones para la adopción empresarial}
+
+Desde la perspectiva de SKG Tecnología, los resultados sugieren que la integración de algoritmos cuánticos en los sistemas de gestión de movilidad urbana requiere dos condiciones previas: (i) hardware cuántico con mayor número de qubits lógicos y menor tasa de error, para operar sobre más features sin reducción dimensional, y (ii) ingeniería de features específica que alinee la representación de los datos con las estructuras geométricas accesibles por los kernels cuánticos. En el corto plazo (horizonte 2--5 años), el valor más realista de la computación cuántica para SKG reside en los algoritmos de optimización combinatoria (QAOA, VQE) para problemas de asignación de recursos, donde la ventaja ya es demostrable a escala moderada con el hardware actual.

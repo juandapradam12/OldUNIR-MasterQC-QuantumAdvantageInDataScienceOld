@@ -1,0 +1,27 @@
+% !TEX root = ../main.tex
+\chapter{Metodología}
+
+La metodología adoptada en este trabajo combina un enfoque experimental cuantitativo con un análisis crítico de los resultados desde la perspectiva de la aplicabilidad empresarial. Se articula en las siguientes fases:
+
+\section{Fase 1: Selección y preparación de datos}
+
+Se utilizarán conjuntos de datos reales procedentes de una empresa privada, relacionados con problemas de clasificación de clientes y optimización de asignación de recursos. Los datos serán anonimizados y tratados conforme a las buenas prácticas de protección de datos. En caso necesario, se complementará el análisis con datos sintéticos generados a partir de distribuciones similares para garantizar la robustez de los resultados y preservar la confidencialidad. Los datasets serán preprocesados siguiendo técnicas estándar de ciencia de datos: normalización, tratamiento de valores ausentes y reducción de dimensionalidad cuando sea necesario \citep{jordan2015}.
+
+\section{Fase 2: Implementación de algoritmos}
+
+Los algoritmos cuánticos se implementarán en simulación clásica mediante los frameworks \textit{Qiskit} (IBM) o \textit{PennyLane} (Xanadu), que permiten simular circuitos cuánticos de hasta decenas de qubits en hardware clásico con ruido controlado. Para los problemas de clasificación, se implementarán clasificadores basados en kernels cuánticos \citep{schuld2021} y circuitos variacionales (VQC) \citep{cerezo2021}. Para los problemas de optimización, se implementará el QAOA con diferentes valores de profundidad $p$ \citep{farhi2014, zhou2020}. Los algoritmos clásicos de referencia se implementarán mediante las bibliotecas estándar de \textit{scikit-learn} y \textit{scipy}.
+
+\section{Fase 3: Diseño experimental y evaluación}
+
+Los experimentos se diseñarán siguiendo un protocolo de validación cruzada estratificada para los problemas de clasificación, y un esquema de múltiples ejecuciones con semillas aleatorias controladas para los problemas de optimización. Las métricas de evaluación principales serán:
+
+\begin{itemize}
+    \item \textbf{Clasificación}: exactitud (\textit{accuracy}), precisión, exhaustividad (\textit{recall}) y puntuación F1, junto con el área bajo la curva ROC (AUC-ROC).
+    \item \textbf{Optimización}: valor de la función objetivo alcanzada, razón de aproximación respecto al óptimo clásico conocido y tiempo de convergencia.
+    \item \textbf{Eficiencia computacional}: tiempo de ejecución total, número de qubits requeridos, profundidad del circuito y número de evaluaciones de la función objetivo.
+    \item \textbf{Escalabilidad}: evolución del rendimiento en función del tamaño del problema, evaluada mediante experimentos con instancias de tamaño creciente.
+\end{itemize}
+
+\section{Fase 4: Diseño del prototipo híbrido}
+
+A partir de los resultados obtenidos, se diseñará un flujo de trabajo conceptual que integre el módulo cuántico de mejor rendimiento dentro de una arquitectura de análisis de datos clásica. Este prototipo ilustrará los puntos de integración entre componentes cuánticos y clásicos, los requisitos de interfaz y las condiciones de activación del módulo cuántico, proporcionando una visión práctica orientada a la adopción tecnológica futura \citep{cerezo2021}.

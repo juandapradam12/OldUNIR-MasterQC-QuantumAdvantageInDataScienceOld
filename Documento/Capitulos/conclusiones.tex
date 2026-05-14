@@ -1,0 +1,32 @@
+% !TEX root = ../main.tex
+\chapter{Conclusiones}
+
+Este trabajo ha abordado una pregunta central en el estado actual de la computación cuántica aplicada: \textit{¿en qué condiciones los algoritmos cuánticos disponibles en la era NISQ ofrecen una ventaja real y medible frente a los algoritmos clásicos en problemas de ciencia de datos?} Los experimentos realizados sobre seis casos de uso, evaluados sobre tres tipos de datasets cada uno, permiten extraer conclusiones concretas y matizadas.
+
+\section{Conclusiones principales}
+
+\begin{enumerate}
+
+\item \textbf{La ventaja cuántica en clasificación es demostrable y robusta, pero condicionada a la estructura del dato.} El QSVM con kernel cuántico (ZZFeatureMap, 2 qubits) superó al mejor clasificador clásico en +38.3 puntos porcentuales sobre un dataset diseñado con estructura cuántica explícita siguiendo el marco de \cite{liu2021}. Esta ventaja es consistente a lo largo de múltiples tamaños de muestra ($n=30$ a $n=180$), con una media de +40.9 pp, confirmando que no es un artefacto estadístico. En datos reales (Telco Churn, incidentes de movilidad SKG), sin embargo, los clasificadores clásicos basados en Gradient Boosting son superiores en 3--5 pp.
+
+\item \textbf{La ventaja cuántica en regresión es más limitada y específica del benchmark.} El QK-SVR solo mostró ventaja (+0.093 $R^2$, +979\%) sobre el dataset Friedman \#1, donde los kernels clásicos estándar tienen dificultades con la no-linealidad específica del problema. En datos reales (velocidad en corredores viales de Bogotá), los regressores de árboles (Gradient Boosting, $R^2=0.660$) superan claramente al QK-SVR ($R^2=0.098$).
+
+\item \textbf{El QAOA ofrece ventaja real en optimización combinatoria de escala moderada.} Con profundidad $p=1$, el QAOA reduce el coste de asignación de recursos en un 30.3\% frente a la heurística Greedy, demostrando su utilidad práctica en instancias de 10--20 elementos. Esta ventaja es relevante para casos de uso empresariales como la asignación de agentes a zonas o la planificación de rutas de mantenimiento.
+
+\item \textbf{VQE es competitivo para optimización de portafolio a pequeña escala.} VQE converge al óptimo en instancias de hasta 6 activos, con una complejidad de circuito polinómica frente a la búsqueda exhaustiva exponencial. Para instancias mayores, la optimización cuadrática clásica sigue siendo superior en hardware simulado NISQ.
+
+\item \textbf{El coste computacional de la simulación es el principal obstáculo práctico.} La evaluación del kernel cuántico escala como $O(n^2)$ en número de evaluaciones de circuito, lo que hace que el QSVM con 300 muestras requiera más de 2 minutos en simulación, frente a segundos de los clasificadores clásicos. Este coste no es intrínseco al algoritmo cuántico sino a la simulación en hardware clásico; en hardware cuántico real, la evaluación sería paralela y potencialmente más rápida.
+
+\item \textbf{Los datos de SKG Tecnología confirman el comportamiento esperado en era NISQ.} Los datasets reales de movilidad urbana (incidentes y tiempos de viaje en Bogotá) no presentan la estructura cuántica necesaria para que el kernel cuántico muestre ventaja. Los mejores resultados en estos datos los obtienen Gradient Boosting y Random Forest, que capturan eficazmente los patrones temporales y geoespaciales. Esto no invalida la utilidad futura de los algoritmos cuánticos, sino que sitúa correctamente el estado de madurez actual.
+
+\end{enumerate}
+
+\section{Respuesta a la pregunta de investigación}
+
+La ventaja cuántica en ciencia de datos, tal como se puede demostrar hoy con hardware NISQ simulado, es \textbf{real pero condicionada}. Existe de forma garantizada cuando el problema tiene estructura cuántica explícita (Liu 2021), aparece de forma emergente en problemas de optimización combinatoria de escala moderada (QAOA), y es competitiva en regresión no lineal específica (Friedman \#1). En datos empresariales reales sin estructura cuántica predefinida, los algoritmos clásicos consolidados mantienen su superioridad en el horizonte temporal actual.
+
+La conclusión práctica para entornos empresariales como SKG Tecnología es: \textbf{los algoritmos cuánticos son hoy complementarios, no sustitutos, de los clásicos}. Su adopción estratégica tiene sentido en problemas de optimización combinatoria donde las heurísticas clásicas tienen un rendimiento limitado, y como herramienta de preparación para el momento en que el hardware cuántico tolerante a fallos esté disponible.
+
+\section{Aportación al campo}
+
+Este trabajo contribuye a la literatura con: (1) evidencia empírica sobre condiciones reales de ventaja cuántica usando datos empresariales propietarios; (2) una metodología de evaluación comparativa reproducible sobre tres tipos de dataset por caso de uso; y (3) un análisis de escalabilidad que caracteriza cuantitativamente el umbral de muestra a partir del cual el kernel cuántico supera a los clásicos.
