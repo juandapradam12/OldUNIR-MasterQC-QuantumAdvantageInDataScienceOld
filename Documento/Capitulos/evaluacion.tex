@@ -33,6 +33,13 @@ El análisis de escalabilidad (Tabla~\ref{tab:escala_clasificacion}) revela que 
 \label{tab:escala_clasificacion}
 \end{table}
 
+\begin{figure}[ht]
+\centering
+\includegraphics[width=0.92\textwidth]{../POCs/data/output/figures/01_escalabilidad_ventaja_clasificacion.png}
+\caption{Evolución de la exactitud de QSVM y del mejor clasificador clásico (SVM-RBF) en función del tamaño del conjunto de entrenamiento. Las barras verdes (eje derecho) muestran la ventaja cuántica en puntos porcentuales, robusta en todo el rango $n \in [30, 180]$ con una media de $+40.9$ pp.}
+\label{fig:escala_clasificacion}
+\end{figure}
+
 El mecanismo que explica esta ventaja es la alineación entre la función de kernel y la función generadora de etiquetas: ambas son el mismo \texttt{ZZFeatureMap}, de modo que el kernel cuántico minimiza el riesgo empírico en el espacio de Hilbert correcto. Los clasificadores clásicos operan en $\mathbb{R}^2$ y no pueden acceder implícitamente a este espacio.
 
 \paragraph{Limitaciones que condicionan la interpretación.}
@@ -181,3 +188,7 @@ Los resultados evidencian tres patrones transversales que son coherentes con el 
 \subsection{Implicaciones para la adopción empresarial}
 
 Desde la perspectiva de SKG Tecnología, los resultados sugieren que la integración de algoritmos cuánticos en los sistemas de gestión de movilidad urbana requiere dos condiciones previas: (i) hardware cuántico con mayor número de qubits lógicos y menor tasa de error, para operar sobre más features sin reducción dimensional, y (ii) ingeniería de features específica que alinee la representación de los datos con las estructuras geométricas accesibles por los kernels cuánticos. En el corto plazo (horizonte 2--5 años), el valor más realista de la computación cuántica para SKG reside en los algoritmos de optimización combinatoria (QAOA, VQE) para problemas de asignación de recursos, donde la ventaja ya es demostrable a escala moderada con el hardware actual.
+
+\subsection{Resultados adicionales y visualización}
+
+El análisis realizado en este trabajo puede extenderse en varias direcciones que permitirían enriquecer la presentación de resultados. En primer lugar, sería posible incorporar curvas de aprendizaje que muestren la evolución de la exactitud (o del $R^2$) en función del tamaño del conjunto de entrenamiento para cada algoritmo cuántico y su contraparte clásica, facilitando la comparación visual del comportamiento de escalabilidad. En segundo lugar, la generación de mapas de calor de las matrices de kernel cuántico permitiría ilustrar de forma intuitiva cómo el \texttt{ZZFeatureMap} estructura el espacio de Hilbert en los diferentes datasets. En tercer lugar, para los casos de optimización (QAOA, VQE), la representación gráfica de la convergencia de la función de coste en función del número de iteraciones del optimizador variacional ofrecería una visión más completa del proceso de búsqueda. Por último, un diagrama de radar (\textit{radar chart}) con las métricas normalizadas de cada caso de uso permitiría sintetizar visualmente el perfil de rendimiento cuántico vs. clásico en un único gráfico de referencia. Estas visualizaciones complementarias se proponen como trabajo futuro inmediato, condicionadas a la disponibilidad de los artefactos de experimentación en los notebooks de las POCs.
