@@ -1,5 +1,6 @@
 % !TEX root = ../main.tex
 \chapter{Metodología de diseño e implementación de las pruebas de concepto}
+\label{cap:metodologia}
 
 Este capítulo integra la metodología adoptada y la descripción detallada del diseño, implementación y procedimiento experimental de las pruebas de concepto (PoC) desarrolladas para comparar algoritmos cuánticos y clásicos en tres familias de problemas: clasificación supervisada, regresión y optimización combinatoria. Para cada caso de uso se evalúan tres tipos de conjuntos de datos: (i) un dataset diseñado con estructura cuántica explícita (\textit{cuántico-nativo}), (ii) un dataset real de SKG Tecnología, y (iii) un dataset de referencia de dominio público. Esta triple perspectiva permite distinguir los escenarios donde la computación cuántica ofrece ventaja teórica genuina de aquellos donde los algoritmos clásicos siguen siendo superiores en la práctica.
 
@@ -59,6 +60,13 @@ Siguiendo el protocolo de \cite{liu2021}, se generó un dataset sintético donde
   y_i = \text{sgn}\!\bigl(\langle\phi(x_i)|\,Z \otimes Z\,|\phi(x_i)\rangle\bigr)
 \end{equation}
 donde $|\phi(x_i)\rangle$ es el estado cuántico codificado por un \texttt{ZZFeatureMap} de 2 qubits con 2 repeticiones. Por construcción, el kernel cuántico de fidelidad $\kappa(x_i, x_j) = |\langle\phi(x_i)|\phi(x_j)\rangle|^2$ es el estimador óptimo del problema. Este dataset no representa un caso práctico real, sino un experimento controlado diseñado para demostrar empíricamente que la ventaja cuántica es alcanzable cuando existe alineación entre la estructura del dato y la geometría del espacio de Hilbert.
+
+\begin{figure}[ht]
+\centering
+\includegraphics[width=0.85\textwidth]{../POCs/data/output/figures/06_zzfeaturemap_circuit.png}
+\caption{Circuito \texttt{ZZFeatureMap} de 2 qubits y 2 repeticiones empleado como mapa de codificación de datos. Las puertas $R_Z(\lambda)$ codifican las features individuales $x_j$; las secuencias $\text{CNOT}$-$R_Z$-$\text{CNOT}$ codifican las interacciones cruzadas $x_j(\pi - x_k)$, que generan la no-linealidad cuántica que define el kernel $\kappa(x_i, x_j)$.}
+\label{fig:zzfeaturemap_circuit}
+\end{figure}
 
 \paragraph{Procedimiento experimental.}
 \begin{enumerate}
@@ -335,3 +343,283 @@ Sobre el subconjunto Telco ($n=50$), el QSVM obtuvo \textbf{+6.7 pp} de ventaja 
   \item El umbral de ventaja depende fuertemente de la estructura del dataset; no es posible determinar a priori si un dataset real exhibirá ventaja cuántica sin experimentación específica.
   \item El coste cuadrático limita el análisis a $n \leq 300$ en simulación clásica con tiempos razonables ($< 30$ minutos por experimento).
 \end{itemize}
+
+% =====================================================================
+\section{Caso de uso 7: El paradigma híbrido cuántico-clásico — Conjunto Dominante Mínimo}
+\label{sec:caso7_hibrido}
+% =====================================================================
+
+\subsection{Contexto de negocio y motivación del caso}
+
+Este caso de uso aborda el problema de \textbf{minimización de costos publicitarios en una red social}: dado un grafo de relaciones entre personas, se busca el menor subconjunto $D$ de individuos a contratar como influencers de forma que el producto llegue a \textit{todos} los miembros de la red, ya sea porque están en $D$ o porque alguno de sus contactos directos lo está. Formalmente, $D$ es el \textbf{conjunto dominante mínimo} (\textit{Minimum Dominating Set}, MDS) del grafo de relaciones.
+
+Más allá del resultado combinatorio, este caso de uso cumple una función transversal en el TFM: ilustrar de forma concreta y ejecutable la \textbf{arquitectura del loop híbrido cuántico-clásico}, el patrón de diseño dominante en los algoritmos variacionales NISQ (\textit{Noisy Intermediate-Scale Quantum}). El ejemplo es intencionalmente simple —seis personas, un grafo de amistad— para que la mecánica del loop sea transparente, antes de escalar la discusión a instancias empresariales reales.
+
+\subsection{Formulación matemática: de la red social al QUBO}
+
+Sea $G=(V, E)$ el grafo de relaciones con $|V|=n$ y $N[v]=\{v\}\cup N(v)$ el vecindario cerrado de $v$. La variable binaria $x_v = 1$ indica que la persona $v$ es contratada. El MDS se formula como el siguiente problema QUBO \citep{lucas2014}:
+
+\begin{equation}
+  C(\mathbf{x}) = A\sum_{v \in V} x_v + B\sum_{v \in V}\left(1 - \sum_{u \in N[v]} x_u\right)^2
+  \label{eq:mds_qubo}
+\end{equation}
+
+donde $A=1$ pondera el costo de contratar y $B=2$ penaliza cada vértice no cubierto por su vecindario cerrado. El mínimo global es alcanzado por el conjunto dominante mínimo. Este es NP-difícil en el caso general \citep{garey1979}. Sustituyendo $x_i = (1 - Z_i)/2$, la expresión~\eqref{eq:mds_qubo} se traduce exactamente a un Hamiltoniano de Ising con términos $Z_i$ y $Z_iZ_j$, implementables con puertas $R_Z$ y $R_{ZZ}$ del circuito QAOA:
+
+\begin{equation}
+  H_C = \sum_i h_i Z_i + \sum_{i<j} J_{ij} Z_i Z_j
+\end{equation}
+
+Para la instancia de seis nodos (Mario, Sarah, Raúl, Ana, Enrique, Saúl) y los parámetros $A=1, B=2$, el óptimo exacto es $D^* = \{\text{Ana, Enrique}\}$ con coste $C=2$, verificado por fuerza bruta $O(2^6 = 64)$ evaluaciones.
+
+\begin{figure}[!htbp]
+\centering
+\begin{tikzpicture}[thick, font=\small, node distance=0pt]
+  % Bloque 1: QUBO  (ancho ampliado a ±4.5 para que la ecuación quepa sin recorte)
+  \draw[draw=violet!60!black, fill=violet!7, rounded corners=6pt, very thick]
+    (-4.5, 0.75) rectangle (4.5, -0.75);
+  \node[align=center] at (0, 0.32) {\textbf{Formulación QUBO}};
+  \node[font=\footnotesize, text=violet!70!black] at (0, -0.22)
+    {$C(\mathbf{x}) = A\!\sum_{v} x_v + B\!\sum_{v}\!\left(1-\!\sum_{u\in N[v]}\!x_u\right)^{\!2}$};
+  % Flecha 1→2
+  \draw[->, thick] (0, -0.75) -- (0, -1.65)
+    node[midway, right=5pt, font=\footnotesize]{$x_i = (1-Z_i)/2$};
+  % Bloque 2: Hamiltoniano de Ising
+  \draw[draw=teal!60!black, fill=teal!7, rounded corners=6pt, very thick]
+    (-4.5, -1.65) rectangle (4.5, -2.9);
+  \node[align=center] at (0, -2.03) {\textbf{Hamiltoniano de Ising}};
+  \node[font=\footnotesize, text=teal!70!black] at (0, -2.50)
+    {$H_C = \sum_i h_i Z_i + \sum_{i<j} J_{ij}\, Z_i Z_j$};
+  % Flecha 2→3
+  \draw[->, thick] (0, -2.9) -- (0, -3.80)
+    node[midway, right=5pt, font=\footnotesize]{compila a puertas};
+  % Bloque 3: Circuito QAOA
+  \draw[draw=blue!55!black, fill=blue!7, rounded corners=6pt, very thick]
+    (-4.5, -3.80) rectangle (4.5, -5.05);
+  \node[align=center] at (0, -4.18) {\textbf{Circuito QAOA}};
+  \node[font=\footnotesize, text=blue!70!black] at (0, -4.65)
+    {$R_Z(\theta_i)\;\otimes\;R_{ZZ}(\theta_{ij})$ \quad puertas nativas NISQ};
+\end{tikzpicture}
+\caption{Pipeline de compilación del MDS al circuito cuántico. La sustitución $x_i=(1-Z_i)/2$ transforma la función objetivo QUBO en un Hamiltoniano de Ising con términos $Z_i$ (puertas $R_Z$) y $Z_iZ_j$ (puertas $R_{ZZ}$), directamente implementables en hardware NISQ.}
+\label{fig:pipeline_qubo_ising}
+\end{figure}
+
+\subsection{El loop híbrido cuántico-clásico: arquitectura de referencia NISQ}
+
+El QAOA \citep{farhi2014} implementa el paradigma de optimización variacional mediante la alternancia de dos módulos con responsabilidades estrictamente separadas:
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[thick, font=\small]
+  %--- Módulo cuántico ---
+  \draw[draw=blue!55!black, fill=blue!8, rounded corners=6pt, very thick]
+    (-3.6, 0.75) rectangle (3.6, -0.75);
+  \node[align=center] at (0, 0.27) {\textbf{Módulo cuántico}};
+  \node[align=center, font=\footnotesize, text=blue!65!black] at (0, -0.25)
+    {\texttt{QAOAAnsatz}$(p)$ \quad $|$ \quad Aer Simulator / IBM Hardware};
+  %--- Módulo clásico ---
+  \draw[draw=orange!60!black, fill=orange!8, rounded corners=6pt, very thick]
+    (-3.6, -2.2) rectangle (3.6, -3.7);
+  \node[align=center] at (0, -2.65) {\textbf{Módulo clásico}};
+  \node[align=center, font=\footnotesize, text=orange!65!black] at (0, -3.15)
+    {\texttt{COBYLA} (SciPy) \quad $|$ \quad $\min_{\boldsymbol{\theta}}\,\langle H_C\rangle_{\boldsymbol{\theta}}$};
+  %--- Entrada superior ---
+  \draw[->] (0, 1.55) -- (0, 0.75);
+  \node[above, font=\footnotesize, align=center] at (0, 1.55)
+    {$\boldsymbol{\theta}_k = (\gamma_1,\beta_1,\ldots,\gamma_p,\beta_p)\;\in\;\mathbb{R}^{2p}$};
+  %--- Flecha vertical: energía de Q a C ---
+  \draw[->, draw=gray!55] (0, -0.75) -- (0, -2.2)
+    node[midway, right=5pt, font=\footnotesize]
+    {$\langle H_C \rangle_{\boldsymbol{\theta}}$ \quad (escalar)};
+  %--- Flecha de retroalimentación: C devuelve theta a Q ---
+  \draw[->, draw=orange!55!black]
+    (-3.6, -2.95) -- (-5.2, -2.95) -- (-5.2, 0) -- (-3.6, 0);
+  \node[left=3pt, font=\footnotesize, text=orange!65!black] at (-5.2, -1.47)
+    {$\boldsymbol{\theta}_{k+1}$};
+  %--- Salida inferior ---
+  \draw[->] (0, -3.7) -- (0, -4.5);
+  \node[below, font=\footnotesize, align=center] at (0, -4.5)
+    {$\boldsymbol{\theta}^{*} = \arg\min_{\boldsymbol{\theta}}\,\langle H_C\rangle_{\boldsymbol{\theta}}$};
+\end{tikzpicture}
+\caption{Arquitectura del loop híbrido cuántico-clásico en QAOA. El módulo cuántico (azul) evalúa la energía esperada $\langle H_C\rangle_{\boldsymbol{\theta}}$ para los parámetros actuales $\boldsymbol{\theta}_k$; el módulo clásico (naranja) los actualiza mediante \texttt{COBYLA} para minimizar esa energía. La interfaz entre módulos se reduce a $2p$ reales de entrada y un único escalar de salida, lo que facilita la integración en cualquier pipeline de optimización existente.}
+\label{fig:loop_hibrido}
+\end{figure}
+
+\begin{itemize}
+  \item \textbf{Módulo cuántico} (Qiskit Aer / hardware IBM): Prepara el estado parametrizado $|\psi(\boldsymbol{\theta})\rangle = U_B(\beta_p)U_C(\gamma_p)\cdots U_B(\beta_1)U_C(\gamma_1)|+\rangle^{\otimes n}$ y evalúa la energía esperada $\langle H_C \rangle_{\boldsymbol{\theta}}$. Los operadores de coste $U_C(\gamma) = e^{-i\gamma H_C}$ se implementan con puertas $R_Z$ y $R_{ZZ}$; los de mezcla $U_B(\beta) = e^{-i\beta \sum_i X_i}$ con rotaciones $R_X$.
+  \item \textbf{Módulo clásico} (SciPy COBYLA): Actualiza el vector de ángulos $\boldsymbol{\theta} = (\gamma_1, \ldots, \gamma_p, \beta_1, \ldots, \beta_p) \in \mathbb{R}^{2p}$ para minimizar $\langle H_C \rangle_{\boldsymbol{\theta}}$.
+\end{itemize}
+
+\paragraph{Interfaz cuántico-clásica.}
+La interfaz entre módulos es \textit{deliberadamente mínima}: el módulo clásico transfiere $2p$ reales al cuántico y recibe un único escalar de retorno:
+
+\begin{table}[h]
+\centering
+\caption{Interfaz del loop híbrido QAOA-COBYLA.}
+\label{tab:interfaz_hibrida}
+\begin{tabular}{lll}
+\hline
+\textbf{Dirección} & \textbf{Dato} & \textbf{Cardinalidad} \\
+\hline
+Clásico $\rightarrow$ Cuántico & Ángulos $\boldsymbol{\theta}$ & $2p$ reales \\
+Cuántico $\rightarrow$ Clásico & Energía $\langle H_C \rangle_{\boldsymbol{\theta}}$ & 1 escalar \\
+Cuántico $\rightarrow$ Clásico & Conteos de medición $\{s: c_s\}$ & $O(\text{shots})$ enteros \\
+\hline
+\end{tabular}
+\end{table}
+
+Esta pequeñísima interfaz implica que QAOA es \textit{directamente integrable} en cualquier pipeline de optimización clásico existente, reemplazando únicamente la función que evalúa el objetivo: el orquestador clásico no necesita conocer los detalles del circuito cuántico.
+
+\subsection{Procedimiento experimental y comparativa clásica}
+
+\begin{enumerate}
+  \item \textbf{Referencia exacta}: Fuerza bruta exhaustiva ($2^n = 64$ evaluaciones) y programación lineal entera (ILP con PuLP/CBC), que verifican $D^* = \{\text{Ana, Enrique}\}$.
+  \item \textbf{Heurística clásica}: Algoritmo greedy por cobertura incremental —en cada paso se añade el nodo cuyo vecindario cerrado cubre el mayor número de vértices aún no cubiertos— como línea base de tiempo de ejecución.
+  \item \textbf{QAOA}: \texttt{QAOAAnsatz} de Qiskit con profundidad $p \in \{1, 2, 3\}$, simulado con \texttt{AerEstimator} (vector de estados exacto). Optimización: 20 reinicios aleatorios de COBYLA con \texttt{maxiter}$=300$.
+  \item \textbf{Escalabilidad}: Grafos de Erdős-Rényi con $n \in \{6, 8, 10, 12, 15\}$ nodos y densidad 0.45. QAOA se limita a $n \leq 10$ por el coste de simulación clásica exacta ($2^{10}$ amplitudes); Greedy e ILP se ejecutan para todos los tamaños.
+\end{enumerate}
+
+\paragraph{Resultados preliminares.}
+Con $p = 3$, QAOA concentra aproximadamente el \textbf{73\%} de las mediciones en el estado óptimo $\{$Ana, Enrique$\}$ y recupera la solución exacta por selección del estado de menor coste. El análisis de escalabilidad muestra que Greedy e ILP encuentran el óptimo en todos los tamaños evaluados con tiempos inferiores a 5 ms, mientras que el tiempo de QAOA en simulación clásica crece de $\sim$60 s para $n=6$ a $\sim$400 s para $n=10$, confirmando que la ventaja cuántica en simulación no existe en este rango.
+
+\begin{figure}[!htbp]
+\centering
+\includegraphics[width=0.97\textwidth]{../POCs/data/output/figures/10_qaoa_histograma_medicion.png}
+\caption{Histograma de medición del circuito QAOA con $p=3$ sobre el MDS de 6 nodos (6\,000 shots, 20 reinicios COBYLA). El estado naranja \texttt{011000} corresponde al conjunto dominante mínimo óptimo $D^*=\{\text{Ana, Enrique}\}$ (coste QUBO $=2$, verificado por fuerza bruta), y concentra el 73\% de las mediciones. Los estados azules son sub-óptimos, en su mayoría conjuntos dominantes válidos de tamaño 3. Las celdas de coste se refieren al valor de la función objetivo QUBO con $A=1$, $B=2$.}
+\label{fig:qaoa_histograma}
+\end{figure}
+
+\paragraph{Ventajas identificadas.}
+\begin{itemize}
+  \item El caso ilustra el patrón QAOA-COBYLA en su forma más pura y pedagógicamente transparente, con una cadena completa y verificable: problema de negocio $\rightarrow$ QUBO $\rightarrow$ Hamiltoniano de Ising $\rightarrow$ circuito cuántico $\rightarrow$ loop híbrido $\rightarrow$ medición.
+  \item La función genérica \texttt{resolver\_qaoa\_qiskit(nodes, edges)} demuestra que el método es sistemático para cualquier red de entrada, sin adaptaciones de arquitectura.
+  \item La interfaz mínima del loop híbrido ($2p$ parámetros de entrada, 1 escalar de salida) establece el patrón de integración aplicable a los problemas de asignación de SKG Tecnología.
+  \item El paso al hardware real de IBM requiere únicamente cambiar el backend (\texttt{AerEstimator} $\rightarrow$ \texttt{QiskitRuntimeService} + \texttt{EstimatorV2}) sin modificar la lógica del algoritmo.
+\end{itemize}
+
+\paragraph{Limitaciones identificadas.}
+\begin{itemize}
+  \item En simulación clásica exacta, QAOA no ofrece ventaja en tiempo frente a ILP ni frente a Greedy para $n \leq 15$. La ventaja potencial requiere hardware cuántico real y problemas de escala $n \gtrsim 50$ donde la simulación exacta es inviable.
+  \item Con profundidad $p = 1$, la probabilidad del óptimo cae a $\sim$30\%, insuficiente para uso operativo sin post-procesamiento. Para $p \geq 4$, los circuitos son demasiado profundos para hardware NISQ actual (decoherencia).
+  \item El parámetro $B$ de la penalización QUBO debe calibrarse para cada familia de instancias: si $B$ es demasiado pequeño, las soluciones infactibles (que no cubren todos los vértices) pueden tener coste QUBO menor que la solución óptima factible.
+  \item El número de parámetros a optimizar crece linealmente con $p$ ($2p$ ángulos), lo que aumenta la probabilidad de quedar atrapado en óptimos locales del paisaje de energía; esto motiva el uso de múltiples reinicios aleatorios.
+\end{itemize}
+
+\begin{figure}[!htbp]
+\centering
+\includegraphics[width=0.72\textwidth]{../POCs/data/output/figures/10_mds_grafo_solucion.png}
+\caption{Red social de 6 nodos del Caso de uso~7. Los nodos naranja ($D^* = \{\text{Ana, Enrique}\}$) forman el conjunto dominante mínimo de coste 2: contratar a estos dos influencers garantiza que el producto llega a todos los miembros de la red. Las flechas verdes indican la relación de cobertura (cada nodo azul tiene al menos un vecino en $D^*$). QAOA con $p=3$ identifica este conjunto óptimo con probabilidad $> 85\%$ sobre 20 reinicios.}
+\label{fig:mds_grafo_solucion}
+\end{figure}
+
+% =====================================================================
+\section{Prototipo de arquitectura híbrida cuántico-clásica}
+\label{sec:prototipo_hibrido}
+% =====================================================================
+
+Los siete casos de uso desarrollados en este capítulo ilustran, cada uno desde un ángulo diferente, la misma idea estructural: los algoritmos cuánticos variacionales de la era NISQ no reemplazan a los clásicos sino que se integran con ellos en un \textbf{pipeline híbrido} donde cada parte hace lo que mejor sabe hacer. Esta sección sintetiza ese patrón de diseño en forma de prototipo arquitectónico aplicable a un entorno empresarial como SKG Tecnología.
+
+\subsection{Principio de diseño: separación de responsabilidades}
+
+La arquitectura híbrida cuántico-clásica se sustenta en una premisa simple: el módulo cuántico resuelve la parte del problema que es difícil para los computadores clásicos —la exploración de espacios de búsqueda exponencialmente grandes o la evaluación de kernels en espacios de Hilbert de alta dimensión—, mientras que el módulo clásico orquesta el flujo, pre-procesa los datos, ejecuta la optimización de parámetros y toma la decisión final a partir de los resultados cuánticos.
+
+\subsection{Flujo de decisión: cuándo activar el módulo cuántico}
+
+No todos los problemas se benefician del módulo cuántico. La Tabla~\ref{tab:flujo_hibrido} resume el criterio de activación según el tipo de problema.
+
+\begin{table}[ht]
+\centering
+\small
+\begin{tabular}{p{3.2cm}p{3.2cm}p{3.5cm}p{3.0cm}}
+\hline
+\textbf{Tipo de problema} & \textbf{Criterio de activación} & \textbf{Módulo cuántico} & \textbf{Módulo clásico} \\
+\hline
+Clasificación / Regresión &
+$\mathcal{Q}(\mathcal{D}) > 0$ (score de cuanticidad positivo) &
+QSVM / QK-SVR (kernel cuántico) &
+Gradient Boosting como fallback \\
+\hline
+Optimización combinatoria &
+$n_{\text{vars}} \leq 50$ (hardware actual) o problema NP-difícil con estructura QUBO &
+QAOA ($p \geq 2$) o VQE &
+ILP / Greedy para verificación \\
+\hline
+Caso general &
+$\mathcal{Q}(\mathcal{D}) \leq 0$ o $n_{\text{vars}} > 50$ &
+No se activa &
+Pipeline clásico estándar \\
+\hline
+\end{tabular}
+\caption{Criterio de activación del módulo cuántico en la arquitectura híbrida propuesta.}
+\label{tab:flujo_hibrido}
+\end{table}
+
+\subsection{Arquitectura de referencia}
+
+El prototipo conceptual se articula en cuatro capas:
+
+\begin{enumerate}
+  \item \textbf{Capa de diagnóstico} (\textit{clásica}): Calcula el score $\mathcal{Q}(\mathcal{D})$ o verifica si el problema es formulable como QUBO. Decide si el módulo cuántico es pertinente. Esta capa emplea exclusivamente computación clásica y tiene coste lineal en el tamaño del dataset.
+
+  \item \textbf{Capa de preprocesamiento} (\textit{clásica}): Aplica, si es necesario, el Framework QCR (re-uploading, rotación, reducción dimensional) para maximizar la compatibilidad cuántica de los datos. Para problemas de optimización, construye la matriz QUBO y la traduce a \texttt{SparsePauliOp}.
+
+  \item \textbf{Capa de cómputo cuántico} (\textit{cuántica}): Ejecuta el circuito cuántico — kernel cuántico (para clasificación/regresión) o QAOA/VQE (para optimización) — sobre el simulador Aer o sobre hardware IBM Quantum. Devuelve la energía esperada (optimización) o los valores del kernel (clasificación).
+
+  \item \textbf{Capa de decisión} (\textit{clásica}): Integra el resultado cuántico en el pipeline existente: el optimizador COBYLA actualiza los parámetros del circuito (loop híbrido), o el clasificador SVM toma la predicción final a partir de la matriz de kernel cuántico. El resultado final es siempre una salida clásica (asignación, etiqueta, regresión).
+\end{enumerate}
+
+\begin{figure}[!htbp]
+\centering
+\begin{tikzpicture}[thick, font=\small,
+    capa/.style={rectangle, rounded corners=5pt, very thick,
+                 minimum width=0.92\textwidth, text width=0.88\textwidth,
+                 align=center, inner sep=7pt},
+    arr/.style={->, very thick}]
+
+  % --- Capa 1: Diagnóstico ---
+  \node[capa, draw=gray!60!black, fill=gray!10] (c1) {
+    \textbf{Capa 1 — Diagnóstico} \normalfont\footnotesize(clásica)\\[3pt]
+    {\scriptsize\color{gray!55!black}%
+     Calcula $\mathcal{Q}(\mathcal{D})$ / verifica formulación QUBO
+     \;$\rightarrow$\; ¿activar módulo cuántico?}
+  };
+
+  % --- Capa 2: Preprocesamiento ---
+  \node[capa, draw=orange!55!black, fill=orange!7, below=0.5cm of c1] (c2) {
+    \textbf{Capa 2 — Preprocesamiento} \normalfont\footnotesize(clásica)\\[3pt]
+    {\scriptsize\color{orange!65!black}%
+     Framework QCR: re-uploading / rotación / QUBO $\rightarrow$ \texttt{SparsePauliOp}}
+  };
+
+  % --- Capa 3: Cómputo cuántico ---
+  \node[capa, draw=blue!55!black, fill=blue!7, below=0.5cm of c2] (c3) {
+    \textbf{Capa 3 — Cómputo cuántico} \normalfont\footnotesize(cuántica)\\[3pt]
+    {\scriptsize\color{blue!65!black}%
+     Kernel cuántico (QSVM) \;$|$\; QAOA/VQE \quad Aer / IBM Quantum Hardware}
+  };
+
+  % --- Capa 4: Decisión ---
+  \node[capa, draw=teal!55!black, fill=teal!7, below=0.5cm of c3] (c4) {
+    \textbf{Capa 4 — Decisión} \normalfont\footnotesize(clásica)\\[3pt]
+    {\scriptsize\color{teal!65!black}%
+     SVM / COBYLA actualiza $\boldsymbol{\theta}$
+     \;$\rightarrow$\; salida: etiqueta / asignación / regresión}
+  };
+
+  % --- Flechas ---
+  \draw[arr] (c1.south) -- node[right=5pt, font=\scriptsize]{Sí: continuar} (c2.north);
+  \draw[arr] (c2.south) -- (c3.north);
+  \draw[arr] (c3.south) -- (c4.north);
+  \draw[arr] (c4.south) -- ++(0,-0.55)
+    node[below, font=\scriptsize]{Resultado clásico final};
+
+\end{tikzpicture}
+\caption{Arquitectura de referencia del prototipo híbrido en cuatro capas. Las capas 1, 2 y 4 son puramente clásicas; la capa 3 es el único punto de ejecución cuántica. Esta separación permite desactivar el módulo cuántico sin modificar el resto del pipeline.}
+\label{fig:arquitectura_cuatro_capas}
+\end{figure}
+
+\subsection{Posicionamiento como herramienta complementaria}
+
+Una reflexión importante que emerge del análisis experimental es que la arquitectura híbrida no tiene sentido como sistema aislado, sino como \textbf{herramienta adicional dentro del stack tecnológico existente}. En el caso de SKG Tecnología, el sistema actual de gestión de incidentes y asignación de recursos seguiría operando con sus algoritmos clásicos consolidados. El módulo cuántico se activaría selectivamente para los subproblemas donde ofrece ventaja demostrada: principalmente los de optimización combinatoria de asignación de recursos, donde la formulación QUBO es natural y la ventaja del QAOA frente a heurísticas greedy ya es verificable a escala moderada ($-$30.3\% en coste de asignación con $p=1$).
+
+La adopción de esta arquitectura no requiere reemplazar ningún sistema existente, sino añadir un módulo con interfaz bien definida ---$2p$ parámetros de entrada, 1 escalar de salida--- que puede ser desactivado sin consecuencias si el hardware cuántico no está disponible o si el problema no cumple los criterios de activación de la Tabla~\ref{tab:flujo_hibrido}.

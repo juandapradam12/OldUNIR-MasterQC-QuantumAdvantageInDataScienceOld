@@ -34,6 +34,24 @@ Los datasets de SKG Tecnología utilizados en este trabajo son una fracción de 
     \item \textbf{Predicción de nivel de servicio (clasificación temporal):} usar los datos de tiempos de viaje para predecir el nivel de servicio futuro (verde/amarillo/rojo) como un problema de clasificación con features temporales, evaluando si el kernel cuántico captura patrones de congestión recurrente.
 \end{itemize}
 
+\section{Escalación del patrón híbrido al problema real de asignación de SKG}
+
+El Caso de uso~7 demostró el patrón QAOA-COBYLA sobre una red social de 6 nodos con formulación de conjunto dominante mínimo. El paso natural siguiente es escalar este mismo patrón al \textbf{problema real de asignación de agentes a focos de seguridad} de SKG Tecnología, que ya está parcialmente caracterizado en el Caso~3 y cuyos datos están disponibles en \texttt{agents.csv}.
+
+La instancia real presenta una estructura más compleja que el MDS: los agentes tienen capacidades heterogéneas, los focos tienen niveles de criticidad variables y las distancias son métricas geoespaciales (Haversine). Sin embargo, el mismo pipeline híbrido es aplicable con las siguientes adaptaciones:
+
+\begin{itemize}
+    \item \textbf{Formulación QUBO de asignación ponderada:} la función de coste incorpora la distancia Haversine entre agente y foco, ponderada por criticidad del incidente. La formulación QUBO resultante tiene estructura similar al \textit{Weighted Set Cover}, que es también NP-difícil \citep{garey1979} y se mapea directamente a un Hamiltoniano de Ising.
+
+    \item \textbf{Validación cruzada sobre \texttt{agents.csv}:} el dataset contiene 10--20 agentes y 5--10 zonas geoespaciales activas, lo que equivale a $n \in [50, 200]$ variables binarias en la codificación QUBO estándar (una por par agente-zona). Esta escala es viable en hardware IBM Eagle (127 qubits) con $p = 1$ y representa la primera instancia real de QAOA sobre datos operativos de SKG.
+
+    \item \textbf{Comparativa con el solver clásico existente:} el módulo \texttt{optimizacion-recursos-campo} ya implementa el solver clásico PuLP/SCIP. La comparativa directa QAOA vs ILP sobre los mismos datos reales completaría la evidencia empírica del TFM con un caso de uso operativamente relevante.
+
+    \item \textbf{Protocolo de activación selectiva:} definir un umbral de activación —por ejemplo, número de agentes disponibles, nivel de congestión del sistema o urgencia del incidente— a partir del cual el módulo QAOA se activa en lugar del greedy, implementando así el criterio de la Tabla~\ref{tab:flujo_hibrido} del Capítulo~\ref{cap:metodologia} sobre datos reales.
+\end{itemize}
+
+Esta extensión convertiría el prototipo híbrido descrito en la Sección~\ref{sec:prototipo_hibrido} en una implementación ejecutable sobre infraestructura real, cerrando el ciclo entre la investigación académica y la aplicación operativa en SKG Tecnología.
+
 \section{Mejora de los algoritmos variacionales}
 
 Los experimentos con VQC y QAOA utilizaron configuraciones conservadoras ($p=1$, \texttt{reps=2}) para garantizar la ejecución en simulación. Las siguientes mejoras podrían incrementar la ventaja cuántica:
@@ -63,77 +81,90 @@ Finalmente, desde una perspectiva académica, las siguientes extensiones teóric
     \item \textbf{Análisis de barren plateaus:} estudiar la presencia de gradientes exponencialmente pequeños en los VQC entrenados, evaluando si las configuraciones utilizadas están afectadas por este fenómeno \citep{cerezo2023}.
 \end{itemize}
 
-\section{Identificación de invariantes de estructura cuántica en datos}
+\section[Extensión del score de cuanticidad]{Extensión del score de cuanticidad $\mathcal{Q}(\mathcal{D})$}
 
-Una de las preguntas abiertas más relevantes que emerge de este TFM es la siguiente: \textit{¿cómo saber, a priori y antes de entrenar ningún modelo, si un dataset tiene estructura cuántica suficiente para que un algoritmo cuántico muestre ventaja?}
-
-Esta pregunta surgió directamente de los resultados obtenidos: el QSVM obtuvo ventajas de $+38.3$ pp sobre el dataset cuántico-nativo pero desventajas de $-4.5$ pp y $-3.8$ pp sobre los datasets reales (SKG e Incidentes). La dicotomía es tan clara que apunta a una propiedad intrínseca de los datos, no del algoritmo. El presente TFM no pretende responder esta pregunta con carácter definitivo, pero sí establecer con rigor el problema, sus fundamentos teóricos y los primeros pasos hacia su solución.
-
-\subsection*{Fundamentos teóricos existentes}
-
-Existe literatura previa que establece condiciones \textit{necesarias} para la ventaja cuántica y que sirve como base teórica para los indicadores propuestos:
+El Capítulo~\ref{cap:investigacion_original} propone y valida empíricamente el score compuesto $\mathcal{Q}(\mathcal{D}) = w_1 \Delta A + w_2 \hat{d}_F + w_3 \Delta H$ como predictor del ranking de ventaja QSVM, con $\rho_S = 0.833$ ($p=0.005$) en un barrido sintético de nueve configuraciones. Sin embargo, la validación sobre los tres datasets reales del TFM ($n=3$) constituye evidencia orientativa, no concluyente. Las siguientes extensiones son necesarias para consolidar el resultado:
 
 \begin{itemize}
-    \item \citet{liu2021} demostraron que la ventaja del QSVM existe cuando las etiquetas del dataset se definen mediante una función computacionalmente inaccesible para los kernels clásicos eficientes. Esto implica que el kernel cuántico $K_Q$ debe ser \textbf{no aproximable} por ningún kernel clásico en tiempo polinomial, lo que se traduce en una separación en el espacio de funciones de kernel.
-
-    \item \citet{thanasilp2022} demostraron que, bajo ciertas condiciones de expresividad del embedding, los kernels cuánticos exhiben \textbf{concentración exponencial}: todos los valores del kernel convergen a la misma constante cuando el número de qubits crece, lo que destruye la ventaja. Las cuatro fuentes identificadas son: (i) alta expresividad del mapa de datos, (ii) mediciones globales, (iii) entrelazamiento excesivo, y (iv) ruido. Esto establece que la ventaja cuántica en kernels es un fenómeno frágil que depende críticamente de la geometría del espacio de datos.
-
-    \item \citet{schuld2021kernels} establece que todo modelo de aprendizaje cuántico supervisado es equivalente a un método de kernel, donde el núcleo del kernel es determinado por el mapa de codificación de datos. Esto implica que la pregunta de la ventaja cuántica se reduce a la pregunta de si el kernel cuántico inducido por los datos es más informativo que cualquier kernel clásico.
+    \item \textbf{Validación sobre benchmarks con ventaja garantizada:} evaluar $\mathcal{Q}(\mathcal{D})$ sobre datasets de Bravyi et al. (2020) donde existe separación cuántico-clásica demostrada formalmente, verificando que $\mathcal{Q} > 0$ en todos ellos.
+    \item \textbf{Optimización de los pesos $(w_1, w_2, w_3)$:} los pesos actuales $(0.4, 0.3, 0.3)$ son heurísticos. Una regresión supervisada sobre un corpus de datasets anotados con su ventaja QSVM real permitiría calibrarlos de forma óptima.
+    \item \textbf{Extensión a más feature maps:} validar si el score mantiene su poder predictivo con \texttt{PauliFeatureMap}, \texttt{IQP Encoding} y \texttt{TwoLocal}, o si necesita ser recalibrado por familia de circuito.
+    \item \textbf{Certificación estadística de ventaja:} aplicar los tests estadísticos de \cite{huang2021} para certificar formalmente si los datasets reales de SKG presentan la propiedad de separación cuántica-clásica necesaria para garantizar ventaja, más allá de la estimación empírica del score.
+    \item \textbf{Análisis de barren plateaus:} estudiar la presencia de gradientes exponencialmente pequeños en los VQC entrenados, evaluando si las configuraciones utilizadas están afectadas por este fenómeno \citep{cerezo2023}.
 \end{itemize}
-
-Estos resultados teóricos establecen que la ventaja cuántica está ligada a propiedades medibles de $K_Q$ y de la distribución de datos $\mathcal{D}$. Sin embargo, no proporcionan un test operativo que se pueda calcular a bajo coste antes de entrenar el modelo.
-
-\subsection*{Indicadores candidatos}
-
-Esta línea propone un conjunto de \textbf{proxies medibles} de las condiciones teóricas anteriores:
-
-\begin{itemize}
-    \item \textbf{Distancia cuántica-clásica en el espacio de kernels:} $d_F = \|K_Q - K_{RBF}^*\|_F / n$. Mide directamente la separación entre el espacio de características cuántico y el clásico, conectando con el resultado de \citet{liu2021}: si $d_F \approx 0$, el kernel cuántico no aporta información adicional sobre la clásica.
-
-    \item \textbf{Entropía espectral de $K_Q$:} $H = -\sum_i \lambda_i \log \lambda_i$ (normalizada). Un espectro de valores propios concentrado en un valor dominante indica el fenómeno de concentración descrito por \citet{thanasilp2022}: el kernel es informativo solo cuando la distribución espectral es uniforme.
-
-    \item \textbf{Kernel alignment con las etiquetas:} $A(K_Q, K_y) = \langle K_Q, K_y \rangle_F / (\|K_Q\|_F \|K_y\|_F)$, donde $K_y = yy^T$. Mide directamente la alineación entre la geometría cuántica y la estructura de clases, conectando con la teoría de kernel methods supervisados \citep{schuld2021kernels}.
-
-    \item \textbf{Métricas topológicas (TDA):} análisis de homología persistente \citep{carlsson2009, edelsbrunner2010} para detectar estructura geométrica de alta dimensión no capturables por kernels de grado bajo.
-\end{itemize}
-
-\subsection*{Estado epistemológico: conjetura empírica}
-
-Es fundamental distinguir los niveles de validez científica en esta línea de investigación:
-
-\begin{enumerate}
-    \item \textbf{Lo que se puede hacer en el TFM:} calcular los indicadores sobre los tres datasets utilizados en las POCs y observar si sus valores se ordenan de mayor a menor cuanticidad en el mismo orden que las ventajas QSVM observadas experimentalmente. Esto produce una \textbf{conjetura empírica preliminar} respaldada por tres puntos de datos: evidencia necesaria pero no suficiente.
-
-    \item \textbf{Lo que se necesita para una validación empírica sólida:} un barrido sistemático sobre un conjunto amplio de datasets con grado de cuanticidad controlado (datasets sintéticos paramétricos donde se varía el solapamiento entre $K_Q$ y $K_{RBF}$), verificando que los indicadores varían monótonamente con la ventaja cuántica real. Esto requiere decenas de experimentos con diferentes configuraciones.
-
-    \item \textbf{Lo que se necesita para una demostración teórica:} demostrar formalmente que los indicadores propuestos son \textit{condiciones suficientes} (no solo proxy) de ventaja cuántica, es decir, probar un teorema de la forma: ``si $d_F > \epsilon$ y $H(K_Q) > H(K_{RBF})$, entonces existe $\delta > 0$ tal que el QSVM supera a cualquier SVM clásico en al menos $\delta$ pp de exactitud, con probabilidad alta sobre la distribución de datos $\mathcal{D}$''. Este es el resultado de mayor impacto, y el candidato natural para una publicación científica.
-\end{enumerate}
-
-El paso 1 es realizable en el marco del TFM. Los pasos 2 y 3 constituyen la hoja de ruta de la investigación post-TFM, potencialmente publicable.
 
 \paragraph{Perspectivas de publicación.}
-La combinación de fundamentos teóricos existentes, conjetura empírica validada en los datos del TFM, y una hoja de ruta clara hacia la demostración formal constituye el núcleo de un artículo de investigación. El trabajo podría estructurarse como: (i) revisión de las condiciones teóricas de ventaja cuántica en kernels, (ii) propuesta de los indicadores como proxies operativos, (iii) validación empírica sistemática, y (iv) primeros pasos hacia la demostración formal. Esta perspectiva fue discutida explícitamente con el director del TFM.
+La combinación de la propuesta del score $\mathcal{Q}$, su validación empírica (incluyendo el barrido sintético de $n=9$ con $p=0.005$) y el análisis de sensibilidad dimensional constituye el núcleo de un artículo de investigación. El trabajo podría estructurarse como: (i) revisión de las condiciones teóricas de ventaja cuántica en kernels, (ii) propuesta del score como proxy operativo, (iii) validación empírica sistemática sobre corpus anotado, y (iv) primeros pasos hacia la demostración formal. Esta perspectiva fue discutida explícitamente con el director del TFM.
 
-\section{Mapeo de datos clásicos a espacios con estructura cuántica}
+\section{Extensión del Framework QCR}
 
-La segunda línea de investigación, complementaria a la anterior, aborda la siguiente pregunta: \textit{si un dataset no tiene estructura cuántica nativa, ¿es posible transformarlo a un espacio donde sí la tenga y donde las metodologías cuánticas sean ventajosas?}
-
-Esta idea, inspirada en el concepto de \textit{kernel trick} clásico y en la estrategia de \textit{quantum metric learning} de \citet{lloyd2020}, propone un \textbf{pre-mapeo cuántico} $\phi_{\text{pre}}: \mathcal{X} \rightarrow \mathcal{Z}$ que transforma el espacio de entrada original en un espacio intermedio $\mathcal{Z}$ que presenta las características métricas y topológicas que favorecen la ventaja del kernel cuántico. Las estrategias candidatas incluyen:
+El Framework QCR (Quantum-Compatible Representation) desarrollado en el Capítulo~\ref{cap:investigacion_original} demuestra que $T^* = \text{re-uploading } reps=3$ es la transformación óptima sobre los dos datasets reales del TFM, con una mejora verificada de $+4.2$ pp de ventaja QSVM en Telco Churn. Sin embargo, el framework presenta limitaciones que abren líneas de extensión claras:
 
 \begin{itemize}
-    \item \textbf{Embeddings no lineales supervisados:} aplicar técnicas de reducción de dimensionalidad no lineal (UMAP, t-SNE, autoencoder) entrenadas para maximizar la discrepancia entre $K_Q$ y $K_{RBF}$ en el espacio transformado, creando artificialmente una representación con mayor estructura cuántica.
-
-    \item \textbf{Transformaciones basadas en TDA:} usar los invariantes topológicos del dataset original (número de Betti, diagramas de persistencia) para construir features adicionales que preserven la estructura global del dato de una forma más compatible con el espacio de Hilbert cuántico.
-
-    \item \textbf{Generación de features cuántico-compatibles:} diseñar transformaciones analíticas inspiradas en los mapas de características cuánticos (ZZFeatureMap, PauliFeatureMap) que, aplicadas en el espacio clásico, produzcan una representación con la geometría adecuada para que el kernel cuántico sea informativo.
-
-    \item \textbf{Aprendizaje del mapeo óptimo (quantum-aware representation learning):} formular el aprendizaje del pre-mapeo como un problema de optimización end-to-end donde la función objetivo maximiza la ventaja del clasificador híbrido $\phi_{\text{pre}} + \text{QSVM}$ frente al mejor clasificador clásico puro \citep{huang2021}.
+    \item \textbf{UMAP cuántico con métrica real:} la Estrategia~4 (Q-UMAP) se implementó con MDS como fallback por ausencia de \texttt{umap-learn}. La implementación con UMAP y distancia cuántica genuina ($d_Q = 1 - K_Q$) puede cambiar cualitativamente los resultados, dado que MDS preserva distancias globales mientras UMAP preserva estructura local.
+    \item \textbf{Escalar a 4--8 qubits:} el framework actual opera con $n_q = 2$, forzando compresión PCA que descarta hasta el 69\% de la varianza. Con 4--8 qubits y \texttt{SelectKBest} o selección supervisada, se captura más estructura original. Sin embargo, el análisis de sensibilidad (Tabla~\ref{tab:sensibilidad_dim}) advierte que features muy discriminativas pueden reducir $\mathcal{Q}$: el diseño de la selección de features deberá equilibrar relevancia supervisada y compatibilidad con el feature map.
+    \item \textbf{Validación cruzada estratificada:} los resultados actuales son sobre $n=80$ con una sola partición 70/30. Repetir con $k$-fold estratificado ($k=5$) permitiría medir la varianza de los indicadores y construir intervalos de confianza para $\mathcal{Q}(\mathcal{D})$ y la ventaja QSVM.
+    \item \textbf{Extensión a estrategias de pre-mapeo no lineales:} el framework actual solo incluye transformaciones lineales (rotación) y de feature map (re-uploading). Incorporar \textit{quantum metric learning} \citep{lloyd2020} ---que aprende el mapa de codificación directamente de los datos--- como quinta estrategia completaría el espacio de búsqueda de $T^*$.
+    \item \textbf{Aprendizaje del mapeo óptimo \textit{end-to-end}:} formular la búsqueda de $T^*$ como un problema de optimización donde la función objetivo maximiza $\mathcal{Q}(T(\mathcal{D}))$ con restricción de preservación de información discriminativa (e.g., KL-divergencia acotada entre distribuciones de clases). Esto conecta con \textit{quantum-aware representation learning} \citep{huang2021}.
 \end{itemize}
 
-\paragraph{Principio de invarianza de la información.}
-Un requisito fundamental de este mapeo es que \textbf{no altere la información discriminativa} del dataset original. El objetivo no es crear un dataset artificialmente fácil, sino reorganizar la misma información en un espacio métrico diferente que resulte más compatible con el formalismo cuántico. Esta restricción ---que conecta con los principios de la teoría de la información--- es lo que convierte la transformación en un aporte científico genuino: no es ``trampa'', sino ingeniería de representación orientada al formalismo cuántico.
-
-Esta línea conecta con la investigación emergente en \textit{quantum feature engineering} y plantea un puente metodológico entre los datos empresariales reales ---que raramente presentan estructura cuántica nativa--- y las metodologías cuánticas que ya están disponibles. Su validación experimental podría realizarse sobre los datasets de SKG Tecnología utilizados en este TFM, aplicando los invariantes de la sección anterior como función de pérdida del mapeo.
-
 \paragraph{Perspectivas de publicación.}
-La combinación de ambas líneas ---test de cuanticidad + pre-mapeo cuántico-compatible--- constituye un marco metodológico completo y novedoso. La propuesta de un pipeline \textit{end-to-end} que: (i) evalúe la cuanticidad nativa de un dataset, (ii) si es insuficiente, aplique un pre-mapeo que la incremente, y (iii) ejecute el algoritmo cuántico en el espacio transformado, tiene el perfil de contribución original necesario para una publicación científica. Esta perspectiva fue explícitamente contemplada en la reunión de seguimiento con el director del TFM.
+La combinación del score $\mathcal{Q}(\mathcal{D})$ y el Framework QCR --- validados sobre datos empresariales reales y con código reproducible en Qiskit 2.x --- constituye un pipeline metodológico completo con el perfil de contribución necesario para una publicación en \textit{npj Quantum Information} o \textit{Quantum Machine Intelligence}. Esta perspectiva fue contemplada en la reunión de seguimiento con el director del TFM.
+
+\begin{figure}[!htbp]
+\centering
+\begin{tikzpicture}[font=\small, thick,
+    item/.style={rectangle, rounded corners=4pt, very thick,
+                 text width=3.6cm, align=left, inner sep=5pt,
+                 minimum height=0.75cm},
+    header/.style={rectangle, rounded corners=5pt, very thick,
+                   minimum width=4.0cm, minimum height=0.75cm,
+                   align=center, font=\footnotesize\bfseries}]
+
+  % ── Cabeceras de horizonte ──
+  \node[header, draw=blue!55!black,   fill=blue!10]   (h1) at (0,    0) {Corto plazo\\1--2 años};
+  \node[header, draw=orange!55!black, fill=orange!8]  (h2) at (5.0,  0) {Medio plazo\\2--4 años};
+  \node[header, draw=violet!55!black, fill=violet!8]  (h3) at (10.0, 0) {Largo plazo\\4+ años};
+
+  % Línea divisoria horizontal
+  \draw[gray!35, thick] (-1.8, -0.52) -- (11.8, -0.52);
+
+  % ── Columna corto plazo ──
+  \node[item, draw=blue!40, fill=blue!5,  anchor=north] (b1) at (0,    -0.75)
+    {\textbf{Hardware real IBM}\\\scriptsize Qiskit Runtime + EstimatorV2};
+  \node[item, draw=blue!40, fill=blue!5,  below=0.25cm of b1] (b2)
+    {\textbf{API REST de inferencia}\\\scriptsize microservicio QSVM};
+  \node[item, draw=blue!40, fill=blue!5,  below=0.25cm of b2] (b3)
+    {\textbf{A/B test Q vs Clásico}\\\scriptsize datos SKG en producción};
+  \node[item, draw=blue!40, fill=blue!5,  below=0.25cm of b3] (b4)
+    {\textbf{QAOA $p > 1$}\\\scriptsize SPSA / parameter-shift};
+
+  % ── Columna medio plazo ──
+  \node[item, draw=orange!45, fill=orange!5, anchor=north] (m1) at (5.0,  -0.75)
+    {\textbf{Escalar kernel a 4--8 q}\\\scriptsize SelectKBest + ZZFeatureMap};
+  \node[item, draw=orange!45, fill=orange!5, below=0.25cm of m1] (m2)
+    {\textbf{QAOA en asignación SKG}\\\scriptsize recursos campo + QUBO real};
+  \node[item, draw=orange!45, fill=orange!5, below=0.25cm of m2] (m3)
+    {\textbf{Validación score $\mathcal{Q}$}\\\scriptsize corpus $>$20 datasets};
+  \node[item, draw=orange!45, fill=orange!5, below=0.25cm of m3] (m4)
+    {\textbf{Q-UMAP métrica real}\\\scriptsize distancia cuántica $d_Q$};
+
+  % ── Columna largo plazo ──
+  \node[item, draw=violet!45, fill=violet!5, anchor=north] (l1) at (10.0, -0.75)
+    {\textbf{Corrección de errores}\\\scriptsize hardware tolerante a fallos};
+  \node[item, draw=violet!45, fill=violet!5, below=0.25cm of l1] (l2)
+    {\textbf{QCR generalizado}\\\scriptsize PauliMap + IQP + TwoLocal};
+  \node[item, draw=violet!45, fill=violet!5, below=0.25cm of l2] (l3)
+    {\textbf{Publicación científica}\\\scriptsize npj QI / Quantum ML};
+  \node[item, draw=violet!45, fill=violet!5, below=0.25cm of l3] (l4)
+    {\textbf{QML end-to-end}\\\scriptsize quantum metric learning};
+
+  % Flechas de progresión entre columnas
+  \draw[->, very thick, gray!50] (2.2, -2.5) -- (2.8, -2.5);
+  \draw[->, very thick, gray!50] (7.2, -2.5) -- (7.8, -2.5);
+
+\end{tikzpicture}
+\caption{Roadmap de trabajo futuro organizado en tres horizontes temporales. Las líneas de investigación de corto plazo (azul) son directamente ejecutables con el hardware actual; las de medio plazo (naranja) requieren hardware mejorado o mayor volumen de datos; las de largo plazo (violeta) dependen de avances en hardware tolerante a fallos y consolidación teórica.}
+\label{fig:roadmap_futuro}
+\end{figure}
+

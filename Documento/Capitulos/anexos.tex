@@ -1,3 +1,152 @@
 % !TEX root = ../main.tex
 \chapter{Apéndices}
-Pueden incluirse tantos apéndices como sean necesarios.
+
+% =====================================================================
+\section{Catálogo de notebooks y pruebas de concepto}
+\label{anx:notebooks}
+% =====================================================================
+
+La Tabla~\ref{tab:notebooks} describe los diez notebooks Jupyter que implementan las pruebas de concepto del TFM. Todos se encuentran en el directorio \texttt{POCs/notebooks/} del repositorio y son reproducibles con el entorno especificado en \texttt{POCs/requirements.txt}.
+
+\begin{table}[ht]
+\centering
+\footnotesize
+\setlength{\tabcolsep}{4pt}
+\renewcommand{\arraystretch}{1.2}
+\begin{tabularx}{\linewidth}{@{}c >{\raggedright\arraybackslash}p{4.0cm} >{\raggedright\arraybackslash}X >{\raggedright\arraybackslash}p{2.8cm}@{}}
+\toprule
+\textbf{Nb.} & \textbf{Archivo} & \textbf{Descripción} & \textbf{Datasets} \\
+\midrule
+01 & \nolinkurl{01_clasificacion_quantum_vs_clasico} & QSVM vs Gradient Boosting, RF, SVM-RBF, Regresión Logística & Cuántico-nativo, SKG Incidentes, Telco Churn \\[3pt]
+02 & \nolinkurl{02_optimizacion_QAOA_vs_clasico} & QAOA ($p=1$) vs Greedy, búsqueda local en asignación de agentes & \texttt{agents.csv} (SKG) \\[3pt]
+03 & \nolinkurl{03_regresion_VQC_vs_clasico} & QK-SVR vs XGBoost, RF, SVR-RBF, Ridge & Cuántico-nativo, SKG Corredores, Friedman~\#1 \\[3pt]
+04 & \nolinkurl{04_portafolio_VQE_QAOA_vs_clasico} & VQE/QAOA vs QP clásico en optimización de portafolio & Sintético ($n \leq 6$ activos) \\[3pt]
+05 & \nolinkurl{05_tsp_QUBO_vs_clasico} & SA-QUBO vs Nearest Neighbor, 2-opt en TSP & Sintético ($n \leq 15$ ciudades) \\[3pt]
+06 & \nolinkurl{06_quantum_kernel_advantage} & Análisis del umbral de ventaja del kernel cuántico & Cuántico-nativo, SKG, Telco ($n \in [50,200]$) \\[3pt]
+07 & \nolinkurl{07_resumen_ventaja_cuantica} & Síntesis visual de resultados comparativos & Todos \\[3pt]
+08 & \nolinkurl{08_test_cuanticidad_datasets} & Score $\mathcal{Q}(D)$: kernel alignment, Frobenius, entropía espectral & Cuántico-nativo, SKG, Telco \\[3pt]
+09 & \nolinkurl{09_mapeo_cuantico_compatible} & Framework QCR: cuatro estrategias de pre-mapeo & Cuántico-nativo, SKG, Telco \\[3pt]
+10 & \nolinkurl{10_dominante_minimo_QAOA_vs_clasico} & Paradigma híbrido QAOA-COBYLA en MDS (Caso~7) & Red social sintética, grafos Erdős-Rényi \\
+\bottomrule
+\end{tabularx}
+\caption{Catálogo de notebooks de pruebas de concepto. Todos ejecutables con Qiskit~2.4.1, scikit-learn~1.8.0 y Python~3.14.}
+\label{tab:notebooks}
+\end{table}
+
+% =====================================================================
+\section{Entorno de software y dependencias}
+\label{anx:entorno}
+% =====================================================================
+
+Los experimentos se ejecutaron en el siguiente entorno:
+
+\begin{itemize}
+    \item \textbf{Sistema operativo}: macOS (Apple M-series, 16~GB RAM)
+    \item \textbf{Python}: 3.14
+    \item \textbf{Framework cuántico}: Qiskit~2.4.1 + \texttt{qiskit-aer}~0.15
+    \item \textbf{Aprendizaje automático clásico}: scikit-learn~1.8.0, XGBoost~3.2.0
+    \item \textbf{Optimización clásica}: SciPy~1.15, PuLP~2.9 (solver CBC)
+    \item \textbf{Análisis de datos}: NumPy~2.2, pandas~2.3, matplotlib~3.10
+\end{itemize}
+
+El archivo \texttt{POCs/requirements.txt} contiene las versiones exactas de todas las dependencias necesarias para reproducir los experimentos.
+
+% =====================================================================
+\section{Datasets utilizados}
+\label{anx:datasets}
+% =====================================================================
+
+\begin{table}[ht]
+\centering
+\footnotesize
+\setlength{\tabcolsep}{5pt}
+\renewcommand{\arraystretch}{1.2}
+\begin{tabularx}{\linewidth}{@{}>{\raggedright\arraybackslash}p{3.2cm} c >{\raggedright\arraybackslash}p{2.4cm} >{\raggedright\arraybackslash}X@{}}
+\toprule
+\textbf{Dataset} & \textbf{Registros} & \textbf{Origen} & \textbf{Uso en el TFM} \\
+\midrule
+Cuántico-nativo (Liu 2021) & 320--500 & Sintético & Casos 1, 2, 3, 6, 8, 9 (benchmark de ventaja cuántica) \\[3pt]
+SKG — Incidentes NUSE Bogotá & 27.326 & SKG Tecnología & Casos 1, 6, 8, 9 (clasificación de gravedad) \\[3pt]
+SKG — Tiempos de viaje & 81.121 & SKG Tecnología & Caso 3 (regresión de velocidad media) \\[3pt]
+SKG — Agentes en campo & $\sim$200 & SKG Tecnología & Caso 2 (asignación QAOA) \\[3pt]
+Telco Customer Churn & 7.043 & IBM / Kaggle & Casos 1, 6, 8, 9 (benchmark clasificación) \\[3pt]
+Friedman~\#1 & 500 & Sintético & Caso 3 (benchmark regresión no lineal) \\[3pt]
+Red social (MDS) & 6 nodos & Sintético & Caso 7 (paradigma híbrido) \\
+\bottomrule
+\end{tabularx}
+\caption{Datasets empleados en el TFM. Los datos de SKG Tecnología son confidenciales y han sido anonimizados para su uso en este trabajo.}
+\label{tab:datasets}
+\end{table}
+
+% =====================================================================
+\section{Repositorio del código fuente}
+\label{anx:repositorio}
+% =====================================================================
+
+El código fuente completo del TFM ---incluyendo todos los notebooks de pruebas de concepto, los módulos de utilidades y los datos de entrada/salida generados--- está disponible públicamente en GitHub:
+
+\begin{center}
+\large\url{https://github.com/juandapradam12/TFM_ComputacionCuantica}
+\end{center}
+
+La estructura principal del repositorio es la siguiente:
+
+\begin{itemize}
+    \item \texttt{POCs/notebooks/} --- Diez notebooks Jupyter de pruebas de concepto (Tabla~\ref{tab:notebooks})
+    \item \texttt{POCs/data/input/} --- Datasets anonimizados de SKG Tecnología
+    \item \texttt{POCs/data/output/figures/} --- Figuras generadas por los notebooks
+    \item \texttt{POCs/requirements.txt} --- Dependencias exactas del entorno (Sección~\ref{anx:entorno})
+    \item \texttt{Documento/} --- Fuente \LaTeX{} completa de este TFM
+    \item \texttt{Datos/} --- Archivos CSV originales (\texttt{agents.csv}, \texttt{incidents\_movility.csv}, etc.)
+\end{itemize}
+
+Para reproducir cualquier experimento: clonar el repositorio, crear un entorno virtual con \texttt{pip install -r POCs/requirements.txt} y ejecutar el notebook correspondiente desde \texttt{POCs/notebooks/}.
+
+% =====================================================================
+\section{Figuras complementarias: Notebook~06 — Ventaja del kernel cuántico}
+\label{anx:figuras_nb06}
+% =====================================================================
+
+Las figuras del circuito ZZFeatureMap (Figura~\ref{fig:zzfeaturemap_circuit}) y de las fronteras de decisión (Figura~\ref{fig:kernel_boundaries}) se encuentran en el cuerpo del documento (Capítulos~\ref{cap:metodologia} y~5). Las siguientes figuras complementan esos resultados con la comparativa multi-dataset y la escalabilidad del cómputo del kernel.
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.95\textwidth]{../POCs/data/output/figures/06_quantum_kernel_3datasets_comparativa.png}
+\caption{Comparativa de exactitud del QSVM frente a cuatro clasificadores clásicos (Gradient Boosting, Random Forest, SVM-RBF, Regresión Logística) en los tres datasets del TFM. La ventaja de $+38.3$~pp sobre el dataset cuántico-nativo contrasta con la desventaja de $-4.5$~pp sobre SKG Incidentes y $-3.8$~pp sobre Telco Churn (Notebook~06).}
+\label{fig:quantum_kernel_3ds}
+\end{figure}
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.90\textwidth]{../POCs/data/output/figures/06_quantum_kernel_escalabilidad.png}
+\caption{Escalabilidad del kernel cuántico: tiempo de cómputo de la matriz $K_Q$ (simulación exacta) en función de $n$. El coste cuadrático $O(n^2)$ limita la viabilidad de la simulación a $n < 200$; en hardware real el coste es $O(n \cdot d)$ con $d$ la profundidad del circuito (Notebook~06).}
+\label{fig:kernel_escalabilidad}
+\end{figure}
+
+% =====================================================================
+\section{Figuras complementarias: Notebook~07 — Síntesis visual de resultados}
+\label{anx:figuras_nb07}
+% =====================================================================
+
+El dashboard comparativo (Figura~\ref{fig:dashboard_sintesis}), el mapa de calor (Figura~\ref{fig:heatmap_ventaja_body}) y el diagrama radar (Figura~\ref{fig:radar_ventaja_body}) se encuentran en el cuerpo del documento (Capítulo~5 y Capítulo~7). La siguiente figura complementa ese análisis con la comparativa de complejidad computacional teórica.
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.90\textwidth]{../POCs/data/output/figures/07_complejidad_cuantico_vs_clasico.png}
+\caption{Comparativa de complejidad computacional teórica de los algoritmos cuánticos y sus contrapartes clásicas en cada caso de uso. Las barras muestran el orden de crecimiento ($O(\cdot)$) en función del tamaño del problema $n$. En los casos de optimización combinatoria (Casos~4, 5 y~7), la brecha de complejidad teórica justifica la exploración cuántica a escala (Notebook~07).}
+\label{fig:complejidad_cuantico_clasico}
+\end{figure}
+
+% =====================================================================
+\section{Figura complementaria: Notebook~09 — Barrido de rotaciones QCR}
+\label{anx:figuras_nb0809}
+% =====================================================================
+
+El barrido sintético de cuanticidad (Figura~\ref{fig:barrido_sintetico_alpha}) y la correlación de indicadores (Figura~\ref{fig:correlacion_indicadores_body}) se encuentran en el Capítulo~\ref{cap:investigacion_original}. La siguiente figura complementa el análisis de la Estrategia~2 del Framework QCR.
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.90\textwidth]{../POCs/data/output/figures/09_barrido_rotaciones.png}
+\caption{Barrido de la estrategia de rotación hacia máxima divergencia cuántico-clásica (Estrategia~2 del Framework QCR): variación de $d_F$, $\mathcal{Q}(\mathcal{D})$ y ventaja QSVM en función del ángulo de rotación $\theta \in [0, \pi/2]$ aplicado a SKG Incidentes y Telco Churn. La mejora de $d_F$ no se traduce consistentemente en ventaja empírica, confirmando la disociación entre capacidad teórica del kernel y rendimiento bajo muestras finitas (Notebook~09).}
+\label{fig:barrido_rotaciones}
+\end{figure}

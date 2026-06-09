@@ -49,6 +49,13 @@ El mecanismo que explica esta ventaja es la alineación entre la función de ker
   \item El coste cuadrático $O(n^2)$ del kernel limita la escala evaluable; en producción, $n > 1{,}000$ sería computacionalmente inviable en simulación.
 \end{itemize}
 
+\begin{figure}[ht]
+\centering
+\includegraphics[width=0.95\textwidth]{../POCs/data/output/figures/06_quantum_kernel_boundaries.png}
+\caption{Fronteras de decisión del QSVM (izquierda) frente al mejor clasificador clásico, SVM-RBF (derecha), sobre el dataset cuántico-nativo proyectado en 2D. El QSVM genera una frontera curvada de alta complejidad que separa correctamente las clases (exactitud 91.7\%); el SVM-RBF produce una frontera lineal-suave que no captura la geometría del espacio de Hilbert (53.3\%). Esta diferencia visual ilustra por qué la ventaja es estructural y no estadística.}
+\label{fig:kernel_boundaries}
+\end{figure}
+
 \subsection{Dataset SKG Tecnología: resultado esperado en era NISQ}
 
 Sobre el dataset real de incidentes de movilidad de Bogotá, el QSVM obtuvo exactitud del \textbf{55.0\%}, inferior al \textbf{59.5\%} del mejor clasificador clásico (SVM-RBF): \textbf{desventaja de $-$4.5 pp}. Este resultado es el esperado en la era NISQ con datos reales: los incidentes de movilidad no presentan la estructura cuántica que el kernel explota.
@@ -63,6 +70,13 @@ La pequeña brecha de rendimiento ($-$4.5 pp) sugiere que el QSVM no es inferior
 Sobre el dataset de referencia, el QSVM obtuvo un \textbf{76.0\%} de exactitud frente al \textbf{79.8\%} del Gradient Boosting: \textbf{desventaja de $-$3.8 pp}. El hecho de que incluso la Regresión Logística (78.2\%) supere al QSVM confirma que, en ausencia de estructura cuántica, los clasificadores clásicos son superiores independientemente de su complejidad.
 
 Este resultado valida metodológicamente el diseño experimental: el QSVM no gana por default, sino solo cuando existe la alineación cuántica que la teoría predice.
+
+\begin{figure}[!htbp]
+\centering
+\includegraphics[width=0.95\textwidth]{../POCs/data/output/figures/06_learning_curves_quantum_advantage.png}
+\caption{Curvas de aprendizaje del QSVM y del mejor clasificador clásico (SVM-RBF) en función del tamaño de entrenamiento $n \in [30, 180]$, para los tres datasets del Caso~1. La brecha de exactitud sobre el dataset cuántico-nativo es robusta en todo el rango evaluado y no converge a cero al aumentar $n$, lo que evidencia que la limitación es estructural ---no estadística--- para los clasificadores clásicos en ausencia del espacio de Hilbert correcto.}
+\label{fig:learning_curves}
+\end{figure}
 
 % =====================================================================
 \section{Caso de uso 2: Regresión con kernel cuántico}
@@ -112,6 +126,13 @@ El único caso de ventaja cuántica en regresión se da sobre el dataset Friedma
 
 Es importante matizar que la ventaja se mide frente a SVR con kernel precomputado; los métodos de árboles siguen siendo superiores en $R^2$ absoluto. Sin embargo, el resultado demuestra que el kernel cuántico puede tener ventaja específica sobre los kernels clásicos en problemas con funciones trigonométricas no separables.
 
+\begin{figure}[!htbp]
+\centering
+\includegraphics[width=0.96\textwidth]{../POCs/data/output/figures/03_regresion_3datasets.png}
+\caption{Comparativa de regresión cuántica (QK-SVR) vs.\ clásica en los tres datasets del TFM. Panel izquierdo: $R^2$ absoluto por modelo. Panel derecho: ventaja neta $\Delta R^2$. El kernel cuántico solo supera al mejor clásico en el dataset cuántico-nativo (Liu 2021), donde la función objetivo $f(\mathbf{x})=\langle ZZ\rangle$ es precisamente el kernel del ZZFeatureMap; en los datasets reales los modelos clásicos (Random Forest, Gradient Boosting) son superiores.}
+\label{fig:regresion_3datasets}
+\end{figure}
+
 % =====================================================================
 \section{Caso de uso 3: Optimización combinatoria (QAOA)}
 % =====================================================================
@@ -123,6 +144,13 @@ El mecanismo de ventaja del QAOA reside en la exploración del espacio de soluci
 
 \paragraph{Limitaciones y perspectivas.}
 Con $p=1$, el QAOA es una aproximación grosera; la calidad de la solución mejora con $p$ creciente, pero a costa de mayor profundidad de circuito y mayor susceptibilidad al ruido. Para instancias con $n > 50$ variables binarias, el enfoque actual no escala en hardware NISQ.
+
+\begin{figure}[!htbp]
+\centering
+\includegraphics[width=0.96\textwidth]{../POCs/data/output/figures/10_qaoa_convergencia.png}
+\caption{Convergencia del loop híbrido QAOA–COBYLA sobre el problema MDS de 6 nodos ($A=1$, $B=2$), con 20 reinicios aleatorios. Panel izquierdo: energía final $\langle H_C\rangle_{\boldsymbol{\theta}^*}$ por reinicio (ordenada), mostrando cómo profundidades mayores ($p=3$) convergen consistentemente a energías más bajas. Panel derecho: trayectoria de convergencia del mejor reinicio por profundidad; $p=3$ alcanza la energía óptima $E^* \approx -4.5$ en $\sim$240 iteraciones COBYLA.}
+\label{fig:qaoa_convergencia}
+\end{figure}
 
 % =====================================================================
 \section{Caso de uso 4: Optimización de portafolio (VQE/QAOA)}
@@ -148,6 +176,53 @@ El análisis específico del umbral de ventaja del kernel cuántico (Notebook~06
 
 En el dataset cuántico-nativo ($n=150$), el QSVC obtuvo \textbf{+8.9 pp} de ventaja (68.9\% vs 60.0\% SVM-RBF), confirmando la superioridad estructural del kernel cuántico cuando los datos tienen origen cuántico. Sobre el dataset SKG (Incidentes Bogotá), el clasificador clásico fue superior: QSVC 54.0\% vs 60.7\% clásico ($-6.7$ pp), coherente con la ausencia de estructura cuántica en datos de movilidad urbana. La comparativa de los tres datasets en el Notebook~06 consolida la hipótesis de alineación estructural: la ventaja cuántica aparece únicamente cuando la geometría del espacio de características del ZZFeatureMap se alinea con la distribución del problema.
 
+\begin{figure}[!htbp]
+\centering
+\includegraphics[width=0.92\textwidth]{../POCs/data/output/figures/07_kernel_advantage_detalle.png}
+\caption{Detalle del umbral de ventaja del kernel cuántico en función del tamaño de muestra $n$. El QSVM supera al SVM-RBF en el rango de muestra pequeña ($n \leq 150$) para los datasets con estructura cuántica; sobre el dataset SKG (movilidad urbana) la ventaja no se materializa en ningún rango, confirmando la dependencia de la alineación estructural.}
+\label{fig:kernel_advantage_detalle}
+\end{figure}
+
+% =====================================================================
+\section{Caso de uso 7: Conjunto dominante mínimo (paradigma híbrido)}
+% =====================================================================
+
+\subsection{Naturaleza del problema y perspectiva de evaluación}
+
+El Caso de uso~7 tiene una naturaleza fundamentalmente diferente a los anteriores: el objetivo no es superar métricamente a un clasificador o regresor clásico equivalente, sino demostrar la viabilidad del \textbf{paradigma híbrido cuántico-clásico} aplicado a un problema NP-difícil con formulación QUBO natural. El \textit{Minimum Dominating Set} (MDS) pertenece a la clase NP-completo \citep{garey1979}: no existe algoritmo clásico polinómico conocido que garantice la solución óptima en el caso general. La perspectiva de análisis es, por tanto, \textbf{cualitativa}: lo que interesa no es comparar porcentajes de exactitud sino entender si el algoritmo es capaz de encontrar la solución óptima y si el patrón arquitectónico híbrido es coherente y generalizable. Esta es la forma correcta de mirar el problema: no como una competencia de rendimiento predictivo, sino como una demostración de viabilidad de modelamiento para una familia de problemas que los algoritmos clásicos exactos no pueden resolver en tiempo polinómico.
+
+\subsection{Perspectiva de análisis: viabilidad de modelamiento en problemas NP-difíciles}
+
+La principal aportación del Caso~7 es de \textbf{modelamiento}: cualquier problema formulable como QUBO —cobertura de conjuntos, asignación, rutas, scheduling— puede ser resuelto directamente con el mismo loop híbrido QAOA-COBYLA, sin cambiar la arquitectura del algoritmo. Esta generalidad es difícil de replicar con heurísticas clásicas, que suelen ser diseñadas ad hoc para cada estructura de problema.
+
+Desde este punto de vista, la pregunta relevante no es ``¿supera el QAOA al Greedy en este grafo concreto?'' —lo cual depende de la instancia y es incidental—, sino ``¿puede el patrón híbrido resolver correctamente un problema para el cual no existe solución eficiente clásica garantizada?''. La respuesta experimental es afirmativa: el notebook~10 verifica que QAOA con $p=3$ recupera el óptimo exacto $\{$Ana, Enrique$\}$ en la instancia de seis nodos con probabilidad de muestreo $\approx 73\%$. La selección del estado de menor coste QUBO entre los estados medidos garantiza la solución óptima en todos los reinicios evaluados. El algoritmo no solo aproxima, sino que \textit{concentra la masa de probabilidad en el óptimo global}, lo que es la garantía de calidad característica del QAOA en el régimen de pocos qubits y baja profundidad.
+
+\subsection{Complejidad computacional y análisis de escalabilidad}
+
+Aunque la evaluación es cualitativa, el análisis de tiempos aporta una perspectiva crítica sobre el horizonte de aplicabilidad. La Tabla~\ref{tab:complejidad_mds} compara las clases de complejidad de los métodos evaluados.
+
+\begin{table}[ht]
+\centering
+\small
+\begin{tabular}{lllp{4.5cm}}
+\hline
+\textbf{Método} & \textbf{Complejidad tiempo} & \textbf{Garantía solución} & \textbf{Limitante principal} \\
+\hline
+Fuerza bruta       & $O(2^n)$         & Óptima global    & Inviable para $n > 30$ \\
+ILP exacto (PuLP)  & $O(2^n)$ peor caso & Óptima global  & Práctico hasta $n \sim 100$ con CBC \\
+Greedy cobertura   & $O(n^2)$         & Aproximada ($\ln n + 1$) & No garantiza óptimo \\
+QAOA (simulación)  & $O(2^n)$ en sim. & Probabilística   & Simulación clásica inviable $n > 30$ \\
+QAOA (hardware)    & $O(\text{poly})$ & Probabilística   & Hardware NISQ: $n \lesssim 60$ qubits \\
+\hline
+\end{tabular}
+\caption{Complejidad de los métodos evaluados para el MDS. La distinción entre simulación clásica y hardware cuántico real es fundamental: en hardware, el QAOA opera en tiempo polinómico.}
+\label{tab:complejidad_mds}
+\end{table}
+
+La diferencia conceptual más importante es que \textbf{la complejidad del QAOA en hardware cuántico real es polinómica en el número de qubits}, mientras que la fuerza bruta y el ILP son exponenciales. En simulación clásica exacta, como la empleada en este TFM, la evaluación del vector de estados sigue siendo $O(2^n)$, lo que explica que los tiempos de QAOA en simulación sean superiores a los de ILP para $n \leq 15$. Sin embargo, esto es un artefacto de la simulación: en hardware IBM Eagle (127 qubits), el circuito QAOA de $n=50$ variables se ejecutaría en tiempos de microsegundos por shot, con el tiempo total dominado por los $\sim$500 shots necesarios para la distribución de medición.
+
+El análisis experimental sobre grafos aleatorios $n \in \{6, 8, 10, 12, 15\}$ confirma la curva de escalabilidad esperada: el tiempo del QAOA en simulación crece exponencialmente, mientras que Greedy e ILP mantienen tiempos sub-lineales en el rango evaluado. Esta evidencia delimita con precisión el régimen donde el QAOA cuántico aporta valor: problemas de escala $n \gtrsim 50$ donde ILP y fuerza bruta son inviables pero el hardware de 127 qubits puede operar.
+
 % =====================================================================
 \section{Síntesis comparativa y discusión general}
 % =====================================================================
@@ -167,11 +242,120 @@ La Tabla~\ref{tab:sintesis} sintetiza los resultados principales del estudio com
 4 & VQE/QAOA & \multicolumn{2}{c}{Óptimo ($n \leq 6$)} & --- \\
 5 & SA-QUBO & \multicolumn{2}{c}{Viable ($n \leq 12$)} & --- \\
 6 & QSVM (umbral) & \textbf{+8.9 pp} ($n=150$) & $-6.7$ pp & $+6.7$ pp ($n=50$) \\
+7 & QAOA MDS ($p=3$) & \multicolumn{2}{c}{\textbf{Óptimo; $P(\text{opt})\approx 73\%$; patrón híbrido}} & NP-hard \\
 \hline
 \end{tabular}
 \caption{Síntesis de resultados cuántico vs clásico por caso de uso y dataset. Las celdas en negrita indican ventaja cuántica demostrada.}
 \label{tab:sintesis}
 \end{table}
+
+\begin{figure}[!htbp]
+\centering
+\begin{tikzpicture}[font=\small, thick,
+    bg/.style={rectangle, rounded corners=3pt, minimum width=1.3cm, minimum height=0.7cm, align=center},
+    verde/.style={bg, fill=green!22, draw=green!55!black},
+    amarillo/.style={bg, fill=yellow!30, draw=yellow!65!black},
+    rojo/.style={bg, fill=red!18, draw=red!50!black},
+    header/.style={font=\bfseries\footnotesize, align=center}]
+
+  % Columnas: x = 0(CU), 2.2(Algoritmo), 5.5(Resultado), 8.2(Escala NISQ), 10.9(Valor SKG)
+  \node[header] at (0,    0) {CU};
+  \node[header] at (2.4,  0) {Algoritmo cuántico};
+  \node[header] at (5.6,  0) {Resultado\\ Q vs C};
+  \node[header] at (8.3,  0) {Escalabilidad\\ NISQ};
+  \node[header] at (11.0, 0) {Valor\\ para SKG};
+
+  \draw[gray!40, thick] (-0.5, -0.42) -- (12.3, -0.42);
+
+  % Definición de filas: {CU, Algoritmo, col_resultado, col_nisq, col_skg}
+  % col: g=verde, y=amarillo, r=rojo
+  % Textos de las celdas de color
+  \def\rowdata{
+    {1, QSVM (kernel), g/Ventaja, y/Moderada, y/Moderado},
+    {2, QK-SVR (reg.), r/Desventaja, y/Moderada, r/Bajo},
+    {3, QAOA ($p{=}1$), g/Ventaja, y/Moderada, g/Alto},
+    {4, VQE / QAOA, y/Empate, y/Moderada, y/Moderado},
+    {5, SA-QUBO, y/Viable, r/Limitada, r/Bajo},
+    {6, QSVM (umbral), g/Condicional, y/Moderada, y/Moderado},
+    {7, QAOA MDS, g/Ventaja, y/Moderada, g/Alto}
+  }
+
+  % Fila 1 – CU1
+  \node[font=\footnotesize] at (0,    -1.0) {1};
+  \node[font=\footnotesize, align=left] at (2.4, -1.0) {QSVM};
+  \node[verde]    at (5.6,  -1.0) {\scriptsize Ventaja};
+  \node[amarillo] at (8.3,  -1.0) {\scriptsize Moderada};
+  \node[amarillo] at (11.0, -1.0) {\scriptsize Moderado};
+
+  % Fila 2 – CU2
+  \node[font=\footnotesize] at (0,    -1.9) {2};
+  \node[font=\footnotesize, align=left] at (2.4, -1.9) {QK-SVR};
+  \node[rojo]     at (5.6,  -1.9) {\scriptsize Desventaja};
+  \node[amarillo] at (8.3,  -1.9) {\scriptsize Moderada};
+  \node[rojo]     at (11.0, -1.9) {\scriptsize Bajo};
+
+  % Fila 3 – CU3
+  \node[font=\footnotesize] at (0,    -2.8) {3};
+  \node[font=\footnotesize, align=left] at (2.4, -2.8) {QAOA ($p{=}1$)};
+  \node[verde]    at (5.6,  -2.8) {\scriptsize Ventaja};
+  \node[amarillo] at (8.3,  -2.8) {\scriptsize Moderada};
+  \node[verde]    at (11.0, -2.8) {\scriptsize Alto};
+
+  % Fila 4 – CU4
+  \node[font=\footnotesize] at (0,    -3.7) {4};
+  \node[font=\footnotesize, align=left] at (2.4, -3.7) {VQE / QAOA};
+  \node[amarillo] at (5.6,  -3.7) {\scriptsize Empate};
+  \node[amarillo] at (8.3,  -3.7) {\scriptsize Moderada};
+  \node[amarillo] at (11.0, -3.7) {\scriptsize Moderado};
+
+  % Fila 5 – CU5
+  \node[font=\footnotesize] at (0,    -4.6) {5};
+  \node[font=\footnotesize, align=left] at (2.4, -4.6) {SA-QUBO (TSP)};
+  \node[amarillo] at (5.6,  -4.6) {\scriptsize Viable};
+  \node[rojo]     at (8.3,  -4.6) {\scriptsize Limitada};
+  \node[rojo]     at (11.0, -4.6) {\scriptsize Bajo};
+
+  % Fila 6 – CU6
+  \node[font=\footnotesize] at (0,    -5.5) {6};
+  \node[font=\footnotesize, align=left] at (2.4, -5.5) {QSVM (umbral)};
+  \node[verde]    at (5.6,  -5.5) {\scriptsize Condicional};
+  \node[amarillo] at (8.3,  -5.5) {\scriptsize Moderada};
+  \node[amarillo] at (11.0, -5.5) {\scriptsize Moderado};
+
+  % Fila 7 – CU7
+  \node[font=\footnotesize] at (0,    -6.4) {7};
+  \node[font=\footnotesize, align=left] at (2.4, -6.4) {QAOA MDS};
+  \node[verde]    at (5.6,  -6.4) {\scriptsize Ventaja};
+  \node[amarillo] at (8.3,  -6.4) {\scriptsize Moderada};
+  \node[verde]    at (11.0, -6.4) {\scriptsize Alto};
+
+  % Leyenda
+  \node[verde,    minimum width=0.9cm] (lg) at (2.0, -7.5) {};
+  \node[right=4pt, font=\scriptsize] at (lg.east) {Favorable / Ventaja cuántica};
+  \node[amarillo, minimum width=0.9cm] (ly) at (6.5, -7.5) {};
+  \node[right=4pt, font=\scriptsize] at (ly.east) {Moderado / Empate};
+  \node[rojo,     minimum width=0.9cm] (lr) at (10.2, -7.5) {};
+  \node[right=4pt, font=\scriptsize] at (lr.east) {Desfavorable};
+
+\end{tikzpicture}
+\caption{Semáforo de resultados por caso de uso. Cada celda resume el veredicto en tres dimensiones: resultado empírico frente al mejor clásico, escalabilidad con el hardware NISQ actual, y valor potencial para SKG Tecnología. Verde = favorable; amarillo = moderado/condicional; rojo = desfavorable.}
+\label{fig:semaforo_resultados}
+\end{figure}
+
+\clearpage
+\begin{figure}[!htbp]
+\centering
+\includegraphics[width=0.97\textwidth]{../POCs/data/output/figures/07_dashboard_ventaja_cuantica.png}
+\caption{Dashboard comparativo de los siete casos de uso del TFM: algoritmos cuánticos (azul) frente al mejor clásico (naranja) en cada métrica principal. Fondo verde indica ventaja cuántica; fondo rojo, desventaja. El patrón emergente es claro: la ventaja es consistente en optimización combinatoria y en datos con estructura cuántica nativa, y está ausente en datos reales sin esa estructura.}
+\label{fig:dashboard_sintesis}
+\end{figure}
+
+\begin{figure}[!htbp]
+\centering
+\includegraphics[width=0.90\textwidth]{../POCs/data/output/figures/07_heatmap_ventaja_por_dominio.png}
+\caption{Mapa de calor de la ventaja cuántica relativa (diferencia porcentual respecto al mejor clásico) por caso de uso y por dataset. El patrón de ventaja está fuertemente correlacionado con la presencia de estructura cuántica nativa en los datos: las celdas con mayor intensidad corresponden al dataset cuántico-nativo (Casos~1 y~6) y a los algoritmos de optimización combinatoria (Casos~3, 4 y~7).}
+\label{fig:heatmap_ventaja_body}
+\end{figure}
 
 \subsection{Patrones transversales}
 
@@ -189,6 +373,9 @@ Los resultados evidencian tres patrones transversales que son coherentes con el 
 
 Desde la perspectiva de SKG Tecnología, los resultados sugieren que la integración de algoritmos cuánticos en los sistemas de gestión de movilidad urbana requiere dos condiciones previas: (i) hardware cuántico con mayor número de qubits lógicos y menor tasa de error, para operar sobre más features sin reducción dimensional, y (ii) ingeniería de features específica que alinee la representación de los datos con las estructuras geométricas accesibles por los kernels cuánticos. En el corto plazo (horizonte 2--5 años), el valor más realista de la computación cuántica para SKG reside en los algoritmos de optimización combinatoria (QAOA, VQE) para problemas de asignación de recursos, donde la ventaja ya es demostrable a escala moderada con el hardware actual.
 
+El hilo conductor de los siete casos de uso es precisamente la demostración de que los algoritmos cuánticos no necesitan reemplazar a los clásicos para ser útiles: basta con que resuelvan de forma más eficaz la parte del problema que es intratable para la computación clásica. El Caso~7 lo ilustra de forma paradigmática: aplicar QAOA al conjunto dominante mínimo ---un problema NP-difícil--- y conectarlo con un optimizador clásico COBYLA a través de una interfaz mínima es exactamente el patrón con el que la computación cuántica puede integrarse en entornos productivos reales. El prototipo de arquitectura híbrida desarrollado en la Sección~\ref{sec:prototipo_hibrido} del Capítulo~\ref{cap:metodologia} formaliza este patrón y define los criterios de activación del módulo cuántico según el tipo de problema.
+
 \subsection{Resultados adicionales y visualización}
 
-El análisis realizado en este trabajo puede extenderse en varias direcciones que permitirían enriquecer la presentación de resultados. En primer lugar, sería posible incorporar curvas de aprendizaje que muestren la evolución de la exactitud (o del $R^2$) en función del tamaño del conjunto de entrenamiento para cada algoritmo cuántico y su contraparte clásica, facilitando la comparación visual del comportamiento de escalabilidad. En segundo lugar, la generación de mapas de calor de las matrices de kernel cuántico permitiría ilustrar de forma intuitiva cómo el \texttt{ZZFeatureMap} estructura el espacio de Hilbert en los diferentes datasets. En tercer lugar, para los casos de optimización (QAOA, VQE), la representación gráfica de la convergencia de la función de coste en función del número de iteraciones del optimizador variacional ofrecería una visión más completa del proceso de búsqueda. Por último, un diagrama de radar (\textit{radar chart}) con las métricas normalizadas de cada caso de uso permitiría sintetizar visualmente el perfil de rendimiento cuántico vs. clásico en un único gráfico de referencia. Estas visualizaciones complementarias se proponen como trabajo futuro inmediato, condicionadas a la disponibilidad de los artefactos de experimentación en los notebooks de las POCs.
+El análisis de escalabilidad del caso de uso~1 se sintetiza visualmente en la Figura~\ref{fig:escala_clasificacion}, que muestra la ventaja cuántica robusta en todo el rango $n \in [30, 180]$ evaluado. Las matrices de kernel de los tres datasets principales (Figura~\ref{fig:kernel_heatmaps}) revelan que la estructura de bloques ---presente en el dataset cuántico-nativo y en SKG Incidentes, ausente en Telco Churn--- es el correlato visual de la ventaja cuántica: un kernel cuántico con buena separación de bloques por clase es el indicador más directo de compatibilidad cuántica. Estos artefactos visuales prefiguran los indicadores formales desarrollados en el Capítulo~\ref{cap:investigacion_original}, donde la distancia de Frobenius $d_F$ y la entropía espectral $H(K_Q)$ cuantifican precisamente esta propiedad geométrica.
+

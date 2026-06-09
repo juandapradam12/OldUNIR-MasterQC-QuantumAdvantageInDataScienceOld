@@ -123,30 +123,83 @@ Se implementaron los cinco indicadores anteriores sobre los tres datasets del TF
 \hline
 \textbf{Dataset} & $A(K_Q, K_y)$ & $A(K_{RBF}, K_y)$ & $H(K_Q)$ & $H(K_{RBF})$ & $d_F$ & \textbf{Ventaja QSVM} \\
 \hline
-Cuántico-nativo  & --- & --- & --- & --- & --- & \textbf{+38.3 pp} \\
-SKG Incidentes   & --- & --- & --- & --- & --- & $-$4.5 pp \\
-Telco Churn      & --- & --- & --- & --- & --- & $-$3.8 pp \\
+Cuántico-nativo  & 0.018 & 0.047 & 2.275 & 2.241 & 0.353 & $+$0.0 pp \\
+SKG Incidentes   & 0.040 & 0.050 & 2.155 & 1.967 & 0.369 & $\mathbf{+8.3}$ \textbf{pp} \\
+Telco Churn      & 0.190 & 0.170 & 2.333 & 3.465 & 0.346 & $+$0.0 pp \\
 \hline
 \end{tabular}
-\caption{Indicadores de cuanticidad calculados sobre los tres datasets del TFM. Los valores --- se actualizarán con los resultados del Notebook~08. Las columnas de ventaja QSVM corresponden a los resultados del Caso de Uso 1 (Capítulo~\ref{cap:investigacion_original}).}
+\caption{Indicadores de cuanticidad calculados sobre los tres datasets del TFM (Notebook~08, ZZFeatureMap 2 qubits, PCA 2D, $n=80$ muestras estratificadas). La ventaja QSVM es la diferencia de precisión QSVM $-$ SVM-RBF en una partición 70/30.}
 \label{tab:indicadores_resultados}
 \end{table}
 
 \subsection{Figuras de resultados}
 
-% PLACEHOLDER — reemplazar con figura del NB08
 \begin{figure}[ht]
 \centering
-% \includegraphics[width=0.92\textwidth]{../POCs/data/output/figures/08_test_cuanticidad_datasets.png}
-\fbox{\parbox{0.9\textwidth}{\centering \vspace{2cm} Figura en preparación: barras comparativas de indicadores por dataset (NB08 en ejecución) \vspace{2cm}}}
-\caption{Comparativa de indicadores de cuanticidad ($A(K_Q, K_y)$, $H(K_Q)$, $d_F$) sobre los tres datasets del TFM. Se espera que el dataset cuántico-nativo obtenga los valores más favorables en todos los indicadores.}
+\includegraphics[width=0.95\textwidth]{../POCs/data/output/figures/08_test_cuanticidad_datasets.png}
+\caption{Comparativa de indicadores de cuanticidad sobre los tres datasets del TFM (Notebook~08). Paneles superiores: kernel alignment diferencial ($\Delta A$), alineación cuántica y clásica, y entropía espectral. Paneles inferiores: distancia de Frobenius $d_F$, diferencia geométrica $g$ y score $\mathcal{Q}(\mathcal{D})$ vs.\ ventaja empírica QSVM. El dataset SKG Incidentes obtiene el mayor score $\mathcal{Q}=+0.352$ y la mayor ventaja ($+8.3$ pp).}
 \label{fig:indicadores_cuanticidad}
+\end{figure}
+
+\begin{figure}[ht]
+\centering
+\includegraphics[width=0.95\textwidth]{../POCs/data/output/figures/08_kernel_heatmaps_comparativa.png}
+\caption{Matrices de kernel cuántico $K_Q$ y clásico $K_{RBF}$ para los tres datasets, ordenadas por clase. La estructura de bloques —presente en SKG Incidentes— indica buena separabilidad cuántica. En Telco Churn, el kernel clásico muestra una estructura de bloques más marcada que el cuántico, coherente con la ausencia de ventaja.}
+\label{fig:kernel_heatmaps}
 \end{figure}
 
 \subsection{Análisis: ¿predicen los indicadores la ventaja QSVM?}
 
-% PLACEHOLDER — completar con análisis de correlación de resultados NB08
-El análisis de los indicadores sobre los tres datasets permite contrastar la hipótesis de alineación estructural formulada en el Capítulo~5. Si los indicadores son proxies válidos de ventaja cuántica, se espera el siguiente ordenamiento: cuántico-nativo $\succ$ SKG Incidentes $\approx$ Telco Churn para $A(K_Q, K_y)$ y $d_F$; y cuántico-nativo $\prec$ datasets reales para $H(K_Q)$ (la concentración es mayor en datasets sin estructura cuántica).
+Los resultados de la Tabla~\ref{tab:indicadores_resultados} permiten evaluar el poder predictivo de cada indicador. El ranking de ventaja empírica es: SKG Incidentes ($+8.3$ pp) $>$ Cuántico-nativo ($0.0$ pp) $=$ Telco Churn ($0.0$ pp).
+
+El score compuesto $\mathcal{Q}(\mathcal{D})$ reproduce exactamente este ranking: $\mathcal{Q}(\text{SKG})=+0.352 > \mathcal{Q}(\text{Q-nativo})=+0.286 > \mathcal{Q}(\text{Telco})=-0.050$, con correlación de Spearman $\rho_S = +0.866$ sobre los tres datasets. El análisis de barrido sintético ($\alpha \in [0,1]$, $n=9$) confirma la monotonía: $\rho_S = +0.833$ ($p = 0.005$).
+
+Sin embargo, el análisis individual de los componentes revela matices importantes:
+\begin{itemize}
+    \item $\Delta A$ (diferencia de alineación) es negativa en dos de los tres datasets: el kernel cuántico está \emph{peor} alineado con las etiquetas que el RBF en el régimen de 2 qubits + PCA. No obstante, $\rho_S(\Delta A, \text{ventaja}) = 0.000$ sobre datasets reales, frente a $\rho_S = +0.833$ en el barrido sintético. La discrepancia sugiere que el régimen de 2 qubits + PCA suprime la señal de $\Delta A$ en datos reales.
+    \item $d_F$ y $g$ predicen correctamente el ranking con $\rho_S = +0.866$ sobre los tres datasets.
+    \item $\Delta H$ es el indicador más volátil: $\mathcal{Q}(\text{Telco})$ está dominado por $\Delta H = -1.131$, que detecta correctamente la concentración exponencial del kernel cuántico sobre Telco Churn.
+\end{itemize}
+
+\paragraph{Caveat estadístico.}
+Con $n=3$ datasets, $\rho_S = +0.866$ es la máxima correlación de Spearman posible con un empate y no constituye una validación de alta potencia estadística. La evidencia cuantitativa principal es el barrido sintético ($n=9$, $p=0.005$). La validación sobre más datasets es trabajo futuro explícito (Capítulo~\ref{cap:futuro}).
+
+\begin{figure}[ht]
+\centering
+\includegraphics[width=0.92\textwidth]{../POCs/data/output/figures/08_barrido_sintetico_alpha.png}
+\caption{Barrido sintético de cuanticidad: score $\mathcal{Q}(\mathcal{D})$ (eje izquierdo) y ventaja empírica del QSVM en pp (eje derecho) en función del parámetro $\alpha \in [0,1]$, que controla la fracción de estructura cuántica en el dataset. La correlación de Spearman entre ambas series es $\rho_S = +0.833$ ($p = 0.005$, $n=9$), validando el poder predictivo del score. En $\alpha \gtrsim 0.5$ el score predice consistentemente ventaja positiva; por debajo de ese umbral, el QSVM no supera a los clásicos.}
+\label{fig:barrido_sintetico_alpha}
+\end{figure}
+
+\begin{figure}[!htbp]
+\centering
+\includegraphics[width=0.88\textwidth]{../POCs/data/output/figures/08_correlacion_indicadores_ventaja.png}
+\caption{Correlación de Spearman de cada indicador de cuanticidad individual ($\Delta A$, $d_F$, $g$, $\Delta H$) con la ventaja empírica del QSVM, calculada sobre el barrido sintético ($n=9$) y sobre los tres datasets reales ($n=3$). $d_F$ y $g$ son los predictores más robustos en ambos regímenes; $\Delta A$ pierde poder predictivo en datos reales por la supresión de señal del régimen de 2~qubits + PCA (Notebook~08).}
+\label{fig:correlacion_indicadores_body}
+\end{figure}
+
+\subsection{Análisis de sensibilidad: impacto de la reducción dimensional}
+
+Un hallazgo metodológico relevante emerge al comparar la configuración base (2 qubits + PCA 2D) con una configuración alternativa (4 qubits + SelectKBest por información mutua). Con 2 qubits + PCA, la varianza explicada es del $31.8\%$ en SKG y $30.7\%$ en Telco. La Tabla~\ref{tab:sensibilidad_dim} muestra que aumentar a 4 qubits con selección de features discriminativas \emph{reduce} $\mathcal{Q}(\mathcal{D})$ en ambos datasets.
+
+\begin{table}[h]
+\centering
+\small
+\begin{tabular}{llcccc}
+\hline
+\textbf{Dataset} & \textbf{Config.} & $\mathcal{Q}(\mathcal{D})$ & $\Delta A$ & $d_F$ & \textbf{Ventaja} \\
+\hline
+SKG Incidentes & 2Q + PCA       & $+0.352$ & $-0.010$ & $0.369$ & $+8.3$ pp \\
+               & 4Q + SelectKBest & $-0.128$ & $-0.033$ & $0.197$ & $+8.3$ pp \\
+Telco Churn    & 2Q + PCA       & $-0.050$ & $+0.020$ & $0.346$ & $+0.0$ pp \\
+               & 4Q + SelectKBest & $-0.155$ & $+0.055$ & $0.234$ & $-4.2$ pp \\
+\hline
+\end{tabular}
+\caption{Análisis de sensibilidad dimensional (Notebook~08, §11). Con 4 qubits + SelectKBest, las features seleccionadas son altamente discriminativas para el clasificador clásico, lo que reduce $d_F$ y, con ello, $\mathcal{Q}(\mathcal{D})$.}
+\label{tab:sensibilidad_dim}
+\end{table}
+
+La interpretación es que el \texttt{ZZFeatureMap} captura mejor la cuanticidad cuando los datos tienen baja información mutua con la clase (como las primeras componentes PCA), porque en ese caso el kernel clásico RBF también rinde mal y $d_F$ es alto. Features altamente informativas permiten que el clasificador clásico mejore más que el cuántico. Este hallazgo implica que $\mathcal{Q}(\mathcal{D})$ debe interpretarse siempre en el contexto de la reducción dimensional aplicada: mide la cuanticidad del subespacio proyectado, no del dataset completo.
 
 % =====================================================================
 \section{Propuesta teórica: score compuesto de cuanticidad}
@@ -229,25 +282,37 @@ Se aplica UMAP usando la distancia de kernel cuántico $d_Q(x_i, x_j) = 1 - K_Q(
 
 \subsection{Resultados comparativos}
 
-% PLACEHOLDER — reemplazar con tabla y figura de resultados de NB09
+La Tabla~\ref{tab:resultados_mapeos} resume los resultados de las cuatro estrategias implementadas en el Notebook~09. La Figura~\ref{fig:mapeos_comparativa} muestra los efectos sobre $\mathcal{Q}(\mathcal{D})$ y la ventaja empírica.
+
 \begin{table}[h]
 \centering
 \small
-\begin{tabular}{lcccc}
+\begin{tabular}{llcccc}
 \hline
-\textbf{Pre-mapeo} & \textbf{Dataset} & $\mathcal{Q}$ (antes) & $\mathcal{Q}$ (después) & \textbf{Ventaja QSVM} \\
+\textbf{Pre-mapeo} & \textbf{Dataset} & $\mathcal{Q}$ (antes) & $\mathcal{Q}$ (después) & $\Delta\mathcal{Q}$ & \textbf{Ventaja QSVM} \\
 \hline
-Features ZZ-compat. & SKG Incidentes   & --- & --- & --- \\
-Features ZZ-compat. & Telco Churn      & --- & --- & --- \\
-Rotación max. $d_F$  & SKG Incidentes   & --- & --- & --- \\
-Rotación max. $d_F$  & Telco Churn      & --- & --- & --- \\
-UMAP cuántico        & SKG Incidentes   & --- & --- & --- \\
-UMAP cuántico        & Telco Churn      & --- & --- & --- \\
+Features ZZ-compat.    & SKG Incidentes & $+0.163$ & $-0.203$ & $-0.366$ $\downarrow$ & $+12.5$ pp \\
+Features ZZ-compat.    & Telco Churn    & $-0.228$ & $+0.136$ & $+0.364$ $\uparrow$ & $+4.2$ pp \\
+Rotación max. $d_F$    & SKG Incidentes & $+0.163$ & $+0.170$ & $+0.007$ $\uparrow$ & $+0.0$ pp \\
+Rotación max. $d_F$    & Telco Churn    & $-0.228$ & $+0.096$ & $+0.323$ $\uparrow$ & $+4.2$ pp \\
+\textbf{Re-uploading reps=3} & \textbf{SKG} & $+0.163$ & $+0.212$ & $\mathbf{+0.049}$ $\uparrow$ & $\mathbf{+16.7}$ \textbf{pp} \\
+\textbf{Re-uploading reps=3} & \textbf{Telco} & $-0.228$ & $+0.167$ & $\mathbf{+0.395}$ $\uparrow$ & $\mathbf{+4.2}$ \textbf{pp} \\
+Q-UMAP/MDS             & SKG Incidentes & $+0.163$ & $+0.054$ & $-0.109$ $\downarrow$ & $-8.3$ pp \\
+Q-UMAP/MDS             & Telco Churn    & $-0.228$ & $-0.248$ & $-0.020$ $\downarrow$ & $+4.2$ pp \\
 \hline
 \end{tabular}
-\caption{Variación del score de cuanticidad $\mathcal{Q}$ y de la ventaja QSVM antes y después de aplicar cada estrategia de pre-mapeo. Los valores --- se actualizarán con los resultados del Notebook~09.}
+\caption{Variación del score $\mathcal{Q}(\mathcal{D})$ y de la ventaja QSVM antes y después de cada estrategia de pre-mapeo (Notebook~09). El re-uploading con $\text{reps}=3$ es la única estrategia que mejora simultáneamente $\mathcal{Q}$ y la ventaja empírica en ambos datasets. La columna Q-UMAP usa MDS como fallback (umap-learn no disponible).}
 \label{tab:resultados_mapeos}
 \end{table}
+
+\begin{figure}[ht]
+\centering
+\includegraphics[width=0.95\textwidth]{../POCs/data/output/figures/09_mapeos_comparativa.png}
+\caption{Efecto de las cuatro estrategias de pre-mapeo sobre $\mathcal{Q}(\mathcal{D})$ (paneles izquierdos) y la ventaja QSVM en pp (paneles derechos), para SKG Incidentes (fila superior) y Telco Churn (fila inferior). Verde = mejora sobre baseline; rojo = empeoramiento.}
+\label{fig:mapeos_comparativa}
+\end{figure}
+
+El resultado más destacado es la disociación observada en la Estrategia~2 para SKG: $\mathcal{Q}$ mejora marginalmente ($+0.007$) pero la ventaja empírica cae $-8.3$ pp. Esto confirma que $\mathcal{Q}(\mathcal{D})$ es una cota de capacidad teórica, no un predictor determinista del rendimiento bajo muestras finitas.
 
 % =====================================================================
 \section{Propuesta teórica: framework de representación cuántico-compatible}
@@ -270,6 +335,94 @@ Sobre la base de los resultados empíricos y la revisión de la literatura, se p
 
     \item \textbf{Verificación}: Si $\mathcal{Q}(\psi(\mathcal{D})) > \theta$, entrenar QSVM sobre $\psi(\mathcal{D})$. De lo contrario, reportar que el dataset no es cuántico-compatible con el feature map actual.
 \end{enumerate}
+
+\paragraph{Validación empírica del Framework QCR.}
+El framework se aplicó a los dos datasets reales (Notebook~09, §10). Los resultados son:
+\begin{itemize}
+    \item \textbf{SKG Incidentes}: $\mathcal{Q}=+0.163 > \theta=0$. El QCR diagnostica compatibilidad directa y no aplica transformación, lo que es correcto: el QSVM ya obtiene $+8.3$ pp de ventaja sobre el SVM-RBF.
+    \item \textbf{Telco Churn}: $\mathcal{Q}=-0.228 \leq \theta=0$. Cuello de botella: $\Delta H = -1.131$ (concentración espectral). Transformación recomendada: re-uploading adaptativo. Resultado: $\mathcal{Q}: -0.228 \rightarrow +0.167$, ventaja: $0.0 \rightarrow +4.2$ pp $\uparrow$.
+\end{itemize}
+
+\begin{figure}[!htbp]
+\centering
+\begin{tikzpicture}[thick, font=\small,
+    decision/.style={diamond, draw=violet!65!black, fill=violet!8,
+                     aspect=2.6, inner sep=2pt, align=center, font=\scriptsize},
+    action/.style={rectangle, draw=teal!60!black, fill=teal!7,
+                   rounded corners=4pt, align=center, font=\scriptsize,
+                   minimum width=3.2cm, minimum height=0.65cm},
+    terminal/.style={rectangle, draw=blue!55!black, fill=blue!8,
+                     rounded corners=4pt, align=center, font=\scriptsize,
+                     minimum width=3.0cm, minimum height=0.65cm},
+    arr/.style={->, thick}]
+
+  % Nodo de entrada
+  \node[terminal] (start) at (0, 0) {Dataset $\mathcal{D}$};
+
+  % Decisión 1: Q > theta?
+  \node[decision] (d1) at (0, -1.4) {$\mathcal{Q}(\mathcal{D}) > \theta$?};
+  \draw[arr] (start) -- (d1);
+
+  % Sí → QSVM directamente
+  \node[terminal] (qsvm) at (4.5, -1.4) {Entrenar QSVM\\sobre $\mathcal{D}$};
+  \draw[arr] (d1) -- node[above, font=\scriptsize]{Sí} (qsvm);
+
+  % No → Identificar cuello de botella
+  \node[action] (bottleneck) at (0, -2.85) {Identificar cuello\\de botella en $\mathcal{Q}$};
+  \draw[arr] (d1) -- node[left, font=\scriptsize]{No} (bottleneck);
+
+  % Decisión 2: ΔA < 0?
+  \node[decision] (d2) at (-3.8, -4.4) {$\Delta A < 0$?};
+  \draw[arr] (bottleneck) -| (d2);
+
+  % Decisión 3: dF ≈ 0?
+  \node[decision] (d3) at (0, -4.4) {$\hat{d}_F \approx 0$?};
+  \draw[arr] (bottleneck) -- (d3);
+
+  % Decisión 4: ΔH < 0?
+  \node[decision] (d4) at (3.8, -4.4) {$\Delta H < 0$?};
+  \draw[arr] (bottleneck) -| (d4);
+
+  % Acciones de pre-mapeo
+  \node[action] (t1) at (-3.8, -5.85) {Features\\ZZ-compatibles};
+  \draw[arr] (d2) -- node[left, font=\scriptsize]{Sí} (t1);
+
+  \node[action] (t2) at (0, -5.85) {Rotación máx.\\divergencia $d_F$};
+  \draw[arr] (d3) -- node[left, font=\scriptsize]{Sí} (t2);
+
+  \node[action] (t3) at (3.8, -5.85) {Re-uploading\\adaptativo};
+  \draw[arr] (d4) -- node[left, font=\scriptsize]{Sí} (t3);
+
+  % Convergencia → verificación
+  \node[action] (verify) at (0, -7.2) {Recalcular $\mathcal{Q}(\psi(\mathcal{D}))$};
+  \draw[arr] (t1) |- (verify);
+  \draw[arr] (t2) -- (verify);
+  \draw[arr] (t3) |- (verify);
+
+  % Decisión final
+  \node[decision] (d5) at (0, -8.55) {$\mathcal{Q}(\psi(\mathcal{D})) > \theta$?};
+  \draw[arr] (verify) -- (d5);
+
+  % Resultado Sí
+  \node[terminal] (qsvm2) at (3.8, -8.55) {Entrenar QSVM\\sobre $\psi(\mathcal{D})$};
+  \draw[arr] (d5) -- node[above, font=\scriptsize]{Sí} (qsvm2);
+
+  % Resultado No
+  \node[terminal, draw=red!55!black, fill=red!6] (fallback) at (-3.8, -8.55)
+    {Reportar no\\cuántico-compatible};
+  \draw[arr] (d5) -- node[above, font=\scriptsize]{No} (fallback);
+
+\end{tikzpicture}
+\caption{Diagrama de decisión del Framework QCR. Cada rama del árbol identifica el cuello de botella en $\mathcal{Q}(\mathcal{D})$ ($\Delta A$, $\hat{d}_F$ o $\Delta H$) y aplica la transformación $\psi$ correspondiente. El proceso termina con una verificación del score recalculado antes de entrenar el QSVM.}
+\label{fig:qcr_flowchart}
+\end{figure}
+
+\begin{figure}[ht]
+\centering
+\includegraphics[width=0.90\textwidth]{../POCs/data/output/figures/09_qcr_framework_diagnostico.png}
+\caption{Framework QCR aplicado a los dos datasets del TFM. Izquierda: SKG Incidentes ya es cuántico-compatible (no requiere pre-mapeo). Derecha: Telco Churn con cuello de botella $\Delta H$; el re-uploading reps=3 corrige el déficit espectral y lleva $\mathcal{Q}$ a territorio positivo.}
+\label{fig:qcr_diagnostico}
+\end{figure}
 
 \paragraph{Propiedades del framework QCR.}
 El framework tiene tres propiedades deseables: (i) es \textbf{interpretable}, porque cada transformación tiene una justificación geométrica explícita; (ii) es \textbf{modular}, porque el diagnóstico y el pre-mapeo son componentes independientes que pueden combinarse; y (iii) es \textbf{falseable}, porque la hipótesis ``el pre-mapeo incrementa $\mathcal{Q}$'' es una predicción verificable empíricamente.
