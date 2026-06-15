@@ -1,0 +1,28 @@
+% !TEX root = ../main.tex
+\chapter{Objetivos}
+
+La revisión de la técnica presentada en el capítulo anterior evidencia que, a pesar del avance teórico en computación cuántica aplicada a la ciencia de datos, persiste una brecha significativa entre los resultados obtenidos en condiciones ideales y los alcanzables en entornos productivos reales. Este trabajo se propone abordar dicha brecha mediante un análisis comparativo riguroso, orientado a la toma de decisiones en contextos empresariales. En este capítulo se definen los objetivos que guían la investigación.
+
+\section{Objetivo general}
+
+El objetivo general de este trabajo es evaluar de forma empírica y sistemática si los algoritmos cuánticos disponibles en la era NISQ ofrecen una ventaja real y medible frente a los algoritmos clásicos consolidados en problemas representativos de la ciencia de datos, utilizando datos procedentes de un entorno empresarial real, con el fin de determinar las condiciones bajo las cuales la computación cuántica puede aportar valor práctico en este dominio \citep{preskill2018, biamonte2017}.
+
+\section{Objetivos específicos}
+
+Para alcanzar el objetivo general, se establecen los siguientes objetivos específicos:
+
+\begin{enumerate}
+    \item \textbf{Identificar y caracterizar los conjuntos de datos empresariales} adecuados para el estudio comparativo, seleccionando problemas representativos de clasificación supervisada y optimización combinatoria con relevancia práctica demostrable.
+
+    \item \textbf{Implementar y configurar los algoritmos cuánticos} seleccionados para el estudio: métodos de kernel cuántico y circuitos variacionales para clasificación y regresión \citep{schuld2021, huang2021}; el algoritmo QAOA para optimización combinatoria \citep{farhi2014}; y el loop híbrido QAOA-COBYLA para problemas NP-difíciles con formulación QUBO, utilizando Qiskit~2.4.1 como framework de simulación.
+
+    \item \textbf{Implementar y configurar los algoritmos clásicos de referencia} correspondientes a cada problema, incluyendo Support Vector Machines (SVM), Random Forests, XGBoost, programación lineal entera (ILP) y algoritmos heurísticos de optimización, siguiendo las mejores prácticas del campo \citep{jordan2015}.
+
+    \item \textbf{Diseñar y ejecutar los experimentos comparativos} bajo condiciones controladas e idénticas para ambas familias de algoritmos, garantizando la reproducibilidad y la validez estadística de los resultados sobre siete casos de uso que cubren clasificación supervisada, regresión y optimización combinatoria.
+
+    \item \textbf{Evaluar el rendimiento comparativo} de los algoritmos cuánticos y clásicos mediante métricas cuantitativas que incluyan precisión, eficiencia computacional, escalabilidad y, para problemas NP-difíciles, la capacidad de obtener soluciones óptimas o aproximadas verificables \citep{cerezo2021, zhou2020}.
+
+    \item \textbf{Analizar las condiciones de ventaja cuántica}, identificando los factores ---como el tamaño del dataset, la dimensionalidad del problema, la profundidad del circuito o la naturaleza combinatoria del problema--- que determinan cuándo y en qué medida los algoritmos cuánticos superan a los clásicos \citep{huang2021, cerezo2023}.
+
+    \item \textbf{Diseñar e implementar el prototipo de arquitectura híbrida cuántico-clásica} (Sección~\ref{sec:prototipo_hibrido}) que ilustre cómo los módulos cuánticos pueden integrarse en pipelines empresariales existentes como herramienta adicional y selectiva, con criterios explícitos de activación según el tipo de problema y la escala de la instancia \citep{cerezo2021}.
+\end{enumerate}
