@@ -96,6 +96,35 @@ El Capítulo~\ref{cap:investigacion_original} propone y valida empíricamente el
 \paragraph{Perspectivas de publicación.}
 La combinación de la propuesta del score $\mathcal{Q}$, su validación empírica (incluyendo el barrido sintético de $n=9$ con $p=0.005$) y el análisis de sensibilidad dimensional constituye el núcleo de un artículo de investigación. El trabajo podría estructurarse como: (i) revisión de las condiciones teóricas de ventaja cuántica en kernels, (ii) propuesta del score como proxy operativo, (iii) validación empírica sistemática sobre corpus anotado, y (iv) primeros pasos hacia la demostración formal. Esta perspectiva fue discutida explícitamente con el director del TFM.
 
+\section{Extensión a aprendizaje cuántico no supervisado}
+\label{sec:futuro_no_supervisado}
+
+Este trabajo se ha centrado exclusivamente en paradigmas supervisados (clasificación y regresión) y en optimización combinatoria, dejando fuera una familia completa de algoritmos con potencial de aplicación directa en los datos de SKG Tecnología: el \textbf{aprendizaje cuántico no supervisado}. Su incorporación en un trabajo futuro es una extensión natural y complementaria al marco comparativo establecido.
+
+\paragraph{Algoritmos candidatos.}
+\begin{itemize}
+  \item \textbf{Q-means \citep{kerenidis2019}:} versión cuántica del algoritmo $k$-means que aprovecha la representación en amplitudes para calcular centroides y distancias en tiempo sublineal. Aplicable al clustering de incidentes de tráfico por zona geoespacial o por patrón horario, un problema que SKG Tecnología aborda actualmente con $k$-means clásico.
+
+  \item \textbf{Quantum PCA (qPCA) \citep{lloyd2014}:} extracción de componentes principales mediante estimación de fase cuántica aplicada al operador de densidad del dataset. Relevante para la reducción dimensional de los datasets de movilidad antes de aplicar el QSVM, potencialmente superando la PCA clásica en datasets con estructura cuántica implícita.
+
+  \item \textbf{Quantum autoencoders \citep{romero2017}:} circuitos variacionales entrenados para comprimir y reconstruir estados cuánticos. Su aplicación más directa en el contexto de SKG sería la detección de anomalías en los datos de movilidad: patrones de incidente inusuales se manifestarían como estados difícilmente reconstruibles por el autoencoder cuántico entrenado sobre la distribución normal.
+
+  \item \textbf{Clustering cuántico espectral:} uso de algoritmos cuánticos de álgebra lineal para calcular los vectores propios del Laplaciano de un grafo de similitud, aplicable a la segmentación de corredores viales por comportamiento de congestión.
+\end{itemize}
+
+\paragraph{Casos de uso directos en SKG Tecnología.}
+\begin{itemize}
+  \item \textbf{Clustering de incidentes:} agrupar los 27.326 incidentes del NUSE Bogotá por patrón de características (hora, zona, tipo) sin etiquetas previas, para descubrir arquetipos de incidente no definidos a priori. Q-means ofrecería una referencia de comparación con $k$-means clásico bajo el mismo protocolo comparativo del TFM.
+  \item \textbf{Detección de anomalías en velocidades:} aplicar un autoencoder cuántico a los registros de velocidad de \texttt{bctraveltimes\_history.csv} para identificar patrones de congestión atípica que escapen a los umbrales fijos de nivel de servicio.
+  \item \textbf{Segmentación no supervisada de agentes:} usar clustering cuántico sobre \texttt{agents.csv} para identificar perfiles de agente latentes, mejorando la asignación a zonas de seguridad.
+\end{itemize}
+
+\paragraph{Limitaciones actuales a superar.}
+Las implementaciones NISQ de algoritmos cuánticos no supervisados son más experimentales que las supervisadas: Q-means requiere acceso eficiente a la memoria RAM cuántica (qRAM), cuya implementación física sigue siendo un problema abierto \citep{biamonte2017}; Quantum PCA basado en estimación de fase requiere circuitos profundos incompatibles con los dispositivos NISQ actuales. Por ello, en el corto plazo la línea más viable es la comparativa de \textbf{clustering cuántico variacional} (VQE aplicado a la minimización de la función de coste de $k$-means) frente al $k$-means clásico, siguiendo el mismo protocolo de tres datasets (cuántico-nativo, SKG real, dataset público de referencia) establecido en este TFM.
+
+\paragraph{Ventaja teórica en complejidad.}
+Uno de los argumentos más sólidos a favor del aprendizaje no supervisado cuántico es la reducción de complejidad computacional que ofrecen los algoritmos más maduros. Q-means \citep{kerenidis2019} tiene complejidad $O(\text{poly}(\log N, k, d, 1/\varepsilon))$, exponencialmente mejor que el $O(Nkd)$ del $k$-means clásico en función del número de muestras $N$, número de clusters $k$ y dimensionalidad $d$. Quantum PCA \citep{lloyd2014} calcula los vectores propios dominantes del operador de densidad en tiempo $O(\log N)$, frente al $O(N d^2)$ de la PCA clásica. Esta reducción exponencial de complejidad es particularmente relevante para los datasets de movilidad de SKG Tecnología, donde $N > 80.000$ registros y la PCA clásica ya constituye un cuello de botella en pipelines de tiempo real. Con hardware cuántico tolerante a fallos, estos algoritmos podrían transformar radicalmente la viabilidad del aprendizaje no supervisado a escala operativa.
+
 \section{Extensión del Framework QCR}
 
 El Framework QCR (Quantum-Compatible Representation) desarrollado en el Capítulo~\ref{cap:investigacion_original} demuestra que $T^* = \text{re-uploading } reps=3$ es la transformación óptima sobre los dos datasets reales del TFM, con una mejora verificada de $+4.2$ pp de ventaja QSVM en Telco Churn. Sin embargo, el framework presenta limitaciones que abren líneas de extensión claras:
@@ -138,6 +167,8 @@ La combinación del score $\mathcal{Q}(\mathcal{D})$ y el Framework QCR --- vali
     {\textbf{A/B test Q vs Clásico}\\\scriptsize datos SKG en producción};
   \node[item, draw=blue!40, fill=blue!5,  below=0.25cm of b3] (b4)
     {\textbf{QAOA $p > 1$}\\\scriptsize SPSA / parameter-shift};
+  \node[item, draw=blue!45, fill=blue!5, below=0.25cm of c1] (c_new)
+    {\textbf{Aprendizaje no supervisado Q}\\\scriptsize Q-means / Quantum PCA};
 
   % ── Columna medio plazo ──
   \node[item, draw=orange!45, fill=orange!5, anchor=north] (m1) at (5.0,  -0.75)

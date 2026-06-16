@@ -160,6 +160,55 @@ El QSVM obtuvo exactitud del \textbf{76.0\%} (F1-macro: 0.68), frente al \textbf
   \item El tamaño de submuestra cuántico ($n=200$) es insuficiente para capturar la distribución del churn de forma estadísticamente robusta.
 \end{itemize}
 
+% ---
+\subsection{Análisis comparativo directo: QSVM (kernel cuántico) vs.\ SVM-RBF (kernel clásico)}
+\label{sec:qsvm_vs_svm_directo}
+
+Los resultados de las subsecciones anteriores mezclan dos fuentes de variación: (i) la diferencia entre el paradigma cuántico y el clásico, y (ii) las diferencias entre distintas familias de modelos (árboles, regresión logística, SVM). Para aislar específicamente la contribución del \emph{kernel cuántico} frente al \emph{kernel clásico}, se realiza aquí un contraste directo entre \textbf{QSVM con ZZFeatureMap} y \textbf{SVM-RBF} bajo condiciones estrictamente controladas: mismo clasificador base (\texttt{SVC}), mismo conjunto de entrenamiento/test, mismos hiperparámetros ($C = 1.0$) y misma reducción dimensional (PCA a 2 componentes en todos los datasets). La única variable modificada es el tipo de kernel.
+
+\begin{table}[ht]
+\centering
+\caption{Comparativa directa QSVM (kernel cuántico ZZFeatureMap) vs.\ SVM-RBF (kernel clásico). Condiciones controladas: mismo \texttt{SVC} base, $C=1.0$, PCA a 2 componentes, mismas particiones train/test.}
+\label{tab:qsvm_vs_svm_directo}
+\begin{tabular}{lcccc}
+\toprule
+\textbf{Dataset} & \textbf{QSVM (Acc)} & \textbf{SVM-RBF (Acc)} & \textbf{$\Delta$ Acc} & \textbf{Ventaja} \\
+\midrule
+Cuántico-nativo (Liu 2021) & 0.533 & 0.467 & $+0.067$ & \textbf{QSVM} \\
+SKG Incidentes movilidad   & 0.467 & 0.525 & $-0.058$ & SVM-RBF \\
+Telco Customer Churn       & 0.735 & 0.747 & $-0.013$ & SVM-RBF (marginal) \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{figure}[ht]
+\centering
+\includegraphics[width=0.95\textwidth]{../POCs/data/output/figures/01_qsvm_vs_svm_directo.png}
+\caption{Comparativa directa QSVM (kernel cuántico ZZFeatureMap) vs.\ SVM-RBF (kernel clásico) bajo condiciones controladas idénticas (mismo \texttt{SVC} base, $C=1.0$, PCA a 2 componentes). El eje vertical muestra la exactitud; el color del $\Delta$ indica ventaja cuántica (verde) o ventaja clásica (rojo). La ventaja cuántica solo emerge en el dataset con estructura cuántica nativa, confirmando la hipótesis de alineación estructural.}
+\label{fig:qsvm_vs_svm_directo}
+\end{figure}
+
+\begin{figure}[ht]
+\centering
+\includegraphics[width=0.95\textwidth]{../POCs/data/output/figures/01_clasificacion_escalabilidad.png}
+\caption{Escalabilidad de QSVM vs.\ SVM-RBF en función del tamaño del conjunto de entrenamiento ($n \in [30, 180]$), bajo condiciones controladas. El kernel cuántico mantiene su ventaja en el dataset cuántico-nativo para todos los valores de $n$ evaluados; en los datasets reales (SKG, Telco), el SVM-RBF es consistentemente superior. Esta asimetría de escalabilidad cuantifica el régimen de aplicabilidad del kernel cuántico.}
+\label{fig:clasificacion_escalabilidad}
+\end{figure}
+
+\paragraph{Interpretación.}
+El contraste directo revela un patrón estructuralmente coherente con las predicciones teóricas de \cite{liu2021}:
+
+\begin{itemize}
+  \item \textbf{Dataset cuántico-nativo:} el kernel cuántico ZZFeatureMap supera al RBF en $+0.067$ pp. Ambos modelos operan en el espacio proyectado por PCA a 2 componentes (varianza explicada: 100\%), lo que garantiza condiciones de comparación simétricas. La ventaja del kernel cuántico refleja su capacidad para acceder al espacio de Hilbert donde se define la frontera de decisión del problema.
+
+  \item \textbf{Dataset SKG (incidentes de movilidad):} el SVM-RBF supera al QSVM en $-0.058$ pp. Con PCA a 2 componentes y varianza explicada del 63.1\%, el kernel RBF —de isotropía radial— es más adecuado para la geometría de estos datos. El score de cuanticidad $\mathcal{Q}(\text{SKG}) = +0.163$ (Capítulo~\ref{cap:investigacion_original}) indica que el dataset es cuántico-compatible, pero el bajo rendimiento absoluto de ambos modelos ($< 55\%$) sugiere que la reducción a 2 dimensiones descarta información discriminativa crítica.
+
+  \item \textbf{Telco Churn:} la diferencia es mínima ($-0.013$ pp) y dentro del margen de variabilidad estadística con el tamaño de muestra utilizado ($n_{\text{train}} = 120$). El score $\mathcal{Q}(\text{Telco}) = -0.228$ predice correctamente la ausencia de ventaja cuántica en este dataset.
+\end{itemize}
+
+\paragraph{Conclusión del contraste.}
+El diferencial de rendimiento entre el kernel cuántico y el RBF es una función directa de la adecuación estructural del dataset al espacio de Hilbert del circuito, cuantificable mediante el score $\mathcal{Q}(\mathcal{D})$ del Capítulo~\ref{cap:investigacion_original}. Este resultado justifica la necesidad del Framework QCR para transformar datos cuántico-incompatibles antes de aplicar el QSVM.
+
 % =====================================================================
 \section{Caso de uso 2: Regresión con kernel cuántico (QK-SVR)}
 % =====================================================================

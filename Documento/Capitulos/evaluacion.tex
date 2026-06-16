@@ -73,6 +73,13 @@ Este resultado valida metodológicamente el diseño experimental: el QSVM no gan
 
 \begin{figure}[!htbp]
 \centering
+\includegraphics[width=0.95\textwidth]{../POCs/data/output/figures/01_clasificacion_comparacion.png}
+\caption{Comparativa de todos los modelos evaluados en los tres datasets de clasificación. Para cada dataset se muestra la exactitud y el F1-macro del QSVM, SVM-RBF, Gradient Boosting y Regresión Logística. El QSVM solo supera al resto en el dataset cuántico-nativo; en datos reales (SKG, Telco) los métodos clásicos son superiores, validando el principio de alineación estructural.}
+\label{fig:clasificacion_comparacion}
+\end{figure}
+
+\begin{figure}[!htbp]
+\centering
 \includegraphics[width=0.95\textwidth]{../POCs/data/output/figures/06_learning_curves_quantum_advantage.png}
 \caption{Curvas de aprendizaje del QSVM y del mejor clasificador clásico (SVM-RBF) en función del tamaño de entrenamiento $n \in [30, 180]$, para los tres datasets del Caso~1. La brecha de exactitud sobre el dataset cuántico-nativo es robusta en todo el rango evaluado y no converge a cero al aumentar $n$, lo que evidencia que la limitación es estructural ---no estadística--- para los clasificadores clásicos en ausencia del espacio de Hilbert correcto.}
 \label{fig:learning_curves}
@@ -355,6 +362,20 @@ La Tabla~\ref{tab:sintesis} sintetiza los resultados principales del estudio com
 \includegraphics[width=0.90\textwidth]{../POCs/data/output/figures/07_heatmap_ventaja_por_dominio.png}
 \caption{Mapa de calor de la ventaja cuántica relativa (diferencia porcentual respecto al mejor clásico) por caso de uso y por dataset. El patrón de ventaja está fuertemente correlacionado con la presencia de estructura cuántica nativa en los datos: las celdas con mayor intensidad corresponden al dataset cuántico-nativo (Casos~1 y~6) y a los algoritmos de optimización combinatoria (Casos~3, 4 y~7).}
 \label{fig:heatmap_ventaja_body}
+\end{figure}
+
+\begin{figure}[!htbp]
+\centering
+\includegraphics[width=0.95\textwidth]{../POCs/data/output/figures/07_grover_benchmark.png}
+\caption{Benchmark del algoritmo de Grover: comparativa de la complejidad de búsqueda cuántica $O(\sqrt{N})$ frente a la búsqueda clásica no estructurada $O(N)$ en función del tamaño del espacio de búsqueda $N$. La aceleración cuadrática se hace evidente a partir de $N \approx 10^3$, ilustrando el tipo de ventaja estructural que la computación cuántica puede aportar a problemas de búsqueda y optimización.}
+\label{fig:grover_benchmark}
+\end{figure}
+
+\begin{figure}[!htbp]
+\centering
+\includegraphics[width=0.95\textwidth]{../POCs/data/output/figures/07_paralelismo_cuantico.png}
+\caption{Visualización del paralelismo cuántico: evolución de la capacidad de procesamiento efectiva a medida que crece el número de qubits del circuito. Un sistema de $n$ qubits puede evaluar simultáneamente $2^n$ estados en superposición, lo que explica el crecimiento exponencial del espacio de Hilbert accesible. Esta propiedad es el fundamento teórico de la ventaja cuántica en búsqueda, optimización y aprendizaje.}
+\label{fig:paralelismo_cuantico}
 \end{figure}
 
 \subsection{Patrones transversales}
