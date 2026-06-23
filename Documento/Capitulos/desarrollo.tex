@@ -35,6 +35,41 @@ A partir de los resultados obtenidos, se diseñó un flujo de trabajo conceptual
 
 Para cada caso de uso se evalúan tres tipos de conjuntos de datos: (i) un dataset diseñado con estructura cuántica explícita (\textit{cuántico-nativo}), (ii) un dataset real de SKG Tecnología, y (iii) un dataset de referencia de dominio público. Esta triple perspectiva permite distinguir los escenarios donde la computación cuántica ofrece ventaja teórica genuina de aquellos donde los algoritmos clásicos siguen siendo superiores en la práctica.
 
+\begin{figure}[h]
+\centering
+\begin{tikzpicture}[font=\small,
+    fase/.style={rectangle, rounded corners=5pt, very thick,
+                 minimum width=9.5cm, minimum height=1.5cm,
+                 align=center, inner sep=9pt},
+    arr/.style={->, very thick, >=stealth}]
+  \node[fase, draw=blue!60!black, fill=blue!9] (f1) {
+    \textbf{Fase 1 — Selección y preparación de datos}\\[3pt]
+    {\scriptsize Datasets cuántico-nativo, SKG Tecnología y referencia pública
+     $\cdot$ Normalización $\cdot$ PCA}
+  };
+  \node[fase, draw=orange!60!black, fill=orange!9, below=0.6cm of f1] (f2) {
+    \textbf{Fase 2 — Implementación de algoritmos}\\[3pt]
+    {\scriptsize QSVM $\cdot$ QK-SVR $\cdot$ QAOA $\cdot$ VQE
+     $\cdot$ Gradient Boosting $\cdot$ Random Forest}
+  };
+  \node[fase, draw=teal!60!black, fill=teal!9, below=0.6cm of f2] (f3) {
+    \textbf{Fase 3 — Diseño experimental y evaluación}\\[3pt]
+    {\scriptsize Validación cruzada $\cdot$ Accuracy $\cdot$ F1-score
+     $\cdot$ $R^2$ $\cdot$ AUC-ROC $\cdot$ Escalabilidad}
+  };
+  \node[fase, draw=violet!60!black, fill=violet!9, below=0.6cm of f3] (f4) {
+    \textbf{Fase 4 — Prototipo de arquitectura híbrida}\\[3pt]
+    {\scriptsize Integración cuántico-clásica $\cdot$ Criterios de activación
+     $\cdot$ Framework QCR}
+  };
+  \draw[arr] (f1.south) -- (f2.north);
+  \draw[arr] (f2.south) -- (f3.north);
+  \draw[arr] (f3.south) -- (f4.north);
+\end{tikzpicture}
+\caption{Flujo metodológico del estudio comparativo en cuatro fases. La Fase~1 establece y pre-procesa los conjuntos de datos; la Fase~2 implementa los algoritmos cuánticos y sus contrapartes clásicas; la Fase~3 evalúa el rendimiento mediante métricas estándar; la Fase~4 sintetiza los resultados en un prototipo de arquitectura híbrida aplicable a SKG Tecnología.}
+\label{fig:metodologia_fases}
+\end{figure}
+
 % =====================================================================
 \section{Entorno tecnológico y arquitectura experimental}
 % =====================================================================
@@ -49,7 +84,7 @@ La elección del simulador de vector de estados garantiza exactitud matemática,
 
 \subsection{Descripción del problema}
 
-El primer caso de uso aborda la clasificación binaria supervisada, comparando el QSVM (Quantum Support Vector Machine con kernel cuántico) frente a cuatro clasificadores clásicos de referencia: Gradient Boosting, Random Forest, SVM-RBF y Regresión Logística. La hipótesis central, fundamentada en \cite{liu2021}, establece que cuando las etiquetas de clase se derivan de una función cuántica, el kernel cuántico aprende el problema con precisión cuasi-perfecta mientras que los clasificadores clásicos están limitados por el denominado \textit{quantum hardness} del problema.
+El primer caso de uso aborda la clasificación binaria supervisada, comparando el QSVM (Quantum Support Vector Machine con kernel cuántico) frente a cuatro clasificadores clásicos de referencia: Gradient Boosting, Random Forest, SVM-RBF y Regresión Logística. La hipótesis central, fundamentada en \cite{liu2021}, establece que cuando las etiquetas de clase se derivan de una función cuántica, el kernel cuántico aprende el problema con precisión cuasi-perfecta mientras que los clasificadores clásicos están limitados por el denominado \textit{quantum hardness} del problema. Esta asimetría tiene su origen en la diferencia entre el \textbf{espacio de representación} clásico ---el espacio euclídeo $\mathbb{R}^d$ donde operan los clasificadores convencionales--- y el espacio de Hilbert $\mathcal{H}$ al que accede el kernel cuántico a través del mapa de características $\phi\colon \mathbb{R}^d \rightarrow \mathcal{H}$; la similitud en $\mathcal{H}$, medida por el kernel de fidelidad $\kappa(x_i, x_j)=|\langle\phi(x_i)|\phi(x_j)\rangle|^2$, es inaccesible para los métodos clásicos sin una simulación de coste exponencial. Esta observación motiva la pregunta central del Capítulo~\ref{cap:investigacion_original}: si un dataset real no tiene estructura cuántica nativa, ¿puede transformarse a un espacio de representación $\mathcal{Z}$ adecuado, resolverse con modelos cuánticos en ese espacio, y mapear el resultado de vuelta al espacio original? Esta hipótesis se formaliza como la Conjetura~\ref{conj:qcr} del espacio de representación cuántico-compatible.
 
 % ---
 \subsection{Dataset 1: Cuántico-nativo (Liu 2021)}
@@ -170,7 +205,7 @@ Los resultados de las subsecciones anteriores mezclan dos fuentes de variación:
 \centering
 \caption{Comparativa directa QSVM (kernel cuántico ZZFeatureMap) vs.\ SVM-RBF (kernel clásico). Condiciones controladas: mismo \texttt{SVC} base, $C=1.0$, PCA a 2 componentes, mismas particiones train/test.}
 \label{tab:qsvm_vs_svm_directo}
-\begin{tabular}{lcccc}
+\begin{tabularx}{\linewidth}{Xcccc}
 \toprule
 \textbf{Dataset} & \textbf{QSVM (Acc)} & \textbf{SVM-RBF (Acc)} & \textbf{$\Delta$ Acc} & \textbf{Ventaja} \\
 \midrule
@@ -178,7 +213,7 @@ Cuántico-nativo (Liu 2021) & 0.533 & 0.467 & $+0.067$ & \textbf{QSVM} \\
 SKG Incidentes movilidad   & 0.467 & 0.525 & $-0.058$ & SVM-RBF \\
 Telco Customer Churn       & 0.735 & 0.747 & $-0.013$ & SVM-RBF (marginal) \\
 \bottomrule
-\end{tabular}
+\end{tabularx}
 \end{table}
 
 \begin{figure}[ht]
@@ -424,29 +459,29 @@ Para la instancia de seis nodos (Mario, Sarah, Raúl, Ana, Enrique, Saúl) y los
 \begin{figure}[!htbp]
 \centering
 \begin{tikzpicture}[thick, font=\small, node distance=0pt]
-  % Bloque 1: QUBO  (ancho ampliado a ±4.5 para que la ecuación quepa sin recorte)
+  % Bloque 1: QUBO
   \draw[draw=violet!60!black, fill=violet!7, rounded corners=6pt, very thick]
-    (-4.5, 0.75) rectangle (4.5, -0.75);
-  \node[align=center] at (0, 0.32) {\textbf{Formulación QUBO}};
-  \node[font=\footnotesize, text=violet!70!black] at (0, -0.22)
+    (-5.2, 1.2) rectangle (5.2, -1.2);
+  \node[align=center] at (0, 0.65) {\textbf{Formulación QUBO}};
+  \node[align=center, text=violet!70!black] at (0, -0.35)
     {$C(\mathbf{x}) = A\!\sum_{v} x_v + B\!\sum_{v}\!\left(1-\!\sum_{u\in N[v]}\!x_u\right)^{\!2}$};
   % Flecha 1→2
-  \draw[->, thick] (0, -0.75) -- (0, -1.65)
-    node[midway, right=5pt, font=\footnotesize]{$x_i = (1-Z_i)/2$};
+  \draw[->, thick] (0, -1.2) -- (0, -2.15)
+    node[midway, right=6pt]{$x_i = (1-Z_i)/2$};
   % Bloque 2: Hamiltoniano de Ising
   \draw[draw=teal!60!black, fill=teal!7, rounded corners=6pt, very thick]
-    (-4.5, -1.65) rectangle (4.5, -2.9);
-  \node[align=center] at (0, -2.03) {\textbf{Hamiltoniano de Ising}};
-  \node[font=\footnotesize, text=teal!70!black] at (0, -2.50)
+    (-5.2, -2.15) rectangle (5.2, -3.75);
+  \node[align=center] at (0, -2.58) {\textbf{Hamiltoniano de Ising}};
+  \node[align=center, text=teal!70!black] at (0, -3.15)
     {$H_C = \sum_i h_i Z_i + \sum_{i<j} J_{ij}\, Z_i Z_j$};
   % Flecha 2→3
-  \draw[->, thick] (0, -2.9) -- (0, -3.80)
-    node[midway, right=5pt, font=\footnotesize]{compila a puertas};
+  \draw[->, thick] (0, -3.75) -- (0, -4.75)
+    node[midway, right=6pt]{compila a puertas};
   % Bloque 3: Circuito QAOA
   \draw[draw=blue!55!black, fill=blue!7, rounded corners=6pt, very thick]
-    (-4.5, -3.80) rectangle (4.5, -5.05);
-  \node[align=center] at (0, -4.18) {\textbf{Circuito QAOA}};
-  \node[font=\footnotesize, text=blue!70!black] at (0, -4.65)
+    (-5.2, -4.75) rectangle (5.2, -6.35);
+  \node[align=center] at (0, -5.18) {\textbf{Circuito QAOA}};
+  \node[align=center, text=blue!70!black] at (0, -5.78)
     {$R_Z(\theta_i)\;\otimes\;R_{ZZ}(\theta_{ij})$ \quad puertas nativas NISQ};
 \end{tikzpicture}
 \caption{Pipeline de compilación del MDS al circuito cuántico. La sustitución $x_i=(1-Z_i)/2$ transforma la función objetivo QUBO en un Hamiltoniano de Ising con términos $Z_i$ (puertas $R_Z$) y $Z_iZ_j$ (puertas $R_{ZZ}$), directamente implementables en hardware NISQ.}

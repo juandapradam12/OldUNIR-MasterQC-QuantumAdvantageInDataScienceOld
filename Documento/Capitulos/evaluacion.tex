@@ -40,7 +40,7 @@ El análisis de escalabilidad (Tabla~\ref{tab:escala_clasificacion}) revela que 
 \label{fig:escala_clasificacion}
 \end{figure}
 
-El mecanismo que explica esta ventaja es la alineación entre la función de kernel y la función generadora de etiquetas: ambas son el mismo \texttt{ZZFeatureMap}, de modo que el kernel cuántico minimiza el riesgo empírico en el espacio de Hilbert correcto. Los clasificadores clásicos operan en $\mathbb{R}^2$ y no pueden acceder implícitamente a este espacio.
+El mecanismo que explica esta ventaja es la alineación entre la función de kernel y la función generadora de etiquetas: ambas son el mismo \texttt{ZZFeatureMap}, de modo que el kernel cuántico minimiza el riesgo empírico en el \textbf{espacio de representación} correcto ---el espacio de Hilbert $\mathcal{H}$ inducido por el mapa de características $\phi\colon\mathbb{R}^2\rightarrow\mathcal{H}$---. Los clasificadores clásicos operan en el espacio euclídeo $\mathbb{R}^2$ y no pueden acceder implícitamente a este espacio de Hilbert sin una simulación de coste exponencial.
 
 \paragraph{Limitaciones que condicionan la interpretación.}
 \begin{itemize}
@@ -211,7 +211,7 @@ Aunque la evaluación es cualitativa, el análisis de tiempos aporta una perspec
 \begin{table}[ht]
 \centering
 \small
-\begin{tabular}{lllp{4.5cm}}
+\begin{tabularx}{\linewidth}{p{3.0cm}p{3.0cm}p{2.8cm}X}
 \hline
 \textbf{Método} & \textbf{Complejidad tiempo} & \textbf{Garantía solución} & \textbf{Limitante principal} \\
 \hline
@@ -221,7 +221,7 @@ Greedy cobertura   & $O(n^2)$         & Aproximada ($\ln n + 1$) & No garantiza 
 QAOA (simulación)  & $O(2^n)$ en sim. & Probabilística   & Simulación clásica inviable $n > 30$ \\
 QAOA (hardware)    & $O(\text{poly})$ & Probabilística   & Hardware NISQ: $n \lesssim 60$ qubits \\
 \hline
-\end{tabular}
+\end{tabularx}
 \caption{Complejidad de los métodos evaluados para el MDS. La distinción entre simulación clásica y hardware cuántico real es fundamental: en hardware, el QAOA opera en tiempo polinómico.}
 \label{tab:complejidad_mds}
 \end{table}

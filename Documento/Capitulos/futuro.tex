@@ -129,6 +129,43 @@ Uno de los argumentos más sólidos a favor del aprendizaje no supervisado cuán
 
 El Framework QCR (Quantum-Compatible Representation) desarrollado en el Capítulo~\ref{cap:investigacion_original} demuestra que $T^* = \text{re-uploading } reps=3$ es la transformación óptima sobre los dos datasets reales del TFM, con una mejora verificada de $+4.2$ pp de ventaja QSVM en Telco Churn. Sin embargo, el framework presenta limitaciones que abren líneas de extensión claras:
 
+% -------------------------------------------------------------------
+\subsection{Demostración de la Conjetura del Espacio de Representación Cuántico-Compatible}
+\label{sec:futuro_conjetura_qcr}
+% -------------------------------------------------------------------
+
+La contribución teórica central del Capítulo~\ref{cap:investigacion_original} es la Conjetura~\ref{conj:qcr}, que propone la existencia de un ciclo completo de inferencia cuántica
+
+\begin{equation}
+  \mathbf{x}
+  \;\xrightarrow{\;\psi\;}\;
+  \mathbf{z}
+  \;\xrightarrow{\;f_Q^*\;}\;
+  \hat{y}
+  \;\Big[\xrightarrow{\;\psi^{-1}\;}\; \mathbf{x}^* \;\text{(solo en optimización)}\Big]
+\end{equation}
+
+donde $\psi: \mathcal{X} \rightarrow \mathcal{Z}$ es una transformación polinómica que convierte cualquier dataset clásico en cuántico-compatible. Esta conjetura permanece abierta, y su demostración o refutación constituye la línea de investigación post-TFM de mayor impacto potencial. La hoja de ruta propuesta es la siguiente:
+
+\begin{enumerate}
+  \item \textbf{Caracterización de la clase de distribuciones $p(\mathbf{x},y)$ para las que existe $\psi$ polinómico.} \\
+  Determinar si la existencia de $\psi$ depende de propiedades universales de la distribución (como suavidad, separabilidad de clases o estructura espectral) o si existen distribuciones para las cuales ninguna $\psi$ polinómica produce $\mathcal{Q}(\psi(\mathcal{D})) > 0$. Un contraejemplo de esta segunda hipótesis constituiría una refutación de la conjetura.
+
+  \item \textbf{Demostración de invarianza de error: $\varepsilon(f_Q^* \circ \psi) \leq \varepsilon(f_C^*)$.} \\
+  Probar que la ventaja cuántica obtenida en $\mathcal{Z}$ no se destruye al componer con $\psi$. Esto requiere una cota de la distorsión informacional introducida por $\psi$ ---análoga a la preservación de separabilidad en PCA de kernels--- en términos del score $\mathcal{Q}$ y de la cota de Huang et al.\ \citep{huang2021}.
+
+  \item \textbf{Back-mapping $\psi^{-1}$ con garantías de factibilidad en optimización.} \\
+  Para problemas combinatorios (asignación de agentes, rutas, portafolio), la solución cuántica óptima $\mathbf{z}^* \in \mathcal{Z}$ debe decodificarse en una solución factible $\psi^{-1}(\mathbf{z}^*) \in \mathcal{X}$. Hay que demostrar que $\psi$ admite un decodificador que preserva la factibilidad de las restricciones QUBO bajo la transformación inversa, o diseñar un decodificador aproximado con cota de penalización controlada.
+
+  \item \textbf{Algoritmo de búsqueda de $\psi$ con garantías de aproximación.} \\
+  El re-uploading adaptativo encontrado empíricamente en el Notebook~09 es solo una instancia particular de $\psi$ en un espacio de búsqueda mucho mayor. Desarrollar un algoritmo de búsqueda ---posiblemente variacional, tipo quantum metric learning \citep{lloyd2020}--- que encuentre $\psi$ óptima con garantías de convergencia y complejidad polinómica en el tamaño del dataset.
+\end{enumerate}
+
+\paragraph{Impacto potencial.}
+Si la Conjetura~\ref{conj:qcr} se demostrara en su forma fuerte ---es decir, si existiera $\psi$ polinómica para toda distribución--- implicaría que la computación cuántica puede ofrecer ventaja sobre \emph{cualquier} dataset clásico, dado el preprocesamiento adecuado. Aunque el horizonte temporal de esta demostración es incierto, incluso su versión débil ---existencia de $\psi$ para familias específicas de distribuciones--- tendría un impacto metodológico directo en el diseño de pipelines de aprendizaje automático cuántico en entornos empresariales.
+
+\subsection{Extensiones operativas del framework}
+
 \begin{itemize}
     \item \textbf{UMAP cuántico con métrica real:} la Estrategia~4 (Q-UMAP) se implementó con MDS como fallback por ausencia de \texttt{umap-learn}. La implementación con UMAP y distancia cuántica genuina ($d_Q = 1 - K_Q$) puede cambiar cualitativamente los resultados, dado que MDS preserva distancias globales mientras UMAP preserva estructura local.
     \item \textbf{Escalar a 4--8 qubits:} el framework actual opera con $n_q = 2$, forzando compresión PCA que descarta hasta el 69\% de la varianza. Con 4--8 qubits y \texttt{SelectKBest} o selección supervisada, se captura más estructura original. Sin embargo, el análisis de sensibilidad (Tabla~\ref{tab:sensibilidad_dim}) advierte que features muy discriminativas pueden reducir $\mathcal{Q}$: el diseño de la selección de features deberá equilibrar relevancia supervisada y compatibilidad con el feature map.
@@ -144,10 +181,10 @@ La combinación del score $\mathcal{Q}(\mathcal{D})$ y el Framework QCR --- vali
 \centering
 \begin{tikzpicture}[font=\small, thick,
     item/.style={rectangle, rounded corners=4pt, very thick,
-                 text width=3.6cm, align=left, inner sep=5pt,
-                 minimum height=0.75cm},
+                 text width=3.4cm, align=left, inner sep=6pt,
+                 minimum height=0.85cm},
     header/.style={rectangle, rounded corners=5pt, very thick,
-                   minimum width=4.0cm, minimum height=0.75cm,
+                   minimum width=3.8cm, minimum height=0.8cm,
                    align=center, font=\footnotesize\bfseries}]
 
   % ── Cabeceras de horizonte ──
@@ -155,23 +192,22 @@ La combinación del score $\mathcal{Q}(\mathcal{D})$ y el Framework QCR --- vali
   \node[header, draw=orange!55!black, fill=orange!8]  (h2) at (5.0,  0) {Medio plazo\\2--4 años};
   \node[header, draw=violet!55!black, fill=violet!8]  (h3) at (10.0, 0) {Largo plazo\\4+ años};
 
-  % Línea divisoria horizontal
-  \draw[gray!35, thick] (-1.8, -0.52) -- (11.8, -0.52);
+  \draw[gray!35, thick] (-1.8, -0.48) -- (11.8, -0.48);
 
   % ── Columna corto plazo ──
-  \node[item, draw=blue!40, fill=blue!5,  anchor=north] (b1) at (0,    -0.75)
+  \node[item, draw=blue!40, fill=blue!5, below=0.35cm of h1] (b1)
     {\textbf{Hardware real IBM}\\\scriptsize Qiskit Runtime + EstimatorV2};
-  \node[item, draw=blue!40, fill=blue!5,  below=0.25cm of b1] (b2)
+  \node[item, draw=blue!40, fill=blue!5, below=0.25cm of b1] (b2)
     {\textbf{API REST de inferencia}\\\scriptsize microservicio QSVM};
-  \node[item, draw=blue!40, fill=blue!5,  below=0.25cm of b2] (b3)
+  \node[item, draw=blue!40, fill=blue!5, below=0.25cm of b2] (b3)
     {\textbf{A/B test Q vs Clásico}\\\scriptsize datos SKG en producción};
-  \node[item, draw=blue!40, fill=blue!5,  below=0.25cm of b3] (b4)
+  \node[item, draw=blue!40, fill=blue!5, below=0.25cm of b3] (b4)
     {\textbf{QAOA $p > 1$}\\\scriptsize SPSA / parameter-shift};
-  \node[item, draw=blue!45, fill=blue!5, below=0.25cm of c1] (c_new)
+  \node[item, draw=blue!40, fill=blue!5, below=0.25cm of b4] (b5)
     {\textbf{Aprendizaje no supervisado Q}\\\scriptsize Q-means / Quantum PCA};
 
   % ── Columna medio plazo ──
-  \node[item, draw=orange!45, fill=orange!5, anchor=north] (m1) at (5.0,  -0.75)
+  \node[item, draw=orange!45, fill=orange!5, below=0.35cm of h2] (m1)
     {\textbf{Escalar kernel a 4--8 q}\\\scriptsize SelectKBest + ZZFeatureMap};
   \node[item, draw=orange!45, fill=orange!5, below=0.25cm of m1] (m2)
     {\textbf{QAOA en asignación SKG}\\\scriptsize recursos campo + QUBO real};
@@ -181,21 +217,23 @@ La combinación del score $\mathcal{Q}(\mathcal{D})$ y el Framework QCR --- vali
     {\textbf{Q-UMAP métrica real}\\\scriptsize distancia cuántica $d_Q$};
 
   % ── Columna largo plazo ──
-  \node[item, draw=violet!45, fill=violet!5, anchor=north] (l1) at (10.0, -0.75)
+  \node[item, draw=violet!45, fill=violet!5, below=0.35cm of h3] (l1)
     {\textbf{Corrección de errores}\\\scriptsize hardware tolerante a fallos};
   \node[item, draw=violet!45, fill=violet!5, below=0.25cm of l1] (l2)
-    {\textbf{QCR generalizado}\\\scriptsize PauliMap + IQP + TwoLocal};
+    {\textbf{Demostración Conjetura QCR}\\\scriptsize $\exists\,\psi$ polinómica; back-mapping $\psi^{-1}$};
   \node[item, draw=violet!45, fill=violet!5, below=0.25cm of l2] (l3)
-    {\textbf{Publicación científica}\\\scriptsize npj QI / Quantum ML};
+    {\textbf{QCR generalizado}\\\scriptsize PauliMap + IQP + TwoLocal};
   \node[item, draw=violet!45, fill=violet!5, below=0.25cm of l3] (l4)
+    {\textbf{Publicación científica}\\\scriptsize npj QI / Quantum ML};
+  \node[item, draw=violet!45, fill=violet!5, below=0.25cm of l4] (l5)
     {\textbf{QML end-to-end}\\\scriptsize quantum metric learning};
 
-  % Flechas de progresión entre columnas
-  \draw[->, very thick, gray!50] (2.2, -2.5) -- (2.8, -2.5);
-  \draw[->, very thick, gray!50] (7.2, -2.5) -- (7.8, -2.5);
+  % ── Flechas de progresión entre columnas ──
+  \draw[->, very thick, gray!50] (2.05, -3.5) -- (2.75, -3.5);
+  \draw[->, very thick, gray!50] (7.05, -3.5) -- (7.75, -3.5);
 
 \end{tikzpicture}
-\caption{Roadmap de trabajo futuro organizado en tres horizontes temporales. Las líneas de investigación de corto plazo (azul) son directamente ejecutables con el hardware actual; las de medio plazo (naranja) requieren hardware mejorado o mayor volumen de datos; las de largo plazo (violeta) dependen de avances en hardware tolerante a fallos y consolidación teórica.}
+\caption{Roadmap de trabajo futuro organizado en tres horizontes temporales. Las líneas de investigación de corto plazo (azul) son directamente ejecutables con el hardware actual; las de medio plazo (naranja) requieren hardware mejorado o mayor volumen de datos; las de largo plazo (violeta) dependen de avances en hardware tolerante a fallos y consolidación teórica, incluyendo la demostración de la Conjetura~\ref{conj:qcr}.}
 \label{fig:roadmap_futuro}
 \end{figure}
 

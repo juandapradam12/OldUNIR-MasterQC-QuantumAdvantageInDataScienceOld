@@ -343,6 +343,59 @@ El framework se aplicó a los dos datasets reales (Notebook~09, §10). Los resul
     \item \textbf{Telco Churn}: $\mathcal{Q}=-0.228 \leq \theta=0$. Cuello de botella: $\Delta H = -1.131$ (concentración espectral). Transformación recomendada: re-uploading adaptativo. Resultado: $\mathcal{Q}: -0.228 \rightarrow +0.167$, ventaja: $0.0 \rightarrow +4.2$ pp $\uparrow$.
 \end{itemize}
 
+% -------------------------------------------------------------------
+\paragraph{Formalización: la Conjetura del Espacio de Representación Cuántico-Compatible.}
+\label{par:conjetura_qcr}
+% -------------------------------------------------------------------
+
+El framework QCR es, en su esencia, el intento operativo de verificar la siguiente conjetura, que constituye la hipótesis central de esta contribución original:
+
+\begin{conjetura}[Espacio de Representación Cuántico-Compatible]
+\label{conj:qcr}
+Sea $\mathcal{D} = \{(\mathbf{x}_i, y_i)\}_{i=1}^n \subset \mathcal{X} \times \mathcal{Y}$ un dataset con distribución arbitraria y sin estructura cuántica nativa $(\mathcal{Q}(\mathcal{D}) \leq 0)$. La conjetura establece que existen:
+\begin{enumerate}
+  \item Un \textbf{espacio de representación cuántico-compatible} $\mathcal{Z}$,
+  \item Una transformación $\psi: \mathcal{X} \rightarrow \mathcal{Z}$ computable en tiempo polinómico,
+  \item Un modelo cuántico óptimo $f_Q^*: \mathcal{Z} \rightarrow \mathcal{Y}$,
+\end{enumerate}
+tales que el ciclo completo de inferencia
+\begin{equation}
+  \mathbf{x}
+  \;\xrightarrow{\;\psi\;}\;
+  \mathbf{z}
+  \;\xrightarrow{\;f_Q^*\;}\;
+  \hat{y}
+  \;\Big[\xrightarrow{\;\psi^{-1}\;}\; \mathbf{x}^* \;\text{(solo en optimización)}\Big]
+  \label{eq:ciclo_qcr}
+\end{equation}
+satisface simultáneamente:
+\begin{itemize}
+  \item $\mathcal{Q}(\psi(\mathcal{D})) > 0$ \quad (el dataset transformado es cuántico-compatible en $\mathcal{Z}$),
+  \item $\varepsilon(f_Q^* \circ \psi) \leq \varepsilon(f_C^*)$ \quad (la tasa de error cuántica en $\mathcal{Z}$ no supera a la del mejor predictor clásico $f_C^*$ en $\mathcal{X}$).
+\end{itemize}
+En problemas de \emph{clasificación y regresión}, la predicción $\hat{y} \in \mathcal{Y}$ es directamente interpretable en el espacio original sin necesidad de transformación inversa. En problemas de \emph{optimización}, la solución cuántica óptima $\mathbf{z}^* = \arg\min_{\mathbf{z} \in \mathcal{Z}} C(\mathbf{z})$ debe mapearse de vuelta al espacio de decisión original mediante $\psi^{-1}(\mathbf{z}^*)$ para recuperar la solución factible en $\mathcal{X}$.
+\end{conjetura}
+
+\paragraph{Implicaciones de la conjetura.}
+La Conjetura~\ref{conj:qcr} es no trivial por tres razones:
+
+\begin{enumerate}
+  \item \textbf{Existencia del espacio $\mathcal{Z}$}: La conjetura afirma que, para cualquier distribución de datos clásica, existe al menos un espacio en el que dicha distribución adquiere estructura cuántica explotable. Esto no implica que $\mathcal{Z}$ sea único ni que $\psi$ sea eficientemente encontrable: la existencia es la afirmación mínima necesaria para que el programa de investigación sea científicamente coherente.
+
+  \item \textbf{Computabilidad polinómica de $\psi$}: Si $\psi$ tuviese coste exponencial, la ventaja cuántica en $\mathcal{Z}$ no se traduciría en ventaja global. La condición de polinomialidad es la que distingue la conjetura de la trivialidad: siempre es posible construir un mapeo exponencialmente costoso que haga cuántico cualquier dataset, pero tal mapeo no sería útil en la práctica.
+
+  \item \textbf{El back-mapping $\psi^{-1}$ en optimización}: Para clasificación y regresión, el ciclo no requiere volver al espacio original porque la etiqueta $\hat{y}$ pertenece a $\mathcal{Y}$, no a $\mathcal{X}$. Sin embargo, en problemas de optimización combinatoria, la solución cuántica $\mathbf{z}^*$ debe ser decodificable en términos de decisiones reales (asignación de agentes, rutas, activos financieros). Esto impone que $\psi$ sea invertible o, al menos, que exista un decodificador $\psi^{-1}$ que preserve la factibilidad de la solución.
+\end{enumerate}
+
+\paragraph{Estado de la conjetura.}
+La Conjetura~\ref{conj:qcr} es actualmente \textbf{abierta}: no existe demostración general de existencia ni contraejemplo conocido. El resultado empírico más relevante de este TFM es que el framework QCR encuentra $\psi$ (re-uploading adaptativo) para Telco Churn tal que $\mathcal{Q}$ pasa de $-0.228$ a $+0.167$, y la ventaja QSVM pasa de $0$ a $+4.2$ pp. Esto constituye una evidencia de que la conjetura es al menos plausible en la familia de problemas evaluada. Su demostración formal requiere:
+\begin{itemize}
+  \item Caracterizar la clase de distribuciones $p(\mathbf{x}, y)$ para las que existe $\psi$ polinómico con $\mathcal{Q}(\psi(\mathcal{D})) > 0$.
+  \item Demostrar que la ventaja cuántica en $\mathcal{Z}$ se traduce en ventaja en $\mathcal{X}$ bajo condiciones de invarianza: $\varepsilon(f_Q^* \circ \psi) \leq \varepsilon(f_C^*)$.
+  \item Proporcionar un algoritmo de construcción de $\psi$ con garantías de aproximación.
+\end{itemize}
+Esta hoja de ruta formal se desarrolla en el Capítulo~\ref{cap:futuro}.
+
 \begin{figure}[!htbp]
 \centering
 \begin{tikzpicture}[thick, font=\small,
@@ -440,7 +493,7 @@ Este capítulo ha presentado dos contribuciones originales del TFM:
 \begin{enumerate}
     \item \textbf{Tests de cuanticidad}: Una revisión sistemática de los indicadores propuestos en la literatura (kernel alignment, entropía espectral, distancia de Frobenius, diferencia geométrica de Huang), su implementación sobre los tres datasets del TFM, y la propuesta de un score compuesto $\mathcal{Q}(\mathcal{D})$ que integra los indicadores con respaldo teórico en la cota de \citet{huang2021}.
 
-    \item \textbf{Framework QCR}: Un procedimiento de cuatro pasos para diagnosticar la cuanticidad de un dataset, identificar el cuello de botella estructural y aplicar la transformación de pre-mapeo adecuada, verificando el incremento de $\mathcal{Q}$ antes de entrenar el modelo cuántico.
+    \item \textbf{Framework QCR y Conjetura del Espacio de Representación Cuántico-Compatible}: Un procedimiento de cuatro pasos para diagnosticar la cuanticidad de un dataset, identificar el cuello de botella estructural y aplicar la transformación de pre-mapeo adecuada, con verificación del incremento de $\mathcal{Q}$ antes de entrenar el modelo cuántico. El framework es la materialización operativa de la Conjetura~\ref{conj:qcr}: dado un dataset sin estructura cuántica, existe una transformación $\psi: \mathcal{X} \rightarrow \mathcal{Z}$ que lo hace cuántico-compatible, el modelo cuántico se entrena en $\mathcal{Z}$, y la predicción (o, en optimización, la solución óptima $\psi^{-1}(\mathbf{z}^*)$) se interpreta en el espacio original $\mathcal{X}$.
 \end{enumerate}
 
 Ambas contribuciones son preliminares en el sentido de que están validadas sobre un número reducido de datasets y un único feature map. Su generalización y demostración formal constituyen la hoja de ruta de investigación post-TFM descrita en el Capítulo~\ref{cap:futuro}.
