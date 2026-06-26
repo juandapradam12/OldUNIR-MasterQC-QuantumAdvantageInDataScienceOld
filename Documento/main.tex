@@ -15,6 +15,10 @@
 \usepackage{tabularx}   % tablas de ancho variable
 \usepackage{booktabs}   % líneas profesionales (\toprule, \midrule, \bottomrule)
 \newtheorem{conjetura}{Conjetura}[chapter]  % entorno para conjeturas originales del TFM
+\usepackage{caption}    % personalización de captions
+% Añade "Fuente: elaboración propia." debajo de cada figura
+\DeclareCaptionTextFormat{fuente}{#1\par\footnotesize\normalfont\textit{Fuente: elaboración propia.}}
+\captionsetup[figure]{textformat=fuente}
 
 \title{La Evolución de la Ciencia de Datos hacia la Computación Cuántica: Análisis de la Ventaja Cuántica en Casos Aplicados}
 \titulacion{Máster en Computación Cuántica}
