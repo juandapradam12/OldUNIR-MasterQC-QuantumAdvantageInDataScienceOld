@@ -73,14 +73,16 @@ for x_pos, adv in zip(n_train, advantage_pp):
              ha="center", va="bottom", fontsize=8.5, fontweight="bold",
              color="#1B5E20", zorder=6)
 
-# Leyenda unificada — colocada en esquina superior derecha del eje izquierdo
-# lejos de los puntos de datos que están en la franja 42 %–91 %
+# Leyenda en el hueco central entre SVM-RBF (~43-56%) y QSVM (~86-91%)
+# → bbox_to_anchor y=0.57 en coords de ejes (0-110%) ≈ 63% accuracy,
+#   que está claramente por encima del SVM-RBF max (55.6%) y
+#   por debajo del QSVM min (85.6%).
 handles_ax1, labels_ax1 = ax1.get_legend_handles_labels()
 patch_bars = mpatches.Patch(color="#2E7D32", alpha=0.40,
                              label=f"Ventaja cuántica (media +{advantage_pp.mean():.1f} pp)")
 all_handles = handles_ax1 + [patch_bars]
 ax1.legend(handles=all_handles, fontsize=9,
-           loc="upper left", bbox_to_anchor=(0.01, 0.99),
+           loc='center left', bbox_to_anchor=(0.02, 0.57),
            framealpha=0.92, edgecolor="#cccccc")
 
 plt.tight_layout()

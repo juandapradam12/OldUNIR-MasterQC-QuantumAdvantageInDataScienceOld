@@ -98,7 +98,7 @@ donde $|\phi(x_i)\rangle$ es el estado cuántico codificado por un \texttt{ZZFea
 
 \begin{figure}[ht]
 \centering
-\includegraphics[width=0.98\textwidth]{../POCs/data/output/figures/06_zzfeaturemap_circuit.png}
+\includegraphics[width=\textwidth]{../POCs/data/output/figures/06_zzfeaturemap_circuit.png}
 \caption{Circuito \texttt{ZZFeatureMap} de 2 qubits y 2 repeticiones empleado como mapa de codificación de datos. Las puertas $R_Z(\lambda)$ codifican las features individuales $x_j$; las secuencias $\text{CNOT}$-$R_Z$-$\text{CNOT}$ codifican las interacciones cruzadas $x_j(\pi - x_k)$, que generan la no-linealidad cuántica que define el kernel $\kappa(x_i, x_j)$.}
 \label{fig:zzfeaturemap_circuit}
 \end{figure}
@@ -225,7 +225,7 @@ Telco Customer Churn       & 0.735 & 0.747 & $-0.013$ & SVM-RBF (marginal) \\
 
 \begin{figure}[ht]
 \centering
-\includegraphics[width=\textwidth]{../POCs/data/output/figures/01_clasificacion_escalabilidad.png}
+\makebox[\textwidth][c]{\includegraphics[width=1.08\textwidth]{../POCs/data/output/figures/01_clasificacion_escalabilidad.png}}
 \caption{Escalabilidad de QSVM vs.\ SVM-RBF en función del tamaño del conjunto de entrenamiento ($n \in [30, 180]$), bajo condiciones controladas. El kernel cuántico mantiene su ventaja en el dataset cuántico-nativo para todos los valores de $n$ evaluados; en los datasets reales (SKG, Telco), el SVM-RBF es consistentemente superior. Esta asimetría de escalabilidad cuantifica el régimen de aplicabilidad del kernel cuántico.}
 \label{fig:clasificacion_escalabilidad}
 \end{figure}
