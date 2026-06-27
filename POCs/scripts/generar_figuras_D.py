@@ -71,7 +71,7 @@ for bs, c in items:
 opt_bs = "011000"
 colors = ["#FF6B35" if lb == opt_bs else "#4A90D9" for lb in labels]
 
-fig, ax = plt.subplots(figsize=(11, 5.5))
+fig, ax = plt.subplots(figsize=(11, 6.5))
 
 bars = ax.bar(range(len(labels)), probs, color=colors,
               edgecolor="white", linewidth=1.2, width=0.7)
@@ -94,7 +94,7 @@ for bs, sel in zip(labels, decoded):
         xtick_labels.append(f"$\\bf{{{bs}}}$\n{{{names}}}")
     else:
         xtick_labels.append(f"{bs}\n{{{names}}}")
-ax.set_xticklabels(xtick_labels, fontsize=8.5)
+ax.set_xticklabels(xtick_labels, fontsize=8, rotation=30, ha='right')
 
 ax.set_ylabel("Probabilidad de medición", fontsize=11)
 ax.set_ylim(0, 0.88)

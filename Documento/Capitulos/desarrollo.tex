@@ -98,7 +98,7 @@ donde $|\phi(x_i)\rangle$ es el estado cuántico codificado por un \texttt{ZZFea
 
 \begin{figure}[ht]
 \centering
-\includegraphics[width=0.85\textwidth]{../POCs/data/output/figures/06_zzfeaturemap_circuit.png}
+\includegraphics[width=0.98\textwidth]{../POCs/data/output/figures/06_zzfeaturemap_circuit.png}
 \caption{Circuito \texttt{ZZFeatureMap} de 2 qubits y 2 repeticiones empleado como mapa de codificación de datos. Las puertas $R_Z(\lambda)$ codifican las features individuales $x_j$; las secuencias $\text{CNOT}$-$R_Z$-$\text{CNOT}$ codifican las interacciones cruzadas $x_j(\pi - x_k)$, que generan la no-linealidad cuántica que define el kernel $\kappa(x_i, x_j)$.}
 \label{fig:zzfeaturemap_circuit}
 \end{figure}
@@ -225,7 +225,7 @@ Telco Customer Churn       & 0.735 & 0.747 & $-0.013$ & SVM-RBF (marginal) \\
 
 \begin{figure}[ht]
 \centering
-\includegraphics[width=0.95\textwidth]{../POCs/data/output/figures/01_clasificacion_escalabilidad.png}
+\includegraphics[width=\textwidth]{../POCs/data/output/figures/01_clasificacion_escalabilidad.png}
 \caption{Escalabilidad de QSVM vs.\ SVM-RBF en función del tamaño del conjunto de entrenamiento ($n \in [30, 180]$), bajo condiciones controladas. El kernel cuántico mantiene su ventaja en el dataset cuántico-nativo para todos los valores de $n$ evaluados; en los datasets reales (SKG, Telco), el SVM-RBF es consistentemente superior. Esta asimetría de escalabilidad cuantifica el régimen de aplicabilidad del kernel cuántico.}
 \label{fig:clasificacion_escalabilidad}
 \end{figure}
@@ -497,32 +497,32 @@ El QAOA \citep{farhi2014} implementa el paradigma de optimización variacional m
 \begin{tikzpicture}[thick, font=\small]
   %--- Módulo cuántico ---
   \draw[draw=blue!55!black, fill=blue!8, rounded corners=6pt, very thick]
-    (-3.6, 0.75) rectangle (3.6, -0.75);
-  \node[align=center] at (0, 0.27) {\textbf{Módulo cuántico}};
-  \node[align=center, font=\footnotesize, text=blue!65!black] at (0, -0.25)
+    (-4.6, 0.9) rectangle (4.6, -0.9);
+  \node[align=center] at (0, 0.35) {\textbf{Módulo cuántico}};
+  \node[align=center, font=\footnotesize, text=blue!65!black, text width=8.8cm] at (0, -0.30)
     {\texttt{QAOAAnsatz}$(p)$ \quad $|$ \quad Aer Simulator / IBM Hardware};
   %--- Módulo clásico ---
   \draw[draw=orange!60!black, fill=orange!8, rounded corners=6pt, very thick]
-    (-3.6, -2.2) rectangle (3.6, -3.7);
+    (-4.6, -2.2) rectangle (4.6, -3.8);
   \node[align=center] at (0, -2.65) {\textbf{Módulo clásico}};
-  \node[align=center, font=\footnotesize, text=orange!65!black] at (0, -3.15)
+  \node[align=center, font=\footnotesize, text=orange!65!black, text width=8.8cm] at (0, -3.20)
     {\texttt{COBYLA} (SciPy) \quad $|$ \quad $\min_{\boldsymbol{\theta}}\,\langle H_C\rangle_{\boldsymbol{\theta}}$};
   %--- Entrada superior ---
-  \draw[->] (0, 1.55) -- (0, 0.75);
-  \node[above, font=\footnotesize, align=center] at (0, 1.55)
+  \draw[->] (0, 1.75) -- (0, 0.90);
+  \node[above, font=\footnotesize, align=center, text width=9cm] at (0, 1.75)
     {$\boldsymbol{\theta}_k = (\gamma_1,\beta_1,\ldots,\gamma_p,\beta_p)\;\in\;\mathbb{R}^{2p}$};
   %--- Flecha vertical: energía de Q a C ---
-  \draw[->, draw=gray!55] (0, -0.75) -- (0, -2.2)
+  \draw[->, draw=gray!55] (0, -0.90) -- (0, -2.20)
     node[midway, right=5pt, font=\footnotesize]
     {$\langle H_C \rangle_{\boldsymbol{\theta}}$ \quad (escalar)};
   %--- Flecha de retroalimentación: C devuelve theta a Q ---
   \draw[->, draw=orange!55!black]
-    (-3.6, -2.95) -- (-5.2, -2.95) -- (-5.2, 0) -- (-3.6, 0);
-  \node[left=3pt, font=\footnotesize, text=orange!65!black] at (-5.2, -1.47)
+    (-4.6, -3.00) -- (-5.8, -3.00) -- (-5.8, 0) -- (-4.6, 0);
+  \node[left=3pt, font=\footnotesize, text=orange!65!black] at (-5.8, -1.50)
     {$\boldsymbol{\theta}_{k+1}$};
   %--- Salida inferior ---
-  \draw[->] (0, -3.7) -- (0, -4.5);
-  \node[below, font=\footnotesize, align=center] at (0, -4.5)
+  \draw[->] (0, -3.80) -- (0, -4.70);
+  \node[below, font=\footnotesize, align=center] at (0, -4.70)
     {$\boldsymbol{\theta}^{*} = \arg\min_{\boldsymbol{\theta}}\,\langle H_C\rangle_{\boldsymbol{\theta}}$};
 \end{tikzpicture}
 \caption{Arquitectura del loop híbrido cuántico-clásico en QAOA. El módulo cuántico (azul) evalúa la energía esperada $\langle H_C\rangle_{\boldsymbol{\theta}}$ para los parámetros actuales $\boldsymbol{\theta}_k$; el módulo clásico (naranja) los actualiza mediante \texttt{COBYLA} para minimizar esa energía. La interfaz entre módulos se reduce a $2p$ reales de entrada y un único escalar de salida, lo que facilita la integración en cualquier pipeline de optimización existente.}

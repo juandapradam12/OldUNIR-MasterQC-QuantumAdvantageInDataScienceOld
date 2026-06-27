@@ -61,7 +61,7 @@ for n_ in G.nodes():
         node_colors.append("#4A90D9")    # azul → no contratado
         node_sizes.append(1100)
 
-fig, ax = plt.subplots(figsize=(8, 6))
+fig, ax = plt.subplots(figsize=(8, 7))
 
 nx.draw_networkx_edges(G, pos, ax=ax,
                        edge_color="#888888", width=2.2, alpha=0.65)
@@ -78,7 +78,8 @@ nx.draw_networkx_labels(G, pos, ax=ax,
 # Leyenda
 patch_inf = mpatches.Patch(color="#FF6B35", label=r"$D^*$ = {Ana, Enrique}  (influencers contratados, coste = 2)")
 patch_std = mpatches.Patch(color="#4A90D9", label="Nodo cubierto (≥ 1 vecino en $D^*$)")
-ax.legend(handles=[patch_inf, patch_std], loc="upper right", fontsize=9,
+ax.legend(handles=[patch_inf, patch_std], loc="lower center",
+          bbox_to_anchor=(0.5, -0.14), ncol=1, fontsize=9,
           framealpha=0.9, edgecolor="#cccccc")
 
 # Anotación de cobertura
@@ -99,6 +100,7 @@ ax.set_title(
 )
 ax.axis("off")
 plt.tight_layout()
+plt.subplots_adjust(bottom=0.15)
 out_path = OUT / "10_mds_grafo_solucion.png"
 plt.savefig(out_path, dpi=150, bbox_inches="tight")
 plt.close()
@@ -229,14 +231,14 @@ ax0.set_title("$R^2$ por modelo y dataset", fontweight="bold")
 ax0.legend(fontsize=9)
 
 for bar, val in zip(list(bq) + list(bc), list(r2_quantum) + list(r2_classical)):
-    ypos = val + 0.018 if val >= 0 else val - 0.04
+    ypos = val + 0.022 if val >= 0 else val - 0.05
     ax0.text(bar.get_x() + bar.get_width()/2, ypos,
-             f"{val:.3f}", ha="center", va="bottom", fontsize=9, fontweight="bold")
+             f"{val:.3f}", ha="center", va="bottom", fontsize=8.5, fontweight="bold")
 
 # Anotación de qué clásico es el mejor en cada dataset
 for i, lbl in enumerate(labels_classical):
-    ax0.text(x[i] + w/2, -0.07, lbl, ha="center", va="top",
-             fontsize=7.5, color="#555555", style="italic")
+    ax0.text(x[i] + w/2, -0.10, lbl, ha="center", va="top",
+             fontsize=7, color="#555555", style="italic")
 
 # ── Panel 2: Ventaja neta ΔR² ────────────────────────────────────────────────
 ax1 = axes[1]
@@ -248,13 +250,13 @@ ax1.set_xticks(x)
 ax1.set_xticklabels(datasets, fontsize=9)
 ax1.set_ylabel("Ventaja cuántica ($\\Delta R^2 = R^2_Q - R^2_{cl}$)", fontsize=10)
 ax1.set_title("Ventaja Cuántica Neta ($\\Delta R^2$)", fontweight="bold")
-ax1.set_ylim(-0.55, 0.75)
+ax1.set_ylim(-0.80, 0.82)
 
 for bar, val in zip(bars_gap, gap):
-    ypos = val + 0.018 if val >= 0 else val - 0.035
+    ypos = val + 0.022 if val >= 0 else val - 0.042
     ax1.text(bar.get_x() + bar.get_width()/2, ypos,
              f"{val:+.3f}", ha="center", va="bottom",
-             fontsize=11, fontweight="bold",
+             fontsize=10, fontweight="bold",
              color="#2E8B57" if val > 0 else "#DC143C")
 
 # Etiquetas explicativas
@@ -265,7 +267,7 @@ interpretaciones = [
 ]
 for i, txt in enumerate(interpretaciones):
     color = "#2E8B57" if gap[i] > 0 else "#8B0000"
-    ax1.text(x[i], ax1.get_ylim()[0] + 0.04, txt,
+    ax1.text(x[i], -0.72, txt,
              ha="center", va="bottom", fontsize=7.5,
              color=color, multialignment="center")
 
