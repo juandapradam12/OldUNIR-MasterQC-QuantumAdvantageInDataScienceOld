@@ -1,5 +1,9 @@
 % !TEX root = ../main.tex
 \chapter{Apéndices}
+% Restaurar numeración con prefijo de capítulo (A.1, A.2, ...)
+% necesario porque \appendix en book-class puede perder el prefijo
+\renewcommand{\thefigure}{\thechapter.\arabic{figure}}
+\renewcommand{\thetable}{\thechapter.\arabic{table}}
 
 % =====================================================================
 \section{Catálogo de notebooks y pruebas de concepto}
