@@ -1,8 +1,24 @@
 # Pruebas de Concepto (POCs) — TFM Computación Cuántica
 
+**Current code (2026):** fair classification lives in [`src/classification_fair.py`](src/classification_fair.py). The `src/models/` tree described below was never implemented; original experiments are inlined in `notebooks/01_*.ipynb`–`10_*.ipynb`.
+
+```bash
+cd POCs
+pip install -r requirements.txt
+python -m src.classification_fair --quick          # smoke
+python -m src.classification_fair                  # Table A + B, 5 repeats
+pytest tests/ -q
+```
+
+To view notebooks in Cursor: install the Jupyter extension, then **Reopen Editor With → Jupyter Notebook**. If `.ipynb` opens as JSON, read the `.py` modules instead.
+
+---
+
 Este directorio contiene las pruebas de concepto para la comparación empírica entre algoritmos cuánticos y clásicos.
 
-## 🏗️ Arquitectura Modular
+## Arquitectura prevista (no implementada)
+
+El README original describía este árbol. Solo `src/classification_fair.py` exists today; notebooks remain the TFM record.
 
 El proyecto sigue una arquitectura limpia y modular:
 

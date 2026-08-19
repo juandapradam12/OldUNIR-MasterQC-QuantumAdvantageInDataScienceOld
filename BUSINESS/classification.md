@@ -2,9 +2,11 @@
 
 Companion to [`POCs/notebooks/01_clasificacion_quantum_vs_clasico.ipynb`](../POCs/notebooks/01_clasificacion_quantum_vs_clasico.ipynb).
 
-Open the notebook. We go cell by cell. This file is the shared notes from that pass.
+Open `01_*.ipynb` as a **notebook**, not as JSON. In Cursor: install the Jupyter extension (`ms-toolsai.jupyter`), then Command Palette → `Reopen Editor With...` → `Jupyter Notebook`. The repo maps `*.ipynb` → `jupyter-notebook` in [`.vscode/settings.json`](../.vscode/settings.json).
 
-Notebook 06 (kernel threshold) is the next file, not this one.
+If the file still shows JSON, read [`POCs/src/classification_fair.py`](../POCs/src/classification_fair.py) — that is the corrected protocol in ordinary Python.
+
+The original `01_clasificacion_quantum_vs_clasico.ipynb` is the TFM record. New runs use [`01b_clasificacion_comparacion_justa.ipynb`](../POCs/notebooks/01b_clasificacion_comparacion_justa.ipynb).
 
 ---
 
@@ -189,16 +191,17 @@ Caveats still in this function:
 
 ---
 
-## Open issues to fix after we finish reading (not yet)
+## What we changed (fair protocol)
 
-1. Relative `Datos/` path; `N_QUBITS` 4 vs 2 used inconsistently.
-2. Telco/SKG headline tables: always pair them with §16 or a matched-n classical run.
-3. Stratify the Telco quantum test subsample.
-4. Scalability: disjoint train/test.
-5. Extract `QuantumKernelClassifier` into `POCs/src/` once we agree the API (`predict` needs `X_train`).
+Implemented in [`POCs/src/classification_fair.py`](../POCs/src/classification_fair.py):
 
----
+- **Same rows, same split, repeated stratified holdout** (`n_repeats=5` by default).
+- **Table A:** QSVM-ZZ, SVM-RBF, SVM-linear, GB, logistic all see the same `n_qubits` matrix in `[-π, π]`. Preprocess (scaler, PCA) is fit on **train only**. Quantum-native points are **not** re-scaled (they already are ZZ angles).
+- **Table B:** same rows; classical models keep all original columns. Labeled `B_matched_n_full_features` so it is not mixed with Table A.
+- `QuantumKernelSVC.predict(X)` stores train points internally (no extra `X_train` argument).
+- SKG path is `Datos/incidents_movility.csv` relative to the repo, not a machine-specific absolute path.
+- Default kernel: 2 qubits, ZZFeatureMap `reps=2`, `entanglement=full`, exact fidelity (statevector), `C=1` on both SVMs.
 
-## Next
+Run: `cd POCs && python -m src.classification_fair --quick` then drop `--quick` for the full protocol.
 
-Notebook **06** (threshold / sample size on Telco and SKG under the kernel). Then we decide what to change in 01.
+Still later: notebook 06, k-fold nested inside PCA, class-weight policy, 4-qubit sensitivity.

@@ -27,6 +27,7 @@
     "latex-workshop.latex.rootFile.indicator": "\\begin{document}",
     "latex-workshop.latex.rootFile.useSubFileAsRoot": false,
     "workbench.editorAssociations": {
-        "*.pdf": "default"
+        "*.pdf": "default",
+        "*.ipynb": "jupyter-notebook"
     }
 }
