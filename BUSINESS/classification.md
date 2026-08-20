@@ -191,17 +191,16 @@ Caveats still in this function:
 
 ---
 
-## What we changed (fair protocol)
+## Fair protocol results (n=100, 3 repeats)
 
-Implemented in [`POCs/src/classification_fair.py`](../POCs/src/classification_fair.py):
+See [`classification_fair_results.md`](classification_fair_results.md). Headline:
 
-- **Same rows, same split, repeated stratified holdout** (`n_repeats=5` by default).
-- **Table A:** QSVM-ZZ, SVM-RBF, SVM-linear, GB, logistic all see the same `n_qubits` matrix in `[-π, π]`. Preprocess (scaler, PCA) is fit on **train only**. Quantum-native points are **not** re-scaled (they already are ZZ angles).
-- **Table B:** same rows; classical models keep all original columns. Labeled `B_matched_n_full_features` so it is not mixed with Table A.
-- `QuantumKernelSVC.predict(X)` stores train points internally (no extra `X_train` argument).
-- SKG path is `Datos/incidents_movility.csv` relative to the repo, not a machine-specific absolute path.
-- Default kernel: 2 qubits, ZZFeatureMap `reps=2`, `entanglement=full`, exact fidelity (statevector), `C=1` on both SVMs.
+| Dataset | Table A (same 2 features) | Read |
+|---|---|---|
+| Quantum-native | QSVM **0.867** vs best classical **0.611** (Δ **+0.256**) | Positive control works under fair splits |
+| Telco | QSVM **0.733** vs GB/RBF/linear **0.733** (Δ ~0) | No kernel advantage on PCA-2 Telco |
+| SKG incidents | QSVM **0.578** vs logistic **0.656** (Δ **−0.078**) | Classical wins; practice data only |
 
-Run: `cd POCs && python -m src.classification_fair --quick` then drop `--quick` for the full protocol.
+Table B (Telco, full 19 features, same 100 rows): GB **0.833**. That is why the old notebook looked “classical wins hard” — it mixed Table B classical with a tiny quantum subset.
 
-Still later: notebook 06, k-fold nested inside PCA, class-weight policy, 4-qubit sensitivity.
+PCA variance kept for Table A: Telco ~36%, SKG ~58%.
