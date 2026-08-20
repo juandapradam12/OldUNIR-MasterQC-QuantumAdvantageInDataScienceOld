@@ -1,24 +1,43 @@
 # Pruebas de Concepto (POCs) — TFM Computación Cuántica
 
-**Current code (2026):** fair classification lives in [`src/classification_fair.py`](src/classification_fair.py). The `src/models/` tree described below was never implemented; original experiments are inlined in `notebooks/01_*.ipynb`–`10_*.ipynb`.
+**Current code (2026):** QML v2 experiments live in [`qml_v2/`](qml_v2/). The old README `src/models/` tree was never implemented; original TFM experiments stay inlined in `notebooks/01_*.ipynb`–`10_*.ipynb`.
 
 ```bash
 cd POCs
 pip install -r requirements.txt
-python -m src.classification_fair --quick          # smoke
-python -m src.classification_fair                  # Table A + B, 5 repeats
+python -m qml_v2.classification --quick          # smoke
+python -m qml_v2.classification --n-total 100 --n-repeats 3
 pytest tests/ -q
 ```
 
-To view notebooks in Cursor: install the Jupyter extension, then **Reopen Editor With → Jupyter Notebook**. If `.ipynb` opens as JSON, read the `.py` modules instead.
+Notebooks are optional; prefer the `.py` modules (Cursor Agents shows `.ipynb` as JSON).
 
 ---
 
 Este directorio contiene las pruebas de concepto para la comparación empírica entre algoritmos cuánticos y clásicos.
 
-## Arquitectura prevista (no implementada)
+## Layout actual
 
-El README original describía este árbol. Solo `src/classification_fair.py` exists today; notebooks remain the TFM record.
+```
+POCs/
+├── qml_v2/
+│   ├── classification.py
+│   ├── regression.py
+│   ├── optimization.py      # same-model PuLP + greedy + QAOA (assignment)
+│   ├── maxcutm_optimization.py  # MaxCut bench
+│   ├── __init__.py
+│   └── __main__.py
+├── tests/
+├── notebooks/             # TFM record (01–10) + thin 01b driver
+├── data/
+├── scripts/               # Thesis figure generators
+├── config.yaml
+└── requirements.txt
+```
+
+## Arquitectura prevista en el README original (no implementada)
+
+El README original describía `src/models/`, `pipelines/`, `cli/`. That tree does not exist. New work goes under `qml_v2/`.
 
 El proyecto sigue una arquitectura limpia y modular:
 

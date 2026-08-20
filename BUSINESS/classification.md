@@ -4,7 +4,7 @@ Companion to [`POCs/notebooks/01_clasificacion_quantum_vs_clasico.ipynb`](../POC
 
 Open `01_*.ipynb` as a **notebook**, not as JSON. In Cursor: install the Jupyter extension (`ms-toolsai.jupyter`), then Command Palette → `Reopen Editor With...` → `Jupyter Notebook`. The repo maps `*.ipynb` → `jupyter-notebook` in [`.vscode/settings.json`](../.vscode/settings.json).
 
-If the file still shows JSON, read [`POCs/src/classification_fair.py`](../POCs/src/classification_fair.py) — that is the corrected protocol in ordinary Python.
+If the file still shows JSON, read [`POCs/qml_v2/classification.py`](../POCs/qml_v2/classification.py) — that is the corrected protocol in ordinary Python.
 
 The original `01_clasificacion_quantum_vs_clasico.ipynb` is the TFM record. New runs use [`01b_clasificacion_comparacion_justa.ipynb`](../POCs/notebooks/01b_clasificacion_comparacion_justa.ipynb).
 
@@ -197,10 +197,10 @@ See [`classification_fair_results.md`](classification_fair_results.md). Headline
 
 | Dataset | Table A (same 2 features) | Read |
 |---|---|---|
-| Quantum-native | QSVM **0.867** vs best classical **0.611** (Δ **+0.256**) | Positive control works under fair splits |
+| Quantum-native | QSVM **0.867** vs best classical **0.611** (Δ **+0.256**) | Positive control works under matched splits |
 | Telco | QSVM **0.733** vs GB/RBF/linear **0.733** (Δ ~0) | No kernel advantage on PCA-2 Telco |
 | SKG incidents | QSVM **0.578** vs logistic **0.656** (Δ **−0.078**) | Classical wins; practice data only |
 
-Table B (Telco, full 19 features, same 100 rows): GB **0.833**. That is why the old notebook looked “classical wins hard” — it mixed Table B classical with a tiny quantum subset.
+**Table B is not 2 components.** Same 100 rows, but classical uses **all** columns (Telco **19**, SKG **7**). Example: Telco GB Table B = **0.833**. QSVM stays at 2 qubits because ZZFeatureMap uses one qubit per feature; 19 qubits is outside this protocol. Compare Table A QSVM ↔ Table B classical for the business question.
 
 PCA variance kept for Table A: Telco ~36%, SKG ~58%.

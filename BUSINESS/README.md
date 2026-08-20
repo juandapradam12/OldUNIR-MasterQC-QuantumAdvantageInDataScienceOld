@@ -4,9 +4,9 @@ Understanding means **going through the notebooks together**, not summarizing th
 
 | Family | Notebooks | Notes |
 |---|---|---|
-| Classification (in progress) | TFM: `01_*.ipynb`. Fair protocol: `src/classification_fair.py` + `01b_*.ipynb` | [classification.md](classification.md) |
-| Regression | `03_*.ipynb` | later |
-| Optimization | `02`, `04`, `05`, `10` | later |
+| Classification | TFM: `01_*.ipynb`. QML v2: `POCs/qml_v2/classification.py` | [classification.md](classification.md) |
+| Regression | TFM: `03_*.ipynb`. QML v2: `POCs/qml_v2/regression.py` | [regression.md](regression.md) |
+| Optimization | TFM: `02_*.ipynb`. QML v2: `qml_v2/optimization.py` (assignment ILP). MaxCut: `qml_v2/maxcutm_optimization.py` | [optimization.md](optimization.md), [maxcutm_optimization.md](maxcutm_optimization.md) |
 | Clustering | new | workstream 2 |
 
 SKG files are **practice data only**. They appear in the notebooks as the real-operational cell; they are not a customer.

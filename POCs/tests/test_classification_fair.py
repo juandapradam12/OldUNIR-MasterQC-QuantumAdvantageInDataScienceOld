@@ -1,11 +1,10 @@
 """Protocol tests that do not require Qiskit."""
 
 import numpy as np
-import pytest
 from sklearn.datasets import make_classification
 from sklearn.model_selection import StratifiedShuffleSplit
 
-from src.classification_fair import (
+from qml_v2.classification import (
     FairConfig,
     encode_for_zz_kernel,
     subsample_stratified,
@@ -51,5 +50,31 @@ def test_subsample_preserves_both_classes():
 def test_fair_config_defaults():
     cfg = FairConfig()
     assert cfg.n_qubits == 2
-    assert cfg.n_repeats == 5
+    assert cfg.n_repeats == 10
+    assert cfg.n_total == 200
     assert cfg.svm_C == 1.0
+    assert cfg.class_weight == "balanced"
+
+
+def test_scores_majority_collapse_has_low_f1():
+    from qml_v2.classification import _scores
+
+    y_true = np.array([0, 0, 0, 0, 1, 1])
+    y_pred = np.array([0, 0, 0, 0, 0, 0])  # always majority
+    acc, f1, auc, pos = _scores(y_true, y_pred)
+    assert acc > 0.5
+    assert f1 < 0.5
+    assert pos == 0.0
+
+
+def test_encode_no_pca_when_width_matches_qubits():
+    rng = np.random.RandomState(0)
+    Xtr = rng.normal(size=(40, 3))
+    Xte = rng.normal(size=(10, 3))
+    out_tr, out_te, var = encode_for_zz_kernel(
+        Xtr, Xte, n_qubits=3, random_state=0, already_zz_space=False
+    )
+    assert out_tr.shape == (40, 3)
+    assert out_te.shape == (10, 3)
+    assert var == 1.0
+
