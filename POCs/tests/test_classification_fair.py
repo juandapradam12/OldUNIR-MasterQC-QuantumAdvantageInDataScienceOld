@@ -78,3 +78,11 @@ def test_encode_no_pca_when_width_matches_qubits():
     assert out_te.shape == (10, 3)
     assert var == 1.0
 
+
+
+def test_load_telco_numeric():
+    from qml_v2.classification import load_telco
+    X, y, cols = load_telco()
+    assert X.ndim == 2 and X.shape[1] == len(cols)
+    assert X.dtype.kind == "f"
+    assert set(y) <= {0, 1}

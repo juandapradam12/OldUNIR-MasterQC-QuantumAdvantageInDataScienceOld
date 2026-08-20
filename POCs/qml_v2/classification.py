@@ -197,11 +197,12 @@ def load_telco(path: Path | None = None) -> tuple[np.ndarray, np.ndarray, list[s
     X["TotalCharges"] = pd.to_numeric(X["TotalCharges"], errors="coerce")
     X["TotalCharges"] = X["TotalCharges"].fillna(X["TotalCharges"].median())
     for col in X.columns:
-        if X[col].dtype == object or str(X[col].dtype) in ("bool", "category", "string"):
+        # pandas StringDtype shows as "str" / "string"; also cover object/category/bool
+        if not pd.api.types.is_numeric_dtype(X[col]):
             cats = sorted(X[col].astype(str).unique())
             mapping = {c: i for i, c in enumerate(cats)}
             X[col] = X[col].astype(str).map(mapping).astype(float)
-    X = X.fillna(0)
+    X = X.apply(pd.to_numeric, errors="coerce").fillna(0)
     return X.to_numpy(dtype=float), y, list(X.columns)
 
 
