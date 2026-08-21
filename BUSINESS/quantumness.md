@@ -17,7 +17,9 @@ Before training QSVM, ask whether the **ZZ fidelity kernel** is structurally pre
 | \(\hat d_F\) | Frobenius gap ZZ vs best RBF approximant |
 | \(\Delta H\) | Spectral entropy (anti-concentration) |
 
-\(\mathcal{Q}>0\) → ZZ-preferred; \(\mathcal{Q}<0\) → classical-ok.
+\(\mathcal{Q}>0\) **and** \(\Delta A>0\) → `try-ZZ`.  
+\(\mathcal{Q}>0\) but \(\Delta A\le 0\) → `ZZ-geometry-only` (kernels differ, not better aligned).  
+\(\mathcal{Q}\le 0\) → `classical`.
 
 Also reports:
 - \(g\) (geometric difference)
