@@ -139,6 +139,22 @@ def apply_rotation(Xq: np.ndarray, theta: float) -> np.ndarray:
     return MinMaxScaler(feature_range=(-np.pi, np.pi)).fit_transform(X_rot)
 
 
+def make_rotation_premap(theta: float) -> Callable[[np.ndarray, np.ndarray], tuple[np.ndarray, np.ndarray]]:
+    """Train/test-safe rotation for classification Table A (scaler on train only)."""
+
+    def _premap(X_tr: np.ndarray, X_te: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
+        if X_tr.shape[1] != 2:
+            raise ValueError("Rotation premap requires n_qubits=2.")
+        c, s = np.cos(theta), np.sin(theta)
+        R = np.array([[c, -s], [s, c]])
+        mms = MinMaxScaler(feature_range=(-np.pi, np.pi))
+        Xtr = mms.fit_transform(X_tr @ R.T)
+        Xte = mms.transform(X_te @ R.T)
+        return Xtr, Xte
+
+    return _premap
+
+
 def select_best_rotation(
     Xq: np.ndarray, y: np.ndarray, cfg: QCRConfig, seed: int
 ) -> tuple[float, pd.DataFrame]:
@@ -449,6 +465,74 @@ def run_all(
     return out
 
 
+def run_classification_probe(
+    dataset: str = "skg",
+    *,
+    theta: float | None = None,
+    n_total: int = 200,
+    n_repeats: int = 5,
+    random_state: int = 42,
+) -> pd.DataFrame:
+    """Table A classification: baseline ZZ vs QCR rotation (closes Q_rob → ML loop)."""
+    from qml_v2.classification import (
+        FairConfig,
+        advantage_report,
+        run_fair_dataset,
+        summarize,
+    )
+
+    qcfg = QCRConfig(random_state=random_state)
+    if dataset == "skg":
+        X, y, _ = load_skg_incidents()
+        native = False
+    elif dataset == "telco":
+        X, y, _ = load_telco()
+        native = False
+    elif dataset == "quantum_native":
+        X, y = make_quantum_native(
+            n_samples=max(n_total * 2, 120),
+            n_qubits=qcfg.n_qubits,
+            reps=qcfg.zz_reps,
+            entanglement=qcfg.entanglement,
+            random_state=random_state,
+        )
+        native = True
+    else:
+        raise ValueError(dataset)
+
+    if theta is None:
+        Xq, yq = _to_zz(X, y, qcfg, native, random_state)
+        theta, _ = select_best_rotation(Xq, yq, qcfg, random_state)
+        print(f"Selected θ={theta:.4f} rad on Q_rob selection split")
+
+    fcfg = FairConfig(
+        n_total=n_total, n_repeats=n_repeats, random_state=random_state
+    )
+    base = run_fair_dataset(
+        dataset, X, y, fcfg, already_zz_space=native, include_table_b=False
+    )
+    rot = run_fair_dataset(
+        dataset,
+        X,
+        y,
+        fcfg,
+        already_zz_space=native,
+        include_table_b=False,
+        zz_premap=make_rotation_premap(theta),
+        table_a_name="A_matched_features+qcr_rot",
+    )
+    rows = base + rot
+    summary = summarize(rows)
+    print(advantage_report(summary))
+    metrics = repo_paths()["metrics"]
+    metrics.mkdir(parents=True, exist_ok=True)
+    out = pd.DataFrame([asdict(r) for r in rows])
+    out["dataset"] = dataset
+    out["qcr_theta"] = theta
+    out.to_csv(metrics / f"qml_v2_qcr_classprobe_{dataset}.csv", index=False)
+    return summary
+
+
 def main() -> None:
     import argparse
 
@@ -461,6 +545,13 @@ def main() -> None:
         default="quantum_native,telco,skg",
         help="quantum_native,telco,skg",
     )
+    p.add_argument(
+        "--class-probe",
+        default=None,
+        help="Optional: run Table A classification probe on dataset (e.g. skg)",
+    )
+    p.add_argument("--class-n-total", type=int, default=200)
+    p.add_argument("--class-n-repeats", type=int, default=5)
     args = p.parse_args()
     cfg = QCRConfig()
     if args.n_sample is not None:
@@ -468,7 +559,14 @@ def main() -> None:
     if args.n_repeats is not None:
         cfg.n_repeats = args.n_repeats
     names = tuple(s.strip() for s in args.datasets.split(",") if s.strip())
-    run_all(cfg=cfg, datasets=names, quick=args.quick)
+    if args.class_probe:
+        run_classification_probe(
+            args.class_probe,
+            n_total=args.class_n_total,
+            n_repeats=args.class_n_repeats,
+        )
+    else:
+        run_all(cfg=cfg, datasets=names, quick=args.quick)
 
 
 if __name__ == "__main__":

@@ -32,6 +32,19 @@ def test_diagnose_prefers_interactions_when_delta_a_nonpositive():
     assert diagnose_bottleneck({"delta_A": 0.1, "d_F": 0.4}) == "reuploading"
 
 
+def test_rotation_premap_train_test_shapes():
+    from qml_v2.qcr import make_rotation_premap
+
+    rng = np.random.RandomState(2)
+    Xtr = rng.uniform(-np.pi, np.pi, size=(20, 2))
+    Xte = rng.uniform(-np.pi, np.pi, size=(8, 2))
+    Xtr2, Xte2 = make_rotation_premap(0.5)(Xtr, Xte)
+    assert Xtr2.shape == Xtr.shape
+    assert Xte2.shape == Xte.shape
+    assert Xtr2.min() >= -np.pi - 1e-6
+    assert Xtr2.max() <= np.pi + 1e-6
+
+
 def test_qcr_config_defaults():
     cfg = QCRConfig()
     assert cfg.n_qubits == 2

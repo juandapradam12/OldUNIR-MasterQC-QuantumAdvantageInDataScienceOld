@@ -27,6 +27,7 @@ POCs/
 │   ├── maxcutm_optimization.py  # MaxCut bench
 │   ├── quantumness.py           # Q_rob / ZZ-structure score
 │   ├── qcr.py                   # Quantum-Compatible Representation pre-maps
+│   ├── clustering.py            # fair Spectral-ZZ vs classical clustering
 │   ├── __init__.py
 │   └── __main__.py
 ├── tests/

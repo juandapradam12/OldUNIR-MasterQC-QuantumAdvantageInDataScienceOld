@@ -369,7 +369,14 @@ def run_fair_dataset(
     cfg: FairConfig,
     already_zz_space: bool,
     include_table_b: bool = True,
+    zz_premap: Any | None = None,
+    table_a_name: str = "A_matched_features",
 ) -> list[RepeatResult]:
+    """Fair Table A/B protocol.
+
+    ``zz_premap`` if set is ``callable(Xq_tr, Xq_te) -> (Xq_tr', Xq_te')``
+    applied after ZZ encoding (e.g. QCR rotation with train-only scaler).
+    """
     X, y = subsample_stratified(X, y, cfg.n_total, cfg.random_state)
     splitter = StratifiedShuffleSplit(
         n_splits=cfg.n_repeats,
@@ -385,6 +392,8 @@ def run_fair_dataset(
         Xq_tr, Xq_te, pca_var = encode_for_zz_kernel(
             X_tr, X_te, cfg.n_qubits, cfg.random_state, already_zz_space
         )
+        if zz_premap is not None:
+            Xq_tr, Xq_te = zz_premap(Xq_tr, Xq_te)
 
         qclf = QuantumKernelSVC(
             n_qubits=cfg.n_qubits,
@@ -400,7 +409,7 @@ def run_fair_dataset(
             rows,
             repeat=repeat,
             model="QSVM-ZZ",
-            table="A_matched_features",
+            table=table_a_name,
             y_te=y_te,
             y_pred=y_pred,
             y_score=_decision_or_none(qclf, Xq_te),
@@ -418,7 +427,7 @@ def run_fair_dataset(
                 rows,
                 repeat=repeat,
                 model=model_name,
-                table="A_matched_features",
+                table=table_a_name,
                 y_te=y_te,
                 y_pred=y_pred,
                 y_score=_decision_or_none(clf, Xq_te),

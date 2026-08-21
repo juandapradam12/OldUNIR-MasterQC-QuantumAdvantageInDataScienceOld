@@ -38,6 +38,16 @@ Ver [`qcr_v2_results.md`](qcr_v2_results.md). Headline:
 
 La heurística falló en SKG (sugirió `zz_interactions`); **`qcr_auto_best` acertó**. Preferir empírico sobre regla.
 
+## Classification probe (cierra Q_rob → ML)
+
+```bash
+cd POCs
+python3 -m qml_v2.qcr --class-probe skg --class-n-total 200 --class-n-repeats 5
+```
+
+Compara Table A baseline vs `A_matched_features+qcr_rot` (θ seleccionado por Q_rob,
+scaler solo en train).
+
 ## Relación con el resto del TFM
 
 ```
