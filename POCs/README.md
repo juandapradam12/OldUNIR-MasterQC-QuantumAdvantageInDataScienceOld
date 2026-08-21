@@ -23,8 +23,9 @@ POCs/
 ├── qml_v2/
 │   ├── classification.py
 │   ├── regression.py
-│   ├── optimization.py      # same-model PuLP + greedy + QAOA (assignment)
+│   ├── optimization.py          # same-model PuLP + greedy + QAOA (assignment)
 │   ├── maxcutm_optimization.py  # MaxCut bench
+│   ├── quantumness.py           # Q(D) / ZZ-structure score
 │   ├── __init__.py
 │   └── __main__.py
 ├── tests/
