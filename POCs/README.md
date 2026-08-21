@@ -25,7 +25,8 @@ POCs/
 │   ├── regression.py
 │   ├── optimization.py          # same-model PuLP + greedy + QAOA (assignment)
 │   ├── maxcutm_optimization.py  # MaxCut bench
-│   ├── quantumness.py           # Q(D) / ZZ-structure score
+│   ├── quantumness.py           # Q_rob / ZZ-structure score
+│   ├── qcr.py                   # Quantum-Compatible Representation pre-maps
 │   ├── __init__.py
 │   └── __main__.py
 ├── tests/
