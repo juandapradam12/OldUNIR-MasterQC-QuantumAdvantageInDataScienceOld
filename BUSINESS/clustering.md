@@ -32,3 +32,13 @@ python3 -m qml_v2.clustering --n-total 120 --n-repeats 5
 | `telco` / `skg` | Practice data only — churn labels as eval proxy |
 
 Results: [`clustering_v2_results.md`](clustering_v2_results.md).
+
+## Headline (n=120, 5 repeats)
+
+| Dataset | Table A winner | Note |
+|---------|----------------|------|
+| quantum_native | Spectral-ZZ (ARI≈0.05) | Débil pero > classical (~0) |
+| moons / blobs | classical | Spectral-RBF / Agglomerative |
+| telco / skg | classical / tie | ARI≈0 — churn no es estructura de clusters |
+
+SKG/Telco: labels de churn solo como proxy de evaluación (datos de práctica).

@@ -26,6 +26,16 @@ cd POCs && python3 -m qml_v2.qcr --n-sample 80 --n-repeats 3
 3. **Native:** ya era `try-ZZ`; rotación da un boost menor. Reuploading
    empeora (sobre-expresión del feature map).
 
+## Classification probe (SKG)
+
+θ≈2.22 rad · Table A · n=200 · 5 repeats:
+
+- Baseline: QSVM ≈ classical (tie).
+- Tras rotación: QSVM **no mejora** (0.483 vs 0.500).
+
+Conclusión operativa: `try-ZZ` vía QCR es señal de geometría, no garantía
+de lift supervisado. Siempre cerrar con Table A/B.
+
 ## Implicación TFM
 
 QCR es útil como **rescate condicional** (SKG), no como default. En el

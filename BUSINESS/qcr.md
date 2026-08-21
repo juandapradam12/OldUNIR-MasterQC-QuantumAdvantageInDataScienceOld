@@ -48,6 +48,16 @@ python3 -m qml_v2.qcr --class-probe skg --class-n-total 200 --class-n-repeats 5
 Compara Table A baseline vs `A_matched_features+qcr_rot` (θ seleccionado por Q_rob,
 scaler solo en train).
 
+**SKG result (n=200, 5 repeats, θ≈2.22 rad):**
+
+| Table | QSVM acc | Best classical | Verdict |
+|-------|----------|----------------|---------|
+| A baseline | 0.500±0.086 | LR 0.513 | tie |
+| A + QCR rot | 0.483±0.031 | LR 0.517 | classical |
+
+Subir \(\mathcal{Q}_{\mathrm{rob}}\) **no** se tradujo en accuracy QSVM aquí.
+QCR sigue siendo útil como filtro de geometría; no sustituye Table A/B.
+
 ## Relación con el resto del TFM
 
 ```
