@@ -40,7 +40,7 @@ El análisis de escalabilidad (Tabla~\ref{tab:escala_clasificacion}) revela que 
 \label{fig:escala_clasificacion}
 \end{figure}
 
-El mecanismo que explica esta ventaja es la alineación entre la función de kernel y la función generadora de etiquetas: ambas son el mismo \texttt{ZZFeatureMap}, de modo que el kernel cuántico minimiza el riesgo empírico en el \textbf{espacio de representación} correcto ---el espacio de Hilbert $\mathcal{H}$ inducido por el mapa de características $\phi\colon\mathbb{R}^2\rightarrow\mathcal{H}$---. Los clasificadores clásicos operan en el espacio euclídeo $\mathbb{R}^2$ y no pueden acceder implícitamente a este espacio de Hilbert sin una simulación de coste exponencial.
+El mecanismo que explica esta ventaja es la \textbf{alineación} entre el feature map y el generador de etiquetas: en este experimento ambas son el mismo \texttt{ZZFeatureMap} (mapa empíricamente validado en el TFM), de modo que el kernel minimiza el riesgo empírico en el \textbf{espacio de representación} correcto ---el espacio de Hilbert $\mathcal{H}$ inducido por $\phi\colon\mathbb{R}^2\rightarrow\mathcal{H}$---. La lección no es ``ZZ gana'', sino ``el mapa alineado gana''. Los clasificadores clásicos operan en $\mathbb{R}^2$ y no acceden a ese espacio de Hilbert sin coste exponencial.
 
 \paragraph{Limitaciones que condicionan la interpretación.}
 \begin{itemize}
@@ -136,7 +136,7 @@ Es importante matizar que la ventaja se mide frente a SVR con kernel precomputad
 \begin{figure}[!htbp]
 \centering
 \includegraphics[width=0.96\textwidth]{../POCs/data/output/figures/03_regresion_3datasets.png}
-\caption{Comparativa de regresión cuántica (QK-SVR) vs.\ clásica en los tres datasets del TFM. Panel izquierdo: $R^2$ absoluto por modelo. Panel derecho: ventaja neta $\Delta R^2$. El kernel cuántico solo supera al mejor clásico en el dataset cuántico-nativo (Liu 2021), donde la función objetivo $f(\mathbf{x})=\langle ZZ\rangle$ es precisamente el kernel del ZZFeatureMap; en los datasets reales los modelos clásicos (Random Forest, Gradient Boosting) son superiores.}
+\caption{Comparativa de regresión cuántica (QK-SVR) vs.\ clásica en los tres datasets del TFM. Panel izquierdo: $R^2$ absoluto por modelo. Panel derecho: ventaja neta $\Delta R^2$. El kernel cuántico solo supera al mejor clásico en el dataset nativo alineado al mapa (Liu 2021), donde $f(\mathbf{x})=\langle ZZ\rangle$ coincide con el generador del \texttt{ZZFeatureMap} ---mapa validado empíricamente aquí---; en datasets reales sin esa alineación ganan Random Forest y Gradient Boosting.}
 \label{fig:regresion_3datasets}
 \end{figure}
 
@@ -181,7 +181,7 @@ La limitación fundamental es cuadrática: la codificación de permutación bina
 
 El análisis específico del umbral de ventaja del kernel cuántico (Notebook~06) confirma los hallazgos del caso de uso 1 desde una perspectiva de escalabilidad. Sobre el subconjunto Telco ($n=50$), el QSVM obtuvo una ventaja de \textbf{+6.7 pp} (66.7\% vs 60.0\% SVM-RBF), sugiriendo que incluso en datos reales sin estructura cuántica explícita, el kernel puede ser competitivo en muestras pequeñas donde los clásicos tienen menos datos para estimar sus hiperparámetros.
 
-En el dataset cuántico-nativo ($n=150$), el QSVC obtuvo \textbf{+8.9 pp} de ventaja (68.9\% vs 60.0\% SVM-RBF), confirmando la superioridad estructural del kernel cuántico cuando los datos tienen origen cuántico. Sobre el dataset SKG (Incidentes Bogotá), el clasificador clásico fue superior: QSVC 54.0\% vs 60.7\% clásico ($-6.7$ pp), coherente con la ausencia de estructura cuántica en datos de movilidad urbana. La comparativa de los tres datasets en el Notebook~06 consolida la hipótesis de alineación estructural: la ventaja cuántica aparece únicamente cuando la geometría del espacio de características del ZZFeatureMap se alinea con la distribución del problema.
+En el dataset cuántico-nativo ($n=150$), el QSVC obtuvo \textbf{+8.9 pp} de ventaja (68.9\% vs 60.0\% SVM-RBF), confirmando ventaja cuando generador y feature map están alineados. Sobre el dataset SKG (Incidentes Bogotá), el clasificador clásico fue superior: QSVC 54.0\% vs 60.7\% clásico ($-6.7$ pp), coherente con la ausencia de esa alineación en datos de movilidad urbana. La comparativa de los tres datasets en el Notebook~06 consolida el principio transversal: la ventaja aparece cuando el feature map (en este TFM, ZZ) está alineado con el generador del dato; no es una propiedad intrínseca de ZZ.
 
 \begin{figure}[!htbp]
 \centering
@@ -263,7 +263,7 @@ Los resultados del módulo \texttt{qml\_v2.anomaly} ($n=160$, 5 repeticiones, co
 \end{figure}
 
 \paragraph{Interpretación.}
-La ventaja cuántica en anomalías aparece cuando lo ``raro'' \emph{no} es estar lejos, sino pertenecer a otra estructura de fase accesible por el kernel ZZ. En tablas de práctica con spikes lejanos, IsolationForest es suficiente y más barato. Por tanto, el Caso~8 refuerza el mensaje transversal del TFM: el módulo cuántico es una \textbf{herramienta selectiva}, activada tras un diagnóstico de estructura ($\mathcal{Q}_{\mathrm{rob}}$ / tipo de anomalía), no un sustituto por defecto de IsolationForest ni un atajo hacia ``detección de fraude cuántica''.
+La ventaja en anomalías aparece cuando lo ``raro'' \emph{no} es estar lejos, sino pertenecer a otra estructura accesible por el \textbf{feature map alineado} con el generador (aquí, fase del mapa ZZ validado empíricamente). Un mapa distinto (Pauli, IQP, \ldots) definiría otra familia de novedades beneficiadas. En tablas de práctica con spikes lejanos, IsolationForest es suficiente y más barato. El Caso~8 refuerza el mensaje transversal: el módulo cuántico es una \textbf{herramienta selectiva}, activada tras diagnóstico de alineación ($\mathcal{Q}_{\mathrm{rob}}$ / tipo de anomalía), no un sustituto por defecto de IsolationForest ni un atajo hacia ``detección de fraude cuántica''.
 
 % =====================================================================
 \section{Síntesis comparativa y discusión general}
@@ -388,7 +388,7 @@ La Tabla~\ref{tab:sintesis} sintetiza los resultados principales del estudio com
   \node[right=4pt, font=\scriptsize] at (lr.east) {Desfavorable};
 
 \end{tikzpicture}
-\caption{Semáforo de resultados por caso de uso. Cada celda resume el veredicto en tres dimensiones: resultado empírico frente al mejor clásico, escalabilidad con el hardware NISQ actual, y valor potencial para SKG Tecnología. Verde = favorable; amarillo = moderado/condicional; rojo = desfavorable. El Caso~8 es condicional: ventaja solo en anomalías de fase ZZ.}
+\caption{Semáforo de resultados por caso de uso. Cada celda resume el veredicto en tres dimensiones: resultado empírico frente al mejor clásico, escalabilidad con el hardware NISQ actual, y valor potencial para SKG Tecnología. Verde = favorable; amarillo = moderado/condicional; rojo = desfavorable. El Caso~8 es condicional: ventaja cuando la novedad está alineada con el feature map (en este TFM, \texttt{zz\_phase} / ZZ).}
 \label{fig:semaforo_resultados}
 \end{figure}
 
@@ -426,11 +426,11 @@ La Tabla~\ref{tab:sintesis} sintetiza los resultados principales del estudio com
 Los resultados evidencian tres patrones transversales que son coherentes con el estado actual de la teoría y la tecnología cuántica:
 
 \begin{enumerate}
-  \item \textbf{La ventaja cuántica requiere alineación estructural}: La única ventaja robusta y reproducible en datos cuántico-nativos confirma la predicción de \cite{liu2021}. En datos reales sin estructura cuántica, los algoritmos clásicos basados en árboles de decisión (Gradient Boosting, Random Forest) mantienen su superioridad por su capacidad de capturar interacciones no lineales sin restricciones de dimensionalidad.
+  \item \textbf{La ventaja cuántica requiere alineación dato--feature map}: La ventaja robusta en datos nativos confirma \cite{liu2021}: el feature map (ZZ u otro) debe estar alineado con el generador; ZZ es el mapa validado empíricamente en este TFM, no un monopolio. En datos reales sin esa alineación, Gradient Boosting y Random Forest mantienen su superioridad.
 
   \item \textbf{El cuello de botella es la escala}: En todos los casos, la principal limitación práctica del enfoque cuántico no es la calidad del algoritmo sino el coste cuadrático del kernel ($O(n^2)$) y el número de qubits disponibles \citep{haug2023, cerezo2021}. Esta limitación es una función del hardware actual, no del algoritmo en sí.
 
-  \item \textbf{Los resultados negativos son informativos}: Los casos donde el QSVM o el QK-SVR son inferiores a los clásicos en datos reales no son fracasos experimentales, sino resultados metodológicamente valiosos que delimitan con precisión el dominio de aplicabilidad actual de la computación cuántica en ciencia de datos. El Caso~8 añade el mismo matiz en one-class: OCSVM-ZZ no sustituye IsolationForest salvo cuando la anomalía es estructural (fase ZZ), no geométrica.
+  \item \textbf{Los resultados negativos son informativos}: Los casos donde el QSVM o el QK-SVR son inferiores a los clásicos en datos reales no son fracasos experimentales, sino resultados metodológicamente valiosos que delimitan el dominio de aplicabilidad. El Caso~8 añade el mismo matiz en one-class: OCSVM-ZZ no sustituye IsolationForest salvo cuando la novedad está alineada con el mapa (aquí \texttt{zz\_phase}), no cuando es geométrica clásica.
 \end{enumerate}
 
 \subsection{Implicaciones para la adopción empresarial}

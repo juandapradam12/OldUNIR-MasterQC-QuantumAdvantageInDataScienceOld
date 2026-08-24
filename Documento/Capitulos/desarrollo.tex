@@ -2,7 +2,7 @@
 \chapter{Metodología e implementación}
 \label{cap:metodologia}
 
-Este capítulo integra la metodología adoptada y la descripción detallada del diseño, implementación y procedimiento experimental de las pruebas de concepto (PoC) desarrolladas para comparar algoritmos cuánticos y clásicos en tres familias de problemas: clasificación supervisada, regresión y optimización combinatoria. Para cada caso de uso se evalúan tres tipos de conjuntos de datos: (i) un dataset diseñado con \textbf{estructura cuántica explícita} (\textit{cuántico-nativo}; es decir, sintético, generado mediante el propio mapa de características cuántico \texttt{ZZFeatureMap} de modo que el kernel cuántico resulta óptimo por construcción, siguiendo \cite{liu2021}), (ii) un dataset real de SKG Tecnología, y (iii) un dataset de referencia de dominio público. Esta triple perspectiva permite distinguir los escenarios donde la computación cuántica ofrece ventaja teórica genuina de aquellos donde los algoritmos clásicos siguen siendo superiores en la práctica.
+Este capítulo integra la metodología adoptada y la descripción detallada del diseño, implementación y procedimiento experimental de las pruebas de concepto (PoC) desarrolladas para comparar algoritmos cuánticos y clásicos en tres familias de problemas: clasificación supervisada, regresión y optimización combinatoria. Para cada caso de uso se evalúan tres tipos de conjuntos de datos: (i) un dataset diseñado con \textbf{estructura cuántica explícita} (\textit{cuántico-nativo}; sintético, generado de modo que el kernel resulta óptimo por construcción \cite{liu2021} ---en este TFM el mapa empíricamente validado es el \texttt{ZZFeatureMap}; la misma lógica de alineación aplica a otros feature maps), (ii) un dataset real de SKG Tecnología, y (iii) un dataset de referencia de dominio público. Esta triple perspectiva permite distinguir los escenarios donde aparece ventaja por \textbf{alineación dato--feature map} de aquellos donde los algoritmos clásicos siguen siendo superiores en la práctica.
 
 % =====================================================================
 \section{Metodología general}
@@ -95,7 +95,7 @@ Siguiendo el protocolo de \cite{liu2021}, se generó un dataset sintético donde
 \begin{equation}
   y_i = \text{sgn}\!\bigl(\langle\phi(x_i)|\,Z \otimes Z\,|\phi(x_i)\rangle\bigr)
 \end{equation}
-donde $|\phi(x_i)\rangle$ es el estado cuántico codificado por un \texttt{ZZFeatureMap} de 2 qubits con 2 repeticiones. Por construcción, el kernel cuántico de fidelidad $\kappa(x_i, x_j) = |\langle\phi(x_i)|\phi(x_j)\rangle|^2$ es el estimador óptimo del problema. Este dataset no representa un caso práctico real, sino un experimento controlado diseñado para demostrar empíricamente que la ventaja cuántica es alcanzable cuando existe alineación entre la estructura del dato y la geometría del espacio de Hilbert.
+donde $|\phi(x_i)\rangle$ es el estado cuántico codificado por un \texttt{ZZFeatureMap} de 2 qubits con 2 repeticiones ---el mapa con el que se valida empíricamente el corpus de este TFM, no el único posible---. Por construcción, el kernel de fidelidad $\kappa(x_i, x_j) = |\langle\phi(x_i)|\phi(x_j)\rangle|^2$ es el estimador óptimo del problema. Este dataset no representa un caso práctico real, sino un experimento controlado: la ventaja aparece cuando el feature map está alineado con el generador del dato; ZZ es el mapa que medimos aquí.
 
 \begin{figure}[ht]
 \centering
@@ -610,8 +610,8 @@ La implementación de referencia vive en el módulo reproducible \texttt{POCs/qm
 
 \begin{itemize}
   \item \textbf{H8a:} cuando la anomalía es densidad o distancia (puntos lejos del soporte de los inliers), IsolationForest / LOF / OCSVM-RBF dominan.
-  \item \textbf{H8b:} cuando la anomalía es una \emph{fase ZZ distinta} ocupando el \emph{mismo soporte espacial} que los inliers (\texttt{zz\_phase}), el One-Class SVM con kernel de fidelidad ZZ (OCSVM-ZZ) supera a IsolationForest.
-  \item \textbf{No-hipótesis:} no se afirma ventaja cuántica genérica sobre anomalías de negocio ni sobre fraude etiquetado.
+  \item \textbf{H8b:} cuando la anomalía es una \emph{estructura de fase distinta} ocupando el \emph{mismo soporte espacial} que los inliers (\texttt{zz\_phase} ---generador alineado con el mapa ZZ validado en este TFM), el One-Class SVM con kernel de fidelidad ZZ (OCSVM-ZZ) supera a IsolationForest.
+  \item \textbf{No-hipótesis:} no se afirma ventaja cuántica genérica sobre anomalías de negocio ni monopolio de ZZ frente a otros feature maps.
 \end{itemize}
 
 \subsection{Protocolo experimental justo}
@@ -628,7 +628,7 @@ IsolationForest, OCSVM-RBF, LOF y \textbf{OCSVM-ZZ} (kernel de fidelidad sobre \
 \subsection{Datasets}
 
 \begin{itemize}
-  \item \texttt{zz\_phase}: datos cuántico-nativos; la clase mayoritaria de la fase ZZ es inlier y la minoritaria es outlier (mismo soporte en el plano de ángulos).
+  \item \texttt{zz\_phase}: datos nativos alineados al mapa ZZ; la clase mayoritaria del generador es inlier y la minoritaria es outlier (mismo soporte en el plano de ángulos).
   \item \texttt{moons} / \texttt{blobs}: manifolds o gaussianas clásicas + outliers sintéticos lejanos.
   \item \texttt{telco\_injected} / \texttt{skg\_injected}: tablas de práctica; se \textbf{descartan} las etiquetas de churn/gravedad y se inyectan spikes lejanos en el espacio de features. SKG sigue siendo dato de práctica, no cliente.
 \end{itemize}
@@ -636,7 +636,7 @@ IsolationForest, OCSVM-RBF, LOF y \textbf{OCSVM-ZZ} (kernel de fidelidad sobre \
 \begin{figure}[!htbp]
 \centering
 \includegraphics[width=0.98\textwidth]{Imagenes/zz_phase_concept_diagram.png}
-\caption{Idea geométrica del Caso~8. Izquierda: anomalía por distancia (IsolationForest la detecta). Derecha: anomalía por fase ZZ con el mismo soporte espacial (IsolationForest falla; OCSVM-ZZ puede separar).}
+\caption{Idea geométrica del Caso~8. Izquierda: anomalía por distancia (IsolationForest la detecta). Derecha: anomalía por estructura de fase alineada al feature map, mismo soporte espacial (IsolationForest falla; OCSVM-ZZ puede separar ---mapa validado: ZZ).}
 \label{fig:anomaly_concept}
 \end{figure}
 
@@ -675,8 +675,8 @@ QSVM / QK-SVR (kernel cuántico) &
 Gradient Boosting como fallback \\
 \hline
 Detección de anomalías (one-class) &
-Anomalía no es densidad/distancia (p.\,ej.\ fase ZZ, $\mathcal{Q}>0$) &
-OCSVM-ZZ &
+Anomalía alineada al feature map (p.\,ej.\ \texttt{zz\_phase}, $\mathcal{Q}>0$) &
+OCSVM-ZZ (u otro kernel si el mapa cambia) &
 IsolationForest / LOF como default \\
 \hline
 Optimización combinatoria &

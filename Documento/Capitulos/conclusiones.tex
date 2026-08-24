@@ -7,8 +7,8 @@ Este trabajo ha abordado una pregunta central en el estado actual de la computac
 
 \begin{enumerate}
 
-\item \textbf{La ventaja cuántica en clasificación es demostrable y robusta, pero condicionada a la estructura del dato.}
-El QSVM con kernel cuántico (ZZFeatureMap, 2 qubits) superó al mejor clasificador clásico en +38.3 puntos porcentuales sobre un dataset diseñado con estructura cuántica explícita (sintético, generado con \texttt{ZZFeatureMap} para que el kernel cuántico sea óptimo por construcción) siguiendo el marco de \cite{liu2021}. Esta ventaja es consistente a lo largo de múltiples tamaños de muestra ($n=30$ a $n=180$), con una media de +40.9~pp, confirmando que no es un artefacto estadístico. En datos reales (Telco Churn, incidentes de movilidad SKG), sin embargo, los clasificadores clásicos basados en Gradient Boosting son superiores en 3--5~pp.
+\item \textbf{La ventaja cuántica en clasificación es demostrable y robusta, pero condicionada a la alineación dato--feature map.}
+El QSVM con kernel cuántico (\texttt{ZZFeatureMap}, 2 qubits ---mapa validado empíricamente en este TFM, no el único posible) superó al mejor clasificador clásico en +38.3 puntos porcentuales sobre un dataset \emph{generado} con el mismo mapa, de modo que kernel y etiquetas están alineados por construcción \citep{liu2021}. Esta ventaja es consistente en $n=30$--$180$ (media +40.9~pp). En datos reales (Telco, SKG) sin esa alineación, Gradient Boosting es superior en 3--5~pp. La lección no es ``ZZ gana'', sino ``el feature map alineado gana; ZZ es el que medimos aquí''.
 
 \item \textbf{La ventaja cuántica en regresión es más limitada y específica del benchmark.}
 El QK-SVR solo mostró ventaja (+0.093 $R^2$, +979\%) sobre el dataset Friedman~\#1, donde los kernels clásicos estándar tienen dificultades con la no-linealidad específica del problema. En datos reales (velocidad en corredores viales de Bogotá), los regresores de árboles (Gradient Boosting, $R^2=0.660$) superan claramente al QK-SVR ($R^2=0.098$).
@@ -34,8 +34,8 @@ Los datasets reales de movilidad urbana (incidentes y tiempos de viaje en Bogot�
 \item \textbf{El paradigma híbrido cuántico-clásico es el marco de integración más viable para entornos empresariales en la era NISQ.}
 Los Casos~3, 4, 5 y~7 demuestran que los algoritmos variacionales (QAOA, VQE) se integran de forma natural con optimizadores clásicos a través de una interfaz mínima: el módulo cuántico aporta la exploración del espacio de soluciones y el módulo clásico orquesta los parámetros, pre-procesa los datos y toma la decisión final. Esta separación de responsabilidades hace que la arquitectura híbrida sea \textbf{dependiente del caso de uso y de los datos}: es apropiada cuando el problema es formulable como QUBO y la escala es compatible con el hardware disponible; en caso contrario, el pipeline clásico estándar es la opción correcta. Para una empresa como SKG Tecnología, el módulo cuántico debería incorporarse como \textbf{herramienta adicional y selectiva} dentro del stack tecnológico existente —no como sustituto—, activándose específicamente para los subproblemas de optimización combinatoria donde ya ofrece ventaja verificable.
 
-\item \textbf{La detección de anomalías cuántica es útil solo cuando la novedad no es distancia.}
-El Caso~8 (OCSVM-ZZ vs IsolationForest / LOF / OCSVM-RBF) muestra ventaja en \texttt{zz\_phase} (AUC $0.864$ vs $0.553$) y desventaja clara en moons, blobs y tablas de práctica con outliers inyectados. No es detección de fraude: el entrenamiento es one-class (solo inliers). La regla operativa coincide con el resto del TFM: diagnosticar estructura ($\mathcal{Q}$) antes de activar el kernel ZZ; si la anomalía es densidad/distancia, IsolationForest basta.
+\item \textbf{La detección de anomalías cuántica es útil solo cuando la novedad está alineada con el feature map.}
+El Caso~8 (OCSVM con kernel ZZ vs IsolationForest / LOF / OCSVM-RBF) muestra ventaja en \texttt{zz\_phase} (AUC $0.864$ vs $0.553$) ---novedad = otra fase accesible por ese mapa--- y desventaja clara cuando la anomalía es densidad/distancia (moons, blobs, spikes inyectados). No es fraude: entrenamiento one-class. Regla operativa: diagnosticar alineación ($\mathcal{Q}$) antes de activar un kernel cuántico (ZZ u otro); si la anomalía es geométrica clásica, IsolationForest basta.
 
 \end{enumerate}
 
@@ -43,7 +43,7 @@ El Caso~8 (OCSVM-ZZ vs IsolationForest / LOF / OCSVM-RBF) muestra ventaja en \te
 
 \subsection*{Pregunta principal}
 
-La ventaja cuántica en ciencia de datos, tal como se puede demostrar hoy con hardware NISQ simulado, es \textbf{real pero condicionada}. Existe de forma garantizada cuando el problema tiene estructura cuántica explícita \cite{liu2021}, aparece de forma emergente en problemas de optimización combinatoria de escala moderada (QAOA), y es competitiva en regresión no lineal específica (Friedman~\#1). En datos empresariales reales sin estructura cuántica predefinida, los algoritmos clásicos consolidados mantienen su superioridad en el horizonte temporal actual.
+La ventaja cuántica en ciencia de datos, tal como se puede demostrar hoy con hardware NISQ simulado, es \textbf{real pero condicionada}. En kernels, aparece cuando el \textbf{feature map} (en este TFM, ZZ) está alineado con el generador del dato \cite{liu2021}; no es una propiedad intrínseca de ``lo cuántico'' ni monopolio de ZZ. En optimización combinatoria de escala moderada emerge con QAOA/QUBO, y es competitiva en regresión no lineal específica (Friedman~\#1). En datos empresariales reales sin alineación al mapa, los algoritmos clásicos mantienen su superioridad en el horizonte actual.
 
 La conclusión práctica para entornos empresariales como SKG Tecnología es: \textbf{los algoritmos cuánticos son hoy complementarios, no sustitutos, de los clásicos}. Su adopción estratégica tiene sentido en problemas de optimización combinatoria donde las heurísticas clásicas tienen un rendimiento limitado, y como herramienta de preparación para el momento en que el hardware cuántico tolerante a fallos esté disponible.
 
@@ -91,7 +91,7 @@ Este trabajo contribuye a la literatura con:
     \item \textbf{Evidencia empírica} sobre condiciones reales de ventaja cuántica usando datos empresariales propietarios (SKG Tecnología, Bogotá), evaluada en siete casos de uso con tres tipos de dataset cada uno.
     \item \textbf{Metodología de evaluación comparativa reproducible} sobre tres familias de problemas (clasificación, regresión y optimización combinatoria), con código abierto en Qiskit~2.3.0.
     \item \textbf{El indicador $\mathcal{Q}(D)$}: score compuesto de cuanticidad basado en alineación de kernels, entropía espectral y distancia de Frobenius, con correlación $\rho_S = 0.833$ ($p=0.005$) sobre barrido sintético.
-    \item \textbf{El Framework QCR}: protocolo de cuatro pasos para transformar automáticamente datos cuántico-incompatibles, con validación empírica sobre +4.2~pp de ventaja QSVM en Telco Churn.
+    \item \textbf{El Framework QCR}: protocolo de cuatro pasos para pre-mapear datos; Notebook~09 reportó $+4.2$~pp en Telco, matizado por $\mathcal{Q}_{\mathrm{rob}}$ (rescate robusto en SKG vía rotación; Sección~\ref{sec:qml_v2_revision}).
     \item \textbf{El prototipo de arquitectura híbrida cuántico-clásica}: patrón de integración QAOA-COBYLA con criterios explícitos de activación según el tipo de problema, demostrado sobre el conjunto dominante mínimo (NP-difícil) y generalizable a cualquier problema formulable como QUBO en entornos empresariales.
     \item \textbf{Caracterización de la brecha} entre madurez metodológica y madurez de hardware en el estado actual de la computación cuántica aplicada a ciencia de datos.
 \end{enumerate}

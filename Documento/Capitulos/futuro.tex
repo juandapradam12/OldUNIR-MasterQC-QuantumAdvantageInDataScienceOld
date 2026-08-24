@@ -99,7 +99,7 @@ La combinación de la propuesta del score $\mathcal{Q}$, su validación empíric
 \section{Extensión a aprendizaje cuántico no supervisado}
 \label{sec:futuro_no_supervisado}
 
-El Caso de uso~8 (Capítulos~\ref{cap:metodologia} y~\ref{sec:eval_anomaly}) ya incorpora una primera familia \textbf{one-class}: detección de anomalías con OCSVM-ZZ frente a IsolationForest / LOF / OCSVM-RBF, con ventaja condicionada a la estructura \texttt{zz\_phase}. Quedan fuera ---y constituyen extensión natural--- el clustering espectral cuántico a escala, Q-means y los autoencoders cuánticos aplicados a series temporales de movilidad.
+El Caso de uso~8 (Capítulos~\ref{cap:metodologia} y~\ref{sec:eval_anomaly}) ya incorpora una primera familia \textbf{one-class}: detección de anomalías con OCSVM-ZZ frente a IsolationForest / LOF / OCSVM-RBF, con ventaja cuando la novedad está alineada con el feature map (\texttt{zz\_phase} es la familia que valida ese principio para ZZ). Extender a otros mapas (Pauli, IQP) y a clustering espectral / Q-means / autoencoders temporales queda como trabajo futuro.
 
 \paragraph{Algoritmos candidatos (pendientes).}
 \begin{itemize}
@@ -115,7 +115,7 @@ El Caso de uso~8 (Capítulos~\ref{cap:metodologia} y~\ref{sec:eval_anomaly}) ya 
 \paragraph{Casos de uso directos en SKG Tecnología.}
 \begin{itemize}
   \item \textbf{Clustering de incidentes:} agrupar los 27.326 incidentes del NUSE Bogotá por patrón de características (hora, zona, tipo) sin etiquetas previas. El Spectral-ZZ QML~v2 mostró ARI débil; Q-means / VQE-$k$-means son la siguiente referencia.
-  \item \textbf{Detección de anomalías en velocidades:} extender el Caso~8 (hoy spikes inyectados / fase ZZ) a \texttt{bctraveltimes\_history.csv} con autoencoders o scores temporales, sin convertir el problema en fraude etiquetado.
+  \item \textbf{Detección de anomalías en velocidades:} extender el Caso~8 (hoy spikes inyectados / novedad alineada al mapa en \texttt{zz\_phase}) a \texttt{bctraveltimes\_history.csv} con autoencoders o scores temporales, sin convertir el problema en fraude etiquetado.
   \item \textbf{Segmentación no supervisada de agentes:} usar clustering cuántico sobre \texttt{agents.csv} para identificar perfiles de agente latentes, mejorando la asignación a zonas de seguridad.
 \end{itemize}
 

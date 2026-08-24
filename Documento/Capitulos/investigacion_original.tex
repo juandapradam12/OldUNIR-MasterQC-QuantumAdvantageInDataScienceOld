@@ -2,7 +2,7 @@
 \chapter{Tests de Cuanticidad y Mapeos Cuántico-Compatibles}
 \label{cap:investigacion_original}
 
-Los capítulos anteriores han mostrado un patrón consistente: la ventaja cuántica aparece con robustez únicamente cuando los datos tienen estructura cuántica nativa ---esto es, cuando son sintéticos generados con el \texttt{ZZFeatureMap} de modo que el kernel cuántico es óptimo por construcción---, y desaparece en datos reales de movilidad y telecomunicaciones. Este resultado empírico plantea dos preguntas que este capítulo aborda como contribución original del TFM:
+Los capítulos anteriores han mostrado un patrón consistente: la ventaja cuántica en kernels aparece con robustez cuando el \textbf{generador del dato está alineado con el feature map} del kernel ---en los experimentos de este TFM, datos sintéticos generados con el \texttt{ZZFeatureMap} de modo que ese kernel es óptimo por construcción---, y desaparece en datos reales de movilidad y telecomunicaciones sin esa alineación. ZZ no es el único mapa posible (Pauli, IQP, re-uploading, etc.); es el que se validó empíricamente aquí. Este resultado plantea dos preguntas que este capítulo aborda como contribución original del TFM:
 
 \begin{enumerate}
     \item \textbf{Tests de cuanticidad}: ¿Existe algún indicador calculable a priori sobre un dataset que permita predecir si un algoritmo cuántico mostrará ventaja sobre los clásicos?
@@ -490,6 +490,9 @@ El framework QCR es una propuesta preliminar validada sobre tres datasets y un �
 
 Los notebooks 01--10 constituyen el \textbf{registro experimental original} del TFM. En paralelo se endureció un paquete reproducible \texttt{POCs/qml\_v2/} con protocolos Table~A/B, métricas multi-repeat y decodificación nombrada. Esta sección documenta dónde el protocolo justo \textbf{matiza} (no invalida el mensaje cualitativo) las cifras de los notebooks.
 
+\paragraph{Principio transversal (alineación, no monopolio de ZZ).}
+La ventaja no se atribuye al \texttt{ZZFeatureMap} como objeto mágico, sino a la \textbf{alineación entre el generador del dato y el feature map} del kernel. ZZ es el mapa con el que se ejecutó el corpus empírico de este TFM; la misma lógica de diagnóstico ($\mathcal{Q}$), pre-mapeo (QCR) y Table~A/B aplica a otros mapas (PauliFeatureMap, IQP, re-uploading, kernels de evolución). Cambiar el mapa cambia \emph{qué} datos se benefician, no el protocolo.
+
 \paragraph{Clasificación (Table~A).}
 Bajo features emparejadas ($n=200$, 10 repeats), el dataset cuántico-nativo sigue mostrando ventaja clara: QSVM $88.8\%\pm5.8$ frente a Gradient Boosting $52.3\%\pm6.0$ ($\Delta\approx +36.5$~pp). Telco y SKG siguen siendo clásicos o empate (Telco $\Delta\approx -23.8$~pp en Table~A; SKG tie). La cifra histórica $+38.3$~pp del Notebook~01 permanece como referencia del protocolo original; la conclusión operativa no cambia.
 
@@ -519,4 +522,4 @@ Este capítulo ha presentado dos contribuciones originales del TFM:
     \item \textbf{Framework QCR y Conjetura del Espacio de Representación Cuántico-Compatible}: Un procedimiento de cuatro pasos para diagnosticar la cuanticidad de un dataset, identificar el cuello de botella estructural y aplicar la transformación de pre-mapeo adecuada, con verificación del incremento de $\mathcal{Q}$ antes de entrenar el modelo cuántico. El framework es la materialización operativa de la Conjetura~\ref{conj:qcr}: dado un dataset sin estructura cuántica, existe una transformación $\psi: \mathcal{X} \rightarrow \mathcal{Z}$ que lo hace cuántico-compatible, el modelo cuántico se entrena en $\mathcal{Z}$, y la predicción (o, en optimización, la solución óptima $\psi^{-1}(\mathbf{z}^*)$) se interpreta en el espacio original $\mathcal{X}$.
 \end{enumerate}
 
-Ambas contribuciones son preliminares en el sentido de que están validadas sobre un número reducido de datasets y un único feature map. Su generalización y demostración formal constituyen la hoja de ruta de investigación post-TFM descrita en el Capítulo~\ref{cap:futuro}.
+Ambas contribuciones son preliminares en el sentido de que están validadas sobre un número reducido de datasets y, en el corpus empírico principal, un único feature map (\texttt{ZZFeatureMap}). El principio que se defiende es más general: la ventaja aparece cuando el feature map ---ZZ u otro--- está alineado con el generador del dato. Su extensión a Pauli/IQP/re-uploading y la demostración formal constituyen la hoja de ruta del Capítulo~\ref{cap:futuro}.
