@@ -231,6 +231,41 @@ La diferencia conceptual más importante es que \textbf{la complejidad del QAOA 
 El análisis experimental sobre grafos aleatorios $n \in \{6, 8, 10, 12, 15\}$ confirma la curva de escalabilidad esperada: el tiempo del QAOA en simulación crece exponencialmente, mientras que Greedy e ILP mantienen tiempos sub-lineales en el rango evaluado. Esta evidencia delimita con precisión el régimen donde el QAOA cuántico aporta valor: problemas de escala $n \gtrsim 50$ donde ILP y fuerza bruta son inviables pero el hardware de 127 qubits puede operar.
 
 % =====================================================================
+\section{Caso de uso 8: Detección de anomalías one-class}
+\label{sec:eval_anomaly}
+% =====================================================================
+
+Los resultados del módulo \texttt{qml\_v2.anomaly} ($n=160$, 5 repeticiones, contaminación $10\%$) confirman las hipótesis H8a/H8b del Capítulo~\ref{cap:metodologia} y \textbf{rechazan} la lectura de que el detector cuántico sea superior ``en general''.
+
+\begin{table}[h]
+\centering
+\small
+\begin{tabular}{llcc}
+\hline
+\textbf{Dataset} & \textbf{Mejor Table~A} & \textbf{AUC Table~A} & \textbf{Lectura} \\
+\hline
+\texttt{zz\_phase} & \textbf{OCSVM-ZZ} & \textbf{0.864} vs IF 0.553 & Misma nube; fase ZZ \\
+\texttt{moons} & IsolationForest & 0.890 vs ZZ 0.599 & Distancia/densidad \\
+\texttt{blobs} & LOF / IF & $\approx 1.0$ vs ZZ 0.490 & Outliers lejanos \\
+\texttt{telco\_injected} & IsolationForest & 0.884 (B$\approx 1.0$) & Spikes sintéticos \\
+\texttt{skg\_injected} & LOF & 0.993 (B$\approx 1.0$) & Práctica, no fraude \\
+\hline
+\end{tabular}
+\caption{Resumen Caso~8. Una sola celda (\texttt{zz\_phase}) favorece OCSVM-ZZ; el resto favorece detectores clásicos. Telco/SKG usan outliers inyectados y descartan etiquetas de negocio.}
+\label{tab:anomaly_results}
+\end{table}
+
+\begin{figure}[!htbp]
+\centering
+\includegraphics[width=0.98\textwidth]{Imagenes/zz_phase_scores_if_vs_zz.png}
+\caption{Mismos puntos de test en \texttt{zz\_phase}: color = score de anomalía. IsolationForest obtiene AUC~$\approx 0.53$ (casi azar) y marca bordes de la nube; OCSVM-ZZ obtiene AUC~$\approx 0.74$ en este split ilustrativo (media multi-repeat $0.864$).}
+\label{fig:anomaly_scores}
+\end{figure}
+
+\paragraph{Interpretación.}
+La ventaja cuántica en anomalías aparece cuando lo ``raro'' \emph{no} es estar lejos, sino pertenecer a otra estructura de fase accesible por el kernel ZZ. En tablas de práctica con spikes lejanos, IsolationForest es suficiente y más barato. Por tanto, el Caso~8 refuerza el mensaje transversal del TFM: el módulo cuántico es una \textbf{herramienta selectiva}, activada tras un diagnóstico de estructura ($\mathcal{Q}_{\mathrm{rob}}$ / tipo de anomalía), no un sustituto por defecto de IsolationForest ni un atajo hacia ``detección de fraude cuántica''.
+
+% =====================================================================
 \section{Síntesis comparativa y discusión general}
 % =====================================================================
 
@@ -250,6 +285,7 @@ La Tabla~\ref{tab:sintesis} sintetiza los resultados principales del estudio com
 5 & SA-QUBO & \multicolumn{2}{c}{Viable ($n \leq 12$)} & --- \\
 6 & QSVM (umbral) & \textbf{+8.9 pp} ($n=150$) & $-6.7$ pp & $+6.7$ pp ($n=50$) \\
 7 & QAOA MDS ($p=3$) & \multicolumn{2}{c}{\textbf{Óptimo; $P(\text{opt})\approx 73\%$; patrón híbrido}} & NP-hard \\
+8 & OCSVM-ZZ & \textbf{+31.2 pp AUC} (\texttt{zz\_phase}) & clásico (inyectado) & clásico (moons/blobs) \\
 \hline
 \end{tabular}
 \caption{Síntesis de resultados cuántico vs clásico por caso de uso y dataset. Las celdas en negrita indican ventaja cuántica demostrada.}
@@ -336,16 +372,23 @@ La Tabla~\ref{tab:sintesis} sintetiza los resultados principales del estudio com
   \node[amarillo] at (8.3,  -6.4) {\scriptsize Moderada};
   \node[verde]    at (11.0, -6.4) {\scriptsize Alto};
 
+  % Fila 8 – CU8
+  \node[font=\footnotesize] at (0,    -7.3) {8};
+  \node[font=\footnotesize, align=left] at (2.4, -7.3) {OCSVM-ZZ};
+  \node[amarillo] at (5.6,  -7.3) {\scriptsize Condicional};
+  \node[amarillo] at (8.3,  -7.3) {\scriptsize Moderada};
+  \node[amarillo] at (11.0, -7.3) {\scriptsize Selectivo};
+
   % Leyenda
-  \node[verde,    minimum width=0.9cm] (lg) at (2.0, -7.5) {};
+  \node[verde,    minimum width=0.9cm] (lg) at (2.0, -8.4) {};
   \node[right=4pt, font=\scriptsize] at (lg.east) {Favorable / Ventaja cuántica};
-  \node[amarillo, minimum width=0.9cm] (ly) at (6.5, -7.5) {};
+  \node[amarillo, minimum width=0.9cm] (ly) at (6.5, -8.4) {};
   \node[right=4pt, font=\scriptsize] at (ly.east) {Moderado / Empate};
-  \node[rojo,     minimum width=0.9cm] (lr) at (10.2, -7.5) {};
+  \node[rojo,     minimum width=0.9cm] (lr) at (10.2, -8.4) {};
   \node[right=4pt, font=\scriptsize] at (lr.east) {Desfavorable};
 
 \end{tikzpicture}
-\caption{Semáforo de resultados por caso de uso. Cada celda resume el veredicto en tres dimensiones: resultado empírico frente al mejor clásico, escalabilidad con el hardware NISQ actual, y valor potencial para SKG Tecnología. Verde = favorable; amarillo = moderado/condicional; rojo = desfavorable.}
+\caption{Semáforo de resultados por caso de uso. Cada celda resume el veredicto en tres dimensiones: resultado empírico frente al mejor clásico, escalabilidad con el hardware NISQ actual, y valor potencial para SKG Tecnología. Verde = favorable; amarillo = moderado/condicional; rojo = desfavorable. El Caso~8 es condicional: ventaja solo en anomalías de fase ZZ.}
 \label{fig:semaforo_resultados}
 \end{figure}
 
@@ -387,7 +430,7 @@ Los resultados evidencian tres patrones transversales que son coherentes con el 
 
   \item \textbf{El cuello de botella es la escala}: En todos los casos, la principal limitación práctica del enfoque cuántico no es la calidad del algoritmo sino el coste cuadrático del kernel ($O(n^2)$) y el número de qubits disponibles \citep{haug2023, cerezo2021}. Esta limitación es una función del hardware actual, no del algoritmo en sí.
 
-  \item \textbf{Los resultados negativos son informativos}: Los casos donde el QSVM o el QK-SVR son inferiores a los clásicos en datos reales no son fracasos experimentales, sino resultados metodológicamente valiosos que delimitan con precisión el dominio de aplicabilidad actual de la computación cuántica en ciencia de datos.
+  \item \textbf{Los resultados negativos son informativos}: Los casos donde el QSVM o el QK-SVR son inferiores a los clásicos en datos reales no son fracasos experimentales, sino resultados metodológicamente valiosos que delimitan con precisión el dominio de aplicabilidad actual de la computación cuántica en ciencia de datos. El Caso~8 añade el mismo matiz en one-class: OCSVM-ZZ no sustituye IsolationForest salvo cuando la anomalía es estructural (fase ZZ), no geométrica.
 \end{enumerate}
 
 \subsection{Implicaciones para la adopción empresarial}

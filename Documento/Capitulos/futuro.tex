@@ -99,23 +99,23 @@ La combinación de la propuesta del score $\mathcal{Q}$, su validación empíric
 \section{Extensión a aprendizaje cuántico no supervisado}
 \label{sec:futuro_no_supervisado}
 
-Este trabajo se ha centrado exclusivamente en paradigmas supervisados (clasificación y regresión) y en optimización combinatoria, dejando fuera una familia completa de algoritmos con potencial de aplicación directa en los datos de SKG Tecnología: el \textbf{aprendizaje cuántico no supervisado}. Su incorporación en un trabajo futuro es una extensión natural y complementaria al marco comparativo establecido.
+El Caso de uso~8 (Capítulos~\ref{cap:metodologia} y~\ref{sec:eval_anomaly}) ya incorpora una primera familia \textbf{one-class}: detección de anomalías con OCSVM-ZZ frente a IsolationForest / LOF / OCSVM-RBF, con ventaja condicionada a la estructura \texttt{zz\_phase}. Quedan fuera ---y constituyen extensión natural--- el clustering espectral cuántico a escala, Q-means y los autoencoders cuánticos aplicados a series temporales de movilidad.
 
-\paragraph{Algoritmos candidatos.}
+\paragraph{Algoritmos candidatos (pendientes).}
 \begin{itemize}
-  \item \textbf{Q-means \citep{kerenidis2019}:} versión cuántica del algoritmo $k$-means que aprovecha la representación en amplitudes para calcular centroides y distancias en tiempo sublineal. Aplicable al clustering de incidentes de tráfico por zona geoespacial o por patrón horario, un problema que SKG Tecnología aborda actualmente con $k$-means clásico.
+  \item \textbf{Q-means \citep{kerenidis2019}:} versión cuántica del algoritmo $k$-means que aprovecha la representación en amplitudes para calcular centroides y distancias en tiempo sublineal. Aplicable al clustering de incidentes de tráfico por zona geoespacial o por patrón horario, un problema que SKG Tecnología aborda actualmente con $k$-means clásico. El módulo QML~v2 \texttt{clustering.py} (Spectral-ZZ) es un primer paso empírico; Q-means con qRAM sigue siendo futuro.
 
   \item \textbf{Quantum PCA (qPCA) \citep{lloyd2014}:} extracción de componentes principales mediante estimación de fase cuántica aplicada al operador de densidad del dataset. Relevante para la reducción dimensional de los datasets de movilidad antes de aplicar el QSVM, potencialmente superando la PCA clásica en datasets con estructura cuántica implícita.
 
-  \item \textbf{Quantum autoencoders \citep{romero2017}:} circuitos variacionales entrenados para comprimir y reconstruir estados cuánticos. Su aplicación más directa en el contexto de SKG sería la detección de anomalías en los datos de movilidad: patrones de incidente inusuales se manifestarían como estados difícilmente reconstruibles por el autoencoder cuántico entrenado sobre la distribución normal.
+  \item \textbf{Quantum autoencoders \citep{romero2017}:} circuitos variacionales entrenados para comprimir y reconstruir estados cuánticos. Complementarían el Caso~8 (OCSVM-ZZ) en series temporales: patrones de congestión atípica como estados difícilmente reconstruibles.
 
-  \item \textbf{Clustering cuántico espectral:} uso de algoritmos cuánticos de álgebra lineal para calcular los vectores propios del Laplaciano de un grafo de similitud, aplicable a la segmentación de corredores viales por comportamiento de congestión.
+  \item \textbf{Clustering cuántico espectral a escala:} el Spectral-ZZ del protocolo QML~v2 ya se midió; falta escalar afinidades y contrastar con Q-means / VQE-$k$-means en $N$ operativos.
 \end{itemize}
 
 \paragraph{Casos de uso directos en SKG Tecnología.}
 \begin{itemize}
-  \item \textbf{Clustering de incidentes:} agrupar los 27.326 incidentes del NUSE Bogotá por patrón de características (hora, zona, tipo) sin etiquetas previas, para descubrir arquetipos de incidente no definidos a priori. Q-means ofrecería una referencia de comparación con $k$-means clásico bajo el mismo protocolo comparativo del TFM.
-  \item \textbf{Detección de anomalías en velocidades:} aplicar un autoencoder cuántico a los registros de velocidad de \texttt{bctraveltimes\_history.csv} para identificar patrones de congestión atípica que escapen a los umbrales fijos de nivel de servicio.
+  \item \textbf{Clustering de incidentes:} agrupar los 27.326 incidentes del NUSE Bogotá por patrón de características (hora, zona, tipo) sin etiquetas previas. El Spectral-ZZ QML~v2 mostró ARI débil; Q-means / VQE-$k$-means son la siguiente referencia.
+  \item \textbf{Detección de anomalías en velocidades:} extender el Caso~8 (hoy spikes inyectados / fase ZZ) a \texttt{bctraveltimes\_history.csv} con autoencoders o scores temporales, sin convertir el problema en fraude etiquetado.
   \item \textbf{Segmentación no supervisada de agentes:} usar clustering cuántico sobre \texttt{agents.csv} para identificar perfiles de agente latentes, mejorando la asignación a zonas de seguridad.
 \end{itemize}
 

@@ -37,6 +37,8 @@ La Tabla~\ref{tab:notebooks} describe los diez notebooks Jupyter que implementan
 \label{tab:notebooks}
 \end{table}
 
+Además, el paquete reproducible \texttt{POCs/qml\_v2/} concentra los protocolos justos QML~v2 en módulos \texttt{.py} (preferidos frente a notebooks para agentes y CI): \texttt{classification}, \texttt{regression}, \texttt{optimization}, \texttt{maxcutm\_optimization}, \texttt{quantumness}, \texttt{qcr}, \texttt{clustering} y \texttt{anomaly} (Caso~8, one-class; no fraude).
+
 % =====================================================================
 \section{Entorno de software y dependencias}
 \label{anx:entorno}
@@ -75,10 +77,12 @@ SKG — Tiempos de viaje & 81.121 & SKG Tecnología & Caso 3 (regresión de velo
 SKG — Agentes en campo & $\sim$200 & SKG Tecnología & Caso 2 (asignación QAOA) \\[3pt]
 Telco Customer Churn & 7.043 & IBM / Kaggle & Casos 1, 6, 8, 9 (benchmark clasificación) \\[3pt]
 Friedman~\#1 & 500 & Sintético & Caso 3 (benchmark regresión no lineal) \\[3pt]
-Red social (MDS) & 6 nodos & Sintético & Caso 7 (paradigma híbrido) \\
+Red social (MDS) & 6 nodos & Sintético & Caso 7 (paradigma híbrido) \\[3pt]
+\texttt{zz\_phase} / moons / blobs & $n=160$ & Sintético QML~v2 & Caso 8 (anomalías one-class) \\[3pt]
+Telco / SKG inyectados & subsample & Práctica + spikes & Caso 8 (no usan churn/gravedad) \\
 \bottomrule
 \end{tabularx}
-\caption{Datasets empleados en el TFM. Los datos de SKG Tecnología son confidenciales y han sido anonimizados para su uso en este trabajo.}
+\caption{Datasets empleados en el TFM. Los datos de SKG Tecnología son confidenciales y han sido anonimizados para su uso en este trabajo; en el Caso~8 se usan solo como tablas de práctica con outliers inyectados.}
 \label{tab:datasets}
 \end{table}
 

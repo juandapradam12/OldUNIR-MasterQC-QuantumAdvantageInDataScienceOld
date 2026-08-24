@@ -24,6 +24,7 @@ Los experimentos se diseñaron siguiendo un protocolo de validación cruzada est
 
 \begin{itemize}
     \item \textbf{Clasificación}: exactitud (\textit{accuracy}), precisión, exhaustividad (\textit{recall}) y puntuación F1, junto con el área bajo la curva ROC (AUC-ROC).
+    \item \textbf{Detección de anomalías (one-class)}: ROC-AUC y average precision sobre un test con inliers y outliers; el entrenamiento usa solo inliers.
     \item \textbf{Optimización}: valor de la función objetivo alcanzada, razón de aproximación respecto al óptimo clásico conocido y tiempo de convergencia.
     \item \textbf{Eficiencia computacional}: tiempo de ejecución total, número de qubits requeridos, profundidad del circuito y número de evaluaciones de la función objetivo.
     \item \textbf{Escalabilidad}: evolución del rendimiento en función del tamaño del problema, evaluada mediante experimentos con instancias de tamaño creciente.
@@ -597,11 +598,61 @@ Con $p = 3$, QAOA concentra aproximadamente el \textbf{73\%} de las mediciones e
 \end{figure}
 
 % =====================================================================
+\section{Caso de uso 8: Detección de anomalías one-class (OCSVM-ZZ)}
+\label{sec:caso8_anomaly}
+% =====================================================================
+
+Este caso amplía el marco comparativo a un paradigma \textbf{no supervisado / one-class}, distinto de la detección de fraude. El fraude es, en la práctica, un problema de \emph{clasificación supervisada de clase rara} (etiquetas de fraude en entrenamiento): ese escenario ya queda cubierto por el Caso~1. La detección de anomalías aquí se define como \textbf{novelty detection}: el detector se entrena \emph{solo con inliers} y las etiquetas de outlier se usan exclusivamente en evaluación.
+
+La implementación de referencia vive en el módulo reproducible \texttt{POCs/qml_v2/anomaly.py} (protocolo QML~v2), alineado con las Tablas~A/B del resto de familias endurecidas.
+
+\subsection{Hipótesis y delimitación}
+
+\begin{itemize}
+  \item \textbf{H8a:} cuando la anomalía es densidad o distancia (puntos lejos del soporte de los inliers), IsolationForest / LOF / OCSVM-RBF dominan.
+  \item \textbf{H8b:} cuando la anomalía es una \emph{fase ZZ distinta} ocupando el \emph{mismo soporte espacial} que los inliers (\texttt{zz\_phase}), el One-Class SVM con kernel de fidelidad ZZ (OCSVM-ZZ) supera a IsolationForest.
+  \item \textbf{No-hipótesis:} no se afirma ventaja cuántica genérica sobre anomalías de negocio ni sobre fraude etiquetado.
+\end{itemize}
+
+\subsection{Protocolo experimental justo}
+
+\paragraph{Entrenamiento.} Solo filas con $y=0$ (inliers). El escalado y la PCA (si aplica) se ajustan \textbf{únicamente} sobre esos inliers, evitando fuga de información desde el test o desde outliers conocidos.
+
+\paragraph{Tabla~A (features emparejadas).} Misma matriz ZZ-ready ($n_q=2$ ángulos en $[-\pi,\pi]$) para todos los detectores:
+IsolationForest, OCSVM-RBF, LOF y \textbf{OCSVM-ZZ} (kernel de fidelidad sobre \texttt{ZZFeatureMap}).
+
+\paragraph{Tabla~B (negocio).} Mismo split estratificado; los detectores clásicos ven todas las columnas originales. Responde: ¿debe OCSVM-ZZ sustituir IsolationForest en la tabla operativa?
+
+\paragraph{Métricas.} ROC-AUC y average precision sobre el split de test (inliers + outliers). Configuración reportada: $n=160$, 5 repeticiones, contaminación $10\%$, $\nu=0.05$.
+
+\subsection{Datasets}
+
+\begin{itemize}
+  \item \texttt{zz\_phase}: datos cuántico-nativos; la clase mayoritaria de la fase ZZ es inlier y la minoritaria es outlier (mismo soporte en el plano de ángulos).
+  \item \texttt{moons} / \texttt{blobs}: manifolds o gaussianas clásicas + outliers sintéticos lejanos.
+  \item \texttt{telco\_injected} / \texttt{skg\_injected}: tablas de práctica; se \textbf{descartan} las etiquetas de churn/gravedad y se inyectan spikes lejanos en el espacio de features. SKG sigue siendo dato de práctica, no cliente.
+\end{itemize}
+
+\begin{figure}[!htbp]
+\centering
+\includegraphics[width=0.98\textwidth]{Imagenes/zz_phase_concept_diagram.png}
+\caption{Idea geométrica del Caso~8. Izquierda: anomalía por distancia (IsolationForest la detecta). Derecha: anomalía por fase ZZ con el mismo soporte espacial (IsolationForest falla; OCSVM-ZZ puede separar).}
+\label{fig:anomaly_concept}
+\end{figure}
+
+\begin{figure}[!htbp]
+\centering
+\includegraphics[width=0.98\textwidth]{../POCs/data/output/figures/zz_phase_vs_blobs_anomaly.png}
+\caption{Datos reales del generador QML~v2. En \texttt{blobs} las anomalías están lejos del blob de inliers; en \texttt{zz\_phase} normales y anomalías comparten la misma nube en el plano de ángulos.}
+\label{fig:anomaly_support}
+\end{figure}
+
+% =====================================================================
 \section{Prototipo de arquitectura híbrida cuántico-clásica}
 \label{sec:prototipo_hibrido}
 % =====================================================================
 
-Los siete casos de uso desarrollados en este capítulo ilustran, cada uno desde un ángulo diferente, la misma idea estructural: los algoritmos cuánticos variacionales de la era NISQ no reemplazan a los clásicos sino que se integran con ellos en un \textbf{pipeline híbrido} donde cada parte hace lo que mejor sabe hacer. Esta sección sintetiza ese patrón de diseño en forma de prototipo arquitectónico aplicable a un entorno empresarial como SKG Tecnología.
+Los ocho casos de uso desarrollados en este capítulo ilustran, cada uno desde un ángulo diferente, la misma idea estructural: los algoritmos cuánticos variacionales de la era NISQ no reemplazan a los clásicos sino que se integran con ellos en un \textbf{pipeline híbrido} donde cada parte hace lo que mejor sabe hacer. Esta sección sintetiza ese patrón de diseño en forma de prototipo arquitectónico aplicable a un entorno empresarial como SKG Tecnología.
 
 \subsection{Principio de diseño: separación de responsabilidades}
 
@@ -622,6 +673,11 @@ Clasificación / Regresión &
 $\mathcal{Q}(\mathcal{D}) > 0$ (score de cuanticidad positivo) &
 QSVM / QK-SVR (kernel cuántico) &
 Gradient Boosting como fallback \\
+\hline
+Detección de anomalías (one-class) &
+Anomalía no es densidad/distancia (p.\,ej.\ fase ZZ, $\mathcal{Q}>0$) &
+OCSVM-ZZ &
+IsolationForest / LOF como default \\
 \hline
 Optimización combinatoria &
 $n_{\text{vars}} \leq 50$ (hardware actual) o problema NP-difícil con estructura QUBO &
