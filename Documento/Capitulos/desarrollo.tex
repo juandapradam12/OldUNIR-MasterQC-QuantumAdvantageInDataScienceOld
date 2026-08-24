@@ -403,15 +403,52 @@ Se aplicó VQE (\textit{Variational Quantum Eigensolver}) y QAOA a la selección
 \end{itemize}
 
 % =====================================================================
-\section{Caso de uso 5: Problema del viajante (TSP-QUBO)}
+\section{Caso de uso 5: Problema del viajante cerrado (TSP justo)}
+\label{sec:caso5_tsp}
 % =====================================================================
 
-El TSP se formuló como QUBO mediante la codificación estándar de permutación binaria ($n^2$ variables para $n$ ciudades), resuelto mediante Simulated Annealing cuántico (SA-QUBO). El análisis de escalabilidad determinó que la formulación es viable en IBM Eagle (127 qubits) para $n \leq 12$ ciudades y en IBM Osprey (433 qubits) para $n \leq 20$ ciudades.
+El Notebook~05 comparaba instancias de distinto tamaño y puntuaba QAOA con energía Ising / bitstrings a menudo infactibles. El protocolo QML~v2 (\texttt{POCs/qml\_v2/tsp\_optimization.py}) corrige eso: \textbf{TSP cerrado de un vehículo} (no VRP), misma matriz de distancias $D$ y misma longitud de tour $L(\pi)$ para todos los solvers.
 
-\paragraph{Limitaciones identificadas.}
+\subsection{Protocolo experimental justo}
+
 \begin{itemize}
-  \item Para $n > 20$ ciudades, las heurísticas clásicas (LKH, SA clásico) son superiores tanto en tiempo de cómputo como en calidad de solución.
-  \item El número de variables QUBO ($n^2$) limita severamente la escala en hardware actual: para $n=15$ ciudades se requieren 225 qubits solo para la codificación de variables.
+  \item \textbf{Referencia exacta:} fuerza bruta $(n-1)!$ con depot fijo.
+  \item \textbf{Clásicos:} Nearest Neighbor, NN multi-start, \textbf{NN+2-opt} (búsqueda local fuerte), Random-tour.
+  \item \textbf{SA-QUBO:} Simulated Annealing sobre el QUBO de Lucas con $(n-1)^2$ variables (depot fijo), coste reportado en km (o Euclidean), nunca energía Ising.
+  \item \textbf{QAOA:} mismas igualdades QP + decodificación por variables nombradas; coste = $L(\pi)$ del tour factible.
+\end{itemize}
+
+Configuración reportada: $n=4$ ciudades, depot fijo $\Rightarrow$ 9 qubits, $p=1$, familia Colombia (distancias reales entre capitales) y réplicas Euclidean.
+
+\subsection{Resultados (Colombia $n=4$)}
+
+\begin{table}[h]
+\centering
+\small
+\begin{tabular}{lcc}
+\hline
+\textbf{Solver} & \textbf{Coste (km)} & \textbf{Gap vs exacto} \\
+\hline
+BruteForce-opt & \textbf{1867.6} & 0 \\
+\textbf{NN+2-opt} & \textbf{1867.6} & 0 \\
+\textbf{QAOA-$p$1} & \textbf{1867.6} & 0 (factible) \\
+SA-QUBO & 1867.6 & 0 \\
+NearestNeighbor & 2124.6 & $+13.8\%$ \\
+\hline
+\end{tabular}
+\caption{Caso~5, Colombia $n=4$. 2-opt recupera el óptimo que el NN plano pierde; QAOA iguala al exacto bajo protocolo justo.}
+\label{tab:tsp_colombia}
+\end{table}
+
+En réplicas Euclidean ($n=4$, 3 instancias), QAOA y NN+2-opt alcanzan gap~$0$ frente al exacto; SA-QUBO es más débil en media (gap~$\approx 0.12$).
+
+\paragraph{Lectura.}
+El valor del Caso~5 es de \textbf{protocolo y modelado QUBO/QAOA}, no de speedup: a $n=4$ el clásico fuerte (NN+2-opt) ya es óptimo y milisegundos. QAOA demuestra que, con decodificación correcta, recupera $L(\pi)$ óptimo; no sustituye a 2-opt en esta escala. VRP con ventanas temporales queda fuera de alcance (Capítulo~\ref{cap:futuro}).
+
+\paragraph{Limitaciones.}
+\begin{itemize}
+  \item Codificación Lucas: $(n-1)^2$ qubits con depot fijo; $n=15$ ya exige cientos de qubits solo de variables.
+  \item Para $n \gtrsim 20$, heurísticas clásicas (LKH, SA clásico) dominan calidad y tiempo en simulación NISQ.
 \end{itemize}
 
 % =====================================================================
@@ -648,11 +685,55 @@ IsolationForest, OCSVM-RBF, LOF y \textbf{OCSVM-ZZ} (kernel de fidelidad sobre \
 \end{figure}
 
 % =====================================================================
+\section{Caso de uso 9: Forecasting one-step por lags (QK-SVR)}
+\label{sec:caso9_timeseries}
+% =====================================================================
+
+Este caso extiende la familia de kernels a \textbf{series temporales} con un protocolo justo de un paso adelantado: la predicción $y_t$ se construye solo con una ventana de lags del pasado. No es un bake-off frente a ARIMA. Implementación: \texttt{POCs/qml\_v2/timeseries.py}.
+
+\subsection{Protocolo}
+
+\begin{itemize}
+  \item \textbf{Tabla~A:} mismos $n_{\mathrm{lags}}=n_q$ features para QK-SVR-ZZ, Ridge, SVR-RBF y Gradient Boosting.
+  \item \textbf{Tabla~B:} los clásicos reciben lags extra + features cíclicas de hora (mismo $n$ de train).
+  \item Splits \textbf{ordenados en el tiempo} (train = pasado, test = futuro). Configuración reportada: $n=160$, 5 repeticiones, $n_q=2$.
+\end{itemize}
+
+\subsection{Datasets e hipótesis}
+
+\begin{itemize}
+  \item \texttt{zz\_lag}: ventana de lags en espacio de ángulos; objetivo $=\langle ZZ\rangle$ de esa ventana $\Rightarrow$ alineación con el mapa ZZ validado en este TFM.
+  \item \texttt{sine}: serie periódica clásica + ruido $\Rightarrow$ clásico.
+  \item \texttt{skg\_speed}: un corredor de velocidad SKG (práctica) $\Rightarrow$ clásico, sobre todo en Table~B.
+\end{itemize}
+
+\subsection{Resultados (Table~A)}
+
+\begin{table}[h]
+\centering
+\small
+\begin{tabular}{llcc}
+\hline
+\textbf{Dataset} & \textbf{Mejor Table~A} & \textbf{MAE} & \textbf{Lectura} \\
+\hline
+\texttt{zz\_lag} & \textbf{QK-SVR-ZZ} & \textbf{0.056} vs Ridge 0.414 & Target $=\langle ZZ\rangle$ \\
+\texttt{sine} & SVR-RBF & 0.260 vs ZZ 0.662 & Periodicidad clásica \\
+\texttt{skg\_speed} & Ridge & 3.10 vs ZZ 13.2 & Práctica; clásico \\
+\hline
+\end{tabular}
+\caption{Caso~9. Ventaja solo cuando el generador del target está alineado con el feature map (aquí ZZ en \texttt{zz\_lag}).}
+\label{tab:timeseries_dev}
+\end{table}
+
+\paragraph{Lectura.}
+Mismo principio transversal que clasificación y anomalías: no ``ZZ gana en series'', sino ``el mapa alineado gana; ZZ es el que medimos''. En el corredor SKG, invertir en features clásicas (Table~B) es la opción operativa.
+
+% =====================================================================
 \section{Prototipo de arquitectura híbrida cuántico-clásica}
 \label{sec:prototipo_hibrido}
 % =====================================================================
 
-Los ocho casos de uso desarrollados en este capítulo ilustran, cada uno desde un ángulo diferente, la misma idea estructural: los algoritmos cuánticos variacionales de la era NISQ no reemplazan a los clásicos sino que se integran con ellos en un \textbf{pipeline híbrido} donde cada parte hace lo que mejor sabe hacer. Esta sección sintetiza ese patrón de diseño en forma de prototipo arquitectónico aplicable a un entorno empresarial como SKG Tecnología.
+Los nueve casos de uso desarrollados en este capítulo ilustran, cada uno desde un ángulo diferente, la misma idea estructural: los algoritmos cuánticos variacionales de la era NISQ no reemplazan a los clásicos sino que se integran con ellos en un \textbf{pipeline híbrido} donde cada parte hace lo que mejor sabe hacer. Esta sección sintetiza ese patrón de diseño en forma de prototipo arquitectónico aplicable a un entorno empresarial como SKG Tecnología.
 
 \subsection{Principio de diseño: separación de responsabilidades}
 
@@ -679,10 +760,15 @@ Anomalía alineada al feature map (p.\,ej.\ \texttt{zz\_phase}, $\mathcal{Q}>0$)
 OCSVM-ZZ (u otro kernel si el mapa cambia) &
 IsolationForest / LOF como default \\
 \hline
-Optimización combinatoria &
-$n_{\text{vars}} \leq 50$ (hardware actual) o problema NP-difícil con estructura QUBO &
-QAOA ($p \geq 2$) o VQE &
-ILP / Greedy para verificación \\
+Forecasting (lags) &
+Target alineado al mapa (p.\,ej.\ \texttt{zz\_lag}) &
+QK-SVR (ZZ u otro) &
+Ridge / SVR-RBF / GB \\
+\hline
+Optimización combinatoria / TSP &
+QUBO factible; $n_{\text{vars}}$ compatible con hardware &
+QAOA ($p \geq 1$) &
+NN+2-opt / ILP / verificación \\
 \hline
 Caso general &
 $\mathcal{Q}(\mathcal{D}) \leq 0$ o $n_{\text{vars}} > 50$ &

@@ -1,7 +1,7 @@
 % !TEX root = ../main.tex
 \chapter{Conclusiones}
 
-Este trabajo ha abordado una pregunta central en el estado actual de la computación cuántica aplicada: \textit{¿en qué condiciones los algoritmos cuánticos disponibles en la era NISQ ofrecen una ventaja real y medible frente a los algoritmos clásicos en problemas de ciencia de datos?} Los experimentos realizados sobre ocho casos de uso ---incluyendo detección de anomalías one-class---, evaluados sobre tres tipos de datasets cada uno cuando aplica, y la investigación original sobre indicadores de cuanticidad y mapeos cuántico-compatibles, permiten extraer conclusiones concretas y matizadas.
+Este trabajo ha abordado una pregunta central en el estado actual de la computación cuántica aplicada: \textit{¿en qué condiciones los algoritmos cuánticos disponibles en la era NISQ ofrecen una ventaja real y medible frente a los algoritmos clásicos en problemas de ciencia de datos?} Los experimentos realizados sobre nueve casos de uso ---incluyendo anomalías one-class, TSP justo y forecasting por lags---, evaluados sobre tres tipos de datasets cada uno cuando aplica, y la investigación original sobre indicadores de cuanticidad y mapeos cuántico-compatibles, permiten extraer conclusiones concretas y matizadas.
 
 \section{Conclusiones principales}
 
@@ -36,6 +36,12 @@ Los Casos~3, 4, 5 y~7 demuestran que los algoritmos variacionales (QAOA, VQE) se
 
 \item \textbf{La detección de anomalías cuántica es útil solo cuando la novedad está alineada con el feature map.}
 El Caso~8 (OCSVM con kernel ZZ vs IsolationForest / LOF / OCSVM-RBF) muestra ventaja en \texttt{zz\_phase} (AUC $0.864$ vs $0.553$) ---novedad = otra fase accesible por ese mapa--- y desventaja clara cuando la anomalía es densidad/distancia (moons, blobs, spikes inyectados). No es fraude: entrenamiento one-class. Regla operativa: diagnosticar alineación ($\mathcal{Q}$) antes de activar un kernel cuántico (ZZ u otro); si la anomalía es geométrica clásica, IsolationForest basta.
+
+\item \textbf{TSP justo: QAOA iguala al óptimo; el clásico fuerte también.}
+El Caso~5 (TSP cerrado, no VRP) con protocolo QML~v2 muestra QAOA-$p$1 = NN+2-opt = exacto (1867.6~km en Colombia $n=4$). El aporte es de modelado QUBO y decodificación factible, no de ventaja temporal frente a 2-opt.
+
+\item \textbf{Forecasting por lags sigue el mismo principio de alineación.}
+El Caso~9: QK-SVR-ZZ gana en \texttt{zz\_lag} (MAE $0.056$ vs Ridge $0.414$); en \texttt{sine} y \texttt{skg\_speed} gana el clásico. No es ``series cuánticas'', sino target alineado al mapa.
 
 \end{enumerate}
 

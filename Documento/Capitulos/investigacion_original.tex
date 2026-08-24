@@ -507,7 +507,7 @@ con alineación centrada frente al mejor RBF por Frobenius (sin mirar etiquetas)
 Con el score robusto, el premapa óptimo empírico (\texttt{qcr\_auto\_best}) \textbf{no} reproduce el relato Notebook~09 de ``re-uploading $reps=3$ salva Telco ($+4.2$~pp)''. Telco permanece \texttt{classical} tras los premapas. SKG sí cambia de veredicto con \textbf{rotación} ($\theta\approx 74^\circ$): $\mathcal{Q}_{\mathrm{rob}}$ pasa a \texttt{try-ZZ} y la ventaja kernel sube $\approx +5.6$~pp; un probe de clasificación Table~A posterior \textbf{no} traduce eso en lift de accuracy QSVM. Lectura: QCR es filtro de geometría, no garantía de lift supervisado. Las tablas del Notebook~09 se conservan como evidencia del protocolo original; las cifras de esta sección son las de referencia para decisiones operativas.
 
 \paragraph{Familias añadidas en QML~v2.}
-Además de clasificación/regresión/optimización: clustering espectral ZZ, anomalías one-class (Caso~8), TSP cerrado justo (\texttt{tsp\_optimization}; NN+2-opt = QAOA = exacto en Colombia $n=4$), y forecasting por lags (\texttt{timeseries}; QK-SVR gana solo en \texttt{zz\_lag}).
+Además de clasificación/regresión/optimización: clustering espectral ZZ; anomalías one-class (\textbf{Caso~8}); TSP cerrado justo (\textbf{Caso~5}, \texttt{tsp\_optimization}: NN+2-opt = QAOA = exacto en Colombia $n=4$); forecasting por lags (\textbf{Caso~9}, \texttt{timeseries}: QK-SVR gana solo en \texttt{zz\_lag}).
 
 % =====================================================================
 \section{Síntesis del capítulo}

@@ -168,12 +168,14 @@ VQE convergió al portafolio óptimo (verificado por fuerza bruta) para instanci
 Sin embargo, para instancias con $n > 20$ activos, los solvers clásicos de programación cuadrática (QP) basados en métodos de punto interior son aún superiores en tiempo de cómputo sobre simulación. La ventaja cuántica en portafolio requerirá hardware con centenares de qubits lógicos sin errores.
 
 % =====================================================================
-\section{Caso de uso 5: TSP con SA-QUBO}
+\section{Caso de uso 5: TSP cerrado (protocolo justo)}
+\label{sec:eval_tsp}
 % =====================================================================
 
-El análisis de escalabilidad del TSP cuántico determinó que la formulación SA-QUBO es viable en IBM Eagle (127 qubits) para $n \leq 12$ ciudades y en IBM Osprey (433 qubits) para $n \leq 20$ ciudades. Para $n > 20$, las heurísticas clásicas (LKH, SA clásico) son superiores tanto en calidad de solución como en tiempo de cómputo.
+El módulo \texttt{qml\_v2.tsp\_optimization} evalúa todos los solvers sobre la misma $L(\pi)$. En Colombia $n=4$ (Tabla~\ref{tab:tsp_colombia} del Capítulo~\ref{cap:metodologia}), BruteForce, NN+2-opt, QAOA-$p$1 y SA-QUBO empatan en \textbf{1867.6~km}; el NN plano queda en 2124.6~km ($+13.8\%$). En Euclidean ($n=4$, 3 instancias), QAOA y NN+2-opt tienen gap medio~$0$; SA-QUBO $\approx 0.12$.
 
-La limitación fundamental es cuadrática: la codificación de permutación binaria requiere $n^2$ variables QUBO, lo que para $n=15$ ciudades implica 225 qubits solo de codificación, sin contar los qubits ancilla necesarios para las restricciones.
+\paragraph{Interpretación.}
+A esta escala no hay ventaja de tiempo: NN+2-opt es óptimo en milisegundos. El aporte es metodológico ---misma métrica, tours factibles, QAOA que iguala al exacto cuando la decodificación es correcta--- y de modelado QUBO. El Caso~5 \textbf{no} afirma superioridad cuántica frente a 2-opt; delimita cuándo QAOA es un solver válido del mismo modelo. VRP queda fuera.
 
 % =====================================================================
 \section{Caso de uso 6: Análisis del umbral de ventaja del kernel}
@@ -266,6 +268,22 @@ Los resultados del módulo \texttt{qml\_v2.anomaly} ($n=160$, 5 repeticiones, co
 La ventaja en anomalías aparece cuando lo ``raro'' \emph{no} es estar lejos, sino pertenecer a otra estructura accesible por el \textbf{feature map alineado} con el generador (aquí, fase del mapa ZZ validado empíricamente). Un mapa distinto (Pauli, IQP, \ldots) definiría otra familia de novedades beneficiadas. En tablas de práctica con spikes lejanos, IsolationForest es suficiente y más barato. El Caso~8 refuerza el mensaje transversal: el módulo cuántico es una \textbf{herramienta selectiva}, activada tras diagnóstico de alineación ($\mathcal{Q}_{\mathrm{rob}}$ / tipo de anomalía), no un sustituto por defecto de IsolationForest ni un atajo hacia ``detección de fraude cuántica''.
 
 % =====================================================================
+\section{Caso de uso 9: Forecasting one-step por lags}
+\label{sec:eval_timeseries}
+% =====================================================================
+
+Los resultados de \texttt{qml\_v2.timeseries} ($n=160$, 5 repeats, splits temporales) confirman el mismo patrón de alineación en el dominio secuencial (Tabla~\ref{tab:timeseries_dev}).
+
+\begin{itemize}
+  \item \texttt{zz\_lag}: QK-SVR-ZZ MAE $0.056\pm0.007$ ($R^2\approx 0.98$) frente a Ridge $0.414$ --- target $=\langle ZZ\rangle$ de la ventana de lags.
+  \item \texttt{sine}: SVR-RBF MAE $0.260$ vs QK-SVR $0.662$ --- periodicidad clásica.
+  \item \texttt{skg\_speed}: Ridge MAE $3.10$ vs QK-SVR $13.2$ --- corredor de práctica; Table~B refuerza el clásico.
+\end{itemize}
+
+\paragraph{Interpretación.}
+La ventaja no es ``usar un kernel cuántico en series temporales'', sino alinear el generador del target con el feature map. ZZ es el mapa del corpus; un mapa distinto beneficiaría otra familia de series. Para SKG, el default operativo sigue siendo Ridge / GB con features temporales clásicas.
+
+% =====================================================================
 \section{Síntesis comparativa y discusión general}
 % =====================================================================
 
@@ -282,13 +300,14 @@ La Tabla~\ref{tab:sintesis} sintetiza los resultados principales del estudio com
 2 & QK-SVR & $-0.928\,\Delta R^2$ & $-0.562\,\Delta R^2$ & \textbf{$+0.093\,\Delta R^2$} \\
 3 & QAOA ($p=1$) & \multicolumn{2}{c}{\textbf{$-$30.3\% coste vs Greedy}} & --- \\
 4 & VQE/QAOA & \multicolumn{2}{c}{Óptimo ($n \leq 6$)} & --- \\
-5 & SA-QUBO & \multicolumn{2}{c}{Viable ($n \leq 12$)} & --- \\
+5 & QAOA TSP & \multicolumn{2}{c}{empate óptimo vs NN+2-opt ($n=4$)} & Euclidean gap~$0$ \\
 6 & QSVM (umbral) & \textbf{+8.9 pp} ($n=150$) & $-6.7$ pp & $+6.7$ pp ($n=50$) \\
 7 & QAOA MDS ($p=3$) & \multicolumn{2}{c}{\textbf{Óptimo; $P(\text{opt})\approx 73\%$; patrón híbrido}} & NP-hard \\
 8 & OCSVM-ZZ & \textbf{+31.2 pp AUC} (\texttt{zz\_phase}) & clásico (inyectado) & clásico (moons/blobs) \\
+9 & QK-SVR lags & \textbf{$\Delta$MAE $-0.36$} (\texttt{zz\_lag}) & clásico (\texttt{skg\_speed}) & clásico (\texttt{sine}) \\
 \hline
 \end{tabular}
-\caption{Síntesis de resultados cuántico vs clásico por caso de uso y dataset. Las celdas en negrita indican ventaja cuántica demostrada.}
+\caption{Síntesis de resultados cuántico vs clásico por caso de uso y dataset. Las celdas en negrita indican ventaja cuántica demostrada (o empate óptimo verificable en TSP).}
 \label{tab:sintesis}
 \end{table}
 
