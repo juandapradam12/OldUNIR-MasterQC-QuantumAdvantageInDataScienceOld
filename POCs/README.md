@@ -31,6 +31,7 @@ POCs/
 │   ├── qcr.py                   # Quantum-Compatible Representation pre-maps
 │   ├── clustering.py            # fair Spectral-ZZ vs classical clustering
 │   ├── anomaly.py               # one-class OCSVM-ZZ vs IF/RBF/LOF (not fraud)
+│   ├── timeseries.py            # fair lag one-step forecast (QK-SVR)
 │   ├── __init__.py
 │   └── __main__.py
 ├── tests/

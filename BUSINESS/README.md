@@ -10,6 +10,7 @@ Understanding means **going through the notebooks together**, not summarizing th
 | Quantumness Q(D) | TFM: `08_*.ipynb`. QML v2: `qml_v2/quantumness.py` | [quantumness.md](quantumness.md) |
 | Clustering | new QML v2: `qml_v2/clustering.py` | [clustering.md](clustering.md) |
 | Anomaly detection | new QML v2: `qml_v2/anomaly.py` (one-class; not fraud) | [anomaly.md](anomaly.md) |
+| Time series | new QML v2: `qml_v2/timeseries.py` (lag forecast) | [timeseries.md](timeseries.md) |
 | QCR pre-maps | TFM: `09_*.ipynb`. QML v2: `qml_v2/qcr.py` | [qcr.md](qcr.md) |
 
 SKG files are **practice data only**. They appear in the notebooks as the real-operational cell; they are not a customer.
