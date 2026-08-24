@@ -43,6 +43,9 @@ El Caso~5 (TSP cerrado, no VRP) con protocolo QML~v2 muestra QAOA-$p$1 = NN+2-op
 \item \textbf{Forecasting por lags sigue el mismo principio de alineación.}
 El Caso~9: QK-SVR-ZZ gana en \texttt{zz\_lag} (MAE $0.056$ vs Ridge $0.414$); en \texttt{sine} y \texttt{skg\_speed} gana el clásico. No es ``series cuánticas'', sino target alineado al mapa.
 
+\item \textbf{Un segundo mapa (Pauli-Y) confirma que la ventaja sigue al emparejamiento.}
+Tabla cruzada ($n=120$, 5 repeats): generador ZZ $\Rightarrow$ QSVM-ZZ $0.828$ (RBF $0.478$); generador Pauli-Y $\Rightarrow$ QSVM-PauliY $0.550$ (RBF $0.517$), y el kernel ZZ desalineado cae a $0.406$. ZZ es el mapa del corpus principal; no es el único admisible.
+
 \end{enumerate}
 
 \section{Respuesta a las preguntas de investigación}

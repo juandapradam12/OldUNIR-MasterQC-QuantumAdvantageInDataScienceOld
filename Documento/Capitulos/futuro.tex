@@ -88,7 +88,7 @@ El Capítulo~\ref{cap:investigacion_original} propone y valida empíricamente el
 \begin{itemize}
     \item \textbf{Validación sobre benchmarks con ventaja garantizada:} evaluar $\mathcal{Q}(\mathcal{D})$ sobre datasets de Bravyi et al. (2020) donde existe separación cuántico-clásica demostrada formalmente, verificando que $\mathcal{Q} > 0$ en todos ellos.
     \item \textbf{Optimización de los pesos $(w_1, w_2, w_3)$:} los pesos actuales $(0.4, 0.3, 0.3)$ son heurísticos. Una regresión supervisada sobre un corpus de datasets anotados con su ventaja QSVM real permitiría calibrarlos de forma óptima.
-    \item \textbf{Extensión a más feature maps:} validar si el score mantiene su poder predictivo con \texttt{PauliFeatureMap}, \texttt{IQP Encoding} y \texttt{TwoLocal}, o si necesita ser recalibrado por familia de circuito.
+    \item \textbf{Extensión a más feature maps:} el módulo \texttt{feature\_map\_alignment} ya contrastó ZZ vs Pauli-Y en sintéticos. Queda escalar a \texttt{IQP Encoding}, \texttt{TwoLocal} y datasets reales, recalibrando $\mathcal{Q}$ por familia de circuito.
     \item \textbf{Certificación estadística de ventaja:} aplicar los tests estadísticos de \cite{huang2021} para certificar formalmente si los datasets reales de SKG presentan la propiedad de separación cuántica-clásica necesaria para garantizar ventaja, más allá de la estimación empírica del score.
     \item \textbf{Análisis de barren plateaus:} estudiar la presencia de gradientes exponencialmente pequeños en los VQC entrenados, evaluando si las configuraciones utilizadas están afectadas por este fenómeno \citep{cerezo2023}.
 \end{itemize}
