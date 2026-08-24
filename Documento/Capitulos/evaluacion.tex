@@ -372,10 +372,10 @@ La Tabla~\ref{tab:sintesis} sintetiza los resultados principales del estudio com
 
   % Fila 5 – CU5
   \node[font=\footnotesize] at (0,    -4.6) {5};
-  \node[font=\footnotesize, align=left] at (2.4, -4.6) {SA-QUBO (TSP)};
-  \node[amarillo] at (5.6,  -4.6) {\scriptsize Viable};
+  \node[font=\footnotesize, align=left] at (2.4, -4.6) {QAOA TSP};
+  \node[amarillo] at (5.6,  -4.6) {\scriptsize Empate ópt.};
   \node[rojo]     at (8.3,  -4.6) {\scriptsize Limitada};
-  \node[rojo]     at (11.0, -4.6) {\scriptsize Bajo};
+  \node[amarillo] at (11.0, -4.6) {\scriptsize Selectivo};
 
   % Fila 6 – CU6
   \node[font=\footnotesize] at (0,    -5.5) {6};
@@ -398,16 +398,23 @@ La Tabla~\ref{tab:sintesis} sintetiza los resultados principales del estudio com
   \node[amarillo] at (8.3,  -7.3) {\scriptsize Moderada};
   \node[amarillo] at (11.0, -7.3) {\scriptsize Selectivo};
 
+  % Fila 9 – CU9
+  \node[font=\footnotesize] at (0,    -8.2) {9};
+  \node[font=\footnotesize, align=left] at (2.4, -8.2) {QK-SVR lags};
+  \node[amarillo] at (5.6,  -8.2) {\scriptsize Condicional};
+  \node[amarillo] at (8.3,  -8.2) {\scriptsize Moderada};
+  \node[amarillo] at (11.0, -8.2) {\scriptsize Selectivo};
+
   % Leyenda
-  \node[verde,    minimum width=0.9cm] (lg) at (2.0, -8.4) {};
+  \node[verde,    minimum width=0.9cm] (lg) at (2.0, -9.3) {};
   \node[right=4pt, font=\scriptsize] at (lg.east) {Favorable / Ventaja cuántica};
-  \node[amarillo, minimum width=0.9cm] (ly) at (6.5, -8.4) {};
+  \node[amarillo, minimum width=0.9cm] (ly) at (6.5, -9.3) {};
   \node[right=4pt, font=\scriptsize] at (ly.east) {Moderado / Empate};
-  \node[rojo,     minimum width=0.9cm] (lr) at (10.2, -8.4) {};
+  \node[rojo,     minimum width=0.9cm] (lr) at (10.2, -9.3) {};
   \node[right=4pt, font=\scriptsize] at (lr.east) {Desfavorable};
 
 \end{tikzpicture}
-\caption{Semáforo de resultados por caso de uso. Cada celda resume el veredicto en tres dimensiones: resultado empírico frente al mejor clásico, escalabilidad con el hardware NISQ actual, y valor potencial para SKG Tecnología. Verde = favorable; amarillo = moderado/condicional; rojo = desfavorable. El Caso~8 es condicional: ventaja cuando la novedad está alineada con el feature map (en este TFM, \texttt{zz\_phase} / ZZ).}
+\caption{Semáforo de resultados por caso de uso. Verde = favorable; amarillo = moderado/condicional; rojo = desfavorable. Casos~8 y~9 son condicionales: ventaja cuando novedad/target están alineados con el feature map (aquí ZZ). Caso~5: empate óptimo QAOA vs NN+2-opt (valor de modelado).}
 \label{fig:semaforo_resultados}
 \end{figure}
 
@@ -456,7 +463,7 @@ Los resultados evidencian tres patrones transversales que son coherentes con el 
 
 Desde la perspectiva de SKG Tecnología, los resultados sugieren que la integración de algoritmos cuánticos en los sistemas de gestión de movilidad urbana requiere dos condiciones previas: (i) hardware cuántico con mayor número de qubits lógicos y menor tasa de error \citep{preskill2018, cerezo2023}, para operar sobre más features sin reducción dimensional, y (ii) ingeniería de features específica que alinee la representación de los datos con las estructuras geométricas accesibles por los kernels cuánticos \citep{huang2021}. En el corto plazo (horizonte 2--5 años), el valor más realista de la computación cuántica para SKG reside en los algoritmos de optimización combinatoria (QAOA, VQE) para problemas de asignación de recursos, donde la ventaja ya es demostrable a escala moderada con el hardware actual \citep{farhi2014}.
 
-El hilo conductor de los siete casos de uso es precisamente la demostración de que los algoritmos cuánticos no necesitan reemplazar a los clásicos para ser útiles: basta con que resuelvan de forma más eficaz la parte del problema que es intratable para la computación clásica \citep{biamonte2017}. El Caso~7 lo ilustra de forma paradigmática: aplicar QAOA al conjunto dominante mínimo ---un problema NP-difícil--- y conectarlo con un optimizador clásico COBYLA a través de una interfaz mínima es exactamente el patrón con el que la computación cuántica puede integrarse en entornos productivos reales \citep{farhi2014}. El prototipo de arquitectura híbrida desarrollado en la Sección~\ref{sec:prototipo_hibrido} del Capítulo~\ref{cap:metodologia} formaliza este patrón y define los criterios de activación del módulo cuántico según el tipo de problema.
+El hilo conductor de los nueve casos de uso es precisamente la demostración de que los algoritmos cuánticos no necesitan reemplazar a los clásicos para ser útiles: basta con que resuelvan de forma más eficaz la parte del problema que es intratable para la computación clásica \citep{biamonte2017}. El Caso~7 lo ilustra de forma paradigmática: aplicar QAOA al conjunto dominante mínimo ---un problema NP-difícil--- y conectarlo con un optimizador clásico COBYLA a través de una interfaz mínima es exactamente el patrón con el que la computación cuántica puede integrarse en entornos productivos reales \citep{farhi2014}. El prototipo de arquitectura híbrida desarrollado en la Sección~\ref{sec:prototipo_hibrido} del Capítulo~\ref{cap:metodologia} formaliza este patrón y define los criterios de activación del módulo cuántico según el tipo de problema.
 
 \subsection{Resultados adicionales y visualización}
 
