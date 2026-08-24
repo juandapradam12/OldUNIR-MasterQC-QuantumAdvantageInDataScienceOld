@@ -6,6 +6,7 @@
 cd POCs
 pip install -r requirements.txt
 python -m qml_v2.classification --quick          # smoke
+python -m qml_v2.anomaly --quick                 # one-class AD (not fraud)
 python -m qml_v2.classification --n-total 100 --n-repeats 3
 pytest tests/ -q
 ```
@@ -28,6 +29,7 @@ POCs/
 │   ├── quantumness.py           # Q_rob / ZZ-structure score
 │   ├── qcr.py                   # Quantum-Compatible Representation pre-maps
 │   ├── clustering.py            # fair Spectral-ZZ vs classical clustering
+│   ├── anomaly.py               # one-class OCSVM-ZZ vs IF/RBF/LOF (not fraud)
 │   ├── __init__.py
 │   └── __main__.py
 ├── tests/
