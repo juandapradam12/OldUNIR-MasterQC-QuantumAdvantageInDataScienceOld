@@ -26,6 +26,7 @@ POCs/
 │   ├── regression.py
 │   ├── optimization.py          # same-model PuLP + greedy + QAOA (assignment)
 │   ├── maxcutm_optimization.py  # MaxCut bench
+│   ├── tsp_optimization.py      # fair closed-tour TSP (not VRP)
 │   ├── quantumness.py           # Q_rob / ZZ-structure score
 │   ├── qcr.py                   # Quantum-Compatible Representation pre-maps
 │   ├── clustering.py            # fair Spectral-ZZ vs classical clustering
