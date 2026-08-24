@@ -37,7 +37,7 @@ La Tabla~\ref{tab:notebooks} describe los diez notebooks Jupyter que implementan
 \label{tab:notebooks}
 \end{table}
 
-Además, el paquete reproducible \texttt{POCs/qml\_v2/} concentra los protocolos justos QML~v2 en módulos \texttt{.py} (preferidos frente a notebooks para agentes y CI): \texttt{classification}, \texttt{regression}, \texttt{optimization}, \texttt{maxcutm\_optimization}, \texttt{quantumness}, \texttt{qcr}, \texttt{clustering} y \texttt{anomaly} (Caso~8, one-class; no fraude).
+Además, el paquete reproducible \texttt{POCs/qml\_v2/} concentra los protocolos justos QML~v2 en módulos \texttt{.py}: \texttt{classification}, \texttt{regression}, \texttt{optimization}, \texttt{maxcutm\_optimization}, \texttt{tsp\_optimization}, \texttt{quantumness}, \texttt{qcr}, \texttt{clustering}, \texttt{anomaly} (Caso~8) y \texttt{timeseries}. La revisión numérica frente a los notebooks está en la Sección~\ref{sec:qml_v2_revision}.
 
 % =====================================================================
 \section{Entorno de software y dependencias}
@@ -79,10 +79,12 @@ Telco Customer Churn & 7.043 & IBM / Kaggle & Casos 1, 6, 8, 9 (benchmark clasif
 Friedman~\#1 & 500 & Sintético & Caso 3 (benchmark regresión no lineal) \\[3pt]
 Red social (MDS) & 6 nodos & Sintético & Caso 7 (paradigma híbrido) \\[3pt]
 \texttt{zz\_phase} / moons / blobs & $n=160$ & Sintético QML~v2 & Caso 8 (anomalías one-class) \\[3pt]
-Telco / SKG inyectados & subsample & Práctica + spikes & Caso 8 (no usan churn/gravedad) \\
+Telco / SKG inyectados & subsample & Práctica + spikes & Caso 8 (no usan churn/gravedad) \\[3pt]
+Colombia capitals (TSP) & $n\leq 12$ & Geo QML~v2 & \texttt{tsp\_optimization} \\[3pt]
+SKG speed series / sine / zz\_lag & lags & Práctica / sintético & \texttt{timeseries} \\
 \bottomrule
 \end{tabularx}
-\caption{Datasets empleados en el TFM. Los datos de SKG Tecnología son confidenciales y han sido anonimizados para su uso en este trabajo; en el Caso~8 se usan solo como tablas de práctica con outliers inyectados.}
+\caption{Datasets empleados en el TFM. Los datos de SKG Tecnología son confidenciales y han sido anonimizados; en anomalías y series se usan como práctica (outliers inyectados / un corredor).}
 \label{tab:datasets}
 \end{table}
 

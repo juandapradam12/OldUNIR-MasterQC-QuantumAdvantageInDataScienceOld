@@ -30,3 +30,14 @@ python3 -m qml_v2.timeseries --n-total 160 --n-repeats 5
 ```
 
 Results: [`timeseries_v2_results.md`](timeseries_v2_results.md).
+
+## Headline (n=160, 5 repeats, time-ordered)
+
+| Dataset | Table A winner | Note |
+|---------|----------------|------|
+| **zz_lag** | **QK-SVR MAE 0.06 vs Ridge 0.41** | target = ⟨ZZ⟩ of lag window |
+| sine | SVR-RBF | classical periodicity |
+| skg_speed | Ridge | practice corridor; classical wins |
+
+Same story as classification/regression: quantum wins only on ZZ-structured
+targets; SKG practice series stays classical.

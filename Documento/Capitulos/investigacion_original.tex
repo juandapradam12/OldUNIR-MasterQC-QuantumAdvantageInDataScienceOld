@@ -484,6 +484,29 @@ El framework tiene tres propiedades deseables: (i) es \textbf{interpretable}, po
 El framework QCR es una propuesta preliminar validada sobre tres datasets y un único feature map (ZZFeatureMap). Las generalizaciones necesarias son: (a) extender a otros feature maps (PauliFeatureMap, IQP Encoding); (b) demostrar que $\mathcal{Q} > \theta$ es condición suficiente ---no solo necesaria--- para la ventaja, lo que requeriría la demostración teórica delineada en el Capítulo~\ref{cap:futuro}; (c) evaluar el coste del pre-mapeo frente al beneficio de ventaja cuántica obtenida.
 
 % =====================================================================
+\section{Revisión endurecida QML~v2 (protocolos justos)}
+\label{sec:qml_v2_revision}
+% =====================================================================
+
+Los notebooks 01--10 constituyen el \textbf{registro experimental original} del TFM. En paralelo se endureció un paquete reproducible \texttt{POCs/qml\_v2/} con protocolos Table~A/B, métricas multi-repeat y decodificación nombrada. Esta sección documenta dónde el protocolo justo \textbf{matiza} (no invalida el mensaje cualitativo) las cifras de los notebooks.
+
+\paragraph{Clasificación (Table~A).}
+Bajo features emparejadas ($n=200$, 10 repeats), el dataset cuántico-nativo sigue mostrando ventaja clara: QSVM $88.8\%\pm5.8$ frente a Gradient Boosting $52.3\%\pm6.0$ ($\Delta\approx +36.5$~pp). Telco y SKG siguen siendo clásicos o empate (Telco $\Delta\approx -23.8$~pp en Table~A; SKG tie). La cifra histórica $+38.3$~pp del Notebook~01 permanece como referencia del protocolo original; la conclusión operativa no cambia.
+
+\paragraph{Score robusto $\mathcal{Q}_{\mathrm{rob}}$.}
+El score de los notebooks se revisó a
+\[
+\mathcal{Q}_{\mathrm{rob}}=\Delta A_c+\lambda\cdot\sigma(\kappa\Delta A_c)\cdot\hat d_F,
+\]
+con alineación centrada frente al mejor RBF por Frobenius (sin mirar etiquetas) y geometría \emph{gateada} por $\Delta A$. Veredictos ($n=80$, 5 repeats): nativo \texttt{try-ZZ} ($\mathcal{Q}_{\mathrm{rob}}\approx +0.21$, ventaja $+30$~pp); Telco y SKG \texttt{classical}. El barrido sintético $\alpha$ mantiene Spearman$(\alpha,\mathcal{Q}_{\mathrm{rob}})=1$.
+
+\paragraph{QCR bajo $\mathcal{Q}_{\mathrm{rob}}$.}
+Con el score robusto, el premapa óptimo empírico (\texttt{qcr\_auto\_best}) \textbf{no} reproduce el relato Notebook~09 de ``re-uploading $reps=3$ salva Telco ($+4.2$~pp)''. Telco permanece \texttt{classical} tras los premapas. SKG sí cambia de veredicto con \textbf{rotación} ($\theta\approx 74^\circ$): $\mathcal{Q}_{\mathrm{rob}}$ pasa a \texttt{try-ZZ} y la ventaja kernel sube $\approx +5.6$~pp; un probe de clasificación Table~A posterior \textbf{no} traduce eso en lift de accuracy QSVM. Lectura: QCR es filtro de geometría, no garantía de lift supervisado. Las tablas del Notebook~09 se conservan como evidencia del protocolo original; las cifras de esta sección son las de referencia para decisiones operativas.
+
+\paragraph{Familias añadidas en QML~v2.}
+Además de clasificación/regresión/optimización: clustering espectral ZZ, anomalías one-class (Caso~8), TSP cerrado justo (\texttt{tsp\_optimization}; NN+2-opt = QAOA = exacto en Colombia $n=4$), y forecasting por lags (\texttt{timeseries}; QK-SVR gana solo en \texttt{zz\_lag}).
+
+% =====================================================================
 \section{Síntesis del capítulo}
 \label{sec:sintesis_investigacion}
 % =====================================================================
