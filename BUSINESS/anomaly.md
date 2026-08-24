@@ -46,3 +46,15 @@ python3 -m qml_v2.anomaly --n-total 160 --n-repeats 5
 SKG / Telco remain **practice data only**.
 
 Results: [`anomaly_v2_results.md`](anomaly_v2_results.md).
+
+## Headline (n=160, 5 repeats, contamination=10%)
+
+| Dataset | Table A winner | Note |
+|---------|----------------|------|
+| **zz_phase** | **OCSVM-ZZ AUC 0.86 vs IF 0.55** | Same support; ZZ phase is not classical density |
+| moons | IsolationForest 0.89 | ZZ kernel does not help |
+| blobs | LOF / IF ≈ 1.0 | far outliers; Table B trivial |
+| telco_injected / skg_injected | Table B ≈ 1.0 | synthetic spikes; practice, not fraud |
+
+`zz_phase` is the only cell where one-class ZZ beats isolation/RBF. Injected
+practice tables are an easy classical check, not a customer claim.
