@@ -388,7 +388,7 @@ La Conjetura~\ref{conj:qcr} es no trivial por tres razones:
 \end{enumerate}
 
 \paragraph{Estado de la conjetura.}
-La Conjetura~\ref{conj:qcr} es actualmente \textbf{abierta}: no existe demostración general de existencia ni contraejemplo conocido. El resultado empírico más relevante de este TFM es que el framework QCR encuentra $\psi$ (re-uploading adaptativo) para Telco Churn tal que $\mathcal{Q}$ pasa de $-0.228$ a $+0.167$, y la ventaja QSVM pasa de $0$ a $+4.2$ pp. Esto constituye una evidencia de que la conjetura es al menos plausible en la familia de problemas evaluada. Su demostración formal requiere:
+La Conjetura~\ref{conj:qcr} es actualmente \textbf{abierta}: no existe demostración general de existencia ni contraejemplo conocido. El alcance de este TFM es \textbf{plantearla formalmente} y aportar evidencia preliminar (Notebook~09: re-uploading en Telco elevaba $\mathcal{Q}$ y $+4.2$~pp bajo ese protocolo; QML~v2 con $\mathcal{Q}_{\mathrm{rob}}$ matiza el rescate a rotación en SKG sin lift garantizado de accuracy). Eso muestra plausibilidad operativa del programa, no una demostración. Su prueba formal requiere:
 \begin{itemize}
   \item Caracterizar la clase de distribuciones $p(\mathbf{x}, y)$ para las que existe $\psi$ polinómico con $\mathcal{Q}(\psi(\mathcal{D})) > 0$.
   \item Demostrar que la ventaja cuántica en $\mathcal{Z}$ se traduce en ventaja en $\mathcal{X}$ bajo condiciones de invarianza: $\varepsilon(f_Q^* \circ \psi) \leq \varepsilon(f_C^*)$.
