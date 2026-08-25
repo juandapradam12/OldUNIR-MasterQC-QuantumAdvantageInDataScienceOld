@@ -14,8 +14,8 @@ import matplotlib.gridspec as gridspec
 import math as _math
 from pathlib import Path
 
-OUT_METRICS = Path("/Users/juanprada/Documents/TFM_ComputacionCuantica/POCs/data/output/metrics")
-OUT_FIGURES = Path("/Users/juanprada/Documents/TFM_ComputacionCuantica/POCs/data/output/figures")
+OUT_METRICS = Path(__file__).resolve().parents[1] / "data" / "output" / "metrics"
+OUT_FIGURES = Path(__file__).resolve().parents[1] / "data" / "output" / "figures"
 
 QUANTUM_COLOR   = '#7B2FBE'
 CLASSICAL_COLOR = '#1976D2'

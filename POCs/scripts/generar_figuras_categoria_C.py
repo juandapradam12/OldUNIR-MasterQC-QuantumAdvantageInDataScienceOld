@@ -12,7 +12,7 @@ import matplotlib.patches as mpatches
 import networkx as nx
 from pathlib import Path
 
-OUT = Path("/Users/juanprada/Documents/TFM_ComputacionCuantica/POCs/data/output/figures")
+OUT = Path(__file__).resolve().parents[1] / "data" / "output" / "figures"
 OUT.mkdir(parents=True, exist_ok=True)
 
 plt.rcParams.update({
