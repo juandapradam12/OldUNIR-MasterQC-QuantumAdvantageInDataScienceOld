@@ -19,7 +19,7 @@
 *.dvi
 *.ps
 *.lol
-Documento/main.pdf
+# Documento/main.pdf versionado en git (compilar con: cd Documento && tectonic -X compile main.tex)
 
 # ──────────────────────────────────────────────────────────────────────────────
 # Python
