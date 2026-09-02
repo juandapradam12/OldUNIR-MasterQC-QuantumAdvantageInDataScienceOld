@@ -422,14 +422,14 @@ La Tabla~\ref{tab:sintesis} sintetiza los resultados principales del estudio com
 \begin{figure}[!htbp]
 \centering
 \includegraphics[width=0.97\textwidth]{../POCs/data/output/figures/07_dashboard_ventaja_cuantica.png}
-\caption{Dashboard comparativo histórico de los casos de uso iniciales del TFM (figura generada antes de incorporar Casos~8--9): algoritmos cuánticos (azul) frente al mejor clásico (naranja). Fondo verde indica ventaja cuántica; fondo rojo, desventaja. El patrón ---ventaja en datos alineados al feature map y en optimización combinatoria; ausencia en datos reales sin esa alineación--- se mantiene en la síntesis actual de nueve casos (Tabla~\ref{tab:sintesis}).}
+\caption{Dashboard comparativo de los nueve casos de uso: métrica principal cuántica vs.\ clásica por dominio (pp, $\Delta R^2$, $\Delta$\% coste/Sharpe, AUC, MAE o $P(\text{óptimo})$). Verde = ventaja cuántica; rojo = clásico superior; naranja = empate o resultado condicional (alineación feature map $\leftrightarrow$ generador). Coherente con la Tabla~\ref{tab:sintesis}.}
 \label{fig:dashboard_sintesis}
 \end{figure}
 
 \begin{figure}[!htbp]
 \centering
 \includegraphics[width=0.90\textwidth]{../POCs/data/output/figures/07_heatmap_ventaja_por_dominio.png}
-\caption{Mapa de calor de la ventaja cuántica relativa (diferencia porcentual respecto al mejor clásico) por caso de uso y por dataset. El patrón de ventaja está fuertemente correlacionado con la presencia de estructura cuántica nativa en los datos: las celdas con mayor intensidad corresponden al dataset cuántico-nativo (Casos~1 y~6) y a los algoritmos de optimización combinatoria (Casos~3, 4 y~7).}
+\caption{Mapa de calor de la ventaja cuántica relativa por caso de uso (CU1--CU9) y tipo de dataset. Las celdas verdes concentran alineación feature map--generador (Casos~1, 6, 8, 9 en datos nativos), optimización combinatoria (Casos~3, 4, 7) o empate óptimo verificable (Caso~5). Las celdas rojas reflejan dominio clásico en datos reales sin esa alineación.}
 \label{fig:heatmap_ventaja_body}
 \end{figure}
 

@@ -412,6 +412,12 @@ def fig_07_radar():
                                     "color": "#2E7D32", "fill": "#C8E6C9"},
         "Kernel Advantage\n(Liu 2021, cuántico-nativo)": {"scores": [9.8, 10.0, 9.5, 9.8, 4.5],
                                                            "color": "#F57F17", "fill": "#FFF9C4"},
+        "Anomalías\n(OCSVM-ZZ, zz_phase)": {"scores": [8.6, 8.5, 6.5, 8.0, 5.5],
+                                             "color": "#C62828", "fill": "#FFCDD2"},
+        "Forecasting\n(QK-SVR, zz_lag)": {"scores": [9.0, 9.2, 6.0, 8.5, 5.0],
+                                           "color": "#00695C", "fill": "#B2DFDB"},
+        "TSP / MDS\n(QAOA, protocolo)": {"scores": [7.0, 3.0, 7.5, 7.0, 8.0],
+                                          "color": "#5D4037", "fill": "#D7CCC8"},
     }
     n_dim = len(dimensions)
     angles = np.linspace(0, 2 * np.pi, n_dim, endpoint=False).tolist()
@@ -443,7 +449,8 @@ def fig_07_radar():
                      fontsize=8.5, framealpha=0.8, title="Experimento", title_fontsize=9)
 
     for name_r in ["Clasificación\n(QSVM, dataset cuántico)",
-                   "Kernel Advantage\n(Liu 2021, cuántico-nativo)",
+                   "Anomalías\n(OCSVM-ZZ, zz_phase)",
+                   "Forecasting\n(QK-SVR, zz_lag)",
                    "Optimización\n(QAOA, asignación SKG)"]:
         prof = profiles[name_r]
         draw_radar(axes_r[1], prof["scores"], prof["color"], prof["fill"], alpha_fill=0.25)
@@ -457,23 +464,35 @@ def fig_07_radar():
 
 def fig_07_heatmap():
     data_heatmap = {
-        "Dataset\ncuántico-nativo": [38.4, 7.8, 9.3, 10.0, None],
-        "Dataset SKG\n(datos reales)": [-4.5, -30.3, -56.2, None, -6.7],
-        "Dataset de\nreferencia pública": [-3.8, None, 9.3, None, 6.7],
+        "Dataset\ncuántico-nativo": [
+            38.3, -92.8, -30.3, 5.3, 0.0, 8.9, 73.0, 31.2, 86.5
+        ],
+        "Dataset SKG\n(datos reales)": [
+            -4.5, -56.2, -30.3, 5.3, 0.0, -6.7, 73.0, -25.0, -325.8
+        ],
+        "Dataset de\nreferencia pública": [
+            -3.8, 9.3, None, None, 0.0, 6.7, None, -30.0, -154.6
+        ],
     }
     index_rows = [
-        "CU1: Clasificación\n(QSVM)", "CU2: Optimización\n(QAOA, costo ↓)",
-        "CU3: Regresión\n(QK-SVR)", "CU4: Portafolio\n(VQE/QAOA)",
-        "CU6: Kernel\nAdvantage (QSVM)",
+        "CU1: QSVM\n(clasificación)",
+        "CU2: QK-SVR\n(regresión)",
+        "CU3: QAOA\n(asignación)",
+        "CU4: VQE/QAOA\n(portafolio)",
+        "CU5: QAOA TSP\n(protocolo justo)",
+        "CU6: QSVM\n(umbral Liu)",
+        "CU7: QAOA MDS\n(conj. dominante)",
+        "CU8: OCSVM-ZZ\n(anomalías)",
+        "CU9: QK-SVR\n(lags)",
     ]
     df_hm = pd.DataFrame(data_heatmap, index=index_rows)
     mask = df_hm.isnull()
-    fig, ax = plt.subplots(figsize=(12, 6))
-    fig.suptitle("Ventaja Cuántica (Δ pp o Δ%) por Dominio y Tipo de Dataset\n"
+    fig, ax = plt.subplots(figsize=(12, 9))
+    fig.suptitle("Ventaja Cuántica (Δ pp, Δ% o P(ópt)) por Caso de Uso y Dataset\n"
                  "Verde = ventaja cuántica | Rojo = clásico superior | Gris = no aplica",
                  fontsize=12, fontweight="bold")
     sns.heatmap(df_hm.astype(float), ax=ax, cmap=plt.cm.RdYlGn, center=0,
-                vmin=-40, vmax=40, annot=True, fmt=".1f", linewidths=0.5,
+                vmin=-80, vmax=80, annot=True, fmt=".1f", linewidths=0.5,
                 linecolor="#eee", mask=mask,
                 cbar_kws={"label": "Ventaja cuántica (pp o Δ%)  [+ = cuántico mejor]"},
                 annot_kws={"fontsize": 11, "fontweight": "bold"})

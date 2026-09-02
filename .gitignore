@@ -19,7 +19,7 @@
 *.dvi
 *.ps
 *.lol
-Documento/main.pdf
+# Documento/main.pdf versionado en git (compilar con: cd Documento && tectonic -X compile main.tex)
 
 # ──────────────────────────────────────────────────────────────────────────────
 # Python
@@ -48,8 +48,7 @@ venv/
 # POCs — datos de entrada y salida (tamaño / privacidad)
 # ──────────────────────────────────────────────────────────────────────────────
 POCs/data/input/*
-POCs/data/output/figures/*.png
-POCs/data/output/figures/*.pdf
+# Figuras del TFM versionadas en git (regenerar con POCs/scripts/generar_*.py)
 POCs/data/output/metrics/*.csv
 POCs/data/output/metrics/*.json
 !POCs/data/**/.gitkeep
