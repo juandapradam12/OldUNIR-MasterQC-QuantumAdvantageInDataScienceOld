@@ -1,89 +1,75 @@
-# Quantum ML aplicado a operaciones reales
+# Computación cuántica vs clásica en ciencia de datos
 
-**¿Cuándo aporta la computación cuántica… y cuándo no?**
-
-Este repositorio responde esa pregunta con evidencia, no con hype: **nueve casos de uso** que confrontan algoritmos cuánticos (kernels ZZ, QAOA, VQE) frente a baselines clásicos fuertes, bajo protocolos justos y reproducibles.
-
-> **Hallazgo central:** la ventaja no es “usar cuántica”. Aparece cuando el **feature map está alineado con el generador de los datos**, o cuando el problema es **combinatorio / QUBO**. En datos operativos sin esa alineación, el clásico gana —y eso también es un resultado de negocio.
+**TFM · UNIR · Máster en Inteligencia Artificial**  
+Juan David Prada Malagón · Dir. Ricardo Rafael Domínguez Reyes · Contexto aplicado: SKG Tecnología
 
 ---
 
-## Para clientes e interesados (30 segundos)
+## La pregunta del trabajo
 
-| Si te preocupa… | Lo que entregamos |
+> *¿En qué condiciones, y para qué tipos de problemas de ciencia de datos, los algoritmos cuánticos de la era NISQ ofrecen una ventaja real y medible frente a los algoritmos clásicos?*
+
+No es un producto de “Quantum ML para operaciones”. Es un **estudio comparativo empírico y sistemático**: nueve casos de uso, protocolos justos, baselines clásicos fuertes y evidencia reproducible —incluyendo cuándo la cuántica **no** gana.
+
+---
+
+## Abre-bocas (para interesados)
+
+| Qué encontrarás | Detalle |
 |---|---|
-| ¿Invertir en cuántica sin saber el ROI? | Un **mapa de decisión**: cuándo activar el módulo cuántico y cuándo quedarte con ML clásico |
-| ¿Es solo teoría? | **Código Qiskit ejecutable** + PDF del TFM + figuras versionadas |
-| ¿Sirve para mi operación? | Casos en **clasificación, regresión, asignación/optimización, anomalías y forecasting** |
-| ¿Hype vs evidencia? | Ventajas medidas (p. ej. **+38 pp** en kernels alineados; **−30 %** coste QAOA vs greedy) y también **derrotas honestas** en datos reales sin alineación |
+| **Hallazgo central** | La ventaja es *real pero condicionada*: aparece cuando el **feature map está alineado con el generador de los datos**, o en problemas **combinatorios / QUBO**. Sin esa alineación, el clásico suele ser superior. |
+| **Alcance** | Clasificación (QSVM), regresión (QK-SVR), optimización (QAOA/VQE/TSP), anomalías one-class (OCSVM-ZZ) y forecasting por lags — **9 casos**. |
+| **Datos** | Tres capas: sintéticos con estructura cuántica nativa, datasets públicos de referencia y datos de práctica de SKG Tecnología. |
+| **Aportes originales** | Score de cuanticidad \(\mathcal{Q}(D)\) / \(\mathcal{Q}_{\mathrm{rob}}\) y Framework QCR (**planteado formalmente**; conjetura abierta). |
+| **Entregables** | PDF del TFM + código Qiskit (`POCs/qml_v2/`) + figuras versionadas + tests. |
 
-**Documento listo:** [`Documento/main.pdf`](Documento/main.pdf)  
-**Código reproducible:** [`POCs/qml_v2/`](POCs/qml_v2/)  
-**Empresa de práctica:** SKG Tecnología · **UNIR** — Máster en IA · Autor: Juan David Prada Malagón
+**Leer ya:** [`Documento/main.pdf`](Documento/main.pdf)  
+**Código:** [`POCs/qml_v2/`](POCs/qml_v2/) · **Figuras:** [`POCs/data/output/figures/`](POCs/data/output/figures/)
 
 ---
 
-## Resultados que importan (síntesis)
+## Síntesis de resultados (lectura rápida)
 
-| Caso | Qué se compara | Lectura de negocio |
+| CU | Algoritmo | Lectura |
 |:---:|---|---|
-| 1 | QSVM vs SVM / boosting | Ventaja fuerte solo con datos alineados al mapa |
-| 2 | QK-SVR vs Ridge / GB | Clásico preferible en datos reales típicos |
-| 3 | QAOA vs greedy (asignación) | **−30,3 %** coste en protocolo justificado |
-| 4 | VQE portafolio vs Markowitz | Empate / ligera mejora en escala pequeña |
-| 5 | QAOA TSP vs NN+2-opt | Empate óptimo — valor de **modelado QUBO**, no de speedup |
-| 6 | Kernel advantage (Liu-style) | Condicional al umbral / estructura nativa |
-| 7 | QAOA conjunto dominante | Patrón **híbrido** cuántico–clásico |
-| 8 | OCSVM-ZZ vs IsolationForest | Gana solo si la novedad es de tipo *fase* (alineada al mapa) |
-| 9 | QK-SVR por lags | Gana solo en series cuyo target está alineado al mapa |
+| 1 | QSVM | Ventaja fuerte con datos alineados al mapa; clásico en datos reales sin alineación |
+| 2 | QK-SVR | Clásico preferible en regresión operativa típica |
+| 3 | QAOA asignación | −30,3 % coste vs greedy (protocolo justificado) |
+| 4 | VQE portafolio | Empate / ligera mejora en escala pequeña |
+| 5 | QAOA TSP | Empate óptimo vs NN+2-opt — valor de *modelado*, no de speedup |
+| 6 | QSVM umbral | Condicional a estructura nativa / umbral |
+| 7 | QAOA MDS | Paradigma híbrido cuántico–clásico |
+| 8 | OCSVM-ZZ | Gana solo si la novedad está alineada al mapa (`zz_phase`) |
+| 9 | QK-SVR lags | Gana solo si el target está alineado al mapa (`zz_lag`) |
 
-**Regla operativa:** clásico por defecto; cuántica **selectiva** tras diagnóstico de alineación (score \(\mathcal{Q}\)) o formulación QUBO viable.
+**Conclusión práctica del TFM:** algoritmos cuánticos como *herramienta adicional y selectiva*, no como sustitutos del stack clásico.
 
 ---
 
-## Qué hay en el repo
+## Repositorio
 
 ```
-TFM_ComputacionCuantica/
-├── Documento/main.pdf          # TFM compilado (listo para leer)
-├── Documento/Capitulos/        # Fuentes LaTeX
-├── POCs/qml_v2/                # Protocolos justos (Python, Qiskit)
-├── POCs/scripts/               # Regeneración de figuras
-├── POCs/data/output/figures/   # PNGs versionados en git
-├── POCs/tests/                 # Suite de regresión (58 tests)
-└── BUSINESS/                   # Notas de walkthrough por familia
+Documento/main.pdf          # TFM compilado
+Documento/Capitulos/        # Fuentes LaTeX
+POCs/qml_v2/                # Protocolos justos (Python / Qiskit)
+POCs/scripts/               # Regeneración de figuras
+POCs/data/output/figures/   # PNGs en git
+POCs/tests/                 # Suite de regresión
+BUSINESS/                   # Notas técnicas por familia experimental
 ```
-
-### Correr rápido
 
 ```bash
 cd POCs
 pip install -r requirements.txt
 PYTHONPATH=. pytest tests/ -q
-PYTHONPATH=. python3 -m qml_v2.feature_map_alignment --n-total 120 --n-repeats 5
-```
-
-Compilar el PDF (opcional; ya está en git):
-
-```bash
-cd Documento && tectonic -X compile main.tex
 ```
 
 ---
 
-## Stack
+## Palabras clave
 
-Qiskit · scikit-learn · QAOA / VQE · Quantum Kernels (ZZFeatureMap) · protocolos Table A/B · pytest
-
----
-
-## Créditos
-
-**Autor:** Juan David Prada Malagón  
-**Director:** Ricardo Rafael Domínguez Reyes  
-**Universidad:** UNIR — Máster en Inteligencia Artificial  
-**Contexto aplicado:** SKG Tecnología (datos de práctica operativa)
+computación cuántica · quantum machine learning · ventaja cuántica · QSVM · quantum kernel · QAOA · VQE · optimización combinatoria · OCSVM-ZZ · score de cuanticidad · Framework QCR · NISQ · algoritmo híbrido cuántico-clásico
 
 ---
 
-*No prometemos “ventaja cuántica universal”. Prometemos criterios claros para saber cuándo usarla.*
+*Evidencia condicionada, no hype. El PDF desarrolla el argumento completo.*
