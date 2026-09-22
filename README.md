@@ -1,92 +1,89 @@
-# TFM - Computación Cuántica Aplicada
+# Quantum ML aplicado a operaciones reales
 
-**Trabajo de Fin de Máster**  
-**Universidad Internacional de La Rioja (UNIR)**  
-**Máster en Inteligencia Artificial**
+**¿Cuándo aporta la computación cuántica… y cuándo no?**
 
-**Autor:** Juan David Prada Montoya  
-**Director:** Ricardo Rafael Domínguez Reyes  
-**Empresa:** SKG Tecnología  
+Este repositorio responde esa pregunta con evidencia, no con hype: **nueve casos de uso** que confrontan algoritmos cuánticos (kernels ZZ, QAOA, VQE) frente a baselines clásicos fuertes, bajo protocolos justos y reproducibles.
+
+> **Hallazgo central:** la ventaja no es “usar cuántica”. Aparece cuando el **feature map está alineado con el generador de los datos**, o cuando el problema es **combinatorio / QUBO**. En datos operativos sin esa alineación, el clásico gana —y eso también es un resultado de negocio.
 
 ---
 
-## 📋 Descripción del Proyecto
+## Para clientes e interesados (30 segundos)
 
-Este TFM investiga la aplicabilidad práctica de algoritmos de computación cuántica en problemas empresariales reales, comparándolos con soluciones clásicas de Machine Learning en tres áreas:
+| Si te preocupa… | Lo que entregamos |
+|---|---|
+| ¿Invertir en cuántica sin saber el ROI? | Un **mapa de decisión**: cuándo activar el módulo cuántico y cuándo quedarte con ML clásico |
+| ¿Es solo teoría? | **Código Qiskit ejecutable** + PDF del TFM + figuras versionadas |
+| ¿Sirve para mi operación? | Casos en **clasificación, regresión, asignación/optimización, anomalías y forecasting** |
+| ¿Hype vs evidencia? | Ventajas medidas (p. ej. **+38 pp** en kernels alineados; **−30 %** coste QAOA vs greedy) y también **derrotas honestas** en datos reales sin alineación |
 
-1. **Clasificación Supervisada**: Quantum Kernels y VQC vs SVM, Random Forest
-2. **Optimización Combinatoria**: QAOA vs heurísticas clásicas  
-3. **Regresión**: Quantum Neural Networks vs modelos clásicos
+**Documento listo:** [`Documento/main.pdf`](Documento/main.pdf)  
+**Código reproducible:** [`POCs/qml_v2/`](POCs/qml_v2/)  
+**Empresa de práctica:** SKG Tecnología · **UNIR** — Máster en IA · Autor: Juan David Prada Malagón
 
 ---
 
-## 🗂️ Estructura del Repositorio
+## Resultados que importan (síntesis)
+
+| Caso | Qué se compara | Lectura de negocio |
+|:---:|---|---|
+| 1 | QSVM vs SVM / boosting | Ventaja fuerte solo con datos alineados al mapa |
+| 2 | QK-SVR vs Ridge / GB | Clásico preferible en datos reales típicos |
+| 3 | QAOA vs greedy (asignación) | **−30,3 %** coste en protocolo justificado |
+| 4 | VQE portafolio vs Markowitz | Empate / ligera mejora en escala pequeña |
+| 5 | QAOA TSP vs NN+2-opt | Empate óptimo — valor de **modelado QUBO**, no de speedup |
+| 6 | Kernel advantage (Liu-style) | Condicional al umbral / estructura nativa |
+| 7 | QAOA conjunto dominante | Patrón **híbrido** cuántico–clásico |
+| 8 | OCSVM-ZZ vs IsolationForest | Gana solo si la novedad es de tipo *fase* (alineada al mapa) |
+| 9 | QK-SVR por lags | Gana solo en series cuyo target está alineado al mapa |
+
+**Regla operativa:** clásico por defecto; cuántica **selectiva** tras diagnóstico de alineación (score \(\mathcal{Q}\)) o formulación QUBO viable.
+
+---
+
+## Qué hay en el repo
 
 ```
 TFM_ComputacionCuantica/
-├── Documento/              # 📄 Documento LaTeX del TFM
-│   ├── Capitulos/         # Capítulos del trabajo
-│   ├── Estilos/           # Plantilla UNIR
-│   └── main.tex           # Documento principal
-│
-├── POCs/                   # 💻 Pruebas de Concepto (código)
-│   ├── src/               # Código fuente modular
-│   ├── scripts/           # Scripts ejecutables CLI
-│   ├── notebooks/         # Análisis interactivos
-│   ├── data/              # Datasets y resultados
-│   ├── utils/             # Utilidades compartidas
-│   └── README.md          # 📖 Documentación técnica detallada
-│
-├── Entregas/              # 📦 Entregas parciales del TFM
-│   ├── Entrega1/         # Primera entrega (contexto + objetivos)
-│   ├── Entrega2/         # Segunda entrega (desarrollo)
-│   └── Entrega3/         # Tercera entrega (evaluación + conclusiones)
-│
-└── Revisiones/            # ✍️ Feedback del tutor
-│   ├── Estilos/
-│   │   └── unir.sty              # Hoja de estilos UNIR
-│   └── Imagenes/                 # Figuras e imágenes del documento
-├── .vscode/
-│   ├── settings.json             # Configuración LaTeX Workshop
-│   └── tasks.json                # Tarea de compilación (Cmd+Shift+B)
-├── programacion.pdf              # Calendario y entregas del TFM
-├── Solicitud TFM.docx            # Propuesta original del TFM
-└── .gitignore
+├── Documento/main.pdf          # TFM compilado (listo para leer)
+├── Documento/Capitulos/        # Fuentes LaTeX
+├── POCs/qml_v2/                # Protocolos justos (Python, Qiskit)
+├── POCs/scripts/               # Regeneración de figuras
+├── POCs/data/output/figures/   # PNGs versionados en git
+├── POCs/tests/                 # Suite de regresión (58 tests)
+└── BUSINESS/                   # Notas de walkthrough por familia
 ```
 
----
+### Correr rápido
 
-## 🛠️ Compilación
-
-El proyecto usa **LaTeX** (BasicTeX 2026) con `pdflatex`.
-
-### Desde VS Code
-Pulsa `Cmd+Shift+B` — compila dos veces y abre el PDF en Preview automáticamente.
-
-### Desde terminal
 ```bash
-cd Documento
-pdflatex -interaction=nonstopmode main.tex
-pdflatex -interaction=nonstopmode main.tex   # segunda pasada para referencias
-open -a Preview main.pdf
+cd POCs
+pip install -r requirements.txt
+PYTHONPATH=. pytest tests/ -q
+PYTHONPATH=. python3 -m qml_v2.feature_map_alignment --n-total 120 --n-repeats 5
 ```
 
-> **Requisito:** tener BasicTeX instalado (`brew install --cask basictex`) con el PATH `/usr/local/texlive/2026basic/bin/universal-darwin` en `~/.zshrc`.
+Compilar el PDF (opcional; ya está en git):
+
+```bash
+cd Documento && tectonic -X compile main.tex
+```
 
 ---
 
-## 📅 Estado de entregas
+## Stack
 
-| Entrega | Contenido | Estado |
-|---------|-----------|--------|
-| Entrega 1 (Sem. 6) | Resumen, Abstract, Cap. 1–4 | ✅ Completa |
-| Entrega 2 (Sem. 11) | Cap. 5–6 + borrador intermedio | 🔄 En progreso |
-| Entrega 3 (Sem. 15) | Cap. 7–8 + artículo de investigación | ⏳ Pendiente |
+Qiskit · scikit-learn · QAOA / VQE · Quantum Kernels (ZZFeatureMap) · protocolos Table A/B · pytest
 
 ---
 
-## 📚 Tecnologías y frameworks (previstos)
+## Créditos
 
-- [Qiskit](https://qiskit.org/) / [PennyLane](https://pennylane.ai/) — implementación de algoritmos cuánticos
-- [scikit-learn](https://scikit-learn.org/) — algoritmos clásicos de referencia
-- Python 3.x — entorno de desarrollo y experimentación
+**Autor:** Juan David Prada Malagón  
+**Director:** Ricardo Rafael Domínguez Reyes  
+**Universidad:** UNIR — Máster en Inteligencia Artificial  
+**Contexto aplicado:** SKG Tecnología (datos de práctica operativa)
+
+---
+
+*No prometemos “ventaja cuántica universal”. Prometemos criterios claros para saber cuándo usarla.*
