@@ -1,61 +1,61 @@
-# Computación cuántica vs clásica en ciencia de datos
+# Quantum vs classical algorithms in data science
 
-**TFM · UNIR · Máster en Inteligencia Artificial**  
-Juan David Prada Malagón · Dir. Ricardo Rafael Domínguez Reyes · Contexto aplicado: SKG Tecnología
-
----
-
-## La pregunta del trabajo
-
-> *¿En qué condiciones, y para qué tipos de problemas de ciencia de datos, los algoritmos cuánticos de la era NISQ ofrecen una ventaja real y medible frente a los algoritmos clásicos?*
-
-No es un producto de “Quantum ML para operaciones”. Es un **estudio comparativo empírico y sistemático**: nueve casos de uso, protocolos justos, baselines clásicos fuertes y evidencia reproducible —incluyendo cuándo la cuántica **no** gana.
+**Master's thesis (TFM) · UNIR · MSc in Artificial Intelligence**  
+Juan David Prada Malagón · Advisor: Ricardo Rafael Domínguez Reyes · Applied context: SKG Tecnología
 
 ---
 
-## Abre-bocas (para interesados)
+## Research question
 
-| Qué encontrarás | Detalle |
+> *Under what conditions, and for which classes of data-science problems, do NISQ-era quantum algorithms offer a real, measurable advantage over classical algorithms?*
+
+This is **not** a “Quantum ML for operations” product. It is an **empirical comparative study**: nine use cases, fair protocols, strong classical baselines, and reproducible evidence — including when quantum methods **do not** win.
+
+---
+
+## Elevator pitch
+
+| What you get | Detail |
 |---|---|
-| **Hallazgo central** | La ventaja es *real pero condicionada*: aparece cuando el **feature map está alineado con el generador de los datos**, o en problemas **combinatorios / QUBO**. Sin esa alineación, el clásico suele ser superior. |
-| **Alcance** | Clasificación (QSVM), regresión (QK-SVR), optimización (QAOA/VQE/TSP), anomalías one-class (OCSVM-ZZ) y forecasting por lags — **9 casos**. |
-| **Datos** | Tres capas: sintéticos con estructura cuántica nativa, datasets públicos de referencia y datos de práctica de SKG Tecnología. |
-| **Aportes originales** | Score de cuanticidad \(\mathcal{Q}(D)\) / \(\mathcal{Q}_{\mathrm{rob}}\) y Framework QCR (**planteado formalmente**; conjetura abierta). |
-| **Entregables** | PDF del TFM + código Qiskit (`POCs/qml_v2/`) + figuras versionadas + tests. |
+| **Core finding** | Advantage is *real but conditional*: it appears when the **feature map is aligned with the data generator**, or on **combinatorial / QUBO** problems. Without that alignment, classical methods usually win. |
+| **Scope** | Classification (QSVM), regression (QK-SVR), optimization (QAOA / VQE / TSP), one-class anomaly detection (OCSVM-ZZ), and lag forecasting — **9 cases**. |
+| **Data layers** | Synthetic data with native quantum structure, public reference datasets, and SKG Tecnología practice data. |
+| **Original contributions** | Quantumness score \(\mathcal{Q}(D)\) / \(\mathcal{Q}_{\mathrm{rob}}\) and the QCR Framework (**formally posed**; open conjecture). |
+| **Deliverables** | Thesis PDF + Qiskit code (`POCs/qml_v2/`) + versioned figures + tests. |
 
-**Leer ya:** [`Documento/main.pdf`](Documento/main.pdf)  
-**Código:** [`POCs/qml_v2/`](POCs/qml_v2/) · **Figuras:** [`POCs/data/output/figures/`](POCs/data/output/figures/)
+**Read now:** [`Documento/main.pdf`](Documento/main.pdf)  
+**Code:** [`POCs/qml_v2/`](POCs/qml_v2/) · **Figures:** [`POCs/data/output/figures/`](POCs/data/output/figures/)
 
 ---
 
-## Síntesis de resultados (lectura rápida)
+## Results at a glance
 
-| CU | Algoritmo | Lectura |
+| Case | Algorithm | Takeaway |
 |:---:|---|---|
-| 1 | QSVM | Ventaja fuerte con datos alineados al mapa; clásico en datos reales sin alineación |
-| 2 | QK-SVR | Clásico preferible en regresión operativa típica |
-| 3 | QAOA asignación | −30,3 % coste vs greedy (protocolo justificado) |
-| 4 | VQE portafolio | Empate / ligera mejora en escala pequeña |
-| 5 | QAOA TSP | Empate óptimo vs NN+2-opt — valor de *modelado*, no de speedup |
-| 6 | QSVM umbral | Condicional a estructura nativa / umbral |
-| 7 | QAOA MDS | Paradigma híbrido cuántico–clásico |
-| 8 | OCSVM-ZZ | Gana solo si la novedad está alineada al mapa (`zz_phase`) |
-| 9 | QK-SVR lags | Gana solo si el target está alineado al mapa (`zz_lag`) |
+| 1 | QSVM | Strong advantage on map-aligned data; classical wins on real data without alignment |
+| 2 | QK-SVR | Classical preferred for typical operational regression |
+| 3 | QAOA assignment | −30.3% cost vs greedy (fair protocol) |
+| 4 | VQE portfolio | Tie / slight improvement at small scale |
+| 5 | QAOA TSP | Optimal tie vs NN+2-opt — *modeling* value, not speedup |
+| 6 | QSVM (threshold) | Conditional on native structure / threshold |
+| 7 | QAOA MDS | Hybrid quantum–classical pattern |
+| 8 | OCSVM-ZZ | Wins only when novelty is map-aligned (`zz_phase`) |
+| 9 | QK-SVR lags | Wins only when the target is map-aligned (`zz_lag`) |
 
-**Conclusión práctica del TFM:** algoritmos cuánticos como *herramienta adicional y selectiva*, no como sustitutos del stack clásico.
+**Practical conclusion:** quantum algorithms as an *additional, selective* tool — not a replacement for the classical stack.
 
 ---
 
-## Repositorio
+## Repository layout
 
 ```
-Documento/main.pdf          # TFM compilado
-Documento/Capitulos/        # Fuentes LaTeX
-POCs/qml_v2/                # Protocolos justos (Python / Qiskit)
-POCs/scripts/               # Regeneración de figuras
-POCs/data/output/figures/   # PNGs en git
-POCs/tests/                 # Suite de regresión
-BUSINESS/                   # Notas técnicas por familia experimental
+Documento/main.pdf          # Compiled thesis
+Documento/Capitulos/        # LaTeX sources
+POCs/qml_v2/                # Fair protocols (Python / Qiskit)
+POCs/scripts/               # Figure regeneration
+POCs/data/output/figures/   # PNGs tracked in git
+POCs/tests/                 # Regression suite
+BUSINESS/                   # Technical notes by experiment family
 ```
 
 ```bash
@@ -66,10 +66,10 @@ PYTHONPATH=. pytest tests/ -q
 
 ---
 
-## Palabras clave
+## Keywords
 
-computación cuántica · quantum machine learning · ventaja cuántica · QSVM · quantum kernel · QAOA · VQE · optimización combinatoria · OCSVM-ZZ · score de cuanticidad · Framework QCR · NISQ · algoritmo híbrido cuántico-clásico
+quantum computing · quantum machine learning · quantum advantage · QSVM · quantum kernel · QAOA · VQE · combinatorial optimization · OCSVM-ZZ · quantumness score · QCR Framework · NISQ · hybrid quantum–classical algorithms
 
 ---
 
-*Evidencia condicionada, no hype. El PDF desarrolla el argumento completo.*
+*Conditional evidence, not hype. The PDF develops the full argument.*
