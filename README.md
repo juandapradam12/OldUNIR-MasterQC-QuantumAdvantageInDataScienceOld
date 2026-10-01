@@ -31,8 +31,17 @@ Building on these observations, the thesis advances two research proposals. Firs
 
 1. **Empirical map of advantage** over nine industry-relevant use cases, with explicit reporting of both positive and negative outcomes.  
 2. **Characterization of hybrid quantum–classical integration** (QAOA / VQE with classical optimization) as the practically viable pattern in the NISQ era, illustrated most clearly on NP-hard coverage (minimum dominating set).  
-3. A **quantumness score** (denoted \(\mathcal{Q}(D)\), with robust variant \(\mathcal{Q}_{\mathrm{rob}}\) in the QML v2 protocol) as a diagnostic prior to expensive kernel experiments.  
+3. A **quantumness score** $\mathcal{Q}(D)$ (robust variant $\mathcal{Q}_{\mathrm{rob}}$ in the QML v2 protocol) as a diagnostic prior to expensive kernel experiments.  
 4. A **representation-space / QCR framework**, formally posed, for investigating whether classical data can be remapped to raise quantum compatibility.
+
+### Original research proposals
+
+| Proposal | What it is | Status in this TFM |
+|---|---|---|
+| Quantumness score $\mathcal{Q}(D)$ (and robust $\mathcal{Q}_{\mathrm{rob}}$) | Diagnostic score estimating whether a dataset’s geometry favors a quantum kernel before expensive experiments | Empirically evaluated (e.g. Spearman $\rho_S = 0.833$, $p = 0.005$, $n = 9$ on the synthetic sweep) |
+| QCR Framework | Formal protocol and open conjecture on remapping classical data to raise $\mathcal{Q}$ (quantum-compatible remappings) | **Formally posed** with preliminary evidence — strong validation left as a research line |
+
+**Core finding.** Advantage is **real but conditional**. It appears when the **feature map is aligned with how the data were generated**, or when the problem is combinatorial / QUBO and the hybrid design is sound. Without that alignment, classical methods typically dominate. Practical conclusion: treat quantum methods as an *additional, selective* tool inside a **hybrid** stack, activated after alignment / $\mathcal{Q}$ diagnosis or when a QUBO formulation is viable.
 
 ---
 
