@@ -156,10 +156,10 @@ def build():
     bg(s)
     header(s, "Hoja de ruta", "Agenda de la defensa")
     agenda = [
-        ("01", "Pregunta y objetivos"),
-        ("02", "Estado del arte y posicionamiento"),
+        ("01", "Problema central y objetivos"),
+        ("02", "Estado del arte"),
         ("03", "Metodología y algoritmos"),
-        ("04", "Problemas de investigación (Q(D), QCR)"),
+        ("04", "Preguntas originales (tras la evidencia)"),
         ("05", "Resultados empíricos"),
         ("06", "Limitaciones, aportes y futuro"),
     ]
@@ -190,24 +190,30 @@ def build():
     fit_pic(s, FIGS / "07_complejidad_cuantico_vs_clasico.png", M, Inches(3.8), Inches(12.2), Inches(3.1))
     footer(s, n, total)
 
-    # 4 Thesis formulation
+    # 4 Central research problem (Cap. 1 — planteamiento)
     s = new()
     bg(s)
-    header(s, "Formulación de la tesis", "Pregunta e hipótesis")
-    rect(s, M, Inches(1.5), Inches(12.2), Inches(2.6), PANEL, line=LINE)
-    rect(s, M, Inches(1.5), Inches(0.1), Inches(2.6), ACCENT)
-    txt(s, Inches(1.0), Inches(1.85), Inches(11.2), Inches(2.0),
+    header(s, "Planteamiento del problema", "Problema central del TFM")
+    rect(s, M, Inches(1.45), Inches(12.2), Inches(2.5), PANEL, line=LINE)
+    rect(s, M, Inches(1.45), Inches(0.1), Inches(2.5), ACCENT)
+    txt(s, Inches(1.0), Inches(1.7), Inches(11.2), Inches(2.0),
         "¿En qué condiciones, y para qué tipos de problemas de ciencia de datos,\n"
-        "los algoritmos cuánticos NISQ ofrecen una ventaja real y medible\n"
-        "frente a los algoritmos clásicos?",
-        size=20, bold=True, color=INK)
-    rect(s, M, Inches(4.4), Inches(12.2), Inches(2.3), PANEL, line=LINE)
-    txt(s, Inches(0.85), Inches(4.6), Inches(11.5), Inches(0.4), "HIPÓTESIS OPERATIVA", size=12, bold=True, color=ACCENT)
-    txt(s, Inches(0.85), Inches(5.1), Inches(11.5), Inches(1.3),
-        "La ventaja es real pero condicionada:\n"
-        "(1) alineación feature map ↔ generador de datos, o\n"
-        "(2) problema QUBO con diseño híbrido cuántico–clásico a escala viable.",
-        size=16, color=INK)
+        "los algoritmos cuánticos disponibles en la era NISQ ofrecen una\n"
+        "ventaja real y medible frente a los algoritmos clásicos?",
+        size=18, bold=True, color=INK)
+    txt(s, Inches(0.7), Inches(4.2), Inches(12.2), Inches(0.35),
+        "CÓMO SE ATACA  ·  estudio comparativo empírico", size=12, bold=True, color=ACCENT)
+    attacks = [
+        ("Clasificación", "Kernels QSVM\nvs SVM / boosting"),
+        ("Regresión", "QK-SVR\nvs Ridge / árboles"),
+        ("Optimización", "QAOA / VQE\nvs greedy / ILP"),
+        ("Híbrido", "QAOA–COBYLA\n(MDS, QUBO)"),
+    ]
+    for i, (t, d) in enumerate(attacks):
+        left = M + i * Inches(3.15)
+        rect(s, left, Inches(4.65), Inches(3.0), Inches(1.9), PANEL, line=LINE)
+        txt(s, left + Inches(0.2), Inches(4.85), Inches(2.6), Inches(0.4), t, size=14, bold=True, color=ACCENT)
+        txt(s, left + Inches(0.2), Inches(5.35), Inches(2.6), Inches(0.9), d, size=13, color=INK)
     footer(s, n, total)
 
     # 5 Objectives
@@ -298,27 +304,38 @@ def build():
     fit_pic(s, FIGS / "10_mds_grafo_solucion.png", Inches(6.7), Inches(1.35), Inches(6.0), Inches(5.5))
     footer(s, n, total)
 
-    # 11 Research problems
+    # 11 Original research questions — wording from investigacion_original.tex
     s = new()
     bg(s)
-    header(s, "Problemas de investigación", "Contribución original")
-    rect(s, M, Inches(1.45), Inches(6.0), Inches(5.3), PANEL, line=LINE)
-    rect(s, M, Inches(1.45), Inches(6.0), Inches(0.7), ACCENT)
-    txt(s, Inches(0.85), Inches(1.6), Inches(5.4), Inches(0.45), "P1 · Tests de cuanticidad", size=16, bold=True, color=WHITE)
-    txt(s, Inches(0.85), Inches(2.6), Inches(5.4), Inches(2.2),
-        "¿Hay un indicador a priori\nque prediga si un método\ncuántico tendrá ventaja?",
-        size=20, bold=True, color=INK)
-    txt(s, Inches(0.85), Inches(5.3), Inches(5.4), Inches(1.0),
-        "Propuesta: score Q(D)\nalineación + entropía + d_F", size=14, color=MUTED)
+    header(s, "Preguntas originales", "Surgen tras la evidencia de ventaja condicionada")
+    txt(s, M, Inches(1.28), Inches(12.2), Inches(0.5),
+        "Hallazgo previo: la ventaja en kernels aparece con alineación mapa↔generador y desaparece sin ella.\n"
+        "Eso abre dos preguntas nuevas (Cap. investigación original):",
+        size=12, color=MUTED)
 
-    rect(s, Inches(6.8), Inches(1.45), Inches(6.0), Inches(5.3), PANEL, line=LINE)
-    rect(s, Inches(6.8), Inches(1.45), Inches(6.0), Inches(0.7), DARK)
-    txt(s, Inches(7.1), Inches(1.6), Inches(5.4), Inches(0.45), "P2 · Espacio de representación", size=16, bold=True, color=WHITE)
-    txt(s, Inches(7.1), Inches(2.6), Inches(5.4), Inches(2.2),
-        "Si el dataset no es\ncuántico-compatible,\n¿se puede remapear?",
-        size=20, bold=True, color=INK)
-    txt(s, Inches(7.1), Inches(5.3), Inches(5.4), Inches(1.0),
-        "Propuesta: framework QCR\nplanteado formalmente (conjetura abierta)", size=14, color=MUTED)
+    rect(s, M, Inches(1.95), Inches(12.2), Inches(2.25), PANEL, line=LINE)
+    rect(s, M, Inches(1.95), Inches(0.08), Inches(2.25), ACCENT)
+    txt(s, Inches(0.85), Inches(2.1), Inches(11.5), Inches(0.3),
+        "P1  ·  TESTS DE CUANTICIDAD", size=12, bold=True, color=ACCENT)
+    txt(s, Inches(0.85), Inches(2.5), Inches(11.5), Inches(1.0),
+        "¿Existe algún indicador calculable a priori sobre un dataset que permita\n"
+        "predecir si un algoritmo cuántico mostrará ventaja sobre los clásicos?",
+        size=15, bold=True, color=INK)
+    txt(s, Inches(0.85), Inches(3.55), Inches(11.5), Inches(0.4),
+        "Respuesta propuesta en este TFM: score compuesto Q(D)  (alineación · entropía espectral · d_F)",
+        size=12, color=MUTED)
+
+    rect(s, M, Inches(4.25), Inches(12.2), Inches(2.5), PANEL, line=LINE)
+    rect(s, M, Inches(4.25), Inches(0.08), Inches(2.5), DARK)
+    txt(s, Inches(0.85), Inches(4.4), Inches(11.5), Inches(0.3),
+        "P2  ·  MAPEOS CUÁNTICO-COMPATIBLES", size=12, bold=True, color=DARK)
+    txt(s, Inches(0.85), Inches(4.8), Inches(11.5), Inches(1.0),
+        "Si un dataset no tiene estructura cuántica nativa, ¿puede transformarse a un\n"
+        "espacio de representación donde la tenga, sin alterar la información discriminativa?",
+        size=15, bold=True, color=INK)
+    txt(s, Inches(0.85), Inches(5.95), Inches(11.5), Inches(0.5),
+        "Respuesta propuesta: framework QCR + conjetura del espacio Z (ψ polinómica) — planteada formalmente, abierta",
+        size=12, color=MUTED)
     footer(s, n, total)
 
     # 12 Results alignment
@@ -359,7 +376,7 @@ def build():
     # 15 Q(D)
     s = new()
     bg(s)
-    header(s, "Resultados · P1", "Score de cuanticidad Q(D)")
+    header(s, "Respuesta a P1", "Score Q(D): indicador a priori de ventaja")
     fit_pic(s, FIGS / "08_correlacion_indicadores_ventaja.png", M, Inches(1.35), Inches(6.0), Inches(5.5))
     fit_pic(s, FIGS / "08_barrido_sintetico_alpha.png", Inches(6.7), Inches(1.35), Inches(6.0), Inches(5.5))
     footer(s, n, total)
@@ -367,9 +384,13 @@ def build():
     # 16 QCR
     s = new()
     bg(s)
-    header(s, "Resultados · P2", "QCR / mapeos — evidencia preliminar")
-    fit_pic(s, FIGS / "09_qcr_framework_diagnostico.png", M, Inches(1.35), Inches(6.0), Inches(5.5))
-    fit_pic(s, FIGS / "09_mapeos_comparativa.png", Inches(6.7), Inches(1.35), Inches(6.0), Inches(5.5))
+    header(s, "Respuesta a P2", "QCR: ψ : X → Z  ·  conjetura abierta")
+    fit_pic(s, FIGS / "09_qcr_framework_diagnostico.png", M, Inches(1.35), Inches(6.0), Inches(4.6))
+    fit_pic(s, FIGS / "09_mapeos_comparativa.png", Inches(6.7), Inches(1.35), Inches(6.0), Inches(4.6))
+    rect(s, M, Inches(6.1), Inches(12.2), Inches(0.75), PANEL, line=LINE)
+    txt(s, Inches(0.75), Inches(6.22), Inches(11.8), Inches(0.5),
+        "Alcance del TFM: plantear formalmente la conjetura y aportar evidencia preliminar — no demostración.",
+        size=12, color=MUTED)
     footer(s, n, total)
 
     # 17 Synthesis
