@@ -181,9 +181,7 @@ A esta escala no hay ventaja de tiempo: NN+2-opt es óptimo en milisegundos. El 
 \section{Caso de uso 6: Análisis del umbral de ventaja del kernel}
 % =====================================================================
 
-El análisis específico del umbral de ventaja del kernel cuántico (Notebook~06) confirma los hallazgos del caso de uso 1 desde una perspectiva de escalabilidad. Sobre el subconjunto Telco ($n=50$), el QSVM obtuvo una ventaja de \textbf{+6.7 pp} (66.7\% vs 60.0\% SVM-RBF), sugiriendo que incluso en datos reales sin estructura cuántica explícita, el kernel puede ser competitivo en muestras pequeñas donde los clásicos tienen menos datos para estimar sus hiperparámetros.
-
-En el dataset cuántico-nativo ($n=150$), el QSVC obtuvo \textbf{+8.9 pp} de ventaja (68.9\% vs 60.0\% SVM-RBF), confirmando ventaja cuando generador y feature map están alineados. Sobre el dataset SKG (Incidentes Bogotá), el clasificador clásico fue superior: QSVC 54.0\% vs 60.7\% clásico ($-6.7$ pp), coherente con la ausencia de esa alineación en datos de movilidad urbana. La comparativa de los tres datasets en el Notebook~06 consolida el principio transversal: la ventaja aparece cuando el feature map (en este TFM, ZZ) está alineado con el generador del dato; no es una propiedad intrínseca de ZZ.
+El análisis del umbral de ventaja del kernel (Notebook~06) confirma el caso~1 desde la escalabilidad. En el dataset \textbf{cuántico-nativo} ($n=150$), el QSVC obtuvo \textbf{+8.9 pp} vs.\ SVM-RBF (68.9\% vs 60.0\%): ventaja cuando generador y feature map coinciden. Sobre \textbf{SKG} (Incidentes Bogotá) el clásico fue superior: QSVC 54.0\% vs 60.7\% ($-6.7$~pp) ---SKG \textbf{no} es cuántico-nativo. Sobre un subconjunto Telco ($n=50$) aparece $+6.7$~pp vs.\ RBF (66.7\% vs 60.0\%): artefacto de muestra pequeña frente a un único baseline RBF; frente a GB/RF y bajo $\mathcal{Q}_{\mathrm{rob}}$ Telco permanece clásico. Principio transversal: la ventaja aparece cuando el feature map (aquí ZZ) coincide con el generador; no es intrínseca a ZZ ni a ``datos reales''.
 
 \begin{figure}[!htbp]
 \centering
@@ -301,13 +299,13 @@ La Tabla~\ref{tab:sintesis} sintetiza los resultados principales del estudio com
 3 & QAOA ($p=1$) & \multicolumn{2}{c}{\textbf{$-$30.3\% coste vs Greedy}} & --- \\
 4 & VQE/QAOA & \multicolumn{2}{c}{Óptimo ($n \leq 6$)} & --- \\
 5 & QAOA TSP & \multicolumn{2}{c}{empate óptimo vs NN+2-opt ($n=4$)} & Euclidean gap~$0$ \\
-6 & QSVM (umbral) & \textbf{+8.9 pp} ($n=150$) & $-6.7$ pp & $+6.7$ pp ($n=50$) \\
+6 & QSVM (umbral) & \textbf{+8.9 pp} ($n=150$) & $-6.7$ pp (clásico) & $+6.7$ pp vs RBF$^\ddagger$ ($n=50$) \\
 7 & QAOA MDS ($p=3$) & \multicolumn{2}{c}{\textbf{Óptimo; $P(\text{opt})\approx 73\%$; patrón híbrido}} & NP-hard \\
 8 & OCSVM-ZZ & \textbf{+31.2 pp AUC} (\texttt{zz\_phase}) & clásico (inyectado) & clásico (moons/blobs) \\
 9 & QK-SVR lags & \textbf{$\Delta$MAE $-0.36$} (\texttt{zz\_lag}) & clásico (\texttt{skg\_speed}) & clásico (\texttt{sine}) \\
 \hline
 \end{tabular}
-\caption{Síntesis de resultados cuántico vs clásico por caso de uso y dataset. Las celdas en negrita indican ventaja cuántica demostrada (o empate óptimo verificable en TSP).}
+\caption{Síntesis cuántico vs clásico. Negrita = ventaja demostrada (o empate óptimo en TSP). SKG/Telco en kernels: clásico. $^\ddagger$Telco $+6.7$~pp es vs.\ RBF en $n=50$ ---no ventaja operativa vs.\ GB/RF.}
 \label{tab:sintesis}
 \end{table}
 
@@ -467,5 +465,5 @@ El hilo conductor de los nueve casos de uso es precisamente la demostración de 
 
 \subsection{Resultados adicionales y visualización}
 
-El análisis de escalabilidad del caso de uso~1 se sintetiza visualmente en la Figura~\ref{fig:escala_clasificacion}, que muestra la ventaja cuántica robusta en todo el rango $n \in [30, 180]$ evaluado. Las matrices de kernel de los tres datasets principales (Figura~\ref{fig:kernel_heatmaps}) revelan que la estructura de bloques ---presente en el dataset cuántico-nativo y en SKG Incidentes, ausente en Telco Churn--- es el correlato visual de la ventaja cuántica: un kernel cuántico con buena separación de bloques por clase es el indicador más directo de compatibilidad cuántica. Estos artefactos visuales prefiguran los indicadores formales desarrollados en el Capítulo~\ref{cap:investigacion_original}, donde la distancia de Frobenius $d_F$ y la entropía espectral $H(K_Q)$ cuantifican precisamente esta propiedad geométrica.
+El análisis de escalabilidad del caso~1 se sintetiza en la Figura~\ref{fig:escala_clasificacion}: ventaja robusta en $n \in [30, 180]$ \textbf{solo} en el régimen cuántico-nativo. Las matrices de kernel (Figura~\ref{fig:kernel_heatmaps}) muestran estructura de bloques también en SKG, pero eso es correlato visual de geometría ---\textbf{no} equivalen a compatibilidad operativa ni a ventaja frente a GB/RF (SKG/Telco son clásicos). Los indicadores formales del Capítulo~\ref{cap:investigacion_original} ($d_F$, $H(K_Q)$, $\mathcal{Q}_{\mathrm{rob}}$) cuantifican esa geometría y dejan claro que $\mathcal{Q}>0$ vs.\ RBF no basta.
 

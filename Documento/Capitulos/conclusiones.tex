@@ -19,11 +19,11 @@ Con profundidad $p=1$, el QAOA reduce el coste de asignación de recursos en un 
 \item \textbf{VQE es competitivo para optimización de portafolio a pequeña escala.}
 VQE converge al óptimo en instancias de hasta 6 activos, con una complejidad de circuito polinómica frente a la búsqueda exhaustiva exponencial \citep{peruzzo2014}. Para instancias mayores, la optimización cuadrática clásica sigue siendo superior en hardware simulado NISQ.
 
-\item \textbf{El score de cuanticidad Q(D) predice el ranking de ventaja QSVM con correlación de Spearman significativa.} \label{conc:c1}
-La Conjetura~1 del TFM ---que es posible cuantificar la adecuación de un dataset para algoritmos cuánticos--- queda validada de forma parcial pero robusta. El score compuesto $\mathcal{Q}(D)$, calculado sobre la proyección de $n_\text{qubits}$ features mediante PCA, alcanza $\rho_S = 0.866$ sobre los tres datasets evaluados ($n=3$, resultado orientativo) y $\rho_S = 0.833$ ($p = 0.005$) en un barrido sintético de nueve configuraciones de parámetro~$\alpha$. El componente de distancia de Frobenius $d_F$ muestra la misma correlación ($\rho_S = 0.866$), mientras que la diferencia de alineación $\Delta A$ resulta no discriminativa en los datos reales ($\rho_S = 0.000$) pero sí en el barrido sintético ($\rho_S = 0.833$, $p = 0.005$). Un análisis de sensibilidad dimensional revela que el indicador captura mejor la cuanticidad con features de baja información mutua (PCA) que con features discriminativas (SelectKBest), sugiriendo que el ZZFeatureMap explota preferentemente la estructura algebraica de la proyección y no la relevancia supervisada de las variables.
+\item \textbf{El score de cuanticidad $\mathcal{Q}(D)$ es un diagnóstico útil, no un oráculo de despliegue.} \label{conc:c1}
+La Conjetura~1 queda validada de forma parcial: $\rho_S = 0.833$ ($p = 0.005$) en el barrido sintético ($n=9$) es la evidencia principal; $\rho_S = 0.866$ sobre tres datasets vs.\ RBF ($n=3$) es orientativa y \textbf{no} implica que SKG sea cuántico-nativo. $d_F$ es el componente más informativo; $\Delta A$ se degrada con PCA a 2 qubits. Regla operativa: $\mathcal{Q}>0$ vs.\ RBF debe cruzarse siempre con GB/RF y, cuando exista, con $\mathcal{Q}_{\mathrm{rob}}$.
 
-\item \textbf{El Framework QCR se plantea formalmente en este TFM, con evidencia preliminar condicionada.} \label{conc:c2}
-La Conjetura~2 ---existencia de una transformación $T^*$ que maximiza $\mathcal{Q}(T(D))$--- se define aquí como contribución abierta: protocolo de cuatro pasos, score $\mathcal{Q}$ y primeras pruebas empíricas. El Notebook~09 identificó re-uploading $reps=3$ como $T^*$ en Telco ($+4.2$~pp bajo ese protocolo). La revisión QML~v2 con $\mathcal{Q}_{\mathrm{rob}}$ (Sección~\ref{sec:qml_v2_revision}) muestra un panorama más estricto: Telco no se rescata; SKG sí cambia a \texttt{try-ZZ} con rotación, sin lift garantizado de accuracy. En este TFM QCR queda \textbf{planteado y delimitado} (filtro de geometría previo a Table~A/B); su demostración fuerte es trabajo post-TFM (Capítulo~\ref{cap:futuro}).
+\item \textbf{El Framework QCR se plantea formalmente, con evidencia preliminar condicionada.} \label{conc:c2}
+La Conjetura~2 se define como contribución abierta. Notebook~09 reportó lifts \emph{vs.\ RBF} (re-uploading en Telco). Bajo $\mathcal{Q}_{\mathrm{rob}}$ (Sección~\ref{sec:qml_v2_revision}) Telco permanece \texttt{classical}; en SKG la rotación solo cambia geometría a \texttt{try-ZZ} sin lift de accuracy. QCR queda \textbf{planteado y delimitado} como filtro de geometría ---no como rescate operativo de SKG/Telco---; demostración fuerte = post-TFM (Capítulo~\ref{cap:futuro}).
 
 \item \textbf{El coste computacional de la simulación es el principal obstáculo práctico actual.}
 La evaluación del kernel cuántico escala como $O(n^2)$ en número de evaluaciones de circuito, lo que hace que el QSVM con 300 muestras requiera más de 2 minutos en simulación, frente a segundos de los clasificadores clásicos \citep{haug2023}. Este coste no es intrínseco al algoritmo cuántico sino a la simulación en hardware clásico; en hardware cuántico real la evaluación sería paralela y potencialmente más rápida.
@@ -58,7 +58,7 @@ La conclusión práctica para entornos empresariales como SKG Tecnología es: \t
 
 \subsection*{Conjetura 1 (C1): Indicadores de cuanticidad}
 
-$\mathcal{Q}(D)$, calculado sobre la proyección de $n_\text{qubits}$ features, predice el ranking de ventaja QSVM con $\rho_S = 0.87$ (datos reales, $n=3$) y es monótonamente creciente con el parámetro de cuanticidad~$\alpha$ del generador de datos sintéticos ($\rho_S = 0.833$, $p = 0.005$, $n=9$). Su componente más informativo es $d_F$ (distancia de Frobenius entre kernels cuántico y clásico óptimo). La validez del indicador depende críticamente de la reducción dimensional previa: features de baja información mutua (PCA) son más adecuadas para el ZZFeatureMap que features discriminativas (SelectKBest), lo que constituye una limitación metodológica a superar con feature maps de mayor expresividad en trabajo futuro.
+$\mathcal{Q}(D)$ es monótonamente creciente con $\alpha$ en el barrido sintético ($\rho_S = 0.833$, $p = 0.005$, $n=9$) ---evidencia principal---. La correlación $\rho_S \approx 0.87$ sobre tres datasets vs.\ RBF ($n=3$) es orientativa y \textbf{no} implica que SKG sea cuántico-nativo. El componente más informativo es $d_F$. $\mathcal{Q}>0$ debe cruzarse siempre con GB/RF y $\mathcal{Q}_{\mathrm{rob}}$; la validez depende de la reducción dimensional (PCA vs SelectKBest).
 
 \subsection*{Conjetura 2 (C2): Framework QCR}
 
@@ -66,7 +66,7 @@ El Framework QCR define:
 \[
 T^* = \arg\max_{T \in \mathcal{T}}\, \mathcal{Q}(T(D)), \quad
 \mathcal{T} = \{\text{ZZ-compatible},\; \text{Rotación max-}d_F,\; \text{Re-uploading},\; \text{Q-UMAP}\}.
-\] En el protocolo Notebook~09, $T^* = \text{re-uploading } reps=3$ elevaba $\mathcal{Q}(\text{Telco})$ y $+4.2$~pp de ventaja. Bajo $\mathcal{Q}_{\mathrm{rob}}$ (Sección~\ref{sec:qml_v2_revision}), el rescate robusto observable es la rotación en SKG (\texttt{try-ZZ}), sin lift garantizado de accuracy. El alcance de este TFM es \textbf{plantear formalmente} QCR y documentar evidencia preliminar; la validación sistemática y la demostración de la Conjetura~\ref{conj:qcr} son post-TFM.
+\] En el protocolo Notebook~09, $T^* = \text{re-uploading } reps=3$ elevaba $\mathcal{Q}(\text{Telco})$ y $+4.2$~pp \emph{vs.\ RBF}. Bajo $\mathcal{Q}_{\mathrm{rob}}$ (Sección~\ref{sec:qml_v2_revision}) Telco permanece \texttt{classical}; en SKG la rotación solo cambia el veredicto geométrico a \texttt{try-ZZ}, \textbf{sin} lift de accuracy frente a GB/RF. SKG/Telco \textbf{no} son cuántico-nativos. El alcance de este TFM es \textbf{plantear formalmente} QCR y documentar evidencia preliminar; la demostración de la Conjetura~\ref{conj:qcr} es post-TFM.
 
 \section{Reflexiones sobre el estado actual de la computación cuántica}
 
@@ -81,7 +81,7 @@ Una distinción conceptual fundamental que emerge de este trabajo es la separaci
 
 Esta disociación ---metodologías maduras, hardware en desarrollo--- es la causa raíz de los resultados mixtos observados en este trabajo. La comparación actual entre algoritmos cuánticos y algoritmos clásicos altamente optimizados (Gradient Boosting, XGBoost) es, en cierta medida, asimétrica: se enfrentan décadas de ingeniería y optimización clásica contra paradigmas completamente nuevos que aún no tienen hardware nativo adecuado \citep{biamonte2017, cerezo2021}.
 
-\textbf{Los resultados obtenidos en este TFM son, en ese contexto, alentadores}. Demostrar ventaja cuántica medible en múltiples dominios ---incluso en simulación y con datos reales---  frente a métodos clásicos altamente consolidados, y proponer un framework de pre-mapeo que eleva la cuanticidad de datasets reales con validación empírica, representa una contribución sólida al estado del arte en Quantum Machine Learning aplicado.
+\textbf{Los resultados obtenidos en este TFM son, en ese contexto, informativos y matizados}. Hay ventaja medible cuando el feature map coincide con el generador (y en QUBO híbrido a escala moderada); en datos reales SKG/Telco el stack clásico domina. El framework QCR se \textbf{plantea} con evidencia preliminar ---no como rescate operativo de datasets empresariales---, lo que aporta un programa de investigación claro más que una demostración cerrada.
 
 \section{Limitaciones del trabajo}
 

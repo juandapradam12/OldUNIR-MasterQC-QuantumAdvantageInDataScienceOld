@@ -126,6 +126,7 @@ RESULTS_08 = [
     {"dataset": "Cuántico-nativo", "A_Q": 0.0181, "A_cl": 0.0469, "delta_A": -0.0288,
      "H_Q": 2.2749, "H_cl": 2.2411, "delta_H": 0.0339, "d_F": 0.3532, "g": 1541.657,
      "Q_score": 0.2858, "advantage_pp": 0.0},
+    # advantage_pp below = QSVM - RBF only (NB08); NOT vs GB/RF; SKG is NOT quantum-native
     {"dataset": "SKG Incidentes", "A_Q": 0.0396, "A_cl": 0.0499, "delta_A": -0.0103,
      "H_Q": 2.1545, "H_cl": 1.9666, "delta_H": 0.1880, "d_F": 0.3689, "g": 2080.864,
      "Q_score": 0.3523, "advantage_pp": 8.3},

@@ -13,18 +13,15 @@ cd POCs && python3 -m qml_v2.qcr --n-sample 80 --n-repeats 3
 |---------|----------|----------------|--------|--------------|----------------|------------|
 | native_xor | try-ZZ | rotation (θ≈74°) | +0.0018 | try-ZZ | +30.0 pp | rotation ✓ |
 | telco_churn | classical | rotation (θ≈74°) | ≈0 | classical | −15.6 pp | rotation ✓ |
-| skg_churn | classical | **rotation (θ≈74°)** | **+0.018** | **try-ZZ** | **+5.6 pp** | zz_interactions ✗ |
+| skg_churn | classical | rotation (θ≈74°) | +0.018 | try-ZZ (geom.) | +5.6 pp vs RBF | zz_interactions ✗ |
 
 ## Lectura
 
-1. **SKG:** el único caso donde QCR cambia el veredicto. Baseline
-   \(\mathcal{Q}_{\mathrm{rob}}<0\) sin ventaja; tras rotación global →
-   `try-ZZ` y +5.6 pp de ventaja kernel. La heurística falló (sugirió
-   `zz_interactions` por \(d_F\) alto) — usar **`qcr_auto_best`**.
-2. **Telco:** QCR no mueve la aguja. Cuello de botella de datos/features,
-   no de geometría ZZ. Coherente con Table A/B y quantumness.
-3. **Native:** ya era `try-ZZ`; rotación da un boost menor. Reuploading
-   empeora (sobre-expresión del feature map).
+1. **SKG:** QCR cambia el veredicto *geométrico* (classical → try-ZZ) y
+   +5.6 pp de ventaja kernel vs RBF, pero SKG **no** es cuántico-nativo:
+   el probe Table A no traduce eso en lift de accuracy vs GB/RF.
+2. **Telco:** QCR no mueve la aguja; permanece classical.
+3. **Native:** ya era `try-ZZ`; rotación da un boost menor.
 
 ## Classification probe (SKG)
 
@@ -38,8 +35,8 @@ de lift supervisado. Siempre cerrar con Table A/B.
 
 ## Implicación TFM
 
-QCR es útil como **rescate condicional** (SKG), no como default. En el
-pipeline operativo:
+QCR es un **filtro de geometría** (a veces mueve SKG a try-ZZ), no un
+rescate operativo ni un default de despliegue. En el pipeline:
 
 ```
 quantumness → si classical y ΔA≈0 → qcr_auto_best → re-evaluar Q_rob

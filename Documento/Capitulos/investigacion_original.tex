@@ -120,14 +120,14 @@ Se implementaron los cinco indicadores anteriores sobre los tres datasets del TF
 \small
 \begin{tabular}{lcccccc}
 \hline
-\textbf{Dataset} & $A(K_Q, K_y)$ & $A(K_{RBF}, K_y)$ & $H(K_Q)$ & $H(K_{RBF})$ & $d_F$ & \textbf{Ventaja QSVM} \\
+\textbf{Dataset} & $A(K_Q, K_y)$ & $A(K_{RBF}, K_y)$ & $H(K_Q)$ & $H(K_{RBF})$ & $d_F$ & \textbf{$\Delta$ vs RBF} \\
 \hline
 Cuántico-nativo  & 0.018 & 0.047 & 2.275 & 2.241 & 0.353 & $+$0.0 pp \\
-SKG Incidentes   & 0.040 & 0.050 & 2.155 & 1.967 & 0.369 & $\mathbf{+8.3}$ \textbf{pp} \\
+SKG Incidentes   & 0.040 & 0.050 & 2.155 & 1.967 & 0.369 & $+8.3$ pp$^\dagger$ \\
 Telco Churn      & 0.190 & 0.170 & 2.333 & 3.465 & 0.346 & $+$0.0 pp \\
 \hline
 \end{tabular}
-\caption{Indicadores de cuanticidad calculados sobre los tres datasets del TFM (Notebook~08, ZZFeatureMap 2 qubits, PCA 2D, $n=80$ muestras estratificadas). La ventaja QSVM es la diferencia de precisión QSVM $-$ SVM-RBF en una partición 70/30.}
+\caption{Indicadores de cuanticidad (Notebook~08, ZZFeatureMap 2 qubits, PCA 2D, $n=80$). La columna $\Delta$ vs RBF es QSVM $-$ SVM-RBF en una partición 70/30 ---\textbf{no} frente a GB/RF. $^\dagger$SKG: $+8.3$~pp vs RBF es un artefacto del protocolo NB08; frente al stack clásico (GB/RF) y bajo $\mathcal{Q}_{\mathrm{rob}}$ SKG es \texttt{classical} (no cuántico-nativo).}
 \label{tab:indicadores_resultados}
 \end{table}
 
@@ -136,28 +136,28 @@ Telco Churn      & 0.190 & 0.170 & 2.333 & 3.465 & 0.346 & $+$0.0 pp \\
 \begin{figure}[ht]
 \centering
 \includegraphics[width=0.95\textwidth]{../POCs/data/output/figures/08_test_cuanticidad_datasets.png}
-\caption{Comparativa de indicadores de cuanticidad sobre los tres datasets del TFM (Notebook~08). Paneles superiores: kernel alignment diferencial ($\Delta A$), alineación cuántica y clásica, y entropía espectral. Paneles inferiores: distancia de Frobenius $d_F$, diferencia geométrica $g$ y score $\mathcal{Q}(\mathcal{D})$ vs.\ ventaja empírica QSVM. El dataset SKG Incidentes obtiene el mayor score $\mathcal{Q}=+0.352$ y la mayor ventaja ($+8.3$ pp).}
+\caption{Comparativa de indicadores de cuanticidad (Notebook~08). Paneles superiores: $\Delta A$, alineaciones y entropía espectral. Paneles inferiores: $d_F$, $g$ y $\mathcal{Q}(\mathcal{D})$ frente a $\Delta$ QSVM$-$RBF. SKG obtiene $\mathcal{Q}=+0.352$ y $+8.3$~pp \emph{solo} vs.\ RBF: eso \textbf{no} implica compatibilidad operativa ni que SKG sea cuántico-nativo (GB/RF ganan; QML~v2: \texttt{classical}).}
 \label{fig:indicadores_cuanticidad}
 \end{figure}
 
 \begin{figure}[ht]
 \centering
 \includegraphics[width=0.95\textwidth]{../POCs/data/output/figures/08_kernel_heatmaps_comparativa.png}
-\caption{Matrices de kernel cuántico $K_Q$ y clásico $K_{RBF}$ para los tres datasets, ordenadas por clase. La estructura de bloques —presente en SKG Incidentes— indica buena separabilidad cuántica. En Telco Churn, el kernel clásico muestra una estructura de bloques más marcada que el cuántico, coherente con la ausencia de ventaja.}
+\caption{Matrices de kernel cuántico $K_Q$ y clásico $K_{RBF}$ para los tres datasets, ordenadas por clase. La estructura de bloques es un correlato visual de geometría de kernel; \textbf{no} equivale por sí sola a compatibilidad operativa ni a ventaja frente a GB/RF. En Telco, el RBF muestra bloques más marcados que $K_Q$, coherente con superioridad clásica.}
 \label{fig:kernel_heatmaps}
 \end{figure}
 
 \subsection{Análisis: \textquestiondown{}Predicen los indicadores la ventaja QSVM?}
 
-Los resultados de la Tabla~\ref{tab:indicadores_resultados} permiten evaluar el poder predictivo de cada indicador. El ranking de ventaja empírica es: SKG Incidentes ($+8.3$ pp) $>$ Cuántico-nativo ($0.0$ pp) $=$ Telco Churn ($0.0$ pp).
+Los resultados de la Tabla~\ref{tab:indicadores_resultados} permiten evaluar el poder predictivo de cada indicador \textbf{bajo el protocolo NB08 vs.\ RBF}. Ese ranking vs.\ RBF es: SKG ($+8.3$~pp) $>$ Cuántico-nativo ($0.0$~pp) $=$ Telco ($0.0$~pp). \textbf{Importante:} este ranking \emph{no} es el ranking operativo frente a GB/RF, donde el nativo es el único régimen de ventaja clara y SKG/Telco son clásicos (Sección~\ref{sec:qml_v2_revision}).
 
-El score compuesto $\mathcal{Q}(\mathcal{D})$ reproduce exactamente este ranking: $\mathcal{Q}(\text{SKG})=+0.352 > \mathcal{Q}(\text{Q-nativo})=+0.286 > \mathcal{Q}(\text{Telco})=-0.050$, con correlación de Spearman $\rho_S = +0.866$ sobre los tres datasets. El análisis de barrido sintético ($\alpha \in [0,1]$, $n=9$) confirma la monotonía: $\rho_S = +0.833$ ($p = 0.005$).
+El score $\mathcal{Q}(\mathcal{D})$ reproduce el ranking \emph{vs.\ RBF}: $\mathcal{Q}(\text{SKG})=+0.352 > \mathcal{Q}(\text{Q-nativo})=+0.286 > \mathcal{Q}(\text{Telco})=-0.050$ ($\rho_S = +0.866$, $n=3$, orientativo). El barrido sintético en $\alpha$ ($n=9$) confirma monotonía con $\rho_S = +0.833$ ($p = 0.005$) y es la evidencia cuantitativa principal. Lectura operativa: $\mathcal{Q}>0$ vs.\ RBF en SKG \textbf{no} implica que SKG sea cuántico-nativo.
 
-Sin embargo, el análisis individual de los componentes revela matices importantes:
+El análisis individual de los componentes revela matices importantes:
 \begin{itemize}
-    \item $\Delta A$ (diferencia de alineación) es negativa en dos de los tres datasets: el kernel cuántico está \emph{peor} alineado con las etiquetas que el RBF en el régimen de 2 qubits + PCA. No obstante, $\rho_S(\Delta A, \text{ventaja}) = 0.000$ sobre datasets reales, frente a $\rho_S = +0.833$ en el barrido sintético. La discrepancia sugiere que el régimen de 2 qubits + PCA suprime la señal de $\Delta A$ en datos reales.
-    \item $d_F$ y $g$ predicen correctamente el ranking con $\rho_S = +0.866$ sobre los tres datasets.
-    \item $\Delta H$ es el indicador más volátil: $\mathcal{Q}(\text{Telco})$ está dominado por $\Delta H = -1.131$, que detecta correctamente la concentración exponencial del kernel cuántico sobre Telco Churn.
+    \item $\Delta A$ es negativa en dos de los tres datasets en el régimen 2 qubits + PCA. $\rho_S(\Delta A, \Delta\text{vs RBF}) = 0.000$ sobre esos tres puntos, frente a $\rho_S = +0.833$ en el barrido sintético: el PCA agresivo suprime la señal de $\Delta A$ en datos reales.
+    \item $d_F$ y $g$ rankean bien el protocolo vs.\ RBF ($\rho_S = +0.866$ sobre $n=3$), pero no sustituyen la comparación contra GB/RF ni el veredicto $\mathcal{Q}_{\mathrm{rob}}$.
+    \item $\Delta H$ es el indicador más volátil: $\mathcal{Q}(\text{Telco})$ está dominado por $\Delta H = -1.131$ (concentración espectral).
 \end{itemize}
 
 \paragraph{Caveat estadístico.}
@@ -186,15 +186,15 @@ Un hallazgo metodológico relevante emerge al comparar la configuración base (2
 \small
 \begin{tabular}{llcccc}
 \hline
-\textbf{Dataset} & \textbf{Config.} & $\mathcal{Q}(\mathcal{D})$ & $\Delta A$ & $d_F$ & \textbf{Ventaja} \\
+\textbf{Dataset} & \textbf{Config.} & $\mathcal{Q}(\mathcal{D})$ & $\Delta A$ & $d_F$ & \textbf{$\Delta$ vs RBF} \\
 \hline
-SKG Incidentes & 2Q + PCA       & $+0.352$ & $-0.010$ & $0.369$ & $+8.3$ pp \\
-               & 4Q + SelectKBest & $-0.128$ & $-0.033$ & $0.197$ & $+8.3$ pp \\
+SKG Incidentes & 2Q + PCA       & $+0.352$ & $-0.010$ & $0.369$ & $+8.3$ pp$^\dagger$ \\
+               & 4Q + SelectKBest & $-0.128$ & $-0.033$ & $0.197$ & $+8.3$ pp$^\dagger$ \\
 Telco Churn    & 2Q + PCA       & $-0.050$ & $+0.020$ & $0.346$ & $+0.0$ pp \\
                & 4Q + SelectKBest & $-0.155$ & $+0.055$ & $0.234$ & $-4.2$ pp \\
 \hline
 \end{tabular}
-\caption{Análisis de sensibilidad dimensional (Notebook~08, §11). Con 4 qubits + SelectKBest, las features seleccionadas son altamente discriminativas para el clasificador clásico, lo que reduce $d_F$ y, con ello, $\mathcal{Q}(\mathcal{D})$.}
+\caption{Sensibilidad dimensional (Notebook~08, §11). $\Delta$ vs RBF $=$ QSVM$-$SVM-RBF. $^\dagger$SKG no es cuántico-nativo: GB/RF ganan y $\mathcal{Q}_{\mathrm{rob}}$ da \texttt{classical}. Con SelectKBest, $d_F$ (y $\mathcal{Q}$) caen porque el clásico aprovecha mejor features discriminativas.}
 \label{tab:sensibilidad_dim}
 \end{table}
 
@@ -288,30 +288,30 @@ La Tabla~\ref{tab:resultados_mapeos} resume los resultados de las cuatro estrate
 \small
 \begin{tabular}{llcccc}
 \hline
-\textbf{Pre-mapeo} & \textbf{Dataset} & $\mathcal{Q}$ (antes) & $\mathcal{Q}$ (después) & $\Delta\mathcal{Q}$ & \textbf{Ventaja QSVM} \\
+\textbf{Pre-mapeo} & \textbf{Dataset} & $\mathcal{Q}$ (antes) & $\mathcal{Q}$ (después) & $\Delta\mathcal{Q}$ & \textbf{$\Delta$ vs RBF} \\
 \hline
 Features ZZ-compat.    & SKG Incidentes & $+0.163$ & $-0.203$ & $-0.366$ $\downarrow$ & $+12.5$ pp \\
 Features ZZ-compat.    & Telco Churn    & $-0.228$ & $+0.136$ & $+0.364$ $\uparrow$ & $+4.2$ pp \\
 Rotación max. $d_F$    & SKG Incidentes & $+0.163$ & $+0.170$ & $+0.007$ $\uparrow$ & $+0.0$ pp \\
 Rotación max. $d_F$    & Telco Churn    & $-0.228$ & $+0.096$ & $+0.323$ $\uparrow$ & $+4.2$ pp \\
-\textbf{Re-uploading reps=3} & \textbf{SKG} & $+0.163$ & $+0.212$ & $\mathbf{+0.049}$ $\uparrow$ & $\mathbf{+16.7}$ \textbf{pp} \\
-\textbf{Re-uploading reps=3} & \textbf{Telco} & $-0.228$ & $+0.167$ & $\mathbf{+0.395}$ $\uparrow$ & $\mathbf{+4.2}$ \textbf{pp} \\
+Re-uploading reps=3    & SKG Incidentes & $+0.163$ & $+0.212$ & $+0.049$ $\uparrow$ & $+16.7$ pp \\
+Re-uploading reps=3    & Telco Churn    & $-0.228$ & $+0.167$ & $+0.395$ $\uparrow$ & $+4.2$ pp \\
 Q-UMAP/MDS             & SKG Incidentes & $+0.163$ & $+0.054$ & $-0.109$ $\downarrow$ & $-8.3$ pp \\
 Q-UMAP/MDS             & Telco Churn    & $-0.228$ & $-0.248$ & $-0.020$ $\downarrow$ & $+4.2$ pp \\
 \hline
 \end{tabular}
-\caption{Variación del score $\mathcal{Q}(\mathcal{D})$ y de la ventaja QSVM antes y después de cada estrategia de pre-mapeo (Notebook~09). El re-uploading con $\text{reps}=3$ es la única estrategia que mejora simultáneamente $\mathcal{Q}$ y la ventaja empírica en ambos datasets. La columna Q-UMAP usa MDS como fallback (umap-learn no disponible).}
+\caption{Variación de $\mathcal{Q}(\mathcal{D})$ y de $\Delta$ QSVM$-$RBF tras cada pre-mapeo (Notebook~09). Cifras \textbf{vs.\ RBF solamente}; no equivalen a ventaja operativa vs.\ GB/RF. Bajo $\mathcal{Q}_{\mathrm{rob}}$ (Sección~\ref{sec:qml_v2_revision}) Telco y SKG permanecen \texttt{classical} (la rotación en SKG cambia geometría, sin lift de accuracy garantizado). Q-UMAP usa MDS como fallback.}
 \label{tab:resultados_mapeos}
 \end{table}
 
 \begin{figure}[ht]
 \centering
 \includegraphics[width=0.95\textwidth]{../POCs/data/output/figures/09_mapeos_comparativa.png}
-\caption{Efecto de las cuatro estrategias de pre-mapeo sobre $\mathcal{Q}(\mathcal{D})$ (paneles izquierdos) y la ventaja QSVM en pp (paneles derechos), para SKG Incidentes (fila superior) y Telco Churn (fila inferior). Verde = mejora sobre baseline; rojo = empeoramiento.}
+\caption{Efecto de las cuatro estrategias de pre-mapeo sobre $\mathcal{Q}(\mathcal{D})$ (izq.) y $\Delta$ QSVM$-$RBF en pp (der.), para SKG (arriba) y Telco (abajo). Verde/rojo = cambio vs.\ baseline del protocolo NB09. Interpretar siempre como vs.\ RBF; SKG/Telco no son cuántico-nativos bajo el stack clásico ni bajo $\mathcal{Q}_{\mathrm{rob}}$.}
 \label{fig:mapeos_comparativa}
 \end{figure}
 
-El resultado más destacado es la disociación observada en la Estrategia~2 para SKG: $\mathcal{Q}$ mejora marginalmente ($+0.007$) pero la ventaja empírica cae $-8.3$ pp. Esto confirma que $\mathcal{Q}(\mathcal{D})$ es una cota de capacidad teórica, no un predictor determinista del rendimiento bajo muestras finitas.
+El resultado más destacado es la disociación en la Estrategia~2 para SKG: $\mathcal{Q}$ sube marginalmente ($+0.007$) pero $\Delta$ vs.\ RBF cae $-8.3$~pp. Esto confirma que $\mathcal{Q}(\mathcal{D})$ es una cota de capacidad geométrica, no un predictor determinista de accuracy bajo $n$ finito ---ni una licencia para llamar a SKG cuántico-compatible.
 
 % =====================================================================
 \section{Propuesta teórica: framework de representación cuántico-compatible}
@@ -321,18 +321,18 @@ El resultado más destacado es la disociación observada en la Estrategia~2 para
 Sobre la base de los resultados empíricos y la revisión de la literatura, se propone un \textbf{framework de representación cuántico-compatible (QCR)} que sistematiza el proceso de adecuación de datos clásicos a algoritmos cuánticos:
 
 \begin{enumerate}
-    \item \textbf{Diagnóstico}: Calcular $\mathcal{Q}(\mathcal{D})$ sobre el dataset original. Si $\mathcal{Q} > \theta$ (umbral empírico), proceder directamente al QSVM. Si $\mathcal{Q} \leq \theta$, continuar.
+    \item \textbf{Diagnóstico}: Calcular $\mathcal{Q}(\mathcal{D})$ (y, cuando esté disponible, $\mathcal{Q}_{\mathrm{rob}}$) y comparar también frente al \textbf{mejor clásico} (GB/RF), no solo RBF. $\mathcal{Q}>\theta$ vs.\ RBF \textbf{no} autoriza por sí solo a desplegar QSVM (contraejemplo: SKG).
 
-    \item \textbf{Identificación del cuello de botella}: Analizar qué componente de $\mathcal{Q}$ es más negativo:
+    \item \textbf{Identificación del cuello de botella}: Si el diagnóstico sugiere explorar pre-mapeo, analizar qué componente de $\mathcal{Q}$ es más negativo:
     \begin{itemize}
-        \item Si $\Delta A < 0$: el kernel cuántico no está alineado con las etiquetas → aplicar la estrategia de features ZZ-compatible.
-        \item Si $\hat{d}_F \approx 0$: el kernel cuántico es redundante con el clásico → aplicar la rotación de máxima divergencia.
-        \item Si $\Delta H < 0$: el kernel cuántico exhibe concentración → aplicar regularización del feature map o data re-uploading.
+        \item Si $\Delta A < 0$: el kernel cuántico no está alineado con las etiquetas → features ZZ-compatible.
+        \item Si $\hat{d}_F \approx 0$: el kernel cuántico es redundante con el clásico → rotación de máxima divergencia.
+        \item Si $\Delta H < 0$: concentración espectral → regularización del feature map o data re-uploading.
     \end{itemize}
 
-    \item \textbf{Pre-mapeo}: Aplicar la transformación $\psi$ identificada en el paso anterior. Recalcular $\mathcal{Q}(\psi(\mathcal{D}))$.
+    \item \textbf{Pre-mapeo}: Aplicar la transformación $\psi$ candidata. Recalcular $\mathcal{Q}(\psi(\mathcal{D}))$ y la ventaja frente al stack clásico fuerte.
 
-    \item \textbf{Verificación}: Si $\mathcal{Q}(\psi(\mathcal{D})) > \theta$, entrenar QSVM sobre $\psi(\mathcal{D})$. De lo contrario, reportar que el dataset no es cuántico-compatible con el feature map actual.
+    \item \textbf{Verificación}: Solo si la geometría \emph{y} la métrica supervisada frente a GB/RF son favorables, entrenar QSVM sobre $\psi(\mathcal{D})$. En caso contrario, reportar \texttt{classical} / no cuántico-compatible con el feature map actual.
 \end{enumerate}
 
 \paragraph{Validación empírica del Framework QCR.}
@@ -387,7 +387,7 @@ La Conjetura~\ref{conj:qcr} es no trivial por tres razones:
 \end{enumerate}
 
 \paragraph{Estado de la conjetura.}
-La Conjetura~\ref{conj:qcr} es actualmente \textbf{abierta}: no existe demostración general de existencia ni contraejemplo conocido. El alcance de este TFM es \textbf{plantearla formalmente} y aportar evidencia preliminar (Notebook~09: re-uploading en Telco elevaba $\mathcal{Q}$ y $+4.2$~pp bajo ese protocolo; QML~v2 con $\mathcal{Q}_{\mathrm{rob}}$ matiza el rescate a rotación en SKG sin lift garantizado de accuracy). Eso muestra plausibilidad operativa del programa, no una demostración. Su prueba formal requiere:
+La Conjetura~\ref{conj:qcr} es actualmente \textbf{abierta}: no existe demostración general de existencia ni contraejemplo conocido. El alcance de este TFM es \textbf{plantearla formalmente} y aportar evidencia preliminar (Notebook~09: re-uploading en Telco elevaba $\mathcal{Q}$ y $+4.2$~pp \emph{vs.\ RBF}; QML~v2 con $\mathcal{Q}_{\mathrm{rob}}$ deja Telco \texttt{classical} y en SKG solo un cambio geométrico \texttt{try-ZZ} por rotación, \textbf{sin} lift de accuracy). Eso muestra plausibilidad del programa, no un rescate operativo ni una demostración. Su prueba formal requiere:
 \begin{itemize}
   \item Caracterizar la clase de distribuciones $p(\mathbf{x}, y)$ para las que existe $\psi$ polinómico con $\mathcal{Q}(\psi(\mathcal{D})) > 0$.
   \item Demostrar que la ventaja cuántica en $\mathcal{Z}$ se traduce en ventaja en $\mathcal{X}$ bajo condiciones de invarianza: $\varepsilon(f_Q^* \circ \psi) \leq \varepsilon(f_C^*)$.
@@ -411,12 +411,12 @@ Esta hoja de ruta formal se desarrolla en el Capítulo~\ref{cap:futuro}.
   % Nodo de entrada
   \node[terminal] (start) at (0, 0) {Dataset $\mathcal{D}$};
 
-  % Decisión 1: Q > theta?
-  \node[decision] (d1) at (0, -1.4) {$\mathcal{Q}(\mathcal{D}) > \theta$?};
+  % Decisión 1: Q > theta? (insuficiente solo; exige también stack clásico)
+  \node[decision] (d1) at (0, -1.4) {$\mathcal{Q}>\theta$ \emph{y}\\vence a GB/RF?};
   \draw[arr] (start) -- (d1);
 
-  % Sí → QSVM directamente
-  \node[terminal] (qsvm) at (4.5, -1.4) {Entrenar QSVM\\sobre $\mathcal{D}$};
+  % Sí → QSVM (solo si también gana al stack clásico fuerte)
+  \node[terminal] (qsvm) at (4.5, -1.4) {Probar QSVM\\(no auto-deploy)};
   \draw[arr] (d1) -- node[above, font=\scriptsize]{Sí} (qsvm);
 
   % No → Identificar cuello de botella
@@ -452,20 +452,20 @@ Esta hoja de ruta formal se desarrolla en el Capítulo~\ref{cap:futuro}.
   \draw[arr] (t3) |- (verify);
 
   % Decisión final
-  \node[decision] (d5) at (0, -8.55) {$\mathcal{Q}(\psi(\mathcal{D})) > \theta$?};
+  \node[decision] (d5) at (0, -8.55) {$\mathcal{Q}(\psi)>\theta$\\y vence GB/RF?};
   \draw[arr] (verify) -- (d5);
 
   % Resultado Sí
-  \node[terminal] (qsvm2) at (3.8, -8.55) {Entrenar QSVM\\sobre $\psi(\mathcal{D})$};
+  \node[terminal] (qsvm2) at (3.8, -8.55) {Probar QSVM\\sobre $\psi(\mathcal{D})$};
   \draw[arr] (d5) -- node[above, font=\scriptsize]{Sí} (qsvm2);
 
   % Resultado No
   \node[terminal, draw=red!55!black, fill=red!6] (fallback) at (-3.8, -8.55)
-    {Reportar no\\cuántico-compatible};
+    {Reportar \texttt{classical}\\(no cuántico-nativo)};
   \draw[arr] (d5) -- node[above, font=\scriptsize]{No} (fallback);
 
 \end{tikzpicture}
-\caption{Diagrama de decisión del Framework QCR. Cada rama del árbol identifica el cuello de botella en $\mathcal{Q}(\mathcal{D})$ ($\Delta A$, $\hat{d}_F$ o $\Delta H$) y aplica la transformación $\psi$ correspondiente. El proceso termina con una verificación del score recalculado antes de entrenar el QSVM.}
+\caption{Diagrama de decisión del Framework QCR. $\mathcal{Q}>\theta$ frente a RBF \textbf{no} basta: se exige también ventaja frente a GB/RF (contraejemplo SKG). Cada rama identifica el cuello ($\Delta A$, $\hat{d}_F$, $\Delta H$) y aplica $\psi$; la verificación final es geométrica \emph{y} supervisada.}
 \label{fig:qcr_flowchart}
 \end{figure}
 
