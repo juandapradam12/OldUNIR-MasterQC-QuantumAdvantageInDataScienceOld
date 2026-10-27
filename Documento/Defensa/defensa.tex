@@ -154,7 +154,7 @@ ventaja real y medible frente a los algoritmos clásicos?
 \begin{block}{Hipótesis operativa}
 La ventaja es \textbf{real pero condicionada}:
 \begin{enumerate}
-  \item alineación \textbf{feature map} $\leftrightarrow$ \textbf{generador de datos}, o
+  \item coincidencia \textbf{feature map} $\leftrightarrow$ \textbf{generador de datos}, o
   \item problema formulable como QUBO con arquitectura \textbf{híbrida} a escala viable.
 \end{enumerate}
 \end{block}
@@ -240,9 +240,9 @@ Mapa de características $\phi:\mathcal{X}\to\mathcal{H}$ (\texttt{ZZFeatureMap}
 Clasificador: SVM / SVR / OCSVM sobre $K_{ij}=\kappa(x_i,x_j)$ frente a baseline RBF bajo el mismo protocolo \citep{schuld2021, liu2021}.
 
 \vspace{0.4em}
-\begin{block}{Principio de alineación}
-La ventaja aparece cuando el \textbf{generador del dato} está alineado con el feature map.
-ZZ es el mapa validado en este corpus; no el único admisible (Pauli, IQP,\ldots).
+\begin{block}{Condición de ventaja (kernels)}
+La ventaja aparece cuando el \textbf{generador del dato} coincide con el feature map.
+ZZ es el mapa medido en este corpus; no el único admisible (Pauli, IQP,\ldots).
 \end{block}
 \end{frame}
 
@@ -283,7 +283,7 @@ Cada familia se evalúa, cuando aplica, en:
 % =====================================================================
 \section{Resultados de modelos}
 % =====================================================================
-\begin{frame}{Resultados --- principio de alineación}
+\begin{frame}{Resultados --- datos cuántico-nativos (Liu et al.)}
 \begin{columns}[c]
 \begin{column}{0.48\textwidth}
 \centering
@@ -294,65 +294,162 @@ Cada familia se evalúa, cuando aplica, en:
 \includegraphics[width=\textwidth]{06_learning_curves_quantum_advantage.png}
 \end{column}
 \end{columns}
+\vspace{0.25em}
+\centering\footnotesize
+Etiquetas generadas con \texttt{ZZFeatureMap}: QSVM recupera la frontera; RBF/GB $\approx$ azar
+($\Delta$ media $\approx{+}41$\,pp).
 \end{frame}
 
-\begin{frame}{Resultados --- clasificación}
+\begin{frame}{Resultados --- clasificación en 3 capas de datos}
+\centering
+\includegraphics[width=\textwidth,height=0.78\textheight,keepaspectratio]{06_quantum_kernel_3datasets_comparativa.png}
+\end{frame}
+
+\begin{frame}{Resultados --- clasificación (Telco / sin estructura ZZ)}
 \begin{columns}[T]
 \begin{column}{0.62\textwidth}
 \centering
-\includegraphics[height=0.72\textheight]{01_escalabilidad_ventaja_clasificacion.png}
+\includegraphics[width=\linewidth,height=0.72\textheight,keepaspectratio]{01_clasificacion_comparacion.png}
+\end{column}
+\begin{column}{0.35\textwidth}
+\begin{block}{Lectura}
+\begin{itemize}
+  \item GB/RF/XGBoost: F1 $\approx 0.78$--$0.79$
+  \item QSVM / VQC: F1 $\approx 0.64$--$0.66$
+  \item Tiempo: clásico $<2$\,s; cuántico $>15$\,s
+\end{itemize}
+\end{block}
+{\footnotesize Sin coincidencia mapa--generador, gana el stack clásico.}
+\end{column}
+\end{columns}
+\end{frame}
+
+\begin{frame}{Resultados --- escalabilidad del QSVM}
+\begin{columns}[T]
+\begin{column}{0.62\textwidth}
+\centering
+\includegraphics[width=\linewidth,height=0.72\textheight,keepaspectratio]{01_escalabilidad_ventaja_clasificacion.png}
 \end{column}
 \begin{column}{0.35\textwidth}
 \begin{block}{Cifras ancla}
 \begin{itemize}
-  \item \textbf{+38.3\,pp} en datos alineados al mapa
+  \item \textbf{+38.3\,pp} con estructura ZZ
   \item Media \textbf{+40.9\,pp} ($n\in[30,180]$)
-  \item En Telco/SKG \textbf{sin} alineación: gana el clásico
+  \item En Telco/SKG: gana el clásico
 \end{itemize}
 \end{block}
 \end{column}
 \end{columns}
 \end{frame}
 
-\begin{frame}{Resultados --- optimización híbrida}
+\begin{frame}{Resultados --- regresión (QK-SVR)}
+\centering
+\includegraphics[width=\textwidth,height=0.78\textheight,keepaspectratio]{03_regresion_3datasets.png}
+\end{frame}
+
+\begin{frame}{Resultados --- QAOA (medición)}
 \begin{columns}[T]
 \begin{column}{0.58\textwidth}
 \centering
-\includegraphics[height=0.68\textheight]{10_qaoa_histograma_medicion.png}
+\includegraphics[width=\linewidth,height=0.68\textheight,keepaspectratio]{10_qaoa_histograma_medicion.png}
 \end{column}
 \begin{column}{0.40\textwidth}
 \begin{block}{Hallazgos}
 \begin{itemize}
   \item QAOA: \textbf{$-$30.3\%} coste vs.\ Greedy
   \item VQE competitivo en portafolio pequeño
-  \item MDS: $P(\mathrm{opt})\approx 73\%$ (patrón híbrido)
-  \item TSP $n{=}4$: empate óptimo --- valor de \emph{modelado}, no speedup
+  \item TSP $n{=}4$: empate óptimo --- valor de \emph{modelado}
 \end{itemize}
 \end{block}
 \end{column}
 \end{columns}
 \end{frame}
 
-\begin{frame}{Síntesis visual de ventaja}
+\begin{frame}{Resultados --- loop híbrido QAOA--COBYLA}
 \centering
-\includegraphics[height=0.78\textheight]{07_heatmap_ventaja_por_dominio.png}
+\includegraphics[width=\textwidth,height=0.78\textheight,keepaspectratio]{10_qaoa_convergencia.png}
+\end{frame}
+
+\begin{frame}{Resultados --- MDS (solución en grafo)}
+\begin{columns}[c]
+\begin{column}{0.55\textwidth}
+\centering
+\includegraphics[width=\linewidth,height=0.72\textheight,keepaspectratio]{10_mds_grafo_solucion.png}
+\end{column}
+\begin{column}{0.42\textwidth}
+\begin{block}{Lectura}
+\begin{itemize}
+  \item $D^\star=\{\mathrm{Ana},\mathrm{Enrique}\}$
+  \item $P(\mathrm{opt})\approx 73\%$ (patrón híbrido)
+  \item Escala moderada; no speedup asintótico
+\end{itemize}
+\end{block}
+\end{column}
+\end{columns}
+\end{frame}
+
+\begin{frame}{Síntesis --- dashboard de 9 casos}
+\centering
+\includegraphics[width=\textwidth,height=0.82\textheight,keepaspectratio]{07_dashboard_ventaja_cuantica.png}
+\end{frame}
+
+\begin{frame}{Síntesis --- heatmap y radar}
+\begin{columns}[c]
+\begin{column}{0.48\textwidth}
+\centering
+\includegraphics[width=\linewidth,height=0.72\textheight,keepaspectratio]{07_heatmap_ventaja_por_dominio.png}
+\end{column}
+\begin{column}{0.48\textwidth}
+\centering
+\includegraphics[width=\linewidth,height=0.72\textheight,keepaspectratio]{07_radar_ventaja_cuantica.png}
+\end{column}
+\end{columns}
 \end{frame}
 
 % =====================================================================
 \section{Conjeturas}
 % =====================================================================
-\begin{frame}{De la evidencia a las preguntas originales}
-Tras observar ventaja \textbf{solo} con alineación mapa--generador:
-
+\begin{frame}{De la evidencia a dos preguntas}
+\begin{columns}[T]
+\begin{column}{0.52\textwidth}
+\textbf{Lo que vimos en los 9 casos}
+\begin{itemize}
+  \item Ventaja clara \textbf{solo} cuando el generador coincide con el feature map (ZZ).
+  \item En SKG/Telco (sin esa estructura): gana el clásico.
+  \item En QUBO híbrido: valor a escala moderada, no speedup universal.
+\end{itemize}
+\end{column}
+\begin{column}{0.46\textwidth}
+\begin{block}{Preguntas que emergen}
 \begin{enumerate}
-  \item \textbf{Tests de cuanticidad:}
-  \textquestiondown{}Existe algún indicador calculable \emph{a priori} sobre un dataset que permita
-  predecir si un algoritmo cuántico mostrará ventaja sobre los clásicos?
-
-  \item \textbf{Mapeos cuántico-compatibles:}
-  Si un dataset no tiene estructura cuántica nativa, \textquestiondown{}puede transformarse
-  a un espacio de representación donde la tenga, sin alterar la información discriminativa?
+  \item \textquestiondown{}Se puede \textbf{diagnosticar a priori}
+  si un dataset admitirá ventaja?
+  \item Si $\mathcal{Q}(\mathcal{D})\le 0$,
+  \textquestiondown{}existe un mapeo $\psi$
+  que active la ventaja
+  sin destruir la señal?
 \end{enumerate}
+\end{block}
+\end{column}
+\end{columns}
+\end{frame}
+
+\begin{frame}{Cómo llegamos a $\mathcal{Q}(\mathcal{D})$}
+\begin{columns}[T]
+\begin{column}{0.48\textwidth}
+\begin{enumerate}
+  \item Literatura: un indicador no basta \citep{huang2021, liu2021, thanasilp2022}.
+  \item Notebook~08: $\Delta A$, $d_F$, $H(K)$ en nativo / SKG / Telco.
+  \item $d_F$ y $g$ rankean bien; $\Delta A$ inestable con PCA a 2 qubits.
+  \item Barrido en $\alpha$: $\rho_S(\mathcal{Q},\mathrm{ventaja})=0.833$.
+  \item Propuesta: \textbf{score compuesto} interpretable.
+\end{enumerate}
+\end{column}
+\begin{column}{0.50\textwidth}
+\centering
+\includegraphics[width=\linewidth,height=0.72\textheight,keepaspectratio]{08_test_cuanticidad_datasets.png}
+\end{column}
+\end{columns}
 \end{frame}
 
 \begin{frame}{Conjetura 1 --- score de cuanticidad $\mathcal{Q}(\mathcal{D})$}
@@ -361,21 +458,43 @@ Tras observar ventaja \textbf{solo} con alineación mapa--generador:
   \qquad \sum_i w_i=1,\; w_i\ge 0
   \label{eq:Q}
 \end{equation}
-donde
+\begin{columns}[T]
+\begin{column}{0.55\textwidth}
+{\footnotesize
 \begin{align*}
-  \Delta A &= A(K_Q,K_y)-A(K_{\mathrm{RBF}},K_y),\\
-  \hat{d}_F &= \|K_Q-K_{\mathrm{cl}}^\star\|_F\big/d_{F,\max},\\
-  \Delta H &= H(K_Q)-H(K_{\mathrm{RBF}}).
-\end{align*}
+  \Delta A &= A(K_Q,K_y)-A(K_{\mathrm{RBF}},K_y)
+  &&\text{(señal vs.\ etiquetas)}\\
+  \hat{d}_F &= \|K_Q-K_{\mathrm{cl}}^\star\|_F\big/d_{F,\max}
+  &&\text{(no-aproximabilidad)}\\
+  \Delta H &= H(K_Q)-H(K_{\mathrm{RBF}})
+  &&\text{(riqueza espectral)}
+\end{align*}}
+\end{column}
+\begin{column}{0.42\textwidth}
 \begin{block}{Interpretación}
-$\mathcal{Q}(\mathcal{D})>0$ predice ventaja estructural del kernel cuántico;
-$\mathcal{Q}(\mathcal{D})<0$ predice superioridad clásica.
-Coherente con la geometría de \citet{huang2021}.
+$\mathcal{Q}>0$: ventaja estructural esperada.\\
+$\mathcal{Q}<0$: superioridad clásica.\\
+{\footnotesize Coherente con la geometría de \citet{huang2021}.}
 \end{block}
+\end{column}
+\end{columns}
+\end{frame}
+
+\begin{frame}{Cómo llegamos a QCR}
+\begin{enumerate}
+  \item Si $\mathcal{Q}(\mathcal{D})\le 0$, el stack clásico es la opción por defecto.
+  \item Pero: \textquestiondown{}el fallo es del \textbf{dato} o del \textbf{espacio de representación}?
+  \item Hipótesis: existe $\psi:\mathcal{X}\to\mathcal{Z}$ (polinómica) que induzca estructura compatible con el feature map.
+  \item Notebook~09: prototipos --- features ZZ-compatibles, rotación $\max d_F$, re-uploading.
+  \item Resultado: subidas locales de $\mathcal{Q}$; \textbf{sin} demostración fuerte de ventaja general.
+\end{enumerate}
+\begin{alertblock}{Lectura para el tribunal}
+QCR no es un algoritmo cerrado: es un \textbf{programa de investigación} formalizado a partir de la evidencia del TFM.
+\end{alertblock}
 \end{frame}
 
 \begin{frame}{Conjetura 2 --- espacio de representación QCR}
-Si $\mathcal{Q}(\mathcal{D})\le 0$, la conjetura afirma existencia de $\mathcal{Z}$ y $\psi:\mathcal{X}\to\mathcal{Z}$ \textbf{polinómica} tales que
+Si $\mathcal{Q}(\mathcal{D})\le 0$, se conjetura existencia de $\mathcal{Z}$ y $\psi:\mathcal{X}\to\mathcal{Z}$ \textbf{polinómica} tales que
 \begin{equation}
   \mathbf{x}\xrightarrow{\psi}\mathbf{z}\xrightarrow{f_Q^\star}\hat{y}
   \qquad\text{con}\quad
@@ -383,9 +502,19 @@ Si $\mathcal{Q}(\mathcal{D})\le 0$, la conjetura afirma existencia de $\mathcal{
   \;\;\text{y}\;\;
   \varepsilon(f_Q^\star\circ\psi)\le\varepsilon(f_C^\star).
 \end{equation}
+\begin{columns}[T]
+\begin{column}{0.48\textwidth}
+\begin{block}{Intuición}
+Transformar el dato \emph{antes} del kernel para que el mapa ZZ ``vea'' estructura usable.
+\end{block}
+\end{column}
+\begin{column}{0.48\textwidth}
 \begin{alertblock}{Estado}
-Conjetura \textbf{abierta}. Este TFM la \textbf{plantea formalmente} y aporta evidencia preliminar --- no una demostración.
+Conjetura \textbf{abierta}.\\
+Este TFM la \textbf{plantea} y aporta evidencia preliminar --- no una demostración.
 \end{alertblock}
+\end{column}
+\end{columns}
 \end{frame}
 
 % =====================================================================
@@ -430,7 +559,7 @@ Validación fuerte de QCR $=$ línea post-TFM.
 \begin{frame}{Conclusiones}
 \begin{enumerate}
   \item La ventaja cuántica en ciencia de datos es \textbf{real pero condicionada}.
-  \item En kernels: alineación feature map $\leftrightarrow$ generador; ZZ es el mapa medido aquí.
+  \item En kernels: coincidencia feature map $\leftrightarrow$ generador; ZZ es el mapa medido aquí.
   \item En optimización: QAOA/VQE aportan valor en QUBO de escala moderada (patrón híbrido).
   \item $\mathcal{Q}(\mathcal{D})$ es un diagnóstico útil \emph{a priori} ($\rho_S=0.833$ en barrido sintético).
   \item QCR queda \textbf{formalmente planteado}; no demostrado.
