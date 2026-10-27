@@ -260,6 +260,11 @@ Optimización: QUBO + loop híbrido (QAOA/VQE + COBYLA) a escala viable.
 % =====================================================================
 \section{Resultados de modelos}
 % =====================================================================
+\begin{frame}{Resultados --- circuito ZZFeatureMap (mapa usado)}
+\centering
+\includegraphics[width=\textwidth,height=0.78\textheight,keepaspectratio]{06_zzfeaturemap_circuit.png}
+\end{frame}
+
 \begin{frame}{Resultados --- datos cuántico-nativos (Liu et al.)}
 \begin{columns}[c]
 \begin{column}{0.48\textwidth}
@@ -331,6 +336,11 @@ Etiquetas con \texttt{ZZFeatureMap}: QSVM recupera la frontera; RBF/GB $\approx$
 \begin{frame}{Resultados --- regresión (QK-SVR, 3 datasets)}
 \centering
 \includegraphics[width=\textwidth,height=0.78\textheight,keepaspectratio]{03_regresion_3datasets.png}
+\end{frame}
+
+\begin{frame}{Resultados --- anomalías: idea (distancia vs fase ZZ)}
+\centering
+\includegraphics[width=\textwidth,height=0.78\textheight,keepaspectratio]{zz_phase_concept_diagram.png}
 \end{frame}
 
 \begin{frame}{Resultados --- anomalías (OCSVM-ZZ)}
@@ -408,6 +418,16 @@ Ventaja solo en \texttt{zz\_phase}; en moons/blobs/SKG inyectado gana IsolationF
 \begin{frame}{Síntesis --- complejidad cuántico vs clásico}
 \centering
 \includegraphics[width=\textwidth,height=0.78\textheight,keepaspectratio]{07_complejidad_cuantico_vs_clasico.png}
+\end{frame}
+
+\begin{frame}{Síntesis --- paralelismo / superposición ($2^n$)}
+\centering
+\includegraphics[width=\textwidth,height=0.78\textheight,keepaspectratio]{07_paralelismo_cuantico.png}
+\end{frame}
+
+\begin{frame}{Síntesis --- benchmark Grover vs búsqueda clásica}
+\centering
+\includegraphics[width=\textwidth,height=0.78\textheight,keepaspectratio]{07_grover_benchmark.png}
 \end{frame}
 
 % =====================================================================
