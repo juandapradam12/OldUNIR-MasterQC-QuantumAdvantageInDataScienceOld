@@ -338,8 +338,8 @@ Sobre la base de los resultados empíricos y la revisión de la literatura, se p
 \paragraph{Validación empírica del Framework QCR.}
 El framework se aplicó a los dos datasets reales (Notebook~09, §10). Los resultados son:
 \begin{itemize}
-    \item \textbf{SKG Incidentes}: $\mathcal{Q}=+0.163 > \theta=0$. El QCR diagnostica compatibilidad directa y no aplica transformación, lo que es correcto: el QSVM ya obtiene $+8.3$ pp de ventaja sobre el SVM-RBF.
-    \item \textbf{Telco Churn}: $\mathcal{Q}=-0.228 \leq \theta=0$. Cuello de botella: $\Delta H = -1.131$ (concentración espectral). Transformación recomendada: re-uploading adaptativo. Resultado: $\mathcal{Q}: -0.228 \rightarrow +0.167$, ventaja: $0.0 \rightarrow +4.2$ pp $\uparrow$.
+    \item \textbf{SKG Incidentes}: $\mathcal{Q}=+0.163 > \theta=0$ frente a RBF, \textbf{pero el dataset no es cuántico-nativo}. Frente a GB/RF la ventaja desaparece; bajo $\mathcal{Q}_{\mathrm{rob}}$ (Sección~\ref{sec:qml_v2_revision}) el veredicto es \texttt{classical}. Lectura: $\mathcal{Q}>0$ vs.\ un único baseline RBF \textbf{no} implica compatibilidad operativa.
+    \item \textbf{Telco Churn}: $\mathcal{Q}=-0.228 \leq \theta=0$. Cuello de botella: $\Delta H = -1.131$ (concentración espectral). En Notebook~09, re-uploading $reps=3$ elevaba $\mathcal{Q}$ y $+4.2$~pp vs.\ RBF; bajo $\mathcal{Q}_{\mathrm{rob}}$ Telco permanece \texttt{classical}. Evidencia preliminar, no rescate robusto.
 \end{itemize}
 
 % -------------------------------------------------------------------
@@ -472,7 +472,7 @@ Esta hoja de ruta formal se desarrolla en el Capítulo~\ref{cap:futuro}.
 \begin{figure}[ht]
 \centering
 \includegraphics[width=0.90\textwidth]{../POCs/data/output/figures/09_qcr_framework_diagnostico.png}
-\caption{Framework QCR aplicado a los dos datasets del TFM. Izquierda: SKG Incidentes ya es cuántico-compatible (no requiere pre-mapeo). Derecha: Telco Churn con cuello de botella $\Delta H$; el re-uploading reps=3 corrige el déficit espectral y lleva $\mathcal{Q}$ a territorio positivo.}
+\caption{Framework QCR aplicado a los dos datasets reales del TFM. Izquierda: SKG Incidentes ---$\mathcal{Q}>0$ frente a RBF no implica compatibilidad operativa (GB/RF ganan; QML~v2: \texttt{classical}). Derecha: Telco Churn con cuello $\Delta H$; re-uploading en Notebook~09 eleva $\mathcal{Q}$, matizado por $\mathcal{Q}_{\mathrm{rob}}$ (sin rescate robusto).}
 \label{fig:qcr_diagnostico}
 \end{figure}
 

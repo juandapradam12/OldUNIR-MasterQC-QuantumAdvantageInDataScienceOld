@@ -1074,40 +1074,63 @@ def fig_09_barrido_rotaciones():
 
 
 def fig_09_qcr_framework():
+    """Diagnóstico QCR: SKG NO es cuántico-nativo; Q>0 vs RBF ≠ ventaja operativa."""
     fig, axes = plt.subplots(1, 2, figsize=(13, 6))
-    fig.suptitle("Framework QCR: Diagnóstico de Cuello de Botella y Efecto del Pre-mapeo\n"
-                 "Comparativa de los tres componentes de Q(D) antes y después de la transformación",
-                 fontsize=12, fontweight="bold")
-    qcr_cases = [
-        ("SKG Incidentes", None),
-        ("Telco Churn", QCR_TELCO),
-    ]
-    for ax, (ds_name, qcr_res) in zip(axes, qcr_cases):
-        if qcr_res is None:
-            ax.text(0.5, 0.5, "Dataset cuántico-compatible\n(no requiere pre-mapeo)",
-                    ha="center", va="center", transform=ax.transAxes, fontsize=12)
-            ax.set_title(ds_name)
-            continue
-        base = qcr_res["baseline"]
-        post = qcr_res["post_qcr"]
-        components = ["ΔA", "d_F", "ΔH"]
-        base_vals = [base["delta_A"], base["d_F"], base["delta_H"]]
-        post_vals = [post["delta_A"], post["d_F"], post["delta_H"]]
-        x = np.arange(len(components))
-        w = 0.35
-        ax.bar(x - w / 2, base_vals, w, label="Baseline", color="#90A4AE", alpha=0.9)
-        ax.bar(x + w / 2, post_vals, w, label=f'Post-QCR ({qcr_res["bottleneck"]}→fix)',
-               color="#2E7D32", alpha=0.9)
-        ax.axhline(0, color="black", linewidth=0.7)
-        ax.set_xticks(x)
-        ax.set_xticklabels(components, fontsize=11)
-        ax.set_ylabel("Valor del componente")
-        ax.set_title(f'{ds_name}\nCuello de botella: {qcr_res["bottleneck"]}')
-        ax.legend(fontsize=9)
-        txt = (f"Q: {base['Q_score']:+.3f} → {post['Q_score']:+.3f}\n"
-               f"Adv: {base['advantage_pp']:+.1f}pp → {post['advantage_pp']:+.1f}pp")
-        ax.text(0.98, 0.02, txt, transform=ax.transAxes, fontsize=9, ha="right", va="bottom",
-                bbox=dict(boxstyle="round", facecolor="lightyellow", alpha=0.8))
+    fig.suptitle(
+        "Framework QCR: diagnóstico honesto de datasets reales\n"
+        "Q>0 frente a RBF no implica ventaja operativa frente a GB/RF",
+        fontsize=12, fontweight="bold",
+    )
+
+    # ── SKG: componentes baseline + aviso ──────────────────────────────────
+    ax = axes[0]
+    skg = BASELINE_09["SKG Incidentes"]
+    components = ["ΔA", "d_F", "ΔH"]
+    vals = [skg["delta_A"], skg["d_F"], skg["delta_H"]]
+    colors = ["#C62828" if v < 0 else "#1565C0" for v in vals]
+    ax.bar(components, vals, color=colors, alpha=0.9, edgecolor="white")
+    ax.axhline(0, color="black", linewidth=0.7)
+    ax.set_ylabel("Valor del componente")
+    ax.set_title("SKG Incidentes — NO cuántico-nativo")
+    ax.text(
+        0.5, 0.92,
+        "Q≈+0.16 vs RBF, pero GB/RF ganan\n"
+        "QML v2: veredicto classical\n"
+        "(Q>0 ≠ compatibilidad operativa)",
+        transform=ax.transAxes, ha="center", va="top", fontsize=9,
+        bbox=dict(boxstyle="round", facecolor="#FFEBEE", edgecolor="#C62828", alpha=0.95),
+    )
+    ax.text(
+        0.98, 0.02,
+        f"Q baseline: {skg['Q_score']:+.3f}\nAdv vs RBF: {skg['advantage_pp']:+.1f}pp",
+        transform=ax.transAxes, fontsize=9, ha="right", va="bottom",
+        bbox=dict(boxstyle="round", facecolor="white", alpha=0.85),
+    )
+
+    # ── Telco: baseline vs post-QCR (re-uploading) ─────────────────────────
+    ax = axes[1]
+    qcr_res = QCR_TELCO
+    base = qcr_res["baseline"]
+    post = qcr_res["post_qcr"]
+    base_vals = [base["delta_A"], base["d_F"], base["delta_H"]]
+    post_vals = [post["delta_A"], post["d_F"], post["delta_H"]]
+    x = np.arange(len(components))
+    w = 0.35
+    ax.bar(x - w / 2, base_vals, w, label="Baseline", color="#90A4AE", alpha=0.9)
+    ax.bar(x + w / 2, post_vals, w, label="Post-QCR (re-uploading)",
+           color="#2E7D32", alpha=0.9)
+    ax.axhline(0, color="black", linewidth=0.7)
+    ax.set_xticks(x)
+    ax.set_xticklabels(components, fontsize=11)
+    ax.set_ylabel("Valor del componente")
+    ax.set_title(f"Telco Churn — cuello: {qcr_res['bottleneck']}\n"
+                 "(NB09; QML v2 no confirma rescate robusto)")
+    ax.legend(fontsize=9)
+    txt = (f"Q: {base['Q_score']:+.3f} → {post['Q_score']:+.3f}\n"
+           f"Adv vs RBF: {base['advantage_pp']:+.1f} → {post['advantage_pp']:+.1f}pp")
+    ax.text(0.98, 0.02, txt, transform=ax.transAxes, fontsize=9, ha="right", va="bottom",
+            bbox=dict(boxstyle="round", facecolor="lightyellow", alpha=0.8))
+
     plt.tight_layout()
     save_fig("09_qcr_framework_diagnostico.png")
 

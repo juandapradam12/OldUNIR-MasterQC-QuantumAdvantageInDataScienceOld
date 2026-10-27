@@ -520,60 +520,79 @@ Este TFM la \textbf{plantea} y aporta evidencia preliminar --- no una demostraci
 % =====================================================================
 \section{Análisis de las conjeturas}
 % =====================================================================
-\begin{frame}{Análisis P1 --- tests de cuanticidad}
+\begin{frame}{Análisis P1 --- $\mathcal{Q}(\mathcal{D})$ como diagnóstico}
 \begin{columns}[c]
-\begin{column}{0.48\textwidth}
+\begin{column}{0.55\textwidth}
 \centering
-\includegraphics[width=\textwidth]{08_correlacion_indicadores_ventaja.png}
+\includegraphics[width=\linewidth,height=0.70\textheight,keepaspectratio]{08_barrido_sintetico_alpha.png}
 \end{column}
-\begin{column}{0.48\textwidth}
-\centering
-\includegraphics[width=\textwidth]{08_barrido_sintetico_alpha.png}
+\begin{column}{0.42\textwidth}
+\begin{block}{Qué sí dice}
+\begin{itemize}
+  \item Barrido $\alpha$: $\rho_S=0.833$ ($p{=}0.005$)
+  \item $d_F$ es el componente más informativo
+\end{itemize}
+\end{block}
+\begin{alertblock}{Qué no dice}
+$\mathcal{Q}>0$ vs.\ RBF \textbf{no} implica que SKG/Telco sean cuántico-nativos ni que GB/RF pierdan.
+\end{alertblock}
 \end{column}
 \end{columns}
-\vspace{0.3em}
-\centering\footnotesize
-Barrido sintético: $\rho_S(\mathcal{Q},\mathrm{ventaja})=0.833$ ($p=0.005$, $n=9$). Componente más informativo: $d_F$.
 \end{frame}
 
-\begin{frame}{Análisis P2 --- mapeos cuántico-compatibles}
+\begin{frame}{Análisis P2 --- QCR: evidencia preliminar, no rescate}
 \begin{columns}[c]
-\begin{column}{0.48\textwidth}
+\begin{column}{0.52\textwidth}
 \centering
-\includegraphics[width=\textwidth]{09_qcr_framework_diagnostico.png}
+\includegraphics[width=\linewidth,height=0.68\textheight,keepaspectratio]{09_qcr_framework_diagnostico.png}
 \end{column}
-\begin{column}{0.48\textwidth}
-\centering
-\includegraphics[width=\textwidth]{09_mapeos_comparativa.png}
+\begin{column}{0.45\textwidth}
+\begin{itemize}
+  \item \textbf{SKG:} no es cuántico-nativo.\\
+  QML~v2 $\to$ \texttt{classical}.
+  \item \textbf{Telco:} NB09 sube $\mathcal{Q}$ con re-uploading; $\mathcal{Q}_{\mathrm{rob}}$ \textbf{no} confirma rescate.
+  \item QCR $=$ filtro de geometría, no garantía de accuracy.
+\end{itemize}
+\vspace{0.4em}
+\begin{alertblock}{Estado}
+Conjetura abierta. Demostración fuerte $=$ post-TFM.
+\end{alertblock}
 \end{column}
 \end{columns}
-\vspace{0.3em}
-\centering\footnotesize
-Protocolo de diagnóstico $\to$ transformación candidata (rotación / re-uploading / \ldots).
-Validación fuerte de QCR $=$ línea post-TFM.
 \end{frame}
 
 % =====================================================================
 \section{Conclusiones}
 % =====================================================================
-\begin{frame}{Conclusiones}
+\begin{frame}{Conclusiones (I)}
 \begin{enumerate}
-  \item La ventaja cuántica en ciencia de datos es \textbf{real pero condicionada}.
-  \item En kernels: coincidencia feature map $\leftrightarrow$ generador; ZZ es el mapa medido aquí.
-  \item En optimización: QAOA/VQE aportan valor en QUBO de escala moderada (patrón híbrido).
-  \item $\mathcal{Q}(\mathcal{D})$ es un diagnóstico útil \emph{a priori} ($\rho_S=0.833$ en barrido sintético).
-  \item QCR queda \textbf{formalmente planteado}; no demostrado.
-  \item Adopción recomendada: \textbf{selectiva e híbrida}, no sustitutiva del stack clásico.
+  \item La ventaja es \textbf{real pero condicionada}: aparece cuando el feature map coincide con el generador del dato (ZZ medido aquí; Pauli-Y confirma el mismo principio).
+  \item En \textbf{datos reales} (SKG, Telco) sin esa estructura: gana el stack clásico (GB/RF).
+  \item En \textbf{regresión}: ventaja acotada (Friedman); en movilidad SKG, árboles dominan.
+  \item En \textbf{optimización}: QAOA/VQE aportan en QUBO de escala moderada (patrón híbrido); TSP $n{=}4$ = empate óptimo, no speedup.
+  \item Anomalías / lags: misma regla --- ventaja solo con target alineado al mapa (\texttt{zz\_phase}, \texttt{zz\_lag}).
+\end{enumerate}
+\end{frame}
+
+\begin{frame}{Conclusiones (II) --- conjeturas y adopción}
+\begin{enumerate}
+  \setcounter{enumi}{5}
+  \item $\mathcal{Q}(\mathcal{D})$: diagnóstico útil \emph{a priori} en barrido sintético ($\rho_S=0.833$); en reales, $n$ pequeño y matizado por $\mathcal{Q}_{\mathrm{rob}}$.
+  \item QCR: \textbf{planteado formalmente}; evidencia preliminar; no demostración.
+  \item Coste de simulación $O(n^2)$ del kernel es el obstáculo práctico actual.
+  \item Metodologías maduras vs.\ hardware inmaduro: resultados mixtos son esperables en NISQ.
+  \item Adopción recomendada: \textbf{selectiva e híbrida} --- módulo cuántico como herramienta adicional, no sustituto del stack clásico (SKG).
 \end{enumerate}
 \end{frame}
 
 \begin{frame}{Limitaciones (explicitadas)}
 \begin{itemize}
-  \item Simulación statevector (sin ruido NISQ de hardware).
-  \item PCA a $n_q{=}2$ (~68\% de varianza descartada).
-  \item Correlación $\mathcal{Q}$ en datos reales con $n$ pequeño (orientativa).
-  \item QCR sin demostración fuerte.
-  \item TSP: empate óptimo $\neq$ speedup.
+  \item \textbf{Simulación statevector}: sin ruido NISQ de hardware; resultados ideales $\neq$ shots reales.
+  \item \textbf{PCA a $n_q{=}2$}: $\sim$68\% de varianza descartada; $\mathcal{Q}$ mide el subespacio proyectado.
+  \item \textbf{Muestra} $n{\approx}80$ en indicadores; correlación en 3 datasets reales es orientativa.
+  \item \textbf{Baseline RBF}: $\mathcal{Q}>0$ vs.\ RBF no equivale a ventaja vs.\ GB/RF (caso SKG).
+  \item \textbf{QCR} sin demostración fuerte; Q-UMAP sin métrica cuántica real (MDS proxy).
+  \item \textbf{TSP}: empate óptimo $\neq$ speedup asintótico.
 \end{itemize}
 \end{frame}
 
@@ -585,17 +604,27 @@ Validación fuerte de QCR $=$ línea post-TFM.
 \begin{column}{0.48\textwidth}
 \textbf{Corto plazo}
 \begin{itemize}
-  \item Hardware ruidoso / shots reales
-  \item Más qubits, menos PCA
-  \item Validación fuerte de QCR
+  \item Hardware ruidoso (IBM) + mitigación (ZNE)
+  \item Más qubits / menos PCA agresivo
+  \item Validación fuerte de QCR y de $\mathcal{Q}_{\mathrm{rob}}$
+  \item Pesos $(w_i)$ calibrados; más feature maps
+\end{itemize}
+\vspace{0.5em}
+\textbf{Aplicación SKG}
+\begin{itemize}
+  \item QAOA en asignación real (\texttt{agents.csv})
+  \item VRP-TW / rutas de emergencia
+  \item Activación selectiva en pipeline
 \end{itemize}
 \end{column}
 \begin{column}{0.48\textwidth}
 \textbf{Medio--largo plazo}
 \begin{itemize}
-  \item Benchmarks con separación formal
-  \item Q-means / autoencoders
-  \item Activación selectiva en pipelines productivos
+  \item Benchmarks con separación formal (Bravyi et al.)
+  \item Kernels aleatorizados $O(n)$; ensembles
+  \item Q-means / autoencoders / otros mapas
+  \item Certificación estadística de ventaja \citep{huang2021}
+  \item Demostración o refutación de la conjetura QCR
 \end{itemize}
 \end{column}
 \end{columns}
