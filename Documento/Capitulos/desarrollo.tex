@@ -85,7 +85,7 @@ La elección del simulador de vector de estados garantiza exactitud matemática,
 
 \subsection{Descripción del problema}
 
-El primer caso de uso aborda la clasificación binaria supervisada, comparando el QSVM (Quantum Support Vector Machine con kernel cuántico) frente a cuatro clasificadores clásicos de referencia: Gradient Boosting, Random Forest, SVM-RBF y Regresión Logística. La hipótesis central, fundamentada en \cite{liu2021}, establece que cuando las etiquetas de clase se derivan de una función cuántica, el kernel cuántico aprende el problema con precisión cuasi-perfecta mientras que los clasificadores clásicos están limitados por el denominado \textit{quantum hardness} del problema. Esta asimetría tiene su origen en la diferencia entre el \textbf{espacio de representación} clásico ---el espacio euclídeo $\mathbb{R}^d$ donde operan los clasificadores convencionales--- y el espacio de Hilbert $\mathcal{H}$ al que accede el kernel cuántico a través del mapa de características $\phi\colon \mathbb{R}^d \rightarrow \mathcal{H}$; la similitud en $\mathcal{H}$, medida por el kernel de fidelidad $\kappa(x_i, x_j)=|\langle\phi(x_i)|\phi(x_j)\rangle|^2$, es inaccesible para los métodos clásicos sin una simulación de coste exponencial. Esta observación motiva la pregunta central del Capítulo~\ref{cap:investigacion_original}: si un dataset real no tiene estructura cuántica nativa, ¿puede transformarse a un espacio de representación $\mathcal{Z}$ adecuado, resolverse con modelos cuánticos en ese espacio, y mapear el resultado de vuelta al espacio original? Esta hipótesis se formaliza como la Conjetura~\ref{conj:qcr} del espacio de representación cuántico-compatible.
+El primer caso de uso aborda la clasificación binaria supervisada, comparando el QSVM (Quantum Support Vector Machine con kernel cuántico) frente a cuatro clasificadores clásicos de referencia: Gradient Boosting, Random Forest, SVM-RBF y Regresión Logística. La hipótesis central, fundamentada en \cite{liu2021}, establece que cuando las etiquetas de clase se derivan de una función cuántica, el kernel cuántico aprende el problema con precisión cuasi-perfecta mientras que los clasificadores clásicos están limitados por el denominado \textit{quantum hardness} del problema. Esta asimetría tiene su origen en la diferencia entre el \textbf{espacio de representación} clásico ---el espacio euclídeo $\mathbb{R}^d$ donde operan los clasificadores convencionales--- y el espacio de Hilbert $\mathcal{H}$ al que accede el kernel cuántico a través del mapa de características $\phi\colon \mathbb{R}^d \rightarrow \mathcal{H}$; la similitud en $\mathcal{H}$, medida por el kernel de fidelidad $\kappa(x_i, x_j)=|\langle\phi(x_i)|\phi(x_j)\rangle|^2$, es inaccesible para los métodos clásicos sin una simulación de coste exponencial. Esta observación motiva la pregunta central del Capítulo~\ref{cap:investigacion_original}: si un dataset real no tiene estructura cuántica nativa, \textquestiondown{}puede transformarse a un espacio de representación $\mathcal{Z}$ adecuado, resolverse con modelos cuánticos en ese espacio, y mapear el resultado de vuelta al espacio original? Esta hipótesis se formaliza como la Conjetura~\ref{conj:qcr} del espacio de representación cuántico-compatible.
 
 % ---
 \subsection{Dataset 1: Cuántico-nativo (Liu 2021)}
@@ -658,7 +658,7 @@ La implementación de referencia vive en el módulo reproducible \texttt{POCs/qm
 \paragraph{Tabla~A (features emparejadas).} Misma matriz ZZ-ready ($n_q=2$ ángulos en $[-\pi,\pi]$) para todos los detectores:
 IsolationForest, OCSVM-RBF, LOF y \textbf{OCSVM-ZZ} (kernel de fidelidad sobre \texttt{ZZFeatureMap}).
 
-\paragraph{Tabla~B (negocio).} Mismo split estratificado; los detectores clásicos ven todas las columnas originales. Responde: ¿debe OCSVM-ZZ sustituir IsolationForest en la tabla operativa?
+\paragraph{Tabla~B (negocio).} Mismo split estratificado; los detectores clásicos ven todas las columnas originales. Responde: \textquestiondown{}debe OCSVM-ZZ sustituir IsolationForest en la tabla operativa?
 
 \paragraph{Métricas.} ROC-AUC y average precision sobre el split de test (inliers + outliers). Configuración reportada: $n=160$, 5 repeticiones, contaminación $10\%$, $\nu=0.05$.
 
@@ -807,7 +807,7 @@ El prototipo conceptual se articula en cuatro capas:
     \textbf{Capa 1 — Diagnóstico} \normalfont\footnotesize(clásica)\\[3pt]
     {\scriptsize\color{gray!55!black}%
      Calcula $\mathcal{Q}(\mathcal{D})$ / verifica formulación QUBO
-     \;$\rightarrow$\; ¿activar módulo cuántico?}
+     \;$\rightarrow$\; \textquestiondown{}activar módulo cuántico?}
   };
 
   % --- Capa 2: Preprocesamiento ---

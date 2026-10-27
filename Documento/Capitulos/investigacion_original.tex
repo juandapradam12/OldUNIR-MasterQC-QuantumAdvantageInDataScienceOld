@@ -5,8 +5,8 @@
 Los capítulos anteriores han mostrado un patrón consistente: la ventaja cuántica en kernels aparece con robustez cuando el \textbf{generador del dato está alineado con el feature map} del kernel ---en los experimentos de este TFM, datos sintéticos generados con el \texttt{ZZFeatureMap} de modo que ese kernel es óptimo por construcción---, y desaparece en datos reales de movilidad y telecomunicaciones sin esa alineación. ZZ no es el único mapa posible (Pauli, IQP, re-uploading, etc.); es el que se validó empíricamente aquí. Este resultado plantea dos preguntas que este capítulo aborda como contribución original del TFM:
 
 \begin{enumerate}
-    \item \textbf{Tests de cuanticidad}: ¿Existe algún indicador calculable a priori sobre un dataset que permita predecir si un algoritmo cuántico mostrará ventaja sobre los clásicos?
-    \item \textbf{Mapeos cuántico-compatibles}: Si un dataset no tiene estructura cuántica nativa, ¿puede transformarse a un espacio de representación donde la tenga, sin alterar la información discriminativa?
+    \item \textbf{Tests de cuanticidad}: \textquestiondown{}Existe algún indicador calculable a priori sobre un dataset que permita predecir si un algoritmo cuántico mostrará ventaja sobre los clásicos?
+    \item \textbf{Mapeos cuántico-compatibles}: Si un dataset no tiene estructura cuántica nativa, \textquestiondown{}puede transformarse a un espacio de representación donde la tenga, sin alterar la información discriminativa?
 \end{enumerate}
 
 Ambas preguntas se abordan con la misma metodología científica: revisión de literatura, implementación de métodos prometedores, aplicación a los tres datasets del TFM, análisis de resultados y propuesta de mejora teórica.
@@ -147,7 +147,7 @@ Telco Churn      & 0.190 & 0.170 & 2.333 & 3.465 & 0.346 & $+$0.0 pp \\
 \label{fig:kernel_heatmaps}
 \end{figure}
 
-\subsection{Análisis: ¿predicen los indicadores la ventaja QSVM?}
+\subsection{Análisis: \textquestiondown{}Predicen los indicadores la ventaja QSVM?}
 
 Los resultados de la Tabla~\ref{tab:indicadores_resultados} permiten evaluar el poder predictivo de cada indicador. El ranking de ventaja empírica es: SKG Incidentes ($+8.3$ pp) $>$ Cuántico-nativo ($0.0$ pp) $=$ Telco Churn ($0.0$ pp).
 
