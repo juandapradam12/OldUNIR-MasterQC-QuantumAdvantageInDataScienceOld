@@ -443,21 +443,23 @@ Ventaja cuántica \textbf{condicionada}: aparece con alineación mapa--generador
 \section{Conjeturas}
 % =====================================================================
 \begin{frame}{De la evidencia emergen dos preguntas}
-Tras los 9 casos \textbf{no} partimos de $\mathcal{Q}$ ni de QCR: partimos de hechos.
+\begin{block}{Lo que ya vimos (4 $\times$ 3)}
+\begin{itemize}
+  \item Ventaja de kernel cuando el \textbf{mapa/kernel que estructura los datos}
+        es el \textbf{mismo} que usa el modelo cuántico
+        (ZZ-nativo, \texttt{zz\_phase}, \texttt{zz\_lag}).
+  \item Sin esa coincidencia (SKG/Telco): gana GB/RF.
+  \item En QUBO: valor a escala moderada; TSP $n{=}4$ empata (modelado $\neq$ speedup).
+\end{itemize}
+\end{block}
 
+\vspace{0.5em}
+\begin{block}{Preguntas que siguen (Cap.~6)}
 \begin{enumerate}
-  \item Ventaja de kernel \textbf{clara} solo cuando el generador coincide con el feature map (ZZ-nativo; también \texttt{zz\_phase}, \texttt{zz\_lag}).
-  \item En SKG/Telco (sin esa estructura) gana GB/RF: \textbf{no} son cuántico-nativos.
-  \item En QUBO híbrido hay valor a escala moderada; TSP $n{=}4$ empata al óptimo (modelado $\neq$ speedup).
-\end{enumerate}
-
-\vspace{0.4em}
-\begin{block}{Preguntas originales (Cap.~6)}
-\begin{enumerate}
-  \item \textbf{P1 --- tests de cuanticidad:}
-  \textquestiondown{}Se puede diagnosticar \emph{a priori} si un dataset admitirá ventaja?
-  \item \textbf{P2 --- mapeos cuántico-compatibles:}
-  Si no hay estructura nativa, \textquestiondown{}existe un $\psi$ que la induzca sin destruir la señal?
+  \item \textbf{P1 --- diagnóstico:}
+        \textquestiondown{}Se puede saber \emph{a priori} si un dataset admitirá esa coincidencia / ventaja?
+  \item \textbf{P2 --- mapeo:}
+        Si no la hay, \textquestiondown{}existe un preproceso $\psi$ que la induzca sin destruir la señal?
 \end{enumerate}
 \end{block}
 \end{frame}
