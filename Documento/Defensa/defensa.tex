@@ -68,7 +68,7 @@ Director: Ricardo Rafael Domínguez Reyes}
   \item Introducción
   \item Contexto y estado de la técnica
   \item Planteamiento y metodología
-  \item Resultados de modelos (plots)
+  \item Resultados: Q vs C (4 familias $\times$ 3 capas)
 \end{enumerate}
 \end{column}
 \begin{column}{0.48\textwidth}
@@ -243,21 +243,20 @@ Evidencia empírica + protocolos justos + diagnóstico $\mathcal{Q}(\mathcal{D})
 \textbf{Familia} & \textbf{Cuántico} & \textbf{Clásico de referencia} \\
 \midrule
 Clasificación & QSVM (ZZ) & GB, RF, SVM-RBF \\
-Regresión & QK-SVR & XGBoost, RF, SVR-RBF, Ridge \\
-Optimización (asignación) & QAOA ($p{=}1$) & Greedy, búsqueda local, ILP \\
-Portafolio / cobertura & VQE / QAOA-MDS & Markowitz, fuerza bruta \\
-Anomalías / lags & OCSVM-ZZ / QK-SVR & IF, LOF, Ridge, GB \\
+Regresión & QK-SVR & RF, XGBoost, SVR-RBF, Ridge \\
+Anomalías & OCSVM-ZZ & IsolationForest, LOF \\
+Optimización & QAOA / VQE & Greedy, ILP, NN+2-opt \\
 \bottomrule
 \end{tabular}
 
 \vspace{0.8em}
-Cada familia se evalúa, cuando aplica, en:
-\quad (i) \textbf{cuántico-nativo}, \quad (ii) \textbf{SKG}, \quad (iii) \textbf{referencia pública}.
+Misma pregunta en las cuatro: \textbf{\textquestiondown{}quién gana, Q o C?}
+en (i)~\textbf{cuántico-nativo}, (ii)~\textbf{SKG}, (iii)~\textbf{referencia}.
 
 \vspace{0.5em}
-\begin{block}{Condición operativa (sin detenerse en formalismo)}
-Kernels: ventaja si el \textbf{generador} coincide con el feature map (ZZ medido aquí).
-Optimización: QUBO + loop híbrido (QAOA/VQE + COBYLA) a escala viable.
+\begin{block}{Lectura transversal}
+Kernels: ventaja si mapa y generador coinciden.
+Optimización: QUBO + híbrido a escala viable (no speedup asintótico).
 \end{block}
 \end{frame}
 
@@ -298,236 +297,150 @@ pipeline clásico \\
 \end{frame}
 
 % =====================================================================
-\section{Resultados de modelos}
+\section{Resultados: Q vs C}
 % =====================================================================
-\begin{frame}{Resultados --- circuito ZZFeatureMap (mapa usado)}
+\begin{frame}{Resultados --- qué comparamos}
 \centering
-\includegraphics[width=\textwidth,height=0.78\textheight,keepaspectratio]{06_zzfeaturemap_circuit.png}
-\end{frame}
-
-\begin{frame}{Resultados --- nativo ZZ: el QSVM ve la frontera}
-\begin{columns}[T]
-\begin{column}{0.62\textwidth}
-\centering
-\includegraphics[width=\linewidth,height=0.72\textheight,keepaspectratio]{06_quantum_kernel_boundaries.png}
-\end{column}
-\begin{column}{0.35\textwidth}
-\begin{block}{Qué muestra}
-Etiquetas generadas con el mismo \texttt{ZZFeatureMap}.
-\begin{itemize}
-  \item QSVM recupera la frontera
-  \item RBF / GB $\approx$ azar
-\end{itemize}
+{\small
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{@{}lccc@{}}
+\toprule
+\textbf{Familia} & \textbf{Nativo} & \textbf{SKG} & \textbf{Referencia} \\
+\midrule
+1. Clasificación (QSVM) & Liu ZZ & Incidentes Bogotá & Telco Churn \\
+2. Regresión (QK-SVR) & target alineado & Movilidad Bogotá & Friedman \#1 \\
+3. Anomalías (OCSVM-ZZ) & \texttt{zz\_phase} & outliers inyectados & moons / blobs \\
+4. Optimización (QAOA) & asignación QUBO & cobertura MDS & TSP $n{=}4$ \\
+\bottomrule
+\end{tabular}}
+\vspace{1em}
+\begin{block}{Formato fijo en las 4 diapositivas siguientes}
+Plot (o tabla) + misma lectura: \textbf{Nativo / SKG / Referencia} $\rightarrow$ gana Q o gana C.
+Sin formalismo, sin ejemplos narrativos, sin algoritmos fuera del TFM.
 \end{block}
-{\footnotesize Régimen controlado (Liu): no es un dataset empresarial. El punto es la coincidencia mapa--generador, no el tamaño de muestra.}
-\end{column}
-\end{columns}
 \end{frame}
 
-\begin{frame}{Resultados --- QSVM vs SVM (directo)}
-\centering
-\includegraphics[width=\textwidth,height=0.78\textheight,keepaspectratio]{01_qsvm_vs_svm_directo.png}
-\end{frame}
-
-\begin{frame}{Resultados --- clasificación en 3 capas de datos}
+% --- 1. Clasificación ------------------------------------------------
+\begin{frame}{Resultados --- 1. Clasificación (QSVM vs clásico)}
 \begin{columns}[T]
 \begin{column}{0.68\textwidth}
 \centering
 \includegraphics[width=\linewidth,height=0.78\textheight,keepaspectratio]{06_quantum_kernel_3datasets_comparativa.png}
 \end{column}
 \begin{column}{0.30\textwidth}
-\begin{block}{Lectura (única)}
+\begin{block}{Q vs C}
 \begin{itemize}
-  \item \textbf{Liu:} ventaja Q\\{\footnotesize(+13.3\,pp)}
-  \item \textbf{SKG:} gana clásico\\{\footnotesize($-6.0$\,pp)}
-  \item \textbf{Telco:} gana clásico\\{\footnotesize($-3.8$\,pp vs GB)}
+  \item \textbf{Nativo:} gana Q\\{\footnotesize(+13.3\,pp)}
+  \item \textbf{SKG:} gana C\\{\footnotesize($-6.0$\,pp)}
+  \item \textbf{Telco:} gana C\\{\footnotesize($-3.8$\,pp vs GB)}
 \end{itemize}
 \end{block}
-{\footnotesize Baseline operativo = GB/RF.
-Solo Liu tiene ventaja; SKG/Telco \textbf{no}.}
+{\footnotesize Baseline = mejor clásico (GB/RF).
+También: Q más lento ($1/t\approx 0$).}
 \end{column}
 \end{columns}
 \end{frame}
 
-\begin{frame}{Resultados --- Telco: sin estructura ZZ (gana el clásico)}
+% --- 2. Regresión ----------------------------------------------------
+\begin{frame}{Resultados --- 2. Regresión (QK-SVR vs clásico)}
+\begin{columns}[T]
+\begin{column}{0.68\textwidth}
+\centering
+\includegraphics[width=\linewidth,height=0.78\textheight,keepaspectratio]{03_regresion_3datasets.png}
+\end{column}
+\begin{column}{0.30\textwidth}
+\begin{block}{Q vs C}
+\begin{itemize}
+  \item \textbf{Nativo:} gana Q\\{\footnotesize($\Delta R^2{=}{+}0.60$)}
+  \item \textbf{Friedman:} gana C\\{\footnotesize($\Delta R^2{=}{-}0.13$)}
+  \item \textbf{SKG:} gana C\\{\footnotesize($\Delta R^2{=}{-}0.34$)}
+\end{itemize}
+\end{block}
+{\footnotesize Misma lectura que clasificación:
+ventaja solo con estructura alineada.}
+\end{column}
+\end{columns}
+\end{frame}
+
+% --- 3. Anomalías ----------------------------------------------------
+\begin{frame}{Resultados --- 3. Anomalías (OCSVM-ZZ vs clásico)}
 \begin{columns}[T]
 \begin{column}{0.62\textwidth}
 \centering
-\includegraphics[width=\linewidth,height=0.72\textheight,keepaspectratio]{01_clasificacion_comparacion.png}
-\end{column}
-\begin{column}{0.35\textwidth}
-\begin{block}{Lectura}
-\begin{itemize}
-  \item GB/RF/XGBoost: F1 $\approx 0.78$--$0.79$
-  \item QSVM / VQC: F1 $\approx 0.64$--$0.66$
-  \item Tiempo: clásico $<2$\,s; cuántico $>15$\,s
-  \item Velocidad ($\propto 1/t$):
-        clásico $\approx 1$; cuántico $\approx 0$
-        \\{\footnotesize(el QSVM es \textbf{más lento})}
-\end{itemize}
-\end{block}
-{\footnotesize SKG/Telco no son cuántico-nativos.}
-\end{column}
-\end{columns}
-\end{frame}
-
-\begin{frame}{Resultados --- coste del kernel cuántico}
-\centering
-\includegraphics[width=\textwidth,height=0.78\textheight,keepaspectratio]{06_quantum_kernel_escalabilidad.png}
-\end{frame}
-
-\begin{frame}{Resultados --- regresión (QK-SVR, 3 datasets)}
-\centering
-\includegraphics[width=\textwidth,height=0.78\textheight,keepaspectratio]{03_regresion_3datasets.png}
-\end{frame}
-
-\begin{frame}{Resultados --- anomalías: idea (distancia vs fase ZZ)}
-\centering
-\includegraphics[width=\textwidth,height=0.78\textheight,keepaspectratio]{zz_phase_concept_diagram.png}
-\end{frame}
-
-\begin{frame}{Resultados --- anomalías (OCSVM-ZZ)}
-\begin{columns}[c]
-\begin{column}{0.48\textwidth}
-\centering
 \includegraphics[width=\linewidth,height=0.72\textheight,keepaspectratio]{zz_phase_scores_if_vs_zz.png}
 \end{column}
-\begin{column}{0.48\textwidth}
-\centering
-\includegraphics[width=\linewidth,height=0.72\textheight,keepaspectratio]{zz_phase_vs_blobs_anomaly.png}
-\end{column}
-\end{columns}
-\vspace{0.2em}
-\centering\footnotesize
-Ventaja solo en \texttt{zz\_phase}; en moons/blobs/SKG inyectado gana IsolationForest.
-\end{frame}
-
-\begin{frame}{Resultados --- QAOA (histograma de medición)}
-\begin{columns}[T]
-\begin{column}{0.58\textwidth}
-\centering
-\includegraphics[width=\linewidth,height=0.68\textheight,keepaspectratio]{10_qaoa_histograma_medicion.png}
-\end{column}
-\begin{column}{0.40\textwidth}
-\begin{block}{Hallazgos}
+\begin{column}{0.36\textwidth}
+\begin{block}{Q vs C}
 \begin{itemize}
-  \item QAOA: \textbf{$-$30.3\%} coste vs.\ Greedy
-  \item VQE competitivo en portafolio pequeño
-  \item TSP $n{=}4$: empate óptimo (modelado, no speedup)
+  \item \textbf{Nativo} (\texttt{zz\_phase}):
+        gana Q\\{\footnotesize(AUC $0.74$ vs $0.53$)}
+  \item \textbf{SKG} (inyectado):
+        gana C\\{\footnotesize(IsolationForest)}
+  \item \textbf{Referencia}
+        (moons/blobs):
+        gana C\\{\footnotesize(IsolationForest)}
 \end{itemize}
 \end{block}
+{\footnotesize Ventaja solo si la novedad
+está alineada al mapa ZZ.}
 \end{column}
 \end{columns}
 \end{frame}
 
-\begin{frame}{Resultados --- loop híbrido QAOA--COBYLA}
+% --- 4. Optimización -------------------------------------------------
+\begin{frame}{Resultados --- 4. Optimización (QAOA/VQE vs clásico)}
 \centering
-\includegraphics[width=\textwidth,height=0.78\textheight,keepaspectratio]{10_qaoa_convergencia.png}
-\end{frame}
-
-\begin{frame}{Resultados --- MDS (solución en grafo)}
-\begin{columns}[c]
-\begin{column}{0.55\textwidth}
-\centering
-\includegraphics[width=\linewidth,height=0.72\textheight,keepaspectratio]{10_mds_grafo_solucion.png}
-\end{column}
-\begin{column}{0.42\textwidth}
-\begin{block}{Lectura}
-\begin{itemize}
-  \item $D^\star=\{\mathrm{Ana},\mathrm{Enrique}\}$
-  \item $P(\mathrm{opt})\approx 73\%$ (patrón híbrido)
-  \item Escala moderada; no speedup asintótico
-\end{itemize}
-\end{block}
-\end{column}
-\end{columns}
-\end{frame}
-
-\begin{frame}{Síntesis --- dashboard de 9 casos}
-\centering
-\includegraphics[width=\textwidth,height=0.82\textheight,keepaspectratio]{07_dashboard_ventaja_cuantica.png}
-\end{frame}
-
-\begin{frame}{Síntesis --- heatmap por dominio}
-\centering
-\includegraphics[width=\textwidth,height=0.78\textheight,keepaspectratio]{07_heatmap_ventaja_por_dominio.png}
-\end{frame}
-
-\begin{frame}{Síntesis --- radar multidimensional}
-\centering
-\includegraphics[width=\textwidth,height=0.78\textheight,keepaspectratio]{07_radar_ventaja_cuantica.png}
-\end{frame}
-
-\begin{frame}{Síntesis --- complejidad cuántico vs clásico}
-\centering
-\includegraphics[width=\textwidth,height=0.78\textheight,keepaspectratio]{07_complejidad_cuantico_vs_clasico.png}
-\end{frame}
-
-\begin{frame}{Síntesis --- paralelismo / superposición ($2^n$)}
-\centering
-\includegraphics[width=\textwidth,height=0.78\textheight,keepaspectratio]{07_paralelismo_cuantico.png}
-\end{frame}
-
-\begin{frame}{Síntesis --- benchmark Grover vs búsqueda clásica}
-\centering
-\includegraphics[width=\textwidth,height=0.78\textheight,keepaspectratio]{07_grover_benchmark.png}
-\end{frame}
-
-\begin{frame}{Síntesis --- tabla de 9 casos (cifras ancla)}
-\centering
-{\scriptsize
-\renewcommand{\arraystretch}{1.12}
-\begin{tabular}{@{}clccc@{}}
+{\small
+\renewcommand{\arraystretch}{1.35}
+\begin{tabular}{@{}lccc@{}}
 \toprule
-\textbf{CU} & \textbf{Algoritmo} & \textbf{Nativo} & \textbf{SKG} & \textbf{Referencia} \\
+\textbf{Capa} & \textbf{Problema} & \textbf{Cuántico} & \textbf{Clásico} \\
 \midrule
-1 & QSVM & \textbf{+38.3 pp} & $-$4.5 pp & $-$3.8 pp \\
-2 & QK-SVR & $-0.93\,\Delta R^2$ & $-0.56\,\Delta R^2$ & \textbf{$+0.09\,\Delta R^2$} \\
-3 & QAOA ($p{=}1$) & \multicolumn{2}{c}{\textbf{$-$30.3\% vs Greedy}} & --- \\
-4 & VQE/QAOA & \multicolumn{2}{c}{Óptimo ($n\le 6$)} & --- \\
-5 & QAOA TSP & \multicolumn{2}{c}{empate óptimo ($n{=}4$)} & gap $0$ \\
-6 & QSVM umbral & \textbf{+8.9 pp} & $-6.7$ pp & $-3.8$ pp (vs GB) \\
-7 & QAOA MDS & \multicolumn{2}{c}{\textbf{$P(\mathrm{opt})\approx 73\%$}} & NP-hard \\
-8 & OCSVM-ZZ & \textbf{+31 pp AUC} (\texttt{zz\_phase}) & clásico & clásico \\
-9 & QK-SVR lags & \textbf{$\Delta$MAE $-0.36$} (\texttt{zz\_lag}) & clásico & clásico \\
+Nativo / control &
+Asignación QUBO &
+\textbf{QAOA $-$30.3\% coste} &
+Greedy \\
+SKG-like &
+MDS (cobertura) &
+\textbf{óptimo; $P\!\approx\!73\%$} &
+fuerza bruta / Greedy \\
+Referencia &
+TSP $n{=}4$ &
+empate óptimo &
+NN+2-opt (gap $0$) \\
 \bottomrule
 \end{tabular}}
-\vspace{0.4em}
-\centering\footnotesize
-Kernels: ventaja \textbf{solo} en nativo (Liu). SKG/Telco: gana GB/RF (Telco $-3.8$\,pp).
+\vspace{0.9em}
+\begin{block}{Q vs C (misma pregunta)}
+\begin{itemize}
+  \item \textbf{Asignación:} gana Q en coste a escala moderada.
+  \item \textbf{MDS:} Q recupera el óptimo (patrón híbrido viable).
+  \item \textbf{TSP:} empate en calidad; \textbf{no} hay speedup --- modelado QUBO.
+\end{itemize}
+\end{block}
+{\footnotesize Optimización $\neq$ kernels: aquí el contraste es coste/calidad de solución, no accuracy.}
 \end{frame}
 
-\begin{frame}{Síntesis --- semáforo por caso de uso}
+% --- Síntesis compacta -----------------------------------------------
+\begin{frame}{Resultados --- síntesis 4 $\times$ 3}
 \centering
-\begin{tikzpicture}[font=\scriptsize, thick, scale=0.82, every node/.style={transform shape},
-    bg/.style={rectangle, rounded corners=2pt, minimum width=1.15cm, minimum height=0.55cm, align=center},
-    verde/.style={bg, fill=green!22, draw=green!55!black},
-    amarillo/.style={bg, fill=yellow!30, draw=yellow!65!black},
-    rojo/.style={bg, fill=red!18, draw=red!50!black},
-    header/.style={font=\bfseries\scriptsize, align=center}]
-  \node[header] at (0,0) {CU}; \node[header] at (2.1,0) {Algoritmo};
-  \node[header] at (4.8,0) {Q vs C}; \node[header] at (7.0,0) {NISQ};
-  \node[header] at (9.2,0) {Valor SKG};
-  \foreach \y/\cu/\alg/\rq/\rn/\rs in {
-    -0.75/1/QSVM/verde/amarillo/amarillo,
-    -1.45/2/QK-SVR/rojo/amarillo/rojo,
-    -2.15/3/QAOA $p{=}1$/verde/amarillo/verde,
-    -2.85/4/VQE-QAOA/amarillo/amarillo/amarillo,
-    -3.55/5/QAOA TSP/amarillo/rojo/amarillo,
-    -4.25/6/QSVM umbral/verde/amarillo/amarillo,
-    -4.95/7/QAOA MDS/verde/amarillo/verde,
-    -5.65/8/OCSVM-ZZ/amarillo/amarillo/amarillo,
-    -6.35/9/QK-SVR lags/amarillo/amarillo/amarillo} {
-    \node at (0,\y) {\cu}; \node at (2.1,\y) {\alg};
-    \node[\rq] at (4.8,\y) {}; \node[\rn] at (7.0,\y) {}; \node[\rs] at (9.2,\y) {};
-  }
-  \node[verde, minimum width=0.7cm] (lg) at (1.2,-7.2) {};
-  \node[right=2pt] at (lg.east) {Favorable};
-  \node[amarillo, minimum width=0.7cm] (ly) at (4.2,-7.2) {};
-  \node[right=2pt] at (ly.east) {Condicional / empate};
-  \node[rojo, minimum width=0.7cm] (lr) at (8.0,-7.2) {};
-  \node[right=2pt] at (lr.east) {Desfavorable};
-\end{tikzpicture}
+{\small
+\renewcommand{\arraystretch}{1.25}
+\begin{tabular}{@{}lccc@{}}
+\toprule
+\textbf{Familia} & \textbf{Nativo} & \textbf{SKG} & \textbf{Referencia} \\
+\midrule
+Clasificación & \textbf{gana Q} & gana C & gana C \\
+Regresión & \textbf{gana Q} & gana C & gana C \\
+Anomalías & \textbf{gana Q} & gana C & gana C \\
+Optimización & \textbf{gana Q} (coste) & \textbf{viable} (óptimo) & empate \\
+\bottomrule
+\end{tabular}}
+\vspace{0.8em}
+\begin{block}{Mensaje único}
+Ventaja cuántica \textbf{condicionada}: aparece con alineación mapa--generador
+(o QUBO viable). En datos reales SKG/Telco sin esa estructura: pipeline clásico.
+\end{block}
 \end{frame}
 
 \begin{frame}{Arquitectura híbrida --- 4 capas (prototipo)}
