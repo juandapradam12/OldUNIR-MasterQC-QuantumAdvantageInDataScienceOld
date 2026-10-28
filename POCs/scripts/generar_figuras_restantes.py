@@ -625,11 +625,12 @@ def fig_06_3datasets_comparativa():
     fig, axes = plt.subplots(1, 2, figsize=(14, 5))
     x6 = np.arange(len(summary))
     w6 = 0.35
-    cq6 = ["#7B2D8B", "#5B4DA8", "#1E6FB8"]
-    cc6 = ["#E0A0E0", "#B0AFDF", "#80BDE8"]
+    # Una sola pareja de colores: cuántico vs clásico (no un color por dataset)
     ax0 = axes[0]
-    bq6 = ax0.bar(x6 - w6 / 2, summary["QSVC"] * 100, w6, label="QSVC Cuántico", color=cq6, edgecolor="white")
-    bc6 = ax0.bar(x6 + w6 / 2, summary["Mejor Clásico"] * 100, w6, label="Mejor Clásico", color=cc6, edgecolor="white")
+    bq6 = ax0.bar(x6 - w6 / 2, summary["QSVC"] * 100, w6, label="QSVC Cuántico",
+                  color=QUANTUM_COLOR, edgecolor="white")
+    bc6 = ax0.bar(x6 + w6 / 2, summary["Mejor Clásico"] * 100, w6, label="Mejor Clásico",
+                  color=CLASSICAL_COLOR, edgecolor="white")
     ax0.set_xticks(x6)
     ax0.set_xticklabels(summary["Dataset"], fontsize=9)
     ax0.set_ylabel("Accuracy (%)")
