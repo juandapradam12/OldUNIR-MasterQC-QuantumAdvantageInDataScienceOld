@@ -330,8 +330,22 @@ Etiquetas generadas con el mismo \texttt{ZZFeatureMap}.
 \end{frame}
 
 \begin{frame}{Resultados --- clasificación en 3 capas de datos}
+\begin{columns}[T]
+\begin{column}{0.68\textwidth}
 \centering
-\includegraphics[width=\textwidth,height=0.78\textheight,keepaspectratio]{06_quantum_kernel_3datasets_comparativa.png}
+\includegraphics[width=\linewidth,height=0.78\textheight,keepaspectratio]{06_quantum_kernel_3datasets_comparativa.png}
+\end{column}
+\begin{column}{0.30\textwidth}
+\begin{block}{Lectura (única)}
+\begin{itemize}
+  \item \textbf{Liu:} ventaja Q\\{\footnotesize(+13.3\,pp)}
+  \item \textbf{SKG:} gana clásico\\{\footnotesize($-6.0$\,pp)}
+  \item \textbf{Telco:} gana clásico\\{\footnotesize($-3.8$\,pp vs GB)}
+\end{itemize}
+\end{block}
+{\footnotesize Telco $+6.7$\,pp vs RBF ($n{=}50$) era artefacto ---\textbf{no} ventaja operativa.}
+\end{column}
+\end{columns}
 \end{frame}
 
 \begin{frame}{Resultados --- Telco: sin estructura ZZ (gana el clásico)}

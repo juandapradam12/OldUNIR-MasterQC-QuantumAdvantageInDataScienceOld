@@ -115,10 +115,16 @@ SCALE_DF_06 = pd.DataFrame([
     {"n_samples": 150, "acc_classical": 0.444, "acc_quantum": 0.733, "advantage": 0.289},
 ])
 
+# Baseline = mejor clásico operativo (GB/RF en datos reales; SVM-poly en Liu).
+# Telco: QSVM 76.0% vs GB 79.8% (Caso 1 / evaluación.tex) — NO el artefacto
+# n=50 vs RBF (+6.7 pp) que antes contaminaba esta figura con números de Liu.
 SUMMARY_06 = pd.DataFrame([
-    {"Dataset": "1. Cuántico-nativo\n(Liu 2021)", "QSVC": 0.733, "Mejor Clásico": 0.600},
-    {"Dataset": "2. SKG\n(Incidentes Bogotá)", "QSVC": 0.547, "Mejor Clásico": 0.607},
-    {"Dataset": "3. Vida real\n(Telco Churn)", "QSVC": 0.667, "Mejor Clásico": 0.600},
+    {"Dataset": "1. Cuántico-nativo\n(Liu 2021)", "QSVC": 0.733, "Mejor Clásico": 0.600,
+     "veredicto": "VENTAJA Q"},
+    {"Dataset": "2. SKG\n(Incidentes Bogotá)", "QSVC": 0.547, "Mejor Clásico": 0.607,
+     "veredicto": "GANA CLÁSICO"},
+    {"Dataset": "3. Vida real\n(Telco Churn)", "QSVC": 0.760, "Mejor Clásico": 0.798,
+     "veredicto": "GANA CLÁSICO"},
 ])
 SUMMARY_06["Ventaja (pp)"] = (SUMMARY_06["QSVC"] - SUMMARY_06["Mejor Clásico"]) * 100
 
@@ -622,39 +628,58 @@ def fig_06_learning_curves():
 
 def fig_06_3datasets_comparativa():
     summary = SUMMARY_06
-    fig, axes = plt.subplots(1, 2, figsize=(14, 5))
+    fig, axes = plt.subplots(1, 2, figsize=(14, 5.4))
     x6 = np.arange(len(summary))
     w6 = 0.35
     # Una sola pareja de colores: cuántico vs clásico (no un color por dataset)
     ax0 = axes[0]
     bq6 = ax0.bar(x6 - w6 / 2, summary["QSVC"] * 100, w6, label="QSVC Cuántico",
                   color=QUANTUM_COLOR, edgecolor="white")
-    bc6 = ax0.bar(x6 + w6 / 2, summary["Mejor Clásico"] * 100, w6, label="Mejor Clásico",
+    bc6 = ax0.bar(x6 + w6 / 2, summary["Mejor Clásico"] * 100, w6,
+                  label="Mejor Clásico (GB/RF en reales)",
                   color=CLASSICAL_COLOR, edgecolor="white")
     ax0.set_xticks(x6)
     ax0.set_xticklabels(summary["Dataset"], fontsize=9)
     ax0.set_ylabel("Accuracy (%)")
-    ax0.set_ylim(40, 110)
+    ax0.set_ylim(40, 118)
     ax0.set_title("Accuracy: QSVC vs Mejor Clásico\npor tipo de dataset", fontweight="bold")
     ax0.axhline(50, color="gray", lw=0.8, ls="--", alpha=0.5)
-    ax0.legend(fontsize=9)
+    ax0.legend(fontsize=8, loc="upper right")
     for b in list(bq6) + list(bc6):
         ax0.text(b.get_x() + b.get_width() / 2, b.get_height() + 0.5,
                  f"{b.get_height():.1f}%", ha="center", va="bottom", fontsize=8, fontweight="bold")
+    # Veredicto explícito encima de cada grupo
+    for i, (_, row) in enumerate(summary.iterrows()):
+        win_q = row["Ventaja (pp)"] > 0
+        color = QUANTUM_COLOR if win_q else CLASSICAL_COLOR
+        top = max(row["QSVC"], row["Mejor Clásico"]) * 100
+        ax0.text(i, top + 8.5, row["veredicto"], ha="center", va="bottom",
+                 fontsize=8, fontweight="bold", color=color)
     ax1 = axes[1]
-    gcols6 = ["#2E8B57" if v > 0 else "#DC143C" for v in summary["Ventaja (pp)"]]
+    gcols6 = [QUANTUM_COLOR if v > 0 else CLASSICAL_COLOR for v in summary["Ventaja (pp)"]]
     bg6 = ax1.bar(x6, summary["Ventaja (pp)"], color=gcols6, edgecolor="white", width=0.5)
     ax1.axhline(0, color="black", lw=1)
     ax1.set_xticks(x6)
     ax1.set_xticklabels(summary["Dataset"], fontsize=9)
     ax1.set_ylabel("Ventaja cuántica (pp)")
-    ax1.set_title("Ventaja Cuántica Neta (QSVC − Mejor Clásico)\npor tipo de dataset", fontweight="bold")
-    for b in bg6:
-        yp = b.get_height() + 0.3 if b.get_height() >= 0 else b.get_height() - 1.5
+    ax1.set_ylim(-12, 18)
+    ax1.set_title("Solo Liu > 0: SKG/Telco gana el clásico\n(QSVC − Mejor Clásico operativo)",
+                  fontweight="bold")
+    for b, (_, row) in zip(bg6, summary.iterrows()):
+        yp = b.get_height() + 0.4 if b.get_height() >= 0 else b.get_height() - 1.8
         ax1.text(b.get_x() + b.get_width() / 2, yp, f"{b.get_height():+.1f}pp",
                  ha="center", va="bottom", fontsize=10, fontweight="bold")
-    fig.suptitle("Quantum Kernel (FidelityQK) vs Clásicos — Comparativa de los 3 Datasets",
+        ax1.text(b.get_x() + b.get_width() / 2,
+                 14 if row["Ventaja (pp)"] > 0 else -10.5,
+                 row["veredicto"], ha="center", va="center",
+                 fontsize=8, fontweight="bold",
+                 color=QUANTUM_COLOR if row["Ventaja (pp)"] > 0 else CLASSICAL_COLOR)
+    fig.suptitle("Quantum Kernel vs Mejor Clásico — ventaja SOLO en cuántico-nativo (Liu)",
                  fontsize=13, fontweight="bold", y=1.02)
+    fig.text(0.5, -0.02,
+             "Telco: QSVM 76.0% vs Gradient Boosting 79.8% (−3.8 pp). "
+             "El antiguo +6.7 pp vs RBF (n=50) era artefacto, no ventaja operativa.",
+             ha="center", fontsize=8, style="italic", color="#444444")
     plt.tight_layout()
     save_fig("06_quantum_kernel_3datasets_comparativa.png")
 
