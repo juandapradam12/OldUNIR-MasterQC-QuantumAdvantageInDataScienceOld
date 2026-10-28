@@ -684,6 +684,71 @@ def fig_06_3datasets_comparativa():
     save_fig("06_quantum_kernel_3datasets_comparativa.png")
 
 
+def fig_08_anomaly_3datasets_comparativa():
+    """Barras Q vs C en anomalías (mismo formato que clasificación/regresión)."""
+    datasets = [
+        "1. Nativo\n(zz_phase)",
+        "2. SKG\n(inyectado)",
+        "3. Referencia\n(moons)",
+    ]
+    # Medias multi-repeat Table A (BUSINESS/anomaly_v2_results.md)
+    auc_q = np.array([0.864, 0.694, 0.599])
+    auc_c = np.array([0.553, 0.993, 0.890])  # IF / LOF / IF
+    delta_pp = (auc_q - auc_c) * 100
+    veredictos = ["VENTAJA Q", "GANA CLÁSICO", "GANA CLÁSICO"]
+
+    fig, axes = plt.subplots(1, 2, figsize=(14, 5.4))
+    x = np.arange(len(datasets))
+    w = 0.35
+    ax0 = axes[0]
+    bq = ax0.bar(x - w / 2, auc_q, w, label="OCSVM-ZZ (cuántico)",
+                 color=QUANTUM_COLOR, edgecolor="white")
+    bc = ax0.bar(x + w / 2, auc_c, w, label="Mejor clásico (IF/LOF)",
+                 color=CLASSICAL_COLOR, edgecolor="white")
+    ax0.set_xticks(x)
+    ax0.set_xticklabels(datasets, fontsize=9)
+    ax0.set_ylabel("ROC-AUC")
+    ax0.set_ylim(0.35, 1.18)
+    ax0.axhline(0.5, color="gray", lw=0.8, ls="--", alpha=0.5)
+    ax0.set_title("AUC: OCSVM-ZZ vs Mejor Clásico\npor tipo de dataset", fontweight="bold")
+    ax0.legend(fontsize=8, loc="upper right")
+    for b in list(bq) + list(bc):
+        ax0.text(b.get_x() + b.get_width() / 2, b.get_height() + 0.015,
+                 f"{b.get_height():.2f}", ha="center", va="bottom", fontsize=8, fontweight="bold")
+    for i, v in enumerate(veredictos):
+        top = max(auc_q[i], auc_c[i])
+        color = QUANTUM_COLOR if delta_pp[i] > 0 else CLASSICAL_COLOR
+        ax0.text(i, top + 0.08, v, ha="center", va="bottom",
+                 fontsize=8, fontweight="bold", color=color)
+
+    ax1 = axes[1]
+    cols = [QUANTUM_COLOR if v > 0 else CLASSICAL_COLOR for v in delta_pp]
+    bars = ax1.bar(x, delta_pp, color=cols, edgecolor="white", width=0.5)
+    ax1.axhline(0, color="black", lw=1)
+    ax1.set_xticks(x)
+    ax1.set_xticklabels(datasets, fontsize=9)
+    ax1.set_ylabel("Ventaja cuántica (pp de AUC)")
+    ax1.set_ylim(-55, 45)
+    ax1.set_title("Solo zz_phase > 0: SKG/moons gana el clásico\n(OCSVM-ZZ − Mejor Clásico)",
+                  fontweight="bold")
+    for b, d, v in zip(bars, delta_pp, veredictos):
+        yp = b.get_height() + 1.5 if d >= 0 else b.get_height() - 4
+        ax1.text(b.get_x() + b.get_width() / 2, yp, f"{d:+.1f}pp",
+                 ha="center", va="bottom", fontsize=10, fontweight="bold")
+        ax1.text(b.get_x() + b.get_width() / 2, 35 if d > 0 else -48, v,
+                 ha="center", va="center", fontsize=8, fontweight="bold",
+                 color=QUANTUM_COLOR if d > 0 else CLASSICAL_COLOR)
+
+    fig.suptitle("Anomalías one-class — ventaja SOLO con novedad alineada al mapa ZZ",
+                 fontsize=13, fontweight="bold", y=1.02)
+    fig.text(0.5, -0.02,
+             "Medias n=160, 5 repeats (Table A). zz_phase: OCSVM-ZZ 0.864 vs IF 0.553. "
+             "SKG/moons: IsolationForest / LOF dominan.",
+             ha="center", fontsize=8, style="italic", color="#444444")
+    plt.tight_layout()
+    save_fig("08_anomaly_3datasets_comparativa.png")
+
+
 def fig_06_escalabilidad():
     scale_df = SCALE_DF_06
     fig, axes = plt.subplots(1, 2, figsize=(14, 5))
@@ -1174,6 +1239,7 @@ def main():
     fig_01_qsvm_vs_svm_directo()
     fig_06_learning_curves()
     fig_06_3datasets_comparativa()
+    fig_08_anomaly_3datasets_comparativa()
     fig_06_escalabilidad()
     fig_06_zzfeaturemap_circuit()
     fig_06_boundaries()

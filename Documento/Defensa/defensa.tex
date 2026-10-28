@@ -309,7 +309,7 @@ pipeline clásico \\
 \midrule
 1. Clasificación (QSVM) & Liu ZZ & Incidentes Bogotá & Telco Churn \\
 2. Regresión (QK-SVR) & target alineado & Movilidad Bogotá & Friedman \#1 \\
-3. Anomalías (OCSVM-ZZ) & \texttt{zz\_phase} & outliers inyectados & moons / blobs \\
+3. Anomalías (OCSVM-ZZ) & \texttt{zz\_phase} & outliers inyectados & moons \\
 4. Optimización (QAOA) & asignación QUBO & cobertura MDS & TSP $n{=}4$ \\
 \bottomrule
 \end{tabular}}
@@ -365,24 +365,20 @@ ventaja solo con estructura alineada.}
 % --- 3. Anomalías ----------------------------------------------------
 \begin{frame}{Resultados --- 3. Anomalías (OCSVM-ZZ vs clásico)}
 \begin{columns}[T]
-\begin{column}{0.62\textwidth}
+\begin{column}{0.68\textwidth}
 \centering
-\includegraphics[width=\linewidth,height=0.72\textheight,keepaspectratio]{zz_phase_scores_if_vs_zz.png}
+\includegraphics[width=\linewidth,height=0.78\textheight,keepaspectratio]{08_anomaly_3datasets_comparativa.png}
 \end{column}
-\begin{column}{0.36\textwidth}
+\begin{column}{0.30\textwidth}
 \begin{block}{Q vs C}
 \begin{itemize}
-  \item \textbf{Nativo} (\texttt{zz\_phase}):
-        gana Q\\{\footnotesize(AUC $0.74$ vs $0.53$)}
-  \item \textbf{SKG} (inyectado):
-        gana C\\{\footnotesize(IsolationForest)}
-  \item \textbf{Referencia}
-        (moons/blobs):
-        gana C\\{\footnotesize(IsolationForest)}
+  \item \textbf{Nativo:} gana Q\\{\footnotesize(+31.2\,pp AUC)}
+  \item \textbf{SKG:} gana C\\{\footnotesize($-29.9$\,pp)}
+  \item \textbf{moons:} gana C\\{\footnotesize($-29.1$\,pp)}
 \end{itemize}
 \end{block}
-{\footnotesize Ventaja solo si la novedad
-está alineada al mapa ZZ.}
+{\footnotesize Misma lectura que clasif./regresión:
+ventaja solo con novedad alineada al mapa.}
 \end{column}
 \end{columns}
 \end{frame}
