@@ -439,26 +439,6 @@ Ventaja cuántica \textbf{condicionada}: aparece con alineación mapa--generador
 \end{block}
 \end{frame}
 
-\begin{frame}{Arquitectura híbrida --- 4 capas (prototipo)}
-\centering
-\begin{tikzpicture}[font=\footnotesize, thick,
-  capa/.style={rectangle, rounded corners=4pt, very thick,
-               minimum width=11.5cm, minimum height=0.85cm, align=center, inner sep=4pt}]
-  \node[capa, draw=blue!60, fill=blue!8] (c1)
-    {\textbf{1. Diagnóstico (clásico):} $\mathcal{Q}/\mathcal{Q}_{\mathrm{rob}}$ + \textquestiondown{}vence a GB/RF? + \textquestiondown{}QUBO?};
-  \node[capa, draw=teal!60, fill=teal!8, below=0.28cm of c1] (c2)
-    {\textbf{2. Módulo cuántico (selectivo):} QSVM / QAOA / VQE / OCSVM-ZZ};
-  \node[capa, draw=orange!60, fill=orange!8, below=0.28cm of c2] (c3)
-    {\textbf{3. Orquestación clásica:} COBYLA, pre/post-proceso, decodificación};
-  \node[capa, draw=violet!60, fill=violet!8, below=0.28cm of c3] (c4)
-    {\textbf{4. Decisión:} activar Q solo si hay ventaja verificable; si no, pipeline clásico};
-  \draw[->,>=stealth] (c1)--(c2); \draw[->,>=stealth] (c2)--(c3); \draw[->,>=stealth] (c3)--(c4);
-\end{tikzpicture}
-\vspace{0.4em}
-\centering\footnotesize
-Para SKG: herramienta \textbf{adicional}, no sustituto del stack actual.
-\end{frame}
-
 % =====================================================================
 \section{Conjeturas}
 % =====================================================================
