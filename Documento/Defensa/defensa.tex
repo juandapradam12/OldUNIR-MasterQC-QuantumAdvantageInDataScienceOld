@@ -305,20 +305,42 @@ pipeline clásico \\
 \includegraphics[width=\textwidth,height=0.78\textheight,keepaspectratio]{06_zzfeaturemap_circuit.png}
 \end{frame}
 
-\begin{frame}{Resultados --- datos cuántico-nativos (Liu et al.)}
-\begin{columns}[c]
-\begin{column}{0.48\textwidth}
+\begin{frame}{Resultados --- nativo ZZ: el QSVM ve la frontera}
+\begin{columns}[T]
+\begin{column}{0.62\textwidth}
 \centering
-\includegraphics[width=\textwidth]{06_quantum_kernel_boundaries.png}
+\includegraphics[width=\linewidth,height=0.72\textheight,keepaspectratio]{06_quantum_kernel_boundaries.png}
 \end{column}
-\begin{column}{0.48\textwidth}
-\centering
-\includegraphics[width=\textwidth]{06_learning_curves_quantum_advantage.png}
+\begin{column}{0.35\textwidth}
+\begin{block}{Qué muestra}
+Etiquetas generadas con el mismo \texttt{ZZFeatureMap}.
+\begin{itemize}
+  \item QSVM recupera la frontera
+  \item RBF / GB $\approx$ azar
+\end{itemize}
+\end{block}
+{\footnotesize Régimen controlado (Liu): no es un dataset empresarial.}
 \end{column}
 \end{columns}
-\vspace{0.2em}
-\centering\footnotesize
-Etiquetas con \texttt{ZZFeatureMap}: QSVM recupera la frontera; RBF/GB $\approx$ azar ($\Delta$ media $\approx{+}41$\,pp).
+\end{frame}
+
+\begin{frame}{Resultados --- nativo ZZ: no es falta de datos}
+\begin{columns}[T]
+\begin{column}{0.62\textwidth}
+\centering
+\includegraphics[width=\linewidth,height=0.72\textheight,keepaspectratio]{06_learning_curves_quantum_advantage.png}
+\end{column}
+\begin{column}{0.35\textwidth}
+\begin{block}{Lectura de $n$}
+Al crecer el train ($30$--$180$):
+\begin{itemize}
+  \item QSVM se queda alto ($\sim$88\%)
+  \item Clásicos se quedan en $\sim$50\%
+\end{itemize}
+\end{block}
+{\footnotesize No es ``pocas muestras'': más datos no salvan al clásico. La limitación es \textbf{estructural} (mapa desalineado). $\Delta$ media $\approx{+}41$\,pp.}
+\end{column}
+\end{columns}
 \end{frame}
 
 \begin{frame}{Resultados --- QSVM vs SVM (directo)}
