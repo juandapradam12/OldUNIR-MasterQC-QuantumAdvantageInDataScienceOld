@@ -319,26 +319,7 @@ Etiquetas generadas con el mismo \texttt{ZZFeatureMap}.
   \item RBF / GB $\approx$ azar
 \end{itemize}
 \end{block}
-{\footnotesize Régimen controlado (Liu): no es un dataset empresarial.}
-\end{column}
-\end{columns}
-\end{frame}
-
-\begin{frame}{Resultados --- nativo ZZ: no es falta de datos}
-\begin{columns}[T]
-\begin{column}{0.62\textwidth}
-\centering
-\includegraphics[width=\linewidth,height=0.72\textheight,keepaspectratio]{06_learning_curves_quantum_advantage.png}
-\end{column}
-\begin{column}{0.35\textwidth}
-\begin{block}{Lectura de $n$}
-Al crecer el train ($30$--$180$):
-\begin{itemize}
-  \item QSVM se queda alto ($\sim$88\%)
-  \item Clásicos se quedan en $\sim$50\%
-\end{itemize}
-\end{block}
-{\footnotesize No es ``pocas muestras'': más datos no salvan al clásico. La limitación es \textbf{estructural} (mapa desalineado). $\Delta$ media $\approx{+}41$\,pp.}
+{\footnotesize Régimen controlado (Liu): no es un dataset empresarial. El punto es la coincidencia mapa--generador, no el tamaño de muestra.}
 \end{column}
 \end{columns}
 \end{frame}
