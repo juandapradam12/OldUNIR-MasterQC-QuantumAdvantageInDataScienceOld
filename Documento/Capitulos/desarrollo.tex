@@ -455,10 +455,10 @@ El valor del Caso~5 es de \textbf{protocolo y modelado QUBO/QAOA}, no de speedup
 \section{Caso de uso 6: Análisis de umbral de ventaja del kernel cuántico}
 % =====================================================================
 
-Este caso de uso complementa el caso 1 con un análisis específico del umbral de tamaño de muestra a partir del cual el kernel cuántico supera a los kernels clásicos. Siguiendo el marco teórico de \cite{liu2021}, se evaluó la ventaja cuántica para $n \in [50, 200]$ tanto en el dataset cuántico-nativo como en un subconjunto del dataset Telco Churn.
+Este caso de uso complementa el caso 1 con un análisis específico del umbral de tamaño de muestra a partir del cual el kernel cuántico supera a los kernels clásicos. Siguiendo el marco teórico de \cite{liu2021}, se evaluó el régimen de ventaja en el dataset cuántico-nativo ($n \in [50, 200]$) y se contrastó con controles reales (SKG, Telco) donde \textbf{no} hay alineación mapa--generador.
 
-\paragraph{Resultados preliminares.}
-En el dataset cuántico-nativo ($n=150$), la ventaja fue de \textbf{+8.9 pp} vs.\ SVM-RBF (68.9\% vs 60.0\%): régimen alineado. SKG (Incidentes Bogotá) \textbf{no} es cuántico-nativo: QSVC 54.0\% vs 60.7\% clásico ($-6.7$~pp). Sobre un subconjunto Telco ($n=50$) aparece $+6.7$~pp vs.\ RBF (66.7\% vs 60.0\%): artefacto de muestra pequeña frente a un único baseline; frente a GB/RF Telco permanece clásico.
+\paragraph{Resultados.}
+En el dataset cuántico-nativo ($n=150$), la ventaja fue de \textbf{+8.9 pp} vs.\ SVM-RBF (68.9\% vs 60.0\%): régimen alineado. SKG (Incidentes Bogotá) \textbf{no} es cuántico-nativo: QSVC 54.0\% vs 60.7\% clásico ($-6.7$~pp). Telco tampoco: QSVM 76.0\% vs Gradient Boosting 79.8\% (\textbf{$-3.8$~pp}); el baseline operativo es GB/RF, no un RBF aislado en subconjunto pequeño.
 
 \paragraph{Limitaciones identificadas.}
 \begin{itemize}

@@ -343,7 +343,8 @@ Etiquetas generadas con el mismo \texttt{ZZFeatureMap}.
   \item \textbf{Telco:} gana clásico\\{\footnotesize($-3.8$\,pp vs GB)}
 \end{itemize}
 \end{block}
-{\footnotesize Telco $+6.7$\,pp vs RBF ($n{=}50$) era artefacto ---\textbf{no} ventaja operativa.}
+{\footnotesize Baseline operativo = GB/RF.
+Solo Liu tiene ventaja; SKG/Telco \textbf{no}.}
 \end{column}
 \end{columns}
 \end{frame}
@@ -363,19 +364,6 @@ Etiquetas generadas con el mismo \texttt{ZZFeatureMap}.
 \end{itemize}
 \end{block}
 {\footnotesize SKG/Telco no son cuántico-nativos.}
-\end{column}
-\end{columns}
-\end{frame}
-
-\begin{frame}{Resultados --- escalabilidad del QSVM}
-\begin{columns}[c]
-\begin{column}{0.48\textwidth}
-\centering
-\includegraphics[width=\linewidth,height=0.72\textheight,keepaspectratio]{01_escalabilidad_ventaja_clasificacion.png}
-\end{column}
-\begin{column}{0.48\textwidth}
-\centering
-\includegraphics[width=\linewidth,height=0.72\textheight,keepaspectratio]{01_clasificacion_escalabilidad.png}
 \end{column}
 \end{columns}
 \end{frame}
@@ -500,7 +488,7 @@ Ventaja solo en \texttt{zz\_phase}; en moons/blobs/SKG inyectado gana IsolationF
 3 & QAOA ($p{=}1$) & \multicolumn{2}{c}{\textbf{$-$30.3\% vs Greedy}} & --- \\
 4 & VQE/QAOA & \multicolumn{2}{c}{Óptimo ($n\le 6$)} & --- \\
 5 & QAOA TSP & \multicolumn{2}{c}{empate óptimo ($n{=}4$)} & gap $0$ \\
-6 & QSVM umbral & \textbf{+8.9 pp} & $-6.7$ pp & $+6.7$ vs RBF$^\ddagger$ \\
+6 & QSVM umbral & \textbf{+8.9 pp} & $-6.7$ pp & $-3.8$ pp (vs GB) \\
 7 & QAOA MDS & \multicolumn{2}{c}{\textbf{$P(\mathrm{opt})\approx 73\%$}} & NP-hard \\
 8 & OCSVM-ZZ & \textbf{+31 pp AUC} (\texttt{zz\_phase}) & clásico & clásico \\
 9 & QK-SVR lags & \textbf{$\Delta$MAE $-0.36$} (\texttt{zz\_lag}) & clásico & clásico \\
@@ -508,7 +496,7 @@ Ventaja solo en \texttt{zz\_phase}; en moons/blobs/SKG inyectado gana IsolationF
 \end{tabular}}
 \vspace{0.4em}
 \centering\footnotesize
-$^\ddagger$vs RBF en $n{=}50$ --- no ventaja operativa vs GB/RF. SKG/Telco en kernels: clásico.
+Kernels: ventaja \textbf{solo} en nativo (Liu). SKG/Telco: gana GB/RF (Telco $-3.8$\,pp).
 \end{frame}
 
 \begin{frame}{Síntesis --- semáforo por caso de uso}
@@ -710,7 +698,8 @@ Este TFM la \textbf{plantea} + evidencia preliminar --- no demostración.
 \end{columns}
 \vspace{0.2em}
 \centering\footnotesize
-SKG: NO cuántico-nativo. Telco: lift NB09 vs.\ RBF; $\mathcal{Q}_{\mathrm{rob}}$ no confirma rescate.
+SKG/Telco: \textbf{no} cuántico-nativos. Lift NB09 vs.\ RBF $\neq$ ventaja vs.\ GB/RF;
+bajo $\mathcal{Q}_{\mathrm{rob}}$ Telco sigue \texttt{classical}.
 \end{frame}
 
 \begin{frame}{Evidencia P2 --- barrido de rotaciones}

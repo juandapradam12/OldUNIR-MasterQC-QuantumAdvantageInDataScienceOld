@@ -181,7 +181,7 @@ A esta escala no hay ventaja de tiempo: NN+2-opt es óptimo en milisegundos. El 
 \section{Caso de uso 6: Análisis del umbral de ventaja del kernel}
 % =====================================================================
 
-El análisis del umbral de ventaja del kernel (Notebook~06) confirma el caso~1 desde la escalabilidad. En el dataset \textbf{cuántico-nativo} ($n=150$), el QSVC obtuvo \textbf{+8.9 pp} vs.\ SVM-RBF (68.9\% vs 60.0\%): ventaja cuando generador y feature map coinciden. Sobre \textbf{SKG} (Incidentes Bogotá) el clásico fue superior: QSVC 54.0\% vs 60.7\% ($-6.7$~pp) ---SKG \textbf{no} es cuántico-nativo. Sobre un subconjunto Telco ($n=50$) aparece $+6.7$~pp vs.\ RBF (66.7\% vs 60.0\%): artefacto de muestra pequeña frente a un único baseline RBF; frente a GB/RF y bajo $\mathcal{Q}_{\mathrm{rob}}$ Telco permanece clásico. Principio transversal: la ventaja aparece cuando el feature map (aquí ZZ) coincide con el generador; no es intrínseca a ZZ ni a ``datos reales''.
+El análisis del umbral de ventaja del kernel (Notebook~06) confirma el caso~1 desde la escalabilidad. En el dataset \textbf{cuántico-nativo} ($n=150$), el QSVC obtuvo \textbf{+8.9 pp} vs.\ SVM-RBF (68.9\% vs 60.0\%): ventaja cuando generador y feature map coinciden. Sobre \textbf{SKG} (Incidentes Bogotá) el clásico fue superior: QSVC 54.0\% vs 60.7\% ($-6.7$~pp). Sobre \textbf{Telco} el veredicto operativo es el mismo: QSVM 76.0\% vs Gradient Boosting 79.8\% (\textbf{$-3.8$~pp}); bajo $\mathcal{Q}_{\mathrm{rob}}$ Telco permanece \texttt{classical}. SKG/Telco \textbf{no} son cuántico-nativos. (Un $+6.7$~pp puntual vs.\ RBF en un subconjunto $n=50$ se descarta como artefacto de baseline débil / muestra pequeña ---no entra en la síntesis.) Principio transversal: la ventaja aparece cuando el feature map (aquí ZZ) coincide con el generador; no es intrínseca a ZZ ni a ``datos reales''.
 
 \begin{figure}[!htbp]
 \centering
@@ -299,13 +299,13 @@ La Tabla~\ref{tab:sintesis} sintetiza los resultados principales del estudio com
 3 & QAOA ($p=1$) & \multicolumn{2}{c}{\textbf{$-$30.3\% coste vs Greedy}} & --- \\
 4 & VQE/QAOA & \multicolumn{2}{c}{Óptimo ($n \leq 6$)} & --- \\
 5 & QAOA TSP & \multicolumn{2}{c}{empate óptimo vs NN+2-opt ($n=4$)} & Euclidean gap~$0$ \\
-6 & QSVM (umbral) & \textbf{+8.9 pp} ($n=150$) & $-6.7$ pp (clásico) & $+6.7$ pp vs RBF$^\ddagger$ ($n=50$) \\
+6 & QSVM (umbral) & \textbf{+8.9 pp} ($n=150$) & $-6.7$ pp (clásico) & $-3.8$ pp vs GB (clásico) \\
 7 & QAOA MDS ($p=3$) & \multicolumn{2}{c}{\textbf{Óptimo; $P(\text{opt})\approx 73\%$; patrón híbrido}} & NP-hard \\
 8 & OCSVM-ZZ & \textbf{+31.2 pp AUC} (\texttt{zz\_phase}) & clásico (inyectado) & clásico (moons/blobs) \\
 9 & QK-SVR lags & \textbf{$\Delta$MAE $-0.36$} (\texttt{zz\_lag}) & clásico (\texttt{skg\_speed}) & clásico (\texttt{sine}) \\
 \hline
 \end{tabular}
-\caption{Síntesis cuántico vs clásico. Negrita = ventaja demostrada (o empate óptimo en TSP). SKG/Telco en kernels: clásico. $^\ddagger$Telco $+6.7$~pp es vs.\ RBF en $n=50$ ---no ventaja operativa vs.\ GB/RF.}
+\caption{Síntesis cuántico vs clásico. Negrita = ventaja demostrada (o empate óptimo en TSP). En kernels, ventaja \textbf{solo} en el régimen cuántico-nativo (Liu); SKG/Telco: gana GB/RF (Telco $-3.8$~pp vs Gradient Boosting).}
 \label{tab:sintesis}
 \end{table}
 
