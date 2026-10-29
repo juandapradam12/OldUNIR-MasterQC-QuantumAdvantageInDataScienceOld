@@ -533,23 +533,6 @@ validar siempre frente al clásico.
 \end{columns}
 \end{frame}
 
-\begin{frame}{Camino a $\mathcal{Q}$: evidencia visual (NB08)}
-\begin{columns}[c]
-\begin{column}{0.48\textwidth}
-\centering
-\includegraphics[width=\linewidth,height=0.70\textheight,keepaspectratio]{08_test_cuanticidad_datasets.png}
-\end{column}
-\begin{column}{0.48\textwidth}
-\centering
-\includegraphics[width=\linewidth,height=0.70\textheight,keepaspectratio]{08_kernel_heatmaps_comparativa.png}
-\end{column}
-\end{columns}
-\vspace{0.2em}
-\centering\footnotesize
-$\mathcal{Q}>0$ \textbf{no} basta: hay que confirmar ventaja
-frente al mejor modelo \textbf{clásico} (p.\ ej.\ datos reales sin alineación).
-\end{frame}
-
 \begin{frame}{Conjetura 1 --- score $\mathcal{Q}(\mathcal{D})$}
 \begin{equation}
   \mathcal{Q}(\mathcal{D})=w_1\Delta A + w_2\hat{d}_F + w_3\Delta H,
@@ -579,15 +562,29 @@ Siempre contrastar con el \textbf{clásico}
 \end{columns}
 \end{frame}
 
-\begin{frame}{Validación P1 --- barrido sintético y correlaciones}
-\begin{columns}[c]
-\begin{column}{0.48\textwidth}
+\begin{frame}{Validación P1 --- barrido sintético ($\alpha$)}
+\begin{columns}[T]
+\begin{column}{0.62\textwidth}
 \centering
-\includegraphics[width=\linewidth,height=0.70\textheight,keepaspectratio]{08_barrido_sintetico_alpha.png}
+\includegraphics[width=\linewidth,height=0.78\textheight,keepaspectratio]{08_barrido_sintetico_alpha.png}
 \end{column}
-\begin{column}{0.48\textwidth}
-\centering
-\includegraphics[width=\linewidth,height=0.70\textheight,keepaspectratio]{08_correlacion_indicadores_ventaja.png}
+\begin{column}{0.36\textwidth}
+\begin{block}{Qué muestra}
+\begin{itemize}
+  \item Eje $x$: cuánta alineación
+        mapa--dato inyectamos ($\alpha$).
+  \item Suben juntos $\mathcal{Q}$
+        y la ventaja
+        \textbf{cuántico vs clásico}.
+  \item $\rho_S{=}0.833$ ($p{=}0.005$,
+        $n{=}9$): evidencia principal
+        de que el score \emph{anticipa}
+        la ventaja.
+\end{itemize}
+\end{block}
+{\footnotesize No usamos aquí el ranking
+engañoso sobre 3 datasets vs.\ un
+baseline clásico débil.}
 \end{column}
 \end{columns}
 \end{frame}
