@@ -459,50 +459,76 @@ Ventaja cuántica \textbf{condicionada}: aparece con alineación mapa--generador
 \end{frame}
 
 \begin{frame}{Camino a la Conjetura 1 (I) --- por qué un score}
+\begin{columns}[T]
+\begin{column}{0.48\textwidth}
 \begin{block}{Literatura}
 \begin{itemize}
-  \item Ventaja de kernel $\Rightarrow$ alineación con etiquetas
-        \textbf{y} geometría no aproximable clásicamente
-        \citep{huang2021, liu2021}.
-  \item Un solo indicador no basta:
-        $A(K_Q,K_y)>A(K_{cl},K_y)$ \textbf{y} $d_F$ grande
-        \citep{huang2021, thanasilp2022, schuld2021}.
-  \item Riesgo de \textbf{concentración}: el kernel Q puede perder señal
-        --- vigilar $H(K)$ \citep{thanasilp2022}.
+  \item Ventaja $\Rightarrow$ alineación con etiquetas
+        \textbf{y} geometría no aproximable
+        clásicamente \citep{huang2021, liu2021}
+  \item Un indicador no basta:
+        $A_Q>A_{cl}$ \textbf{y} $d_F$ grande
+        \citep{huang2021, thanasilp2022}
+  \item Riesgo: el kernel Q se
+        \textbf{concentra} --- mirar $H(K)$
+        \citep{thanasilp2022}
 \end{itemize}
 \end{block}
+\end{column}
+\begin{column}{0.48\textwidth}
 \begin{block}{Hecho empírico}
-Ventaja si el mapa que estructura el dato = mapa del modelo Q;
-si no, gana el stack clásico (GB/RF).
+Ventaja si mapa del dato = mapa del modelo Q.
+Si no: gana GB/RF
+{\footnotesize(Gradient Boosting / Random Forest)}.
 \end{block}
-\begin{block}{Qué medimos (NB08)}
-\begin{itemize}
-  \item $\Delta A$: \textquestiondown{}Q ve mejor las etiquetas que RBF?
-  \item $d_F$: \textquestiondown{}$K_Q$ es distinto del mejor kernel clásico?
-  \item $\Delta H$: \textquestiondown{}espectro rico o kernel ``plano''?
-\end{itemize}
+\vspace{0.4em}
+\begin{block}{Idea del score}
+Combinar tres preguntas geométricas
+en un solo número $\mathcal{Q}(\mathcal{D})$
+antes de entrenar el QSVM.
 \end{block}
+\end{column}
+\end{columns}
 \end{frame}
 
-\begin{frame}{Camino a la Conjetura 1 (II) --- hallazgos y propuesta}
-\begin{block}{Hallazgos}
-\begin{itemize}
-  \item $d_F$ rankea mejor; $\Delta A$ se degrada con PCA a 2 qubits.
-  \item Barrido en $\alpha$ (fracción de estructura ZZ, $n{=}9$):
-        controlamos cuánta alineación hay en el dato.
-  \item $\mathcal{Q}$ crece con $\alpha$ y predice ventaja:
-        $\rho_S{=}0.833$ ($p{=}0.005$) --- evidencia principal.
-  \item Si $\alpha \gtrsim 0.5$, el score anticipa ventaja positiva.
-\end{itemize}
+\begin{frame}{Camino a la Conjetura 1 (II) --- componentes y evidencia}
+\begin{block}{Interpretación de cada término}
+\renewcommand{\arraystretch}{1.15}
+{\small
+\begin{tabular}{@{}llp{5.8cm}@{}}
+\toprule
+\textbf{Término} & \textbf{Pregunta} & \textbf{Lectura} \\
+\midrule
+$\Delta A$ & \textquestiondown{}Q alinea mejor con $y$ que RBF?
+  & $>0$: más señal de clase en $K_Q$.
+    Se degrada con PCA agresivo (2 qubits). \\
+$\hat{d}_F$ & \textquestiondown{}$K_Q$ es distinto del clásico?
+  & Grande: geometría no aproximable por RBF
+    (mejor predictor en NB08). \\
+$\Delta H$ & \textquestiondown{}espectro rico o plano?
+  & Bajo: concentración / poca diversidad
+    (Thanasilp). \\
+\bottomrule
+\end{tabular}}
 \end{block}
+\vspace{0.35em}
+\begin{columns}[T]
+\begin{column}{0.52\textwidth}
+\begin{block}{Evidencia}
+Barrido $\alpha$ = fracción de estructura ZZ
+($n{=}9$): $\mathcal{Q}$ predice ventaja,
+$\rho_S{=}0.833$ ($p{=}0.005$).
+Si $\alpha\gtrsim 0.5$, ventaja positiva.
+\end{block}
+\end{column}
+\begin{column}{0.44\textwidth}
 \begin{block}{Propuesta}
-\[
-  \mathcal{Q}(\mathcal{D})=w_1\Delta A+w_2\hat{d}_F+w_3\Delta H
-\]
-Diagnóstico \emph{a priori} interpretable (cuello por componente).
-\textbf{No} oráculo de despliegue: cruzar siempre con GB/RF
-(y $\mathcal{Q}_{\mathrm{rob}}$).
+$\mathcal{Q}=w_1\Delta A+w_2\hat{d}_F+w_3\Delta H$.
+Diagnóstico, no oráculo:
+cruzar con GB/RF.
 \end{block}
+\end{column}
+\end{columns}
 \end{frame}
 
 \begin{frame}{Camino a $\mathcal{Q}$: evidencia visual (NB08)}
