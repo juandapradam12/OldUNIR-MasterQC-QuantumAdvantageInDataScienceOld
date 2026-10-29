@@ -883,105 +883,103 @@ def _synth_kernel_matrix(n: int, n_class0: int, same: float, diff: float, seed: 
 # ── Notebook 08 ───────────────────────────────────────────────────────────────
 
 def fig_08_test_cuanticidad():
+    """Mediciones de los factores de Q(D) = w1·ΔA + w2·d̂_F + w3·ΔH en 3 datasets."""
     results = RESULTS_08
     names = [r["dataset"] for r in results]
     colors = ["#7B2FBE", "#FF5722", "#1976D2"]
+    d_F_ref = max(r["d_F"] for r in results) or 1.0
+    d_as = [r["delta_A"] for r in results]
+    d_fs = [r["d_F"] for r in results]
+    d_fs_hat = [r["d_F"] / d_F_ref for r in results]
+    d_hs = [r["delta_H"] for r in results]
+    q_scores = [r["Q_score"] for r in results]
+
     fig, axes = plt.subplots(2, 3, figsize=(15, 9))
-    fig.suptitle("Tests de Cuanticidad — 3 datasets del TFM\n"
-                 "Geometría: Huang/Thanasilp/Liu · Ventaja = Δ operativo vs mejor clásico",
-                 fontsize=13, fontweight="bold", y=1.01)
+    fig.suptitle(
+        r"Factores de $\mathcal{Q}(\mathcal{D})$ en los 3 datasets del TFM"
+        "\n"
+        r"$\mathcal{Q}=w_1\Delta A + w_2\hat{d}_F + w_3\Delta H$"
+        "  ·  cuántico vs clásico (Huang / Liu / Thanasilp)",
+        fontsize=13, fontweight="bold", y=1.02,
+    )
     x_pos = np.arange(len(names))
     w = 0.35
-    ax = axes[0, 0]
-    a_qs = [r["A_Q"] for r in results]
-    a_cls = [r["A_cl"] for r in results]
-    bars1 = ax.bar(x_pos - w / 2, a_qs, w, label="$A(K_Q, K_y)$ (cuántico)",
-                   color=QUANTUM_COLOR, alpha=0.85)
-    bars2 = ax.bar(x_pos + w / 2, a_cls, w, label="$A(K_{cl}, K_y)$ (clásico)",
-                   color=CLASSICAL_COLOR, alpha=0.85)
-    ax.set_xticks(x_pos)
-    ax.set_xticklabels(names, rotation=12, ha="right")
-    ax.set_ylabel("Kernel Alignment")
-    ax.set_title("Kernel Alignment\n(Cortes 2012, Huang 2021)")
-    ax.legend(fontsize=8)
-    ax.set_ylim(0, max(a_qs + a_cls) * 1.3 + 0.01)
-    for b in bars1:
-        ax.text(b.get_x() + b.get_width() / 2, b.get_height() + 0.002,
-                f"{b.get_height():.3f}", ha="center", va="bottom", fontsize=8)
-    for b in bars2:
-        ax.text(b.get_x() + b.get_width() / 2, b.get_height() + 0.002,
-                f"{b.get_height():.3f}", ha="center", va="bottom", fontsize=8)
 
-    ax = axes[0, 1]
-    d_as = [r["delta_A"] for r in results]
+    # ── Fila 1: los tres factores de Q(D) ────────────────────────────────────
+    ax = axes[0, 0]
     bars = ax.bar(names, d_as, color=[QUANTUM_COLOR if d > 0 else "#C62828" for d in d_as],
                   alpha=0.85, edgecolor="white")
     ax.axhline(0, color="black", linewidth=0.8, linestyle="--")
-    ax.set_ylabel("$\\Delta A = A(K_Q) - A(K_{cl})$")
-    ax.set_title("Alineación cuántica vs clásica\n$\\Delta A > 0$ → cuántico más alineado")
+    ax.set_ylabel(r"$\Delta A = A(K_Q)-A(K_{cl})$")
+    ax.set_title(r"Factor 1 — $\Delta A$" "\n" "¿el cuántico ve mejor las clases?")
     ax.set_xticklabels(names, rotation=12, ha="right")
     for b, d in zip(bars, d_as):
         ax.text(b.get_x() + b.get_width() / 2, d + (0.001 if d >= 0 else -0.003),
                 f"{d:+.3f}", ha="center", va="bottom" if d >= 0 else "top",
                 fontsize=9, fontweight="bold")
 
+    ax = axes[0, 1]
+    bars = ax.bar(names, d_fs, color=colors, alpha=0.85, edgecolor="white")
+    ax.set_ylabel(r"$d_F=\|K_Q-K_{cl}\|_F/n$")
+    ax.set_title(r"Factor 2 — $d_F$ / $\hat{d}_F$" "\n" "¿geometría distinta del clásico?")
+    ax.set_xticklabels(names, rotation=12, ha="right")
+    for b, d, dh in zip(bars, d_fs, d_fs_hat):
+        ax.text(b.get_x() + b.get_width() / 2, d + 0.001,
+                f"{d:.3f}\n" + r"$(\hat{d}_F$" + f"={dh:.2f})",
+                ha="center", va="bottom", fontsize=8)
+
     ax = axes[0, 2]
-    ax.bar(x_pos - w / 2, [r["H_Q"] for r in results], w, label="$H(K_Q)$ (cuántico)",
-           color=QUANTUM_COLOR, alpha=0.85)
-    ax.bar(x_pos + w / 2, [r["H_cl"] for r in results], w, label="$H(K_{cl})$ (clásico)",
-           color=CLASSICAL_COLOR, alpha=0.85)
+    bars = ax.bar(names, d_hs, color=[QUANTUM_COLOR if d > 0 else "#C62828" for d in d_hs],
+                  alpha=0.85, edgecolor="white")
+    ax.axhline(0, color="black", linewidth=0.8, linestyle="--")
+    ax.set_ylabel(r"$\Delta H = H(K_Q)-H(K_{cl})$")
+    ax.set_title(r"Factor 3 — $\Delta H$" "\n" "¿diversidad o concentración?")
+    ax.set_xticklabels(names, rotation=12, ha="right")
+    for b, d in zip(bars, d_hs):
+        ax.text(b.get_x() + b.get_width() / 2, d + (0.02 if d >= 0 else -0.04),
+                f"{d:+.3f}", ha="center", va="bottom" if d >= 0 else "top",
+                fontsize=9, fontweight="bold")
+
+    # ── Fila 2: mediciones de apoyo + score compuesto ────────────────────────
+    ax = axes[1, 0]
+    a_qs = [r["A_Q"] for r in results]
+    a_cls = [r["A_cl"] for r in results]
+    bars1 = ax.bar(x_pos - w / 2, a_qs, w, label=r"$A(K_Q,K_y)$", color=QUANTUM_COLOR, alpha=0.85)
+    bars2 = ax.bar(x_pos + w / 2, a_cls, w, label=r"$A(K_{cl},K_y)$", color=CLASSICAL_COLOR, alpha=0.85)
+    ax.set_xticks(x_pos)
+    ax.set_xticklabels(names, rotation=12, ha="right")
+    ax.set_ylabel("Kernel Alignment")
+    ax.set_title("Alineaciones (base de " r"$\Delta A$" ")")
+    ax.legend(fontsize=8)
+    ax.set_ylim(0, max(a_qs + a_cls) * 1.35 + 0.01)
+    for b in list(bars1) + list(bars2):
+        ax.text(b.get_x() + b.get_width() / 2, b.get_height() + 0.002,
+                f"{b.get_height():.3f}", ha="center", va="bottom", fontsize=7)
+
+    ax = axes[1, 1]
+    h_qs = [r["H_Q"] for r in results]
+    h_cls = [r["H_cl"] for r in results]
+    ax.bar(x_pos - w / 2, h_qs, w, label=r"$H(K_Q)$", color=QUANTUM_COLOR, alpha=0.85)
+    ax.bar(x_pos + w / 2, h_cls, w, label=r"$H(K_{cl})$", color=CLASSICAL_COLOR, alpha=0.85)
     ax.set_xticks(x_pos)
     ax.set_xticklabels(names, rotation=12, ha="right")
     ax.set_ylabel("Entropía espectral H")
-    ax.set_title("Entropía Espectral\nH → 0: concentración (Thanasilp 2022)")
+    ax.set_title("Entropías (base de " r"$\Delta H$" ")")
     ax.legend(fontsize=8)
 
-    ax = axes[1, 0]
-    d_fs = [r["d_F"] for r in results]
-    bars = ax.bar(names, d_fs, color=colors, alpha=0.85, edgecolor="white")
-    ax.set_ylabel("$d_F = \\|K_Q - K_{cl}\\|_F / n$")
-    ax.set_title("Divergencia cuántico–clásica\n$d_F$ alto → geometría genuinamente distinta (Liu 2021)")
-    ax.set_xticklabels(names, rotation=12, ha="right")
-    for b, d in zip(bars, d_fs):
-        ax.text(b.get_x() + b.get_width() / 2, d + 0.001, f"{d:.3f}",
-                ha="center", va="bottom", fontsize=9)
-
-    ax = axes[1, 1]
-    gs = [r["g"] for r in results]
-    bars = ax.bar(names, gs, color=colors, alpha=0.85, edgecolor="white")
-    ax.set_ylabel("$g(K_Q, K_{cl})$")
-    ax.set_title("Diferencia geométrica\n$g$ alto → cota de ventaja activa (Huang 2021)")
-    ax.set_xticklabels(names, rotation=12, ha="right")
-    for b, v in zip(bars, gs):
-        ax.text(b.get_x() + b.get_width() / 2, v + max(gs) * 0.02, f"{v:.2f}",
-                ha="center", va="bottom", fontsize=9)
-
     ax = axes[1, 2]
-    advantages = [r["advantage_pp"] for r in results]
-    q_scores = [r["Q_score"] for r in results]
-    ax2 = ax.twinx()
-    bar_colors = [ADVANTAGE_COLOR if a > 0 else "#C62828" for a in advantages]
-    bars = ax.bar(names, advantages, color=bar_colors, alpha=0.55,
-                  label="Δ operativo (pp)")
-    ax2.plot(names, q_scores, "ko--", markersize=8, linewidth=2, label="Score Q(D)")
+    bars = ax.bar(names, q_scores,
+                  color=[ADVANTAGE_COLOR if q > 0 else "#C62828" for q in q_scores],
+                  alpha=0.85, edgecolor="white")
     ax.axhline(0, color="black", linewidth=0.8, linestyle="--")
-    ax.set_ylabel("Ventaja operativa vs mejor clásico (pp)", color="gray")
-    ax2.set_ylabel("Score Q(D)", color="black")
-    ax.set_title("Ventaja operativa vs Q(D)\nQ>0 ≠ ventaja operativa (caso SKG)")
+    ax.set_ylabel(r"Score $\mathcal{Q}(\mathcal{D})$")
+    ax.set_title(r"Score compuesto $\mathcal{Q}(\mathcal{D})$" "\n" "síntesis de los 3 factores")
     ax.set_xticklabels(names, rotation=12, ha="right")
-    for b, a, r in zip(bars, advantages, results):
-        tip = f"{a:+.1f}"
-        note = f"\n(vs RBF {r['advantage_pp_rbf']:+.1f})" if abs(
-            r["advantage_pp_rbf"] - a) > 0.5 else ""
-        ax.text(b.get_x() + b.get_width() / 2,
-                a + (1.2 if a >= 0 else -1.8),
-                tip + note, ha="center",
-                va="bottom" if a >= 0 else "top", fontsize=7.5, fontweight="bold")
-    ax.legend(loc="upper left", fontsize=8)
-    ax2.legend(loc="upper right", fontsize=8)
-    y_lo = min(advantages) - 8
-    y_hi = max(advantages) + 10
-    ax.set_ylim(y_lo, y_hi)
+    for b, q in zip(bars, q_scores):
+        ax.text(b.get_x() + b.get_width() / 2, q + (0.015 if q >= 0 else -0.025),
+                f"{q:+.3f}", ha="center", va="bottom" if q >= 0 else "top",
+                fontsize=10, fontweight="bold")
+
     plt.tight_layout()
     save_fig("08_test_cuanticidad_datasets.png")
 
@@ -1019,7 +1017,9 @@ def fig_08_kernel_heatmaps():
             (k_cl_s, f"{name}\n$K_{{cl}}$ (clásico)\nA={r['A_cl']:.3f}, H={r['H_cl']:.2f}",
              "Oranges", 0, 1),
             (k_diff_s,
-             f"{name}\n$K_Q - K_{{cl}}$\n$d_F$={r['d_F']:.3f} · Δ op={r['advantage_pp']:+.1f}pp",
+             f"{name}\n$K_Q - K_{{cl}}$\n"
+             f"$d_F$={r['d_F']:.3f}, $\\Delta A$={r['delta_A']:+.3f}, "
+             f"$\\Delta H$={r['delta_H']:+.3f}",
              "RdBu", None, None),
         ]
         for col_idx, (mat, title, cmap, vmin, vmax) in enumerate(panels):

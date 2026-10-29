@@ -589,40 +589,39 @@ el barrido $\alpha$ sí.}
 \end{columns}
 \end{frame}
 
-\begin{frame}{Validación P1 --- 3 datasets (lectura operativa)}
+\begin{frame}{Validación P1 --- factores de $\mathcal{Q}$ en 3 datasets}
 \begin{columns}[T]
-\begin{column}{0.58\textwidth}
+\begin{column}{0.62\textwidth}
 \centering
-\includegraphics[width=\linewidth,height=0.72\textheight,keepaspectratio]{08_test_cuanticidad_datasets.png}
+\includegraphics[width=\linewidth,height=0.78\textheight,keepaspectratio]{08_test_cuanticidad_datasets.png}
 \end{column}
-\begin{column}{0.40\textwidth}
-\begin{block}{Qué corregimos}
+\begin{column}{0.36\textwidth}
+\begin{block}{Qué se mide}
 {\footnotesize
+En cada dataset (nativo, SKG, Telco):
 \begin{itemize}
-  \item $\Delta$ = vs \textbf{mejor clásico}:
-        nativo $+13.3$, SKG $-6.0$,
-        Telco $-3.8$~pp.
-  \item Antes: SKG $+8.3$~pp vs RBF
-        (baseline débil) --- artefacto.
-  \item SKG: $\mathcal{Q}>0$ y
-        $\Delta_{\mathrm{op}}<0$
-        $\Rightarrow$ $\mathcal{Q}>0$
-        $\neq$ desplegar cuántico.
-\end{itemize}}
+  \item $\Delta A$ --- alineación
+  \item $\hat{d}_F$ --- geometría
+  \item $\Delta H$ --- diversidad /
+        concentración
+\end{itemize}
+y el score
+$\mathcal{Q}=w_1\Delta A+w_2\hat{d}_F+w_3\Delta H$.}
 \end{block}
-\vspace{0.3em}
-\begin{block}{Heatmaps}
+\vspace{0.4em}
+\begin{block}{Lectura}
 {\footnotesize
-Nativo: bloques fuertes en $K_Q$.\\
-SKG: geometría similar Q/C.\\
-Telco: clásico más marcado.\\
-$\Rightarrow$ correlato visual, no veredicto.}
+Mismo protocolo, tres regímenes
+distintos: los factores \emph{no}
+coinciden entre datasets.\\[0.3em]
+Diagnóstico \emph{a priori} ---
+no sustituye validar vs.\ el clásico.}
 \end{block}
 \end{column}
 \end{columns}
 \end{frame}
 
-\begin{frame}{Validación P1 --- geometría de kernel (3 datasets)}
+\begin{frame}{Validación P1 --- geometría de kernel (correlato visual)}
 \centering
 \includegraphics[width=0.92\linewidth,height=0.82\textheight,keepaspectratio]{08_kernel_heatmaps_comparativa.png}
 \end{frame}
