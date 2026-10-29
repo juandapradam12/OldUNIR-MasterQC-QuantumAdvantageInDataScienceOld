@@ -1,0 +1,11 @@
+dataset,strategy,Q_score,delta_Q,advantage_pp,delta_adv
+SKG Incidentes,Baseline,0.1629,0.0,8.3,0.0
+SKG Incidentes,ZZ-compatible,-0.2033,-0.3663,12.5,4.2
+SKG Incidentes,Rotación max-dF,0.1698,0.0069,0.0,-8.3
+SKG Incidentes,Re-uploading reps=3,0.2118,0.0489,16.7,8.3
+SKG Incidentes,Q-UMAP/MDS,0.0537,-0.1092,-8.3,-16.7
+Telco Churn,Baseline,-0.2277,0.0,0.0,0.0
+Telco Churn,ZZ-compatible,0.136,0.3636,4.2,4.2
+Telco Churn,Rotación max-dF,0.0956,0.3233,4.2,4.2
+Telco Churn,Re-uploading reps=3,0.1674,0.3951,4.2,4.2
+Telco Churn,Q-UMAP/MDS,-0.2481,-0.0204,4.2,4.2

@@ -1,0 +1,7 @@
+Dataset,QSVC,Mejor Clásico,Tipo,Ventaja (pp),veredicto
+"1. Cuántico-nativo
+(Liu 2021)",0.733,0.6,Sintético cuántico,13.3,VENTAJA Q
+"2. SKG
+(Incidentes Bogotá)",0.547,0.607,Datos reales SKG,-6.0,GANA CLÁSICO
+"3. Vida real
+(Telco Churn)",0.76,0.798,Datos reales externos,-3.8,GANA CLÁSICO

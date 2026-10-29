@@ -1,0 +1,4 @@
+dataset,A_Q,A_cl,delta_A,H_Q,H_cl,delta_H,d_F,g,Q_score,acc_QSVM,acc_SVM_RBF,advantage_pp_rbf,advantage_pp_op,fuente
+Cuántico-nativo,0.0181,0.0469,-0.0288,2.2749,2.2411,0.0339,0.3532,1541.657,0.2858,50.0,50.0,0.0,13.3,NB08 cell21 + SUMMARY_06/Caso1 para Δ_op
+SKG Incidentes,0.0396,0.0499,-0.0103,2.1545,1.9666,0.188,0.3689,2080.864,0.3523,62.5,54.2,8.3,-6.0,NB08 cell21 + SUMMARY_06/Caso1 para Δ_op
+Telco Churn,0.1899,0.1698,0.0201,2.3332,3.4646,-1.1313,0.3457,89.725,-0.0503,75.0,75.0,0.0,-3.8,NB08 cell21 + SUMMARY_06/Caso1 para Δ_op

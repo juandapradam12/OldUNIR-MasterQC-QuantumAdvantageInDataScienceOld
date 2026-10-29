@@ -51,6 +51,12 @@ POCs/data/input/*
 # Figuras del TFM versionadas en git (regenerar con POCs/scripts/generar_*.py)
 POCs/data/output/metrics/*.csv
 POCs/data/output/metrics/*.json
+# Excepción: CSV de integridad (salidas ancladas a notebooks; no alterar)
+!POCs/data/output/metrics/06_qkernel_resumen_3datasets.csv
+!POCs/data/output/metrics/08_test_cuanticidad_resultados.csv
+!POCs/data/output/metrics/08_barrido_sintetico_alpha.csv
+!POCs/data/output/metrics/09_mapeos_resultados.csv
+!POCs/data/output/metrics/README_PROCEDENCIA.md
 !POCs/data/**/.gitkeep
 !POCs/data/README.md
 
