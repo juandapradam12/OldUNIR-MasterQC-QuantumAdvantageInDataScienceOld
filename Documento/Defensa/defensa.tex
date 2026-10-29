@@ -494,53 +494,35 @@ $\rightarrow$ un número $\mathcal{Q}(\mathcal{D})$
 \end{frame}
 
 \begin{frame}{Camino a la Conjetura 1 (II) --- componentes y evidencia}
-\begin{block}{Interpretación de cada término}
-\renewcommand{\arraystretch}{1.25}
-{\small
-\begin{tabular}{@{}>{\raggedright\arraybackslash}p{1.6cm}
-                >{\raggedright\arraybackslash}p{4.2cm}
-                >{\raggedright\arraybackslash}p{5.4cm}@{}}
-\toprule
-\textbf{Término} & \textbf{Pregunta} & \textbf{Lectura general} \\
-\midrule
-$\Delta A$
-  & \textquestiondown{}El kernel \textbf{cuántico}
-    captura mejor la estructura de clase
-    que el \textbf{clásico}?
-  & $>0$: ventaja de alineación cuántica
-    frente a la clásica
-    \citep{cortes2012, huang2021}. \\[0.4em]
-$\hat{d}_F$
-  & \textquestiondown{}La geometría cuántica
-    es distinta de la clásica?
-  & Grande: el cuántico no es un
-    ``clásico disfrazado''
-    \citep{liu2021}. \\[0.4em]
-$\Delta H$
-  & \textquestiondown{}El kernel \textbf{cuántico}
-    es más ``rico'' que el \textbf{clásico},
-    o se ha aplanado?
-  & $\Delta H = H(K_Q)-H(K_{cl})$.
-    Bajo / negativo: concentración
-    (todas las similitudes se parecen)
-    --- poca información útil
-    \citep{thanasilp2022}. \\
-\bottomrule
-\end{tabular}}
-\end{block}
-\vspace{0.35em}
 \begin{columns}[T]
-\begin{column}{0.52\textwidth}
-\begin{block}{Evidencia (este TFM)}
-Barrido $\alpha$: controlamos cuánta
-alineación hay en el dato ($n{=}9$).
-$\mathcal{Q}$ predice ventaja cuántica:
-$\rho_S{=}0.833$ ($p{=}0.005$).
+\begin{column}{0.58\textwidth}
+\begin{block}{Interpretación (cuántico vs clásico)}
+{\footnotesize
+\begin{itemize}
+  \item $\Delta A$ --- \textquestiondown{}el cuántico ve mejor las clases?\\
+        $>0$: sí, más alineación con las etiquetas
+        que el clásico \citep{cortes2012, huang2021}.
+  \item $\hat{d}_F$ --- \textquestiondown{}la geometría es distinta?\\
+        Grande: el cuántico no es un clásico
+        disfrazado \citep{liu2021}.
+  \item $\Delta H$ --- \textquestiondown{}el kernel cuántico aporta
+        diversidad o se ha ``aplanado''?\\
+        Bajo/negativo: todas las similitudes se parecen
+        (concentración) $\Rightarrow$ poca info útil
+        \citep{thanasilp2022}.
+\end{itemize}}
 \end{block}
 \end{column}
-\begin{column}{0.44\textwidth}
+\begin{column}{0.40\textwidth}
+\begin{block}{Evidencia (TFM)}
+Barrido $\alpha$: cuánta alineación
+hay en el dato ($n{=}9$).\\
+$\mathcal{Q}$ predice ventaja:
+$\rho_S{=}0.833$ ($p{=}0.005$).
+\end{block}
+\vspace{0.5em}
 \begin{block}{Propuesta}
-$\mathcal{Q}=w_1\Delta A+w_2\hat{d}_F+w_3\Delta H$.
+$\mathcal{Q}=w_1\Delta A+w_2\hat{d}_F+w_3\Delta H$.\\[0.3em]
 Diagnóstico \emph{a priori}, no oráculo:
 validar siempre frente al clásico.
 \end{block}
