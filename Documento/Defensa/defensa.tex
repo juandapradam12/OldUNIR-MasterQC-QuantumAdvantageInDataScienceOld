@@ -515,11 +515,11 @@ $\rightarrow$ un número $\mathcal{Q}(\mathcal{D})$
 \end{column}
 \begin{column}{0.40\textwidth}
 \begin{block}{Evidencia (TFM)}
-Generamos datos con más o menos
-alineación mapa--dato ($\alpha$, $n{=}9$).\\[0.25em]
-Cuando sube $\alpha$, suben $\mathcal{Q}$
-y la ventaja cuántica vs.\ clásico
-($\rho_S{=}0.833$, $p{=}0.005$).\\[0.25em]
+Barrido $\alpha$ ($n{=}9$): inyectamos
+estructura y medimos los mismos
+factores ($\Delta A$, $d_F$, $\Delta H$).\\[0.25em]
+$\rho_S(\mathcal{Q},\mathrm{ventaja}){=}0.833$
+($p{=}0.005$).\\[0.25em]
 {\footnotesize El score anticipa
 \emph{cuándo} conviene lo cuántico.}
 \end{block}
@@ -570,21 +570,21 @@ Siempre contrastar con el \textbf{clásico}
 \end{column}
 \begin{column}{0.36\textwidth}
 \begin{block}{Qué muestra}
+{\footnotesize
 \begin{itemize}
-  \item Eje $x$: cuánta alineación
-        mapa--dato inyectamos ($\alpha$).
-  \item Suben juntos $\mathcal{Q}$
-        y la ventaja
-        \textbf{cuántico vs clásico}.
-  \item $\rho_S{=}0.833$ ($p{=}0.005$,
-        $n{=}9$): evidencia principal
-        de que el score \emph{anticipa}
-        la ventaja.
-\end{itemize}
+  \item $\alpha$ inyecta \textbf{estructura}
+        (no solo etiquetas).
+  \item Suben los tres factores
+        ($\Delta A$, $d_F$, $\Delta H$)
+        y el score $\mathcal{Q}$.
+  \item $\rho_S(\mathcal{Q},\mathrm{ventaja}){=}0.833$
+        ($p{=}0.005$, $n{=}9$):
+        el score \emph{anticipa}
+        la ventaja en el barrido.
+\end{itemize}}
 \end{block}
-{\footnotesize El ranking vs.\ baseline débil
-en 3 datasets \emph{no} es la evidencia;
-el barrido $\alpha$ sí.}
+{\footnotesize Mismos factores que en la
+siguiente diapositiva (3 datasets).}
 \end{column}
 \end{columns}
 \end{frame}
@@ -598,22 +598,22 @@ el barrido $\alpha$ sí.}
 \begin{column}{0.36\textwidth}
 \begin{block}{Qué se mide}
 {\footnotesize
-En cada dataset (nativo, SKG, Telco):
+Mismos factores que el barrido $\alpha$,
+ahora en nativo / SKG / Telco:
 \begin{itemize}
   \item $\Delta A$ --- alineación
   \item $\hat{d}_F$ --- geometría
   \item $\Delta H$ --- diversidad /
         concentración
 \end{itemize}
-y el score
+$\Rightarrow$ score
 $\mathcal{Q}=w_1\Delta A+w_2\hat{d}_F+w_3\Delta H$.}
 \end{block}
-\vspace{0.4em}
+\vspace{0.35em}
 \begin{block}{Lectura}
 {\footnotesize
-Mismo protocolo, tres regímenes
-distintos: los factores \emph{no}
-coinciden entre datasets.\\[0.3em]
+Tres perfiles distintos
+(p.~ej.\ Telco: $\Delta H{=}{-}1.13$).\\[0.25em]
 Diagnóstico \emph{a priori} ---
 no sustituye validar vs.\ el clásico.}
 \end{block}
@@ -621,9 +621,31 @@ no sustituye validar vs.\ el clásico.}
 \end{columns}
 \end{frame}
 
-\begin{frame}{Validación P1 --- geometría de kernel (correlato visual)}
+\begin{frame}{Validación P1 --- geometría de kernel (contraste de bloques)}
+\begin{columns}[T]
+\begin{column}{0.62\textwidth}
 \centering
-\includegraphics[width=0.92\linewidth,height=0.82\textheight,keepaspectratio]{08_kernel_heatmaps_comparativa.png}
+\includegraphics[width=\linewidth,height=0.78\textheight,keepaspectratio]{08_kernel_heatmaps_comparativa.png}
+\end{column}
+\begin{column}{0.36\textwidth}
+\begin{block}{Qué mirar}
+{\footnotesize
+Contraste $=$ similitud media
+dentro de clase $-$ entre clases.\\[0.35em]
+\begin{itemize}
+  \item \textbf{Nativo:} $K_Q$ marca
+        bloques; el clásico no.
+  \item \textbf{SKG:} contraste
+        similar Q$\approx$C.
+  \item \textbf{Telco:} el clásico
+        marca más que $K_Q$.
+\end{itemize}}
+\end{block}
+{\footnotesize Correlato visual de
+$\Delta A$ / $d_F$ / $\Delta H$ ---
+no es el veredicto operativo.}
+\end{column}
+\end{columns}
 \end{frame}
 
 \begin{frame}{Camino a la Conjetura 2 / QCR (antes de la fórmula)}

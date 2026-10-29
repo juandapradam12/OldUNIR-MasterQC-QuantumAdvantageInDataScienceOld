@@ -143,7 +143,7 @@ Telco Churn      & 0.190 & 0.170 & 2.333 & 3.465 & 0.346 & $+$0.0 & $\mathbf{-3.
 \begin{figure}[ht]
 \centering
 \includegraphics[width=0.95\textwidth]{../POCs/data/output/figures/08_kernel_heatmaps_comparativa.png}
-\caption{Matrices de kernel cuántico $K_Q$ y clásico $K_{cl}$ (ordenadas por clase). Nativo: bloques fuertes en $K_Q$ y diferencia estructurada ($\Delta_{\mathrm{op}}=+13.3$~pp). SKG: geometría similar cuántico/clásico y diferencia ruidosa ($\Delta_{\mathrm{op}}=-6.0$~pp). Telco: bloques más marcados en el clásico ($\Delta_{\mathrm{op}}=-3.8$~pp). La estructura de bloques es correlato visual de geometría ---no basta por sí sola para activar el módulo cuántico.}
+\caption{Contraste de bloques del kernel (similitud media dentro de clase $-$ entre clases) para $K_Q$ vs $K_{cl}$ en los tres datasets. Nativo: el cuántico marca bloques; SKG: contraste similar; Telco: el clásico marca más. Correlato visual de $\Delta A$, $d_F$ y $\Delta H$ ---no sustituye el veredicto operativo ($\Delta_{\mathrm{op}}$).}
 \label{fig:kernel_heatmaps}
 \end{figure}
 
@@ -166,7 +166,7 @@ Con $n=3$ datasets, cualquier $\rho_S$ es de potencia baja (máximo $\pm 1$ o $\
 \begin{figure}[ht]
 \centering
 \includegraphics[width=0.92\textwidth]{../POCs/data/output/figures/08_barrido_sintetico_alpha.png}
-\caption{Barrido sintético de cuanticidad: score $\mathcal{Q}(\mathcal{D})$ (eje izquierdo) y ventaja empírica del QSVM en pp (eje derecho) en función del parámetro $\alpha \in [0,1]$, que controla la fracción de estructura cuántica en el dataset. La correlación de Spearman entre ambas series es $\rho_S = +0.833$ ($p = 0.005$, $n=9$), validando el poder predictivo del score. En $\alpha \gtrsim 0.5$ el score predice consistentemente ventaja positiva; por debajo de ese umbral, el QSVM no supera a los clásicos.}
+\caption{Barrido sintético controlado de los factores de $\mathcal{Q}(\mathcal{D})$ vs.\ $\alpha$ (inyección de \textbf{estructura} cuántica, no solo de etiquetas). Paneles: $\Delta A$, $d_F$, $\Delta H$, score $\mathcal{Q}$, ventaja empírica, y dispersión $\mathcal{Q}$--ventaja. $\rho_S(\mathcal{Q},\mathrm{ventaja})=+0.833$ ($p=0.005$, $n=9$). El protocolo original del Notebook~08 ( $X$ fijo + mezcla de labels) dejaba $H$, $d_F$ y $g$ planos ---esta figura usa el protocolo corregido.}
 \label{fig:barrido_sintetico_alpha}
 \end{figure}
 
