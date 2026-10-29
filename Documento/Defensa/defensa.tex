@@ -477,55 +477,60 @@ Ventaja cuántica \textbf{condicionada}: aparece con alineación mapa--generador
 \end{column}
 \begin{column}{0.48\textwidth}
 \begin{block}{Hecho empírico}
-Ventaja si mapa del dato = mapa del modelo Q.
-Si no: gana GB/RF
-{\footnotesize(Gradient Boosting / Random Forest)}.
+Ventaja si el mapa que estructura el dato
+coincide con el del modelo \textbf{cuántico}.
+Si no: gana el \textbf{clásico}.
 \end{block}
 \vspace{0.4em}
 \begin{block}{Idea del score}
-Combinar tres preguntas geométricas
-en un solo número $\mathcal{Q}(\mathcal{D})$
-antes de entrenar el QSVM.
+Tres preguntas geométricas $\rightarrow$
+un número $\mathcal{Q}(\mathcal{D})$
+\emph{antes} de entrenar.
 \end{block}
 \end{column}
 \end{columns}
 \end{frame}
 
 \begin{frame}{Camino a la Conjetura 1 (II) --- componentes y evidencia}
-\begin{block}{Interpretación de cada término}
-\renewcommand{\arraystretch}{1.15}
+\begin{block}{Interpretación (anclada en literatura)}
+\renewcommand{\arraystretch}{1.2}
 {\small
-\begin{tabular}{@{}llp{5.8cm}@{}}
+\begin{tabular}{@{}llp{6.0cm}@{}}
 \toprule
 \textbf{Término} & \textbf{Pregunta} & \textbf{Lectura} \\
 \midrule
-$\Delta A$ & \textquestiondown{}Q alinea mejor con $y$ que RBF?
-  & $>0$: más señal de clase en $K_Q$.
-    Se degrada con PCA agresivo (2 qubits). \\
-$\hat{d}_F$ & \textquestiondown{}$K_Q$ es distinto del clásico?
-  & Grande: geometría no aproximable por RBF
-    (mejor predictor en NB08). \\
-$\Delta H$ & \textquestiondown{}espectro rico o plano?
+$\Delta A$ &
+\textquestiondown{}el kernel \textbf{cuántico} alinea mejor con $y$
+que el \textbf{clásico}?
+  & $>0$: más señal de clase en $K_Q$
+    \citep{cortes2012, huang2021}. \\
+$\hat{d}_F$ &
+\textquestiondown{}$K_Q$ es distinto del mejor kernel
+\textbf{clásico}?
+  & Grande: geometría no aproximable
+    clásicamente \citep{liu2021}. \\
+$\Delta H$ &
+\textquestiondown{}espectro rico o plano?
   & Bajo: concentración / poca diversidad
-    (Thanasilp). \\
+    \citep{thanasilp2022}. \\
 \bottomrule
 \end{tabular}}
 \end{block}
-\vspace{0.35em}
+\vspace{0.3em}
 \begin{columns}[T]
 \begin{column}{0.52\textwidth}
-\begin{block}{Evidencia}
-Barrido $\alpha$ = fracción de estructura ZZ
-($n{=}9$): $\mathcal{Q}$ predice ventaja,
+\begin{block}{Evidencia (este TFM)}
+Barrido $\alpha$ (cuánta estructura alineada
+hay en el dato, $n{=}9$):
+$\mathcal{Q}$ predice ventaja cuántica,
 $\rho_S{=}0.833$ ($p{=}0.005$).
-Si $\alpha\gtrsim 0.5$, ventaja positiva.
 \end{block}
 \end{column}
 \begin{column}{0.44\textwidth}
 \begin{block}{Propuesta}
 $\mathcal{Q}=w_1\Delta A+w_2\hat{d}_F+w_3\Delta H$.
-Diagnóstico, no oráculo:
-cruzar con GB/RF.
+Diagnóstico \emph{a priori}, no oráculo:
+cruzar siempre vs.\ el mejor \textbf{clásico}.
 \end{block}
 \end{column}
 \end{columns}
@@ -544,7 +549,8 @@ cruzar con GB/RF.
 \end{columns}
 \vspace{0.2em}
 \centering\footnotesize
-$\mathcal{Q}>0$ vs.\ RBF en SKG \textbf{no} implica compatibilidad operativa (GB/RF ganan; $\mathcal{Q}_{\mathrm{rob}}$: \texttt{classical}).
+$\mathcal{Q}>0$ vs.\ un baseline clásico débil \textbf{no} implica ventaja operativa
+(en SKG gana el clásico fuerte; $\mathcal{Q}_{\mathrm{rob}}$: \texttt{classical}).
 \end{frame}
 
 \begin{frame}{Conjetura 1 --- score $\mathcal{Q}(\mathcal{D})$}
@@ -554,7 +560,7 @@ $\mathcal{Q}>0$ vs.\ RBF en SKG \textbf{no} implica compatibilidad operativa (GB
   \label{eq:Q}
 \end{equation}
 {\footnotesize
-$\Delta A$: señal vs.\ etiquetas;\quad
+$\Delta A$: cuántico vs clásico en etiquetas;\quad
 $\hat{d}_F$: no-aproximabilidad clásica;\quad
 $\Delta H$: riqueza espectral.}
 
@@ -567,8 +573,10 @@ Diagnóstico \emph{a priori} útil en barrido sintético ($\rho_S{=}0.833$).
 \end{column}
 \begin{column}{0.48\textwidth}
 \begin{alertblock}{Qué no}
-$\mathcal{Q}>0$ vs.\ RBF $\neq$ ``desplegar QSVM'' (contraejemplo SKG).
-Cruzar siempre con GB/RF y $\mathcal{Q}_{\mathrm{rob}}$.
+$\mathcal{Q}>0$ $\neq$ ``desplegar cuántico''
+(contraejemplo: datos reales sin alineación).
+Cruzar siempre vs.\ el mejor clásico
+(y $\mathcal{Q}_{\mathrm{rob}}$).
 \end{alertblock}
 \end{column}
 \end{columns}
@@ -806,6 +814,9 @@ ZZ es el mapa del corpus principal; \textbf{no} el único admisible.
 \begin{thebibliography}{99}
 \bibitem[Biamonte et~al.(2017)]{biamonte2017}
 Biamonte, J.\ et~al. (2017). \emph{Quantum machine learning}. Nature, 549, 195--202.
+
+\bibitem[Cortes et~al.(2012)]{cortes2012}
+Cortes, C., Mohri, M., \& Rostamizadeh, A. (2012). \emph{Algorithms for learning kernels based on centered alignment}. JMLR.
 
 \bibitem[Cerezo et~al.(2021)]{cerezo2021}
 Cerezo, M.\ et~al. (2021). \emph{Variational quantum algorithms}. Nat.\ Rev.\ Phys., 3, 625--644.
