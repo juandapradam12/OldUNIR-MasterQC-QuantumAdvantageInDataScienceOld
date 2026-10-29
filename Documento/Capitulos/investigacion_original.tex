@@ -159,13 +159,15 @@ El análisis individual de los componentes revela matices importantes:
 \paragraph{Caveat estadístico.}
 Con $n=3$ datasets, cualquier $\rho_S$ es de potencia baja (máximo $\pm 1$ o $\pm 0.5$ con empates). El $\rho_S=+0.833$ del barrido es $\rho(\alpha,\Delta A)$, no $\rho(\mathcal{Q},\mathrm{ventaja})$. La validación sobre más datasets y un barrido structure-aware (donde $d_F$/$H$ también varíen) es trabajo futuro explícito (Capítulo~\ref{cap:futuro}).
 
-\paragraph{Debilidades metodológicas expuestas (criterio de esta revisión).}
+\paragraph{Debilidades metodológicas expuestas (integridad de resultados).}
+Un buen TFM se discute desde lo medido, no desde lo deseable. Aquí se exponen límites \textbf{sin alterar cifras}:
 \begin{itemize}
     \item Barrido $\alpha$ con $X$ fijo: $d_F$, $H$ y $g$ constantes ---no valida monotonía de todos los factores de $\mathcal{Q}$.
-    \item Ventaja NB08 vs.\ RBF en SKG ($+8.3$~pp) es artefacto de baseline débil; el $\Delta_{\mathrm{op}}$ viene de otro protocolo (Caso~1 / NB06).
+    \item Ventaja NB08 vs.\ RBF en SKG ($+8.3$~pp) es artefacto de baseline débil; el $\Delta_{\mathrm{op}}$ viene de otro protocolo (Caso~1 / NB06) y \textbf{no} se mezcla en la misma $\rho$.
     \item $n=3$ no sostiene correlaciones fuertes entre $\mathcal{Q}$ y ventaja operativa.
     \item No hay dumps de $K$ en artefactos: no se inventan heatmaps.
-    \item Series de rotación NB09: la figura en disco es la exportada por el notebook; el script de regeneración \textbf{no} debe sustituirlas por curvas proxy.
+    \item Series de rotación NB09: PNG del notebook; no regenerar con curvas proxy.
+    \item Componentes $\Delta A$/$d_F$/$\Delta H$ \emph{post} re-uploading no están en el log NB09: no se inventan (solo $Q$ y Adv post están verificados).
 \end{itemize}
 
 \begin{figure}[ht]

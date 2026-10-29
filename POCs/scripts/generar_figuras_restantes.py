@@ -1,6 +1,11 @@
 """
 Genera figuras restantes del TFM extraídas de notebooks 01, 06, 07, 08 y 09.
-Usa datos embebidos / fallbacks de salidas de notebook; evita simulaciones cuánticas largas.
+
+Criterio de integridad (no negociable):
+  - Alterar resultados o inventar datos es inadmisible.
+  - Preferir CSV en POCs/data/output/metrics/ (salida real de notebooks).
+  - Fallbacks embebidos = transcripción del log del notebook, no “embellecidos”.
+  - Si un artefacto falta (p.ej. matrices K, series θ), omitir — no sintetizar.
 """
 from __future__ import annotations
 
@@ -22,6 +27,7 @@ warnings.filterwarnings("ignore")
 OUT = Path(__file__).resolve().parents[1] / "data" / "output" / "figures"
 OUT_METRICS = Path(__file__).resolve().parents[1] / "data" / "output" / "metrics"
 OUT.mkdir(parents=True, exist_ok=True)
+OUT_METRICS.mkdir(parents=True, exist_ok=True)
 
 QUANTUM_COLOR = "#7B2FBE"
 CLASSICAL_COLOR = "#1976D2"
@@ -116,45 +122,58 @@ SCALE_DF_06 = pd.DataFrame([
 ])
 
 # Baseline = mejor clásico operativo (GB/RF en datos reales; SVM-poly en Liu).
-# Telco: QSVM 76.0% vs GB 79.8% (Caso 1 / evaluación.tex) — NO el artefacto
-# n=50 vs RBF (+6.7 pp) que antes contaminaba esta figura con números de Liu.
-SUMMARY_06 = pd.DataFrame([
+# Fuente preferente: metrics/06_qkernel_resumen_3datasets.csv
+_SUMMARY_06_FALLBACK = [
     {"Dataset": "1. Cuántico-nativo\n(Liu 2021)", "QSVC": 0.733, "Mejor Clásico": 0.600,
      "veredicto": "VENTAJA Q"},
     {"Dataset": "2. SKG\n(Incidentes Bogotá)", "QSVC": 0.547, "Mejor Clásico": 0.607,
      "veredicto": "GANA CLÁSICO"},
     {"Dataset": "3. Vida real\n(Telco Churn)", "QSVC": 0.760, "Mejor Clásico": 0.798,
      "veredicto": "GANA CLÁSICO"},
-])
-SUMMARY_06["Ventaja (pp)"] = (SUMMARY_06["QSVC"] - SUMMARY_06["Mejor Clásico"]) * 100
+]
+_summary_path = OUT_METRICS / "06_qkernel_resumen_3datasets.csv"
+if _summary_path.exists():
+    SUMMARY_06 = pd.read_csv(_summary_path)
+    if "Ventaja (pp)" not in SUMMARY_06.columns:
+        SUMMARY_06["Ventaja (pp)"] = (SUMMARY_06["QSVC"] - SUMMARY_06["Mejor Clásico"]) * 100
+else:
+    SUMMARY_06 = pd.DataFrame(_SUMMARY_06_FALLBACK)
+    SUMMARY_06["Ventaja (pp)"] = (SUMMARY_06["QSVC"] - SUMMARY_06["Mejor Clásico"]) * 100
 
-# Geometric indicators + ventaja vs RBF = salida real Notebook 08 (no mezclar
-# aquí el Δ operativo de NB06/Caso 1: eso vive en SUMMARY_06 / OPERATIONAL_08).
-RESULTS_08 = [
+# NB08 indicadores: CSV preferente (transcripción del log del notebook).
+# advantage_pp aquí = Δ vs RBF (NB08). Δ_op vive aparte.
+_RESULTS_08_FALLBACK = [
     {"dataset": "Cuántico-nativo", "A_Q": 0.0181, "A_cl": 0.0469, "delta_A": -0.0288,
      "H_Q": 2.2749, "H_cl": 2.2411, "delta_H": 0.0339, "d_F": 0.3532, "g": 1541.657,
-     "Q_score": 0.2858, "advantage_pp": 0.0},
+     "Q_score": 0.2858, "advantage_pp_rbf": 0.0, "advantage_pp_op": 13.3},
     {"dataset": "SKG Incidentes", "A_Q": 0.0396, "A_cl": 0.0499, "delta_A": -0.0103,
      "H_Q": 2.1545, "H_cl": 1.9666, "delta_H": 0.1880, "d_F": 0.3689, "g": 2080.864,
-     "Q_score": 0.3523, "advantage_pp": 8.3},  # vs RBF NB08; artefacto de baseline débil
+     "Q_score": 0.3523, "advantage_pp_rbf": 8.3, "advantage_pp_op": -6.0},
     {"dataset": "Telco Churn", "A_Q": 0.1899, "A_cl": 0.1698, "delta_A": 0.0201,
      "H_Q": 2.3332, "H_cl": 3.4646, "delta_H": -1.1313, "d_F": 0.3457, "g": 89.725,
-     "Q_score": -0.0503, "advantage_pp": 0.0},
+     "Q_score": -0.0503, "advantage_pp_rbf": 0.0, "advantage_pp_op": -3.8},
 ]
-# Δ operativo (mejor clásico) — fuente distinta: SUMMARY_06 / métricas Caso 1.
-OPERATIONAL_08 = {
-    "Cuántico-nativo": 13.3,
-    "SKG Incidentes": -6.0,
-    "Telco Churn": -3.8,
-}
+_df08 = load_or_fallback(OUT_METRICS / "08_test_cuanticidad_resultados.csv", _RESULTS_08_FALLBACK)
+RESULTS_08 = []
+OPERATIONAL_08 = {}
+for _, row in _df08.iterrows():
+    adv_rbf = float(row.get("advantage_pp_rbf", row.get("advantage_pp", 0.0)))
+    adv_op = float(row["advantage_pp_op"]) if "advantage_pp_op" in row and pd.notna(row["advantage_pp_op"]) else None
+    RESULTS_08.append({
+        "dataset": row["dataset"],
+        "A_Q": float(row["A_Q"]), "A_cl": float(row["A_cl"]), "delta_A": float(row["delta_A"]),
+        "H_Q": float(row["H_Q"]), "H_cl": float(row["H_cl"]), "delta_H": float(row["delta_H"]),
+        "d_F": float(row["d_F"]), "g": float(row["g"]), "Q_score": float(row["Q_score"]),
+        "advantage_pp": adv_rbf,  # canónico NB08 = vs RBF
+    })
+    if adv_op is not None:
+        OPERATIONAL_08[row["dataset"]] = adv_op
+if not OPERATIONAL_08:
+    OPERATIONAL_08 = {"Cuántico-nativo": 13.3, "SKG Incidentes": -6.0, "Telco Churn": -3.8}
 
-# Barrido α REAL del Notebook 08 (salida ejecutada; no interpolar a mano).
-# Protocolo NB08: X fijo en [-π,π]^2 + mezcla estocástica de etiquetas clásicas↔cuánticas.
-# Consecuencia: K_Q y K_RBF (y por tanto H_Q, d_F, g) son CONSTANTES en α;
-# solo A_Q, A_cl, ΔA y la ventaja supervisada cambian con las etiquetas.
-# ρ_S(α, ΔA)=+0.833 (p=0.005). ρ_S(α, ventaja)≈0.339 (n.s.).
-# NO afirmar ρ(Q, ventaja)=0.833: ese número es ρ(α, ΔA), no Q↔ventaja.
-DF_SWEEP_08 = pd.DataFrame([
+# Barrido α REAL del Notebook 08 (CSV / log). X fijo ⇒ d_F/H/g constantes.
+# ρ_S(α, ΔA)=+0.833. NO afirmar ρ(Q, ventaja)=0.833.
+DF_SWEEP_08 = load_or_fallback(OUT_METRICS / "08_barrido_sintetico_alpha.csv", [
     {"alpha": 0.00, "A_Q": 0.0174, "A_cl": 0.3909, "delta_A": -0.3735,
      "H_Q": 2.3046, "d_F": 0.3591, "g": 2380.246, "advantage_pp": -40.0},
     {"alpha": 0.10, "A_Q": 0.0179, "A_cl": 0.3317, "delta_A": -0.3138,
@@ -174,8 +193,6 @@ DF_SWEEP_08 = pd.DataFrame([
     {"alpha": 1.00, "A_Q": 0.0101, "A_cl": 0.0104, "delta_A": -0.0003,
      "H_Q": 2.3046, "d_F": 0.3591, "g": 2380.246, "advantage_pp": -3.3},
 ])
-# H_cl / ΔH / Q_score del barrido NO están en el log impreso del notebook
-# (solo H_Q, d_F, g, ΔA, Adv). No inventamos ΔH ni Q monótono artificial.
 
 BASELINE_09 = {
     "SKG Incidentes": {"Q_score": 0.1629, "advantage_pp": 8.3, "delta_A": -0.0103,
@@ -184,25 +201,42 @@ BASELINE_09 = {
                     "d_F": 0.3457, "delta_H": -1.1313},
 }
 
-ALL_RESULTS_09 = {
-    "SKG Incidentes": [
-        {"strategy": "ZZ-compatible", "Q_score": -0.2033, "advantage_pp": 12.5},
-        {"strategy": "Rotación max-dF", "Q_score": 0.1698, "advantage_pp": 0.0},
-        {"strategy": "Re-uploading reps=3", "Q_score": 0.2118, "advantage_pp": 16.7},
-        {"strategy": "Q-UMAP/MDS", "Q_score": 0.0537, "advantage_pp": -8.3},
-    ],
-    "Telco Churn": [
-        {"strategy": "ZZ-compatible", "Q_score": 0.1360, "advantage_pp": 4.2},
-        {"strategy": "Rotación max-dF", "Q_score": 0.0956, "advantage_pp": 4.2},
-        {"strategy": "Re-uploading reps=3", "Q_score": 0.1674, "advantage_pp": 4.2},
-        {"strategy": "Q-UMAP/MDS", "Q_score": -0.2481, "advantage_pp": 4.2},
-    ],
-}
+# NB09 mapeos: CSV preferente (tabla resumen del notebook).
+_df09 = load_or_fallback(OUT_METRICS / "09_mapeos_resultados.csv", [])
+ALL_RESULTS_09: dict[str, list] = {"SKG Incidentes": [], "Telco Churn": []}
+if len(_df09):
+    for ds in ALL_RESULTS_09:
+        sub = _df09[(_df09["dataset"] == ds) & (_df09["strategy"] != "Baseline")]
+        ALL_RESULTS_09[ds] = [
+            {"strategy": r["strategy"], "Q_score": float(r["Q_score"]),
+             "advantage_pp": float(r["advantage_pp"])}
+            for _, r in sub.iterrows()
+        ]
+        base_row = _df09[(_df09["dataset"] == ds) & (_df09["strategy"] == "Baseline")]
+        if len(base_row):
+            BASELINE_09[ds]["Q_score"] = float(base_row.iloc[0]["Q_score"])
+            BASELINE_09[ds]["advantage_pp"] = float(base_row.iloc[0]["advantage_pp"])
+else:
+    ALL_RESULTS_09 = {
+        "SKG Incidentes": [
+            {"strategy": "ZZ-compatible", "Q_score": -0.2033, "advantage_pp": 12.5},
+            {"strategy": "Rotación max-dF", "Q_score": 0.1698, "advantage_pp": 0.0},
+            {"strategy": "Re-uploading reps=3", "Q_score": 0.2118, "advantage_pp": 16.7},
+            {"strategy": "Q-UMAP/MDS", "Q_score": 0.0537, "advantage_pp": -8.3},
+        ],
+        "Telco Churn": [
+            {"strategy": "ZZ-compatible", "Q_score": 0.1360, "advantage_pp": 4.2},
+            {"strategy": "Rotación max-dF", "Q_score": 0.0956, "advantage_pp": 4.2},
+            {"strategy": "Re-uploading reps=3", "Q_score": 0.1674, "advantage_pp": 4.2},
+            {"strategy": "Q-UMAP/MDS", "Q_score": -0.2481, "advantage_pp": 4.2},
+        ],
+    }
 
+# Post-QCR Telco: SOLO Q y Adv están en el log NB09.
+# ΔA/d_F/ΔH post NO se imprimieron → NO inventar (antes se mezclaron cifras 4Q).
 QCR_TELCO = {
     "baseline": BASELINE_09["Telco Churn"],
-    "post_qcr": {"delta_A": 0.0551, "d_F": 0.2344, "delta_H": -0.8232,
-                 "Q_score": 0.1674, "advantage_pp": 4.2},
+    "post_qcr": {"Q_score": 0.1674, "advantage_pp": 4.2},  # re-uploading reps=3
     "bottleneck": "delta_H",
 }
 
@@ -1174,11 +1208,17 @@ def fig_09_barrido_rotaciones():
 
 
 def fig_09_qcr_framework():
-    """Diagnóstico QCR: SKG NO es cuántico-nativo; Q>0 vs RBF ≠ ventaja operativa."""
+    """Diagnóstico QCR con SOLO cifras verificadas en el log NB09.
+
+    Importante: los componentes ΔA/d_F/ΔH *post* re-uploading NO están en el
+    log impreso. Una versión anterior del script mezcló por error cifras del
+    experimento 4Q+SelectKBest — eso se retira. Aquí: baseline (componentes
+    reales) + barras Q/Adv antes/después (únicas post-métricas logueadas).
+    """
     fig, axes = plt.subplots(1, 2, figsize=(13, 6))
     fig.suptitle(
-        "Framework QCR: diagnóstico honesto de datasets reales\n"
-        "Q>0 frente a RBF no implica ventaja operativa frente a GB/RF",
+        "Framework QCR: diagnóstico con cifras del log NB09\n"
+        "Q>0 vs RBF ≠ ventaja operativa vs GB/RF · no se inventan componentes post",
         fontsize=12, fontweight="bold",
     )
 
@@ -1190,7 +1230,7 @@ def fig_09_qcr_framework():
     colors = ["#C62828" if v < 0 else "#1565C0" for v in vals]
     ax.bar(components, vals, color=colors, alpha=0.9, edgecolor="white")
     ax.axhline(0, color="black", linewidth=0.7)
-    ax.set_ylabel("Valor del componente")
+    ax.set_ylabel("Valor del componente (baseline)")
     ax.set_title("SKG Incidentes — NO cuántico-nativo")
     ax.text(
         0.5, 0.92,
@@ -1207,29 +1247,39 @@ def fig_09_qcr_framework():
         bbox=dict(boxstyle="round", facecolor="white", alpha=0.85),
     )
 
-    # ── Telco: baseline vs post-QCR (re-uploading) ─────────────────────────
+    # ── Telco: baseline componentes + Q/Adv verificados (sin post-componentes) ─
     ax = axes[1]
     qcr_res = QCR_TELCO
     base = qcr_res["baseline"]
     post = qcr_res["post_qcr"]
-    base_vals = [base["delta_A"], base["d_F"], base["delta_H"]]
-    post_vals = [post["delta_A"], post["d_F"], post["delta_H"]]
-    x = np.arange(len(components))
+    # Panel superior conceptual: solo métricas logueadas post (Q, Adv)
+    metrics = ["Q_score", "Adv vs RBF (pp)"]
+    base_m = [base["Q_score"], base["advantage_pp"]]
+    post_m = [post["Q_score"], post["advantage_pp"]]
+    x = np.arange(len(metrics))
     w = 0.35
-    ax.bar(x - w / 2, base_vals, w, label="Baseline", color="#90A4AE", alpha=0.9)
-    ax.bar(x + w / 2, post_vals, w, label="Post-QCR (re-uploading)",
+    ax.bar(x - w / 2, base_m, w, label="Baseline (log NB09)", color="#90A4AE", alpha=0.9)
+    ax.bar(x + w / 2, post_m, w, label="Post re-uploading reps=3 (log NB09)",
            color="#2E7D32", alpha=0.9)
     ax.axhline(0, color="black", linewidth=0.7)
     ax.set_xticks(x)
-    ax.set_xticklabels(components, fontsize=11)
-    ax.set_ylabel("Valor del componente")
-    ax.set_title(f"Telco Churn — cuello: {qcr_res['bottleneck']}\n"
-                 "(NB09; QML v2 no confirma rescate robusto)")
-    ax.legend(fontsize=9)
-    txt = (f"Q: {base['Q_score']:+.3f} → {post['Q_score']:+.3f}\n"
-           f"Adv vs RBF: {base['advantage_pp']:+.1f} → {post['advantage_pp']:+.1f}pp")
-    ax.text(0.98, 0.02, txt, transform=ax.transAxes, fontsize=9, ha="right", va="bottom",
-            bbox=dict(boxstyle="round", facecolor="lightyellow", alpha=0.8))
+    ax.set_xticklabels(metrics, fontsize=10)
+    ax.set_ylabel("Valor logueado")
+    ax.set_title(
+        f"Telco Churn — cuello baseline: {qcr_res['bottleneck']}\n"
+        r"(componentes $\Delta A$/$d_F$/$\Delta H$ post: no logueados → no inventados)",
+    )
+    ax.legend(fontsize=8, loc="best")
+    ax.text(
+        0.02, 0.02,
+        f"Baseline componentes (sí logueados):\n"
+        f"$\\Delta A$={base['delta_A']:+.3f}, "
+        f"$d_F$={base['d_F']:.3f}, "
+        f"$\\Delta H$={base['delta_H']:+.3f}\n"
+        "QML v2: Telco sigue classical",
+        transform=ax.transAxes, fontsize=8, ha="left", va="bottom",
+        bbox=dict(boxstyle="round", facecolor="#FFF8E1", edgecolor="#F9A825", alpha=0.95),
+    )
 
     plt.tight_layout()
     save_fig("09_qcr_framework_diagnostico.png")
