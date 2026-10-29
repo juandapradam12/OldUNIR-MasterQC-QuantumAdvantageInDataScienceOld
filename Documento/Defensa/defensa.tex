@@ -459,53 +459,50 @@ Ventaja cuántica \textbf{condicionada}: aparece con alineación mapa--generador
 \end{frame}
 
 \begin{frame}{Camino a la Conjetura 1 (I) --- por qué un score}
-{\footnotesize
-\begin{block}{Literatura (hechos que empujan a P1)}
+\begin{block}{Literatura}
 \begin{itemize}
-  \item La ventaja de kernel exige \textbf{alineación} con etiquetas \emph{y}
-        geometría no aproximable clásicamente \citep{huang2021, liu2021}.
-  \item Un solo proxy no basta: hace falta $A(K_Q,K_y)>A(K_{cl},K_y)$
-        \textbf{y} $d_F$ grande \citep{huang2021, thanasilp2022, schuld2021}.
-  \item Los kernels cuánticos pueden \textbf{concentrarse} y perder señal
-        \citep{thanasilp2022} --- hay que vigilar el espectro $H(K)$.
+  \item Ventaja de kernel $\Rightarrow$ alineación con etiquetas
+        \textbf{y} geometría no aproximable clásicamente
+        \citep{huang2021, liu2021}.
+  \item Un solo indicador no basta:
+        $A(K_Q,K_y)>A(K_{cl},K_y)$ \textbf{y} $d_F$ grande
+        \citep{huang2021, thanasilp2022, schuld2021}.
+  \item Riesgo de \textbf{concentración}: el kernel Q puede perder señal
+        --- vigilar $H(K)$ \citep{thanasilp2022}.
 \end{itemize}
 \end{block}
-\vspace{0.35em}
-\begin{block}{Hecho empírico (general)}
-La ventaja aparece cuando el mapa/kernel que \textbf{estructura} el dato
-coincide con el del modelo cuántico; si no, el stack clásico (GB/RF, \ldots) gana.
+\begin{block}{Hecho empírico}
+Ventaja si el mapa que estructura el dato = mapa del modelo Q;
+si no, gana el stack clásico (GB/RF).
 \end{block}
-\vspace{0.35em}
-\begin{block}{Qué medimos (NB08) y por qué}
+\begin{block}{Qué medimos (NB08)}
 \begin{itemize}
-  \item $\Delta A = A(K_Q,K_y)-A(K_{\mathrm{RBF}},K_y)$: \textquestiondown{}el kernel Q ve mejor las etiquetas?
-  \item $d_F$: \textquestiondown{}$K_Q$ es distinto del mejor kernel clásico? (no-aproximabilidad)
-  \item $\Delta H$: \textquestiondown{}hay riqueza espectral o concentración (kernel ``plano'')?
+  \item $\Delta A$: \textquestiondown{}Q ve mejor las etiquetas que RBF?
+  \item $d_F$: \textquestiondown{}$K_Q$ es distinto del mejor kernel clásico?
+  \item $\Delta H$: \textquestiondown{}espectro rico o kernel ``plano''?
 \end{itemize}
-\end{block}}
+\end{block}
 \end{frame}
 
 \begin{frame}{Camino a la Conjetura 1 (II) --- hallazgos y propuesta}
-{\footnotesize
-\begin{block}{Hallazgos + barrido sintético}
+\begin{block}{Hallazgos}
 \begin{itemize}
-  \item En los 3 datasets del TFM: $d_F$ (y $g$) rankean mejor la separación
-        geométrica; $\Delta A$ se degrada con PCA agresivo a 2~qubits.
-  \item Barrido en $\alpha$ = fracción de estructura ZZ mezclada en el dato
-        ($n{=}9$ niveles): controlamos cuánta ``cuanticidad'' hay.
-  \item $\mathcal{Q}(\mathcal{D})$ crece con $\alpha$ y correlaciona con la ventaja
-        empírica: $\rho_S{=}0.833$ ($p{=}0.005$) --- evidencia principal de P1.
-  \item Umbral práctico: para $\alpha \gtrsim 0.5$ el score anticipa ventaja positiva.
+  \item $d_F$ rankea mejor; $\Delta A$ se degrada con PCA a 2 qubits.
+  \item Barrido en $\alpha$ (fracción de estructura ZZ, $n{=}9$):
+        controlamos cuánta alineación hay en el dato.
+  \item $\mathcal{Q}$ crece con $\alpha$ y predice ventaja:
+        $\rho_S{=}0.833$ ($p{=}0.005$) --- evidencia principal.
+  \item Si $\alpha \gtrsim 0.5$, el score anticipa ventaja positiva.
 \end{itemize}
 \end{block}
-\vspace{0.35em}
 \begin{block}{Propuesta}
-Un score \textbf{compuesto} $\mathcal{Q}(\mathcal{D})=w_1\Delta A+w_2\hat{d}_F+w_3\Delta H$
-que diagnostica \emph{a priori} la alineación mapa--dato, es interpretable por componente
-(cuello de botella) y coherente con la cota de \citet{huang2021}.
-\textbf{No} es un oráculo de despliegue: $\mathcal{Q}>0$ vs.\ RBF debe cruzarse siempre
-con GB/RF (y $\mathcal{Q}_{\mathrm{rob}}$).
-\end{block}}
+\[
+  \mathcal{Q}(\mathcal{D})=w_1\Delta A+w_2\hat{d}_F+w_3\Delta H
+\]
+Diagnóstico \emph{a priori} interpretable (cuello por componente).
+\textbf{No} oráculo de despliegue: cruzar siempre con GB/RF
+(y $\mathcal{Q}_{\mathrm{rob}}$).
+\end{block}
 \end{frame}
 
 \begin{frame}{Camino a $\mathcal{Q}$: evidencia visual (NB08)}
