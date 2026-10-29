@@ -335,7 +335,7 @@ Sin formalismo, sin ejemplos narrativos, sin algoritmos fuera del TFM.
   \item \textbf{Telco:} gana C\\{\footnotesize($-3.8$\,pp vs GB)}
 \end{itemize}
 \end{block}
-{\footnotesize Baseline = mejor clásico (GB/RF).
+{\footnotesize Baseline = mejor clásico.
 También: Q más lento ($1/t\approx 0$).}
 \end{column}
 \end{columns}
@@ -463,28 +463,30 @@ Ventaja cuántica \textbf{condicionada}: aparece con alineación mapa--generador
 \begin{column}{0.48\textwidth}
 \begin{block}{Literatura}
 \begin{itemize}
-  \item Ventaja $\Rightarrow$ alineación con etiquetas
-        \textbf{y} geometría no aproximable
-        clásicamente \citep{huang2021, liu2021}
-  \item Un indicador no basta:
-        $A_Q>A_{cl}$ \textbf{y} $d_F$ grande
-        \citep{huang2021, thanasilp2022}
-  \item Riesgo: el kernel Q se
-        \textbf{concentra} --- mirar $H(K)$
-        \citep{thanasilp2022}
+  \item Ventaja cuántica de kernel $\Rightarrow$
+        alineación con etiquetas \textbf{y}
+        geometría no reproducible por el
+        clásico \citep{huang2021, liu2021}.
+  \item Un solo indicador no basta:
+        hace falta $A_Q > A_{cl}$
+        \textbf{y} $d_F$ grande
+        \citep{huang2021, schuld2021}.
+  \item Riesgo: el kernel cuántico puede
+        \textbf{concentrarse} y perder señal
+        --- vigilar $H(K)$ \citep{thanasilp2022}.
 \end{itemize}
 \end{block}
 \end{column}
 \begin{column}{0.48\textwidth}
 \begin{block}{Hecho empírico}
 Ventaja si el mapa que estructura el dato
-coincide con el del modelo \textbf{cuántico}.
+= mapa del modelo \textbf{cuántico}.
 Si no: gana el \textbf{clásico}.
 \end{block}
-\vspace{0.4em}
+\vspace{0.5em}
 \begin{block}{Idea del score}
-Tres preguntas geométricas $\rightarrow$
-un número $\mathcal{Q}(\mathcal{D})$
+Tres preguntas (cuántico vs clásico)
+$\rightarrow$ un número $\mathcal{Q}(\mathcal{D})$
 \emph{antes} de entrenar.
 \end{block}
 \end{column}
@@ -492,37 +494,44 @@ un número $\mathcal{Q}(\mathcal{D})$
 \end{frame}
 
 \begin{frame}{Camino a la Conjetura 1 (II) --- componentes y evidencia}
-\begin{block}{Interpretación (anclada en literatura)}
-\renewcommand{\arraystretch}{1.2}
+\begin{block}{Interpretación de cada término}
+\renewcommand{\arraystretch}{1.25}
 {\small
-\begin{tabular}{@{}llp{6.0cm}@{}}
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{1.6cm}
+                >{\raggedright\arraybackslash}p{4.2cm}
+                >{\raggedright\arraybackslash}p{5.4cm}@{}}
 \toprule
-\textbf{Término} & \textbf{Pregunta} & \textbf{Lectura} \\
+\textbf{Término} & \textbf{Pregunta} & \textbf{Lectura general} \\
 \midrule
-$\Delta A$ &
-\textquestiondown{}el kernel \textbf{cuántico} alinea mejor con $y$
-que el \textbf{clásico}?
-  & $>0$: más señal de clase en $K_Q$
-    \citep{cortes2012, huang2021}. \\
-$\hat{d}_F$ &
-\textquestiondown{}$K_Q$ es distinto del mejor kernel
-\textbf{clásico}?
-  & Grande: geometría no aproximable
-    clásicamente \citep{liu2021}. \\
-$\Delta H$ &
-\textquestiondown{}espectro rico o plano?
-  & Bajo: concentración / poca diversidad
+$\Delta A$
+  & \textquestiondown{}El kernel \textbf{cuántico}
+    captura mejor la estructura de clase
+    que el \textbf{clásico}?
+  & $>0$: ventaja de alineación cuántica
+    frente a la clásica
+    \citep{cortes2012, huang2021}. \\[0.4em]
+$\hat{d}_F$
+  & \textquestiondown{}La geometría cuántica
+    es distinta de la clásica?
+  & Grande: el cuántico no es un
+    ``clásico disfrazado''
+    \citep{liu2021}. \\[0.4em]
+$\Delta H$
+  & \textquestiondown{}El kernel cuántico
+    conserva diversidad o se aplana?
+  & Bajo: concentración --- pierde
+    poder discriminativo
     \citep{thanasilp2022}. \\
 \bottomrule
 \end{tabular}}
 \end{block}
-\vspace{0.3em}
+\vspace{0.35em}
 \begin{columns}[T]
 \begin{column}{0.52\textwidth}
 \begin{block}{Evidencia (este TFM)}
-Barrido $\alpha$ (cuánta estructura alineada
-hay en el dato, $n{=}9$):
-$\mathcal{Q}$ predice ventaja cuántica,
+Barrido $\alpha$: controlamos cuánta
+alineación hay en el dato ($n{=}9$).
+$\mathcal{Q}$ predice ventaja cuántica:
 $\rho_S{=}0.833$ ($p{=}0.005$).
 \end{block}
 \end{column}
@@ -530,7 +539,7 @@ $\rho_S{=}0.833$ ($p{=}0.005$).
 \begin{block}{Propuesta}
 $\mathcal{Q}=w_1\Delta A+w_2\hat{d}_F+w_3\Delta H$.
 Diagnóstico \emph{a priori}, no oráculo:
-cruzar siempre vs.\ el mejor \textbf{clásico}.
+validar siempre frente al clásico.
 \end{block}
 \end{column}
 \end{columns}
@@ -549,8 +558,8 @@ cruzar siempre vs.\ el mejor \textbf{clásico}.
 \end{columns}
 \vspace{0.2em}
 \centering\footnotesize
-$\mathcal{Q}>0$ vs.\ un baseline clásico débil \textbf{no} implica ventaja operativa
-(en SKG gana el clásico fuerte; $\mathcal{Q}_{\mathrm{rob}}$: \texttt{classical}).
+$\mathcal{Q}>0$ \textbf{no} basta: hay que confirmar ventaja
+frente al mejor modelo \textbf{clásico} (p.\ ej.\ datos reales sin alineación).
 \end{frame}
 
 \begin{frame}{Conjetura 1 --- score $\mathcal{Q}(\mathcal{D})$}
@@ -560,22 +569,22 @@ $\mathcal{Q}>0$ vs.\ un baseline clásico débil \textbf{no} implica ventaja ope
   \label{eq:Q}
 \end{equation}
 {\footnotesize
-$\Delta A$: cuántico vs clásico en etiquetas;\quad
-$\hat{d}_F$: no-aproximabilidad clásica;\quad
-$\Delta H$: riqueza espectral.}
+$\Delta A$: alineación cuántica vs clásica;\quad
+$\hat{d}_F$: separación geométrica cuántica--clásica;\quad
+$\Delta H$: diversidad espectral del kernel cuántico.}
 
 \vspace{0.4em}
 \begin{columns}[T]
 \begin{column}{0.48\textwidth}
 \begin{block}{Qué sí}
-Diagnóstico \emph{a priori} útil en barrido sintético ($\rho_S{=}0.833$).
+Diagnóstico \emph{a priori} de si el
+régimen es favorable al \textbf{cuántico}.
 \end{block}
 \end{column}
 \begin{column}{0.48\textwidth}
 \begin{alertblock}{Qué no}
-$\mathcal{Q}>0$ $\neq$ ``desplegar cuántico''
-(contraejemplo: datos reales sin alineación).
-Cruzar siempre vs.\ el mejor clásico
+$\mathcal{Q}>0$ $\neq$ desplegar cuántico.
+Siempre contrastar con el \textbf{clásico}
 (y $\mathcal{Q}_{\mathrm{rob}}$).
 \end{alertblock}
 \end{column}
@@ -604,9 +613,9 @@ Cruzar siempre vs.\ el mejor clásico
         geometría usable por el feature map \textbf{sin} destruir la señal.
   \item \textbf{Notebook~09:} cuatro prototipos --- ZZ-compatibles, rotación $\max d_F$,
         re-uploading, Q-UMAP/MDS.
-  \item Resultado: subidas locales de $\mathcal{Q}$ \emph{vs.\ RBF}; bajo $\mathcal{Q}_{\mathrm{rob}}$
-        Telco sigue \texttt{classical} y SKG solo cambia geometría (\texttt{try-ZZ}),
-        \textbf{sin} lift de accuracy vs.\ GB/RF.
+  \item Resultado: subidas locales de $\mathcal{Q}$ vs.\ baseline clásico débil;
+        bajo $\mathcal{Q}_{\mathrm{rob}}$ Telco sigue \texttt{classical} y SKG solo
+        cambia geometría (\texttt{try-ZZ}), \textbf{sin} lift vs.\ el clásico fuerte.
 \end{enumerate}
 \begin{alertblock}{Lectura}
 QCR es un \textbf{programa de investigación} formalizado desde la evidencia --- no un algoritmo cerrado ni un rescate operativo.
@@ -650,8 +659,8 @@ Este TFM la \textbf{plantea} + evidencia preliminar --- no demostración.
 \end{columns}
 \vspace{0.2em}
 \centering\footnotesize
-SKG/Telco: \textbf{no} cuántico-nativos. Lift NB09 vs.\ RBF $\neq$ ventaja vs.\ GB/RF;
-bajo $\mathcal{Q}_{\mathrm{rob}}$ Telco sigue \texttt{classical}.
+SKG/Telco: \textbf{no} cuántico-nativos. Un lift vs.\ un clásico débil
+$\neq$ ventaja frente al mejor \textbf{clásico}; bajo $\mathcal{Q}_{\mathrm{rob}}$ Telco sigue \texttt{classical}.
 \end{frame}
 
 \begin{frame}{Evidencia P2 --- barrido de rotaciones}
@@ -667,9 +676,9 @@ bajo $\mathcal{Q}_{\mathrm{rob}}$ Telco sigue \texttt{classical}.
   \item La ventaja cuántica en ciencia de datos es \textbf{real pero condicionada}.
   \item En kernels: aparece cuando el feature map coincide con el generador
         (ZZ medido aquí; Pauli-Y confirma el mismo principio).
-  \item En \textbf{datos reales} SKG/Telco \textbf{sin} esa estructura: gana GB/RF
+  \item En \textbf{datos reales} SKG/Telco \textbf{sin} esa estructura: gana el \textbf{clásico}
         (no son cuántico-nativos).
-  \item Regresión: ventaja acotada (Friedman); en movilidad SKG, árboles dominan.
+  \item Regresión: ventaja acotada (Friedman); en movilidad SKG, el clásico domina.
   \item Anomalías / lags: misma regla --- solo con target alineado
         (\texttt{zz\_phase}, \texttt{zz\_lag}).
 \end{enumerate}
@@ -708,7 +717,8 @@ en ausencia de eso, el clásico domina --- y eso también es un resultado.
   \item \textbf{Simulación statevector}: sin ruido NISQ de hardware; ideales $\neq$ shots reales.
   \item \textbf{PCA a $n_q{=}2$}: $\sim$68\% de varianza descartada; $\mathcal{Q}$ mide el subespacio proyectado.
   \item \textbf{Muestra} $n{\approx}80$ en indicadores; correlación en 3 datasets reales es orientativa.
-  \item \textbf{Baseline RBF}: $\mathcal{Q}>0$ vs.\ RBF $\neq$ ventaja vs.\ GB/RF (caso SKG).
+  \item \textbf{Baseline}: $\mathcal{Q}>0$ vs.\ un clásico débil $\neq$ ventaja
+        vs.\ el mejor clásico (caso SKG).
 \end{itemize}
 \end{frame}
 
