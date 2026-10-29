@@ -465,5 +465,5 @@ El hilo conductor de los nueve casos de uso es precisamente la demostración de 
 
 \subsection{Resultados adicionales y visualización}
 
-El análisis de escalabilidad del caso~1 se sintetiza en la Figura~\ref{fig:escala_clasificacion}: ventaja robusta en $n \in [30, 180]$ \textbf{solo} en el régimen cuántico-nativo. El contraste de bloques del kernel (Figura~\ref{fig:kernel_heatmaps}) resume la geometría: nativo con contraste alto en $K_Q$; SKG con contraste similar cuántico/clásico; Telco con contraste mayor en el clásico. Eso es correlato de $\Delta A$/$d_F$/$\Delta H$, no veredicto operativo. Los indicadores del Capítulo~\ref{cap:investigacion_original} dejan claro que $\mathcal{Q}>0$ vs.\ un baseline débil no basta.
+El análisis de escalabilidad del caso~1 se sintetiza en la Figura~\ref{fig:escala_clasificacion}: ventaja robusta en $n \in [30, 180]$ \textbf{solo} en el régimen cuántico-nativo. La geometría de kernel se reporta vía los indicadores tabulares del Capítulo~\ref{cap:investigacion_original} ($\Delta A$, $d_F$, $\Delta H$); no se usan heatmaps regenerados a posteriori (las matrices $K$ no se exportaron a artefactos). $\mathcal{Q}>0$ vs.\ un baseline débil no basta como veredicto operativo.
 

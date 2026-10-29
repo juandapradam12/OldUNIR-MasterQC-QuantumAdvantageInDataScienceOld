@@ -140,12 +140,8 @@ Telco Churn      & 0.190 & 0.170 & 2.333 & 3.465 & 0.346 & $+$0.0 & $\mathbf{-3.
 \label{fig:indicadores_cuanticidad}
 \end{figure}
 
-\begin{figure}[ht]
-\centering
-\includegraphics[width=0.95\textwidth]{../POCs/data/output/figures/08_kernel_heatmaps_comparativa.png}
-\caption{Contraste de bloques del kernel (similitud media dentro de clase $-$ entre clases) para $K_Q$ vs $K_{cl}$ en los tres datasets. Nativo: el cuántico marca bloques; SKG: contraste similar; Telco: el clásico marca más. Correlato visual de $\Delta A$, $d_F$ y $\Delta H$ ---no sustituye el veredicto operativo ($\Delta_{\mathrm{op}}$).}
-\label{fig:kernel_heatmaps}
-\end{figure}
+\paragraph{Nota sobre visuales de matrices de kernel.}
+Las matrices $K_Q$/$K_{cl}$ viven en memoria durante la ejecución del Notebook~08 y \textbf{no se serializaron} como artefactos. Un heatmap o ``contraste de bloques'' regenerado a posteriori (sin re-ejecutar el notebook) sería construcción ilustrativa, no medición. Por criterio de este TFM (\emph{nada forzado ni construido a mano}) esa figura se \textbf{retira} del cuerpo; la geometría se reporta solo vía los indicadores tabulares ($d_F$, $g$, $\Delta A$, $\Delta H$).
 
 \subsection{Análisis: \textquestiondown{}Predicen los indicadores la ventaja QSVM?}
 
@@ -161,7 +157,16 @@ El análisis individual de los componentes revela matices importantes:
 \end{itemize}
 
 \paragraph{Caveat estadístico.}
-Con $n=3$ datasets, cualquier $\rho_S$ es de potencia baja (máximo $\pm 1$ o $\pm 0.5$ con empates). La evidencia cuantitativa principal es el barrido sintético ($n=9$, $p=0.005$). La validación sobre más datasets es trabajo futuro explícito (Capítulo~\ref{cap:futuro}).
+Con $n=3$ datasets, cualquier $\rho_S$ es de potencia baja (máximo $\pm 1$ o $\pm 0.5$ con empates). El $\rho_S=+0.833$ del barrido es $\rho(\alpha,\Delta A)$, no $\rho(\mathcal{Q},\mathrm{ventaja})$. La validación sobre más datasets y un barrido structure-aware (donde $d_F$/$H$ también varíen) es trabajo futuro explícito (Capítulo~\ref{cap:futuro}).
+
+\paragraph{Debilidades metodológicas expuestas (criterio de esta revisión).}
+\begin{itemize}
+    \item Barrido $\alpha$ con $X$ fijo: $d_F$, $H$ y $g$ constantes ---no valida monotonía de todos los factores de $\mathcal{Q}$.
+    \item Ventaja NB08 vs.\ RBF en SKG ($+8.3$~pp) es artefacto de baseline débil; el $\Delta_{\mathrm{op}}$ viene de otro protocolo (Caso~1 / NB06).
+    \item $n=3$ no sostiene correlaciones fuertes entre $\mathcal{Q}$ y ventaja operativa.
+    \item No hay dumps de $K$ en artefactos: no se inventan heatmaps.
+    \item Series de rotación NB09: la figura en disco es la exportada por el notebook; el script de regeneración \textbf{no} debe sustituirlas por curvas proxy.
+\end{itemize}
 
 \begin{figure}[ht]
 \centering
@@ -173,7 +178,7 @@ Con $n=3$ datasets, cualquier $\rho_S$ es de potencia baja (máximo $\pm 1$ o $\
 \begin{figure}[!htbp]
 \centering
 \includegraphics[width=0.88\textwidth]{../POCs/data/output/figures/08_correlacion_indicadores_ventaja.png}
-\caption{Indicadores vs.\ ventaja operativa (mejor clásico) en los tres datasets (puntos) y tendencia del barrido $\alpha$ (línea gris, protocolo NB08 con $X$ fijo). Sobre $n=3$, $\rho_S(\mathcal{Q},\Delta_{\mathrm{op}})=-0.500$: $\mathcal{Q}$ alto en SKG no implica ventaja operativa. En el barrido, lo robusto es $\rho_S(\alpha,\Delta A)=+0.833$; no se reclama predicción de ventaja por $\mathcal{Q}$ con ese coeficiente.}
+\caption{Indicadores NB08 vs.\ ventaja NB08 (QSVM$-$SVM-RBF, puntos rellenos). Marcadores huecos: $\Delta_{\mathrm{op}}$ de Caso~1/NB06 (referencia; \textbf{no} entran en $\rho$). Línea gris: barrido $\alpha$ solo en el panel $\Delta A$ (único factor que varía con $X$ fijo). $n=3$: potencia baja; no se reclama $\rho(\mathcal{Q},\mathrm{ventaja})=0.833$.}
 \label{fig:correlacion_indicadores_body}
 \end{figure}
 

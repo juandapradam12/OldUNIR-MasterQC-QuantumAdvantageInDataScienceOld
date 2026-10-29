@@ -128,21 +128,25 @@ SUMMARY_06 = pd.DataFrame([
 ])
 SUMMARY_06["Ventaja (pp)"] = (SUMMARY_06["QSVC"] - SUMMARY_06["Mejor Clásico"]) * 100
 
-# Geometric indicators = NB08 (ZZ, 2Q+PCA, n=80) vs RBF kernel geometry.
-# advantage_pp_rbf = NB08 QSVM−SVM-RBF on 70/30 split (weak baseline; SKG +8.3 is artifact).
-# advantage_pp     = OPERATIONAL Δ vs best classical (SUMMARY_06 / Caso 1):
-#   Native +13.3 (QSVM 73.3 vs poly/best-clásico 60.0), SKG −6.0, Telco −3.8 vs GB.
+# Geometric indicators + ventaja vs RBF = salida real Notebook 08 (no mezclar
+# aquí el Δ operativo de NB06/Caso 1: eso vive en SUMMARY_06 / OPERATIONAL_08).
 RESULTS_08 = [
     {"dataset": "Cuántico-nativo", "A_Q": 0.0181, "A_cl": 0.0469, "delta_A": -0.0288,
      "H_Q": 2.2749, "H_cl": 2.2411, "delta_H": 0.0339, "d_F": 0.3532, "g": 1541.657,
-     "Q_score": 0.2858, "advantage_pp_rbf": 0.0, "advantage_pp": 13.3},
+     "Q_score": 0.2858, "advantage_pp": 0.0},
     {"dataset": "SKG Incidentes", "A_Q": 0.0396, "A_cl": 0.0499, "delta_A": -0.0103,
      "H_Q": 2.1545, "H_cl": 1.9666, "delta_H": 0.1880, "d_F": 0.3689, "g": 2080.864,
-     "Q_score": 0.3523, "advantage_pp_rbf": 8.3, "advantage_pp": -6.0},
+     "Q_score": 0.3523, "advantage_pp": 8.3},  # vs RBF NB08; artefacto de baseline débil
     {"dataset": "Telco Churn", "A_Q": 0.1899, "A_cl": 0.1698, "delta_A": 0.0201,
      "H_Q": 2.3332, "H_cl": 3.4646, "delta_H": -1.1313, "d_F": 0.3457, "g": 89.725,
-     "Q_score": -0.0503, "advantage_pp_rbf": 0.0, "advantage_pp": -3.8},
+     "Q_score": -0.0503, "advantage_pp": 0.0},
 ]
+# Δ operativo (mejor clásico) — fuente distinta: SUMMARY_06 / métricas Caso 1.
+OPERATIONAL_08 = {
+    "Cuántico-nativo": 13.3,
+    "SKG Incidentes": -6.0,
+    "Telco Churn": -3.8,
+}
 
 # Barrido α REAL del Notebook 08 (salida ejecutada; no interpolar a mano).
 # Protocolo NB08: X fijo en [-π,π]^2 + mezcla estocástica de etiquetas clásicas↔cuánticas.
@@ -170,15 +174,8 @@ DF_SWEEP_08 = pd.DataFrame([
     {"alpha": 1.00, "A_Q": 0.0101, "A_cl": 0.0104, "delta_A": -0.0003,
      "H_Q": 2.3046, "d_F": 0.3591, "g": 2380.246, "advantage_pp": -3.3},
 ])
-# Bajo este protocolo H_cl y ΔH también son constantes (kernels fijos). Q solo
-# varía vía ΔA; no inventamos ΔH ni un Q monótono artificial.
-_DF_REF = float(DF_SWEEP_08["d_F"].max())
-DF_SWEEP_08["delta_H"] = 0.0  # constante desconocida en el log; no afecta ρ con α
-DF_SWEEP_08["Q_score"] = (
-    0.4 * DF_SWEEP_08["delta_A"]
-    + 0.3 * (DF_SWEEP_08["d_F"] / _DF_REF)
-    + 0.3 * DF_SWEEP_08["delta_H"]
-)
+# H_cl / ΔH / Q_score del barrido NO están en el log impreso del notebook
+# (solo H_Q, d_F, g, ΔA, Adv). No inventamos ΔH ni Q monótono artificial.
 
 BASELINE_09 = {
     "SKG Incidentes": {"Q_score": 0.1629, "advantage_pp": 8.3, "delta_A": -0.0103,
@@ -882,19 +879,6 @@ def fig_06_boundaries():
         SKIPPED.append(f"06_quantum_kernel_boundaries.png ({exc})")
 
 
-def _synth_kernel_matrix(n: int, n_class0: int, same: float, diff: float, seed: int) -> np.ndarray:
-    rng = np.random.default_rng(seed)
-    y = np.array([0] * n_class0 + [1] * (n - n_class0))
-    k = np.zeros((n, n))
-    for i in range(n):
-        for j in range(n):
-            base = same if y[i] == y[j] else diff
-            k[i, j] = np.clip(base + rng.normal(0, 0.04), 0, 1)
-    k = (k + k.T) / 2
-    np.fill_diagonal(k, 1.0)
-    return k, y
-
-
 # ── Notebook 08 ───────────────────────────────────────────────────────────────
 
 def fig_08_test_cuanticidad():
@@ -999,70 +983,25 @@ def fig_08_test_cuanticidad():
     save_fig("08_test_cuanticidad_datasets.png")
 
 
-def _block_contrast(K: np.ndarray, y: np.ndarray) -> tuple[float, float, float]:
-    """Return (within-class mean, between-class mean, contrast=within-between)."""
-    y = np.asarray(y)
-    same, diff = [], []
-    n = len(y)
-    for i in range(n):
-        for j in range(i + 1, n):
-            (same if y[i] == y[j] else diff).append(K[i, j])
-    w = float(np.mean(same)) if same else 0.0
-    b = float(np.mean(diff)) if diff else 0.0
-    return w, b, w - b
-
-
 def fig_08_kernel_heatmaps():
-    """Geometría de kernel como contraste de bloques (no heatmaps de paleta)."""
-    # Estructura ILLUSTRATIVA alineada a los indicadores NB08 / Δ_op:
-    # Nativo: Q con bloques fuertes, clásico débil.
-    # SKG: contraste similar Q≈C (sin geometría Q-only).
-    # Telco: clásico con bloques; Q más plano (ΔH<0).
-    configs = [
-        ("Cuántico-nativo", 40, (0.90, 0.08, 42), (0.55, 0.40, 142)),
-        ("SKG Incidentes", 40, (0.66, 0.30, 43), (0.68, 0.28, 143)),
-        ("Telco Churn", 40, (0.58, 0.36, 44), (0.88, 0.10, 144)),
-    ]
-    r_metrics = {r["dataset"]: r for r in RESULTS_08}
-    fig, axes = plt.subplots(1, 3, figsize=(15, 5.2))
-    fig.suptitle(
-        "Geometría de kernel: contraste de bloques (dentro − entre clase)\n"
-        "Cuántico vs clásico por dataset — correlato visual de $\\Delta A$, $d_F$, $\\Delta H$",
-        fontsize=12, fontweight="bold",
-    )
-    x = np.arange(2)
-    width = 0.35
-    for ax, (name, n0, q_cfg, cl_cfg) in zip(axes, configs):
-        n = 80
-        same_q, diff_q, seed_q = q_cfg
-        same_cl, diff_cl, seed_cl = cl_cfg
-        k_q, y = _synth_kernel_matrix(n, n0, same_q, diff_q, seed_q)
-        k_cl, _ = _synth_kernel_matrix(n, n0, same_cl, diff_cl, seed_cl)
-        _, _, c_q = _block_contrast(k_q, y)
-        _, _, c_cl = _block_contrast(k_cl, y)
-        r = r_metrics[name]
-        bars_q = ax.bar(x[0], c_q, width, color=QUANTUM_COLOR, alpha=0.9, label="Cuántico $K_Q$")
-        bars_c = ax.bar(x[1], c_cl, width, color=CLASSICAL_COLOR, alpha=0.9, label="Clásico $K_{cl}$")
-        ax.axhline(0, color="black", lw=0.8, ls="--")
-        ax.set_xticks(x)
-        ax.set_xticklabels(["Cuántico", "Clásico"])
-        ax.set_ylabel("Contraste de bloques\n" r"$(\bar K_{\mathrm{dentro}}-\bar K_{\mathrm{entre}})$")
-        ax.set_title(
-            f"{name}\n"
-            f"$\\Delta A$={r['delta_A']:+.3f} · $d_F$={r['d_F']:.3f} · "
-            f"$\\Delta H$={r['delta_H']:+.3f}\n"
-            f"$\\mathcal{{Q}}$={r['Q_score']:+.3f}",
-            fontsize=10,
+    """NO regenerar visuales sintéticos de kernels.
+
+    Las matrices K_Q/K_cl viven solo en memoria del Notebook 08. Cualquier
+    heatmap/contraste regenerado aquí sería construido a mano → no presentable.
+    Si existe un PNG huérfano de una regeneración previa, se elimina.
+    """
+    path = OUT / "08_kernel_heatmaps_comparativa.png"
+    if path.exists():
+        path.unlink()
+        SKIPPED.append(
+            "08_kernel_heatmaps_comparativa.png "
+            "(eliminado: no hay K exportadas; no conservar reconstrucciones)"
         )
-        for b, v in ((bars_q[0], c_q), (bars_c[0], c_cl)):
-            ax.text(b.get_x() + b.get_width() / 2, v + (0.02 if v >= 0 else -0.04),
-                    f"{v:.2f}", ha="center", va="bottom" if v >= 0 else "top",
-                    fontsize=11, fontweight="bold")
-        ax.set_ylim(-0.15, 1.05)
-        ax.legend(fontsize=8, loc="upper right")
-    plt.tight_layout()
-    # Keep legacy filename so tesis/defensa paths still resolve.
-    save_fig("08_kernel_heatmaps_comparativa.png")
+    else:
+        SKIPPED.append(
+            "08_kernel_heatmaps_comparativa.png "
+            "(omitido: re-ejecutar NB08 para matrices reales; no sintetizar)"
+        )
 
 
 def fig_08_barrido_sintetico():
@@ -1120,55 +1059,59 @@ def fig_08_barrido_sintetico():
 
 
 def fig_08_correlacion():
+    """Correlación HONESTA: indicadores NB08 vs ventaja NB08 (vs RBF), n=3.
+
+    No mezclar Δ operativo (SUMMARY_06) en esta figura: son protocolos distintos.
+    La línea gris del barrido usa solo (ΔA, ventaja) — lo que sí varía con α.
+    """
     results = RESULTS_08
     df_results = pd.DataFrame([
         {"Dataset": r["dataset"], "Q_score": r["Q_score"], "ΔA": r["delta_A"],
-         "d_F": r["d_F"], "Ventaja(pp)": r["advantage_pp"]}
+         "d_F": r["d_F"], "Ventaja_RBF(pp)": r["advantage_pp"]}
         for r in results
     ])
     df_sweep = DF_SWEEP_08
     fig, axes = plt.subplots(1, 3, figsize=(14, 5))
     fig.suptitle(
-        "Indicadores vs ventaja operativa (mejor clásico)\n"
-        "Puntos = 3 datasets TFM · Línea gris = barrido α (protocolo controlado vs baseline débil)",
-        fontsize=12, fontweight="bold",
+        "Indicadores NB08 vs ventaja NB08 (QSVM−SVM-RBF) · n=3\n"
+        "Línea gris: barrido α (solo ΔA varía; d_F/H constantes). "
+        "No es Δ operativo vs GB/RF.",
+        fontsize=11, fontweight="bold",
     )
     panel_config = [
-        ("Q_score", "Q_score", "Score compuesto Q(D)", "(Este TFM)", "#2E7D32"),
-        ("delta_A", "ΔA", "$\\Delta A = A(K_Q) - A(K_{cl})$", "(Huang et al. 2021)", "#1565C0"),
-        ("d_F", "d_F", "Distancia Frobenius $d_F$", "(Liu et al. 2021)", "#6A1B9A"),
+        ("Q_score", "Q_score", "Score compuesto Q(D)", "(NB08)", "#2E7D32"),
+        ("delta_A", "ΔA", r"$\Delta A = A(K_Q)-A(K_{cl})$", "(Huang 2021)", "#1565C0"),
+        ("d_F", "d_F", r"Distancia Frobenius $d_F$", "(Liu 2021)", "#6A1B9A"),
     ]
     for ax, (r_col, df_col, xlabel, ref, color) in zip(axes, panel_config):
-        ax.plot(df_sweep[r_col], df_sweep["advantage_pp"], "o-",
-                color="lightgray", linewidth=1.5, markersize=4, alpha=0.6,
-                label="Barrido α (controlado)")
+        # Barrido: solo tiene sentido vs ΔA (d_F y Q_sweep no están bien definidos)
+        if r_col == "delta_A":
+            ax.plot(df_sweep["delta_A"], df_sweep["advantage_pp"], "o-",
+                    color="lightgray", linewidth=1.5, markersize=4, alpha=0.7,
+                    label=r"Barrido $\alpha$ ($\Delta A$)")
         for r, marker in zip(results, ["s", "D", "^"]):
-            ax.scatter(r[r_col], r["advantage_pp"], s=120, marker=marker, color=color, zorder=5,
-                       label=r["dataset"], edgecolors="white", linewidths=1.5)
+            ax.scatter(r[r_col], r["advantage_pp"], s=120, marker=marker, color=color,
+                       zorder=5, label=r["dataset"], edgecolors="white", linewidths=1.5)
             ax.annotate(r["dataset"], (r[r_col], r["advantage_pp"]),
                         textcoords="offset points", xytext=(5, 5), fontsize=8)
+        # Marcar también Δ_op como referencia hueca (no entra en ρ)
+        for r, marker in zip(results, ["s", "D", "^"]):
+            ax.scatter(r[r_col], OPERATIONAL_08[r["dataset"]], s=70, marker=marker,
+                       facecolors="none", edgecolors="gray", linewidths=1.2, zorder=4,
+                       label=None)
         ax.axhline(0, color="black", linewidth=0.8, linestyle="--", alpha=0.7)
         ax.set_xlabel(f"{xlabel}\n{ref}", fontsize=9)
-        ax.set_ylabel("Ventaja operativa (pp)")
-        rho, pval = spearmanr(df_results[df_col].values, df_results["Ventaja(pp)"].values)
-        ax.set_title(f"ρ_S (operativo, n=3) = {rho:+.3f} (p={pval:.3f})", fontsize=10)
-        ax.legend(fontsize=8, loc="best")
+        ax.set_ylabel("Ventaja (pp)")
+        rho, pval = spearmanr(df_results[df_col].values, df_results["Ventaja_RBF(pp)"].values)
+        ax.set_title(f"$\\rho_S$ vs RBF (n=3)={rho:+.3f} (p={pval:.3f})\n"
+                     r"marcadores huecos = $\Delta_{\mathrm{op}}$ (no entran en $\rho$)",
+                     fontsize=9)
+        ax.legend(fontsize=7, loc="best")
     plt.tight_layout()
     save_fig("08_correlacion_indicadores_ventaja.png")
 
 
 # ── Notebook 09 ────────────────────────────────────────────────────────────────
-
-def _rotation_sweep(theta_opt_deg: float, q_base: float, q_peak: float, d_f_peak: float, seed: int):
-    rng = np.random.default_rng(seed)
-    thetas = np.linspace(0, np.pi, 36)
-    thetas_deg = np.degrees(thetas)
-    q_scores = q_base + (q_peak - q_base) * np.exp(-0.5 * ((thetas_deg - theta_opt_deg) / 35) ** 2)
-    q_scores += rng.normal(0, 0.01, size=len(thetas))
-    d_fs = d_f_peak * (0.7 + 0.3 * np.exp(-0.5 * ((thetas_deg - theta_opt_deg) / 40) ** 2))
-    d_fs += rng.normal(0, 0.005, size=len(thetas))
-    return thetas, q_scores, d_fs
-
 
 def fig_09_mapeos_comparativa():
     fig, axes = plt.subplots(2, 2, figsize=(14, 10))
@@ -1212,38 +1155,22 @@ def fig_09_mapeos_comparativa():
 
 
 def fig_09_barrido_rotaciones():
-    rotation_details = {}
-    for ds_name, theta_deg, q_base, q_peak, d_f_peak, seed in [
-        ("SKG Incidentes", 154.3, 0.1629, 0.1698, 0.3777, 91),
-        ("Telco Churn", 92.6, -0.2277, 0.0956, 0.4006, 92),
-    ]:
-        thetas, q_scores, d_fs = _rotation_sweep(theta_deg, q_base, q_peak, d_f_peak, seed)
-        rotation_details[ds_name] = {
-            "thetas": thetas, "Q_scores": q_scores, "dFs": d_fs,
-            "theta_opt": np.radians(theta_deg),
-        }
-    fig, axes = plt.subplots(1, 2, figsize=(13, 5))
-    fig.suptitle("Barrido de Rotaciones: Q(D) y d_F en función del ángulo θ\n"
-                 "Estrategia 2 — búsqueda de orientación de máxima divergencia cuántico-clásica",
-                 fontsize=12, fontweight="bold")
-    for ax, ds_name, lc in zip(axes, rotation_details, ["#1565C0", "#C62828"]):
-        det = rotation_details[ds_name]
-        thetas_deg = np.degrees(det["thetas"])
-        ax.plot(thetas_deg, det["Q_scores"], "o-", color=lc, linewidth=2, markersize=5, label="Score Q(D)")
-        ax2 = ax.twinx()
-        ax2.plot(thetas_deg, det["dFs"], "s--", color=lc, linewidth=1.5, markersize=4, alpha=0.6, label="$d_F$")
-        theta_opt_deg = np.degrees(det["theta_opt"])
-        ax.axvline(theta_opt_deg, color="black", linestyle=":", linewidth=1.5,
-                   label=f"θ_opt = {theta_opt_deg:.1f}°")
-        ax.set_xlabel("Ángulo de rotación θ (grados)")
-        ax.set_ylabel("Score Q(D)", color=lc)
-        ax2.set_ylabel("$d_F$", color="gray")
-        ax.set_title(ds_name)
-        lines1, labs1 = ax.get_legend_handles_labels()
-        lines2, labs2 = ax2.get_legend_handles_labels()
-        ax.legend(lines1 + lines2, labs1 + labs2, fontsize=9, loc="best")
-    plt.tight_layout()
-    save_fig("09_barrido_rotaciones.png")
+    """NO regenerar con curvas gaussianas sintéticas.
+
+    El PNG válido es el exportado por Notebook 09 (θ_opt SKG=154.3°, Telco=92.6°).
+    Este script no tiene las series (θ, Q, d_F) serializadas → no inventarlas.
+    """
+    path = OUT / "09_barrido_rotaciones.png"
+    if path.exists():
+        SKIPPED.append(
+            "09_barrido_rotaciones.png "
+            "(conservado del Notebook 09; no regenerar con proxy sintético)"
+        )
+    else:
+        SKIPPED.append(
+            "09_barrido_rotaciones.png "
+            "(ausente: re-ejecutar Notebook 09; no sintetizar)"
+        )
 
 
 def fig_09_qcr_framework():

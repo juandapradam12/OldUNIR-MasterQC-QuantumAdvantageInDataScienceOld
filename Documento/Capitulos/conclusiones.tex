@@ -91,6 +91,9 @@ Esta disociación ---metodologías maduras, hardware en desarrollo--- es la caus
     \item \textbf{Q-UMAP no implementado con métrica cuántica real}: la Estrategia~4 utiliza MDS como alternativa por ausencia de \texttt{umap-learn}; la implementación con distancia cuántica genuina queda como trabajo futuro.
     \item \textbf{Correlación C1 sobre $n=3$ datasets reales}: estadísticamente orientativa. La validación sobre conjuntos de datos con ventaja teórica demostrada (e.g., benchmarks de Bravyi et al., 2020) es necesaria para generalizar el indicador.
     \item \textbf{Simulación clásica}: todos los experimentos se realizan en simulador estacionario; el ruido NISQ real podría alterar los resultados cuantitativos.
+    \item \textbf{Protocolos no intercambiables}: $\Delta_{\mathrm{RBF}}$ (Notebook~08) y $\Delta_{\mathrm{op}}$ (Caso~1 / Notebook~06) miden cosas distintas; no se fuerzan en una sola $\rho$. El $+8.3$~pp de SKG vs.\ RBF es artefacto de baseline débil.
+    \item \textbf{Barrido $\alpha$ con $X$ fijo}: $d_F$ y $H$ constantes; $\rho_S=+0.833$ es $\rho(\alpha,\Delta A)$, no $\rho(\mathcal{Q},\mathrm{ventaja})$. Un barrido structure-aware queda como trabajo futuro.
+    \item \textbf{Sin dumps de $K$}: no se inventan heatmaps ni series de rotación proxy si faltan artefactos del notebook.
 \end{itemize}
 
 \section{Aportación al campo}

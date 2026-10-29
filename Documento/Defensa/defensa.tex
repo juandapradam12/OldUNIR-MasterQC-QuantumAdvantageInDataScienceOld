@@ -710,16 +710,20 @@ en ausencia de eso, el clásico domina --- y eso también es un resultado.
   \item \textbf{Muestra} $n{\approx}80$ en indicadores; correlación en 3 datasets reales es orientativa.
   \item \textbf{Baseline}: $\mathcal{Q}>0$ vs.\ un clásico débil $\neq$ ventaja
         vs.\ el mejor clásico (caso SKG).
+  \item \textbf{Protocolos distintos}: $\Delta_{\mathrm{RBF}}$ (NB08) $\neq$ $\Delta_{\mathrm{op}}$ (Caso~1/NB06);
+        no se mezclan en una sola $\rho$.
 \end{itemize}
 \end{frame}
 
-\begin{frame}{Limitaciones (II)}
+\begin{frame}{Limitaciones (II) --- debilidades expuestas}
 \begin{itemize}
+  \item \textbf{Barrido $\alpha$}: $X$ fijo $\Rightarrow$ $d_F$/$H$ constantes;
+        $\rho_S{=}0.833$ es $\rho(\alpha,\Delta A)$, no predicción de ventaja.
+  \item \textbf{Sin dumps de $K$}: no se inventan heatmaps ni contrastes a mano.
+  \item \textbf{Rotaciones NB09}: series del notebook; no regenerar con curvas proxy.
   \item \textbf{QCR} sin demostración fuerte; Q-UMAP sin métrica cuántica real (MDS proxy).
   \item \textbf{Un feature map operativo principal} (ZZ), con validación cruzada Pauli-Y limitada.
-  \item \textbf{TSP}: empate óptimo $\neq$ speedup asintótico.
-  \item \textbf{Escalabilidad}: kernel $O(n^2)$ limita $n$ en simulación; no se evaluó hardware real.
-  \item \textbf{Datos SKG}: fraction de la operación; no cierran todos los casos de uso empresariales.
+  \item \textbf{Escalabilidad}: kernel $O(n^2)$; no se evaluó hardware real.
 \end{itemize}
 \end{frame}
 
