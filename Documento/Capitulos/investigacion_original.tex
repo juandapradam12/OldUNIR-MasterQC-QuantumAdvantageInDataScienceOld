@@ -151,11 +151,11 @@ Telco Churn      & 0.190 & 0.170 & 2.333 & 3.465 & 0.346 & $+$0.0 & $\mathbf{-3.
 
 La Tabla~\ref{tab:indicadores_resultados} distingue dos rankings. Bajo el protocolo NB08 vs.\ un baseline RBF débil: SKG ($+8.3$~pp) $>$ nativo $=$ Telco ($0.0$~pp) ---ranking \textbf{engañoso}. El ranking operativo vs.\ mejor clásico es: \textbf{nativo ($+13.3$~pp)} $>$ Telco ($-3.8$~pp) $>$ SKG ($-6.0$~pp). Solo el régimen cuántico-nativo muestra ventaja; SKG/Telco son clásicos (Sección~\ref{sec:qml_v2_revision}).
 
-El score $\mathcal{Q}(\mathcal{D})$ (calculado vs.\ kernel clásico de referencia) ordena SKG ($+0.352$) $>$ nativo ($+0.286$) $>$ Telco ($-0.050$). Eso reproduce el ranking vs.\ RBF ($\rho_S=+0.866$, $n=3$, orientativo) pero \textbf{no} el ranking operativo ($\rho_S=-0.500$ entre $\mathcal{Q}$ y $\Delta_{\mathrm{op}}$, $n=3$): contraejemplo pedagógico SKG. El barrido sintético en $\alpha$ ($n=9$) confirma monotonía controlada con $\rho_S=+0.833$ ($p=0.005$) y es la evidencia cuantitativa principal de que el score anticipa ventaja \emph{cuando el protocolo es justo}. Lectura: $\mathcal{Q}>0$ vs.\ un baseline débil \textbf{no} autoriza desplegar el módulo cuántico.
+El score $\mathcal{Q}(\mathcal{D})$ (calculado vs.\ kernel clásico de referencia) ordena SKG ($+0.352$) $>$ nativo ($+0.286$) $>$ Telco ($-0.050$). Eso reproduce el ranking vs.\ RBF ($\rho_S=+0.866$, $n=3$, orientativo) pero \textbf{no} el ranking operativo ($\rho_S=-0.500$ entre $\mathcal{Q}$ y $\Delta_{\mathrm{op}}$, $n=3$): contraejemplo pedagógico SKG. El barrido sintético NB08 ($n=9$, $X$ fijo + mezcla de etiquetas) muestra $\rho_S(\alpha,\Delta A)=+0.833$ ($p=0.005$): hallazgo robusto sobre alineación. Bajo ese protocolo $d_F$ y $H$ son constantes, y $\rho_S(\alpha,\mathrm{ventaja})\approx 0.34$ (n.s.) ---\textbf{no} se afirma que $\mathcal{Q}$ prediga ventaja con $\rho=0.833$. Lectura: $\mathcal{Q}>0$ vs.\ un baseline débil \textbf{no} autoriza desplegar el módulo cuántico.
 
 El análisis individual de los componentes revela matices importantes:
 \begin{itemize}
-    \item $\Delta A$ es negativa en dos de los tres datasets en el régimen 2~qubits + PCA. Frente a $\Delta_{\mathrm{op}}$, $\rho_S(\Delta A,\Delta_{\mathrm{op}})=-0.500$ ($n=3$); en el barrido sintético $\rho_S=+0.833$: el PCA agresivo suprime la señal de $\Delta A$ en datos reales.
+    \item $\Delta A$ es negativa en dos de los tres datasets en el régimen 2~qubits + PCA. Frente a $\Delta_{\mathrm{op}}$, $\rho_S(\Delta A,\Delta_{\mathrm{op}})=-0.500$ ($n=3$); en el barrido NB08 $\rho_S(\alpha,\Delta A)=+0.833$: el PCA agresivo suprime la señal de $\Delta A$ en datos reales.
     \item $d_F$ y $g$ rankean el protocolo vs.\ RBF, pero frente a $\Delta_{\mathrm{op}}$ también dan $\rho_S=-0.500$ ($n=3$): no sustituyen la comparación contra el mejor clásico ni el veredicto $\mathcal{Q}_{\mathrm{rob}}$.
     \item $\Delta H$ es el indicador más volátil: $\mathcal{Q}(\text{Telco})$ está dominado por $\Delta H=-1.131$ (concentración espectral).
 \end{itemize}
@@ -166,14 +166,14 @@ Con $n=3$ datasets, cualquier $\rho_S$ es de potencia baja (máximo $\pm 1$ o $\
 \begin{figure}[ht]
 \centering
 \includegraphics[width=0.92\textwidth]{../POCs/data/output/figures/08_barrido_sintetico_alpha.png}
-\caption{Barrido sintético controlado de los factores de $\mathcal{Q}(\mathcal{D})$ vs.\ $\alpha$ (inyección de \textbf{estructura} cuántica, no solo de etiquetas). Paneles: $\Delta A$, $d_F$, $\Delta H$, score $\mathcal{Q}$, ventaja empírica, y dispersión $\mathcal{Q}$--ventaja. $\rho_S(\mathcal{Q},\mathrm{ventaja})=+0.833$ ($p=0.005$, $n=9$). El protocolo original del Notebook~08 ( $X$ fijo + mezcla de labels) dejaba $H$, $d_F$ y $g$ planos ---esta figura usa el protocolo corregido.}
+\caption{Barrido sintético NB08 (datos reales): $\alpha$ = fracción de etiquetas cuánticas con $X$ fijo. $\Delta A$ crece con $\alpha$ ($\rho_S=+0.833$, $p=0.005$). $d_F$ y $H(K_Q)$ son constantes por diseño (los kernels no dependen de las etiquetas). La ventaja supervisada es ruidosa ($\rho_S(\alpha,\mathrm{ventaja})\approx 0.34$). El número $0.833$ es $\rho(\alpha,\Delta A)$, \textbf{no} $\rho(\mathcal{Q},\mathrm{ventaja})$.}
 \label{fig:barrido_sintetico_alpha}
 \end{figure}
 
 \begin{figure}[!htbp]
 \centering
 \includegraphics[width=0.88\textwidth]{../POCs/data/output/figures/08_correlacion_indicadores_ventaja.png}
-\caption{Indicadores vs.\ \textbf{ventaja operativa} (mejor clásico) en los tres datasets del TFM (puntos) y tendencia del barrido $\alpha$ (línea gris, protocolo controlado). Sobre $n=3$, $\rho_S(\mathcal{Q},\Delta_{\mathrm{op}})=-0.500$: el score geométrico vs.\ baseline débil \textbf{no} predice el ranking operativo (SKG tiene $\mathcal{Q}$ alto y $\Delta_{\mathrm{op}}<0$). La monotonía fiable está en el barrido sintético ($n=9$, $\rho_S=+0.833$).}
+\caption{Indicadores vs.\ ventaja operativa (mejor clásico) en los tres datasets (puntos) y tendencia del barrido $\alpha$ (línea gris, protocolo NB08 con $X$ fijo). Sobre $n=3$, $\rho_S(\mathcal{Q},\Delta_{\mathrm{op}})=-0.500$: $\mathcal{Q}$ alto en SKG no implica ventaja operativa. En el barrido, lo robusto es $\rho_S(\alpha,\Delta A)=+0.833$; no se reclama predicción de ventaja por $\mathcal{Q}$ con ese coeficiente.}
 \label{fig:correlacion_indicadores_body}
 \end{figure}
 

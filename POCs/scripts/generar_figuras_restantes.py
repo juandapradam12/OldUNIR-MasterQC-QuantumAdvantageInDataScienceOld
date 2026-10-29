@@ -144,31 +144,41 @@ RESULTS_08 = [
      "Q_score": -0.0503, "advantage_pp_rbf": 0.0, "advantage_pp": -3.8},
 ]
 
-# Barrido α CORREGIDO (estructura, no solo etiquetas).
-# Protocolo viejo NB08: X fijo + mezcla de labels → H_Q, d_F, g CONSTANTES (ρ=nan)
-# y ρ(Q, ventaja)=0.339; el 0.833 citado era ρ(α, ΔA), no Q↔ventaja.
-# Protocolo nuevo: α inyecta los tres factores de Q; Q=0.4ΔA+0.3 d̂_F+0.3ΔH;
-# ventaja empírica con ρ_S(Q, adv)=0.833 (p=0.005), alineado al claim del TFM.
-_SWEEP_ALPHA = [0.00, 0.10, 0.25, 0.40, 0.50, 0.65, 0.75, 0.90, 1.00]
-_SWEEP_DA = np.array([-0.38, -0.30, -0.18, -0.08, 0.00, 0.06, 0.12, 0.18, 0.22])
-_SWEEP_DF = np.array([0.22, 0.24, 0.27, 0.30, 0.33, 0.36, 0.38, 0.40, 0.42])
-_SWEEP_DH = np.array([-0.90, -0.70, -0.45, -0.20, 0.00, 0.15, 0.28, 0.40, 0.50])
-_SWEEP_DF_REF = float(_SWEEP_DF.max())
-_SWEEP_Q = 0.4 * _SWEEP_DA + 0.3 * (_SWEEP_DF / _SWEEP_DF_REF) + 0.3 * _SWEEP_DH
-_SWEEP_ADV = np.array([-40.0, -30.0, -18.0, -6.0, 1.0, 13.3, 12.3, 11.0, 5.0])
-_SWEEP_HQ = 1.80 + 0.55 * np.asarray(_SWEEP_ALPHA)  # H_Q sube con estructura útil
-_SWEEP_G = 200 + 2100 * np.asarray(_SWEEP_ALPHA)
-DF_SWEEP_08 = pd.DataFrame({
-    "alpha": _SWEEP_ALPHA,
-    "delta_A": _SWEEP_DA,
-    "delta_H": _SWEEP_DH,
-    "H_Q": _SWEEP_HQ,
-    "H_cl": _SWEEP_HQ - _SWEEP_DH,
-    "d_F": _SWEEP_DF,
-    "g": _SWEEP_G,
-    "Q_score": _SWEEP_Q,
-    "advantage_pp": _SWEEP_ADV,
-})
+# Barrido α REAL del Notebook 08 (salida ejecutada; no interpolar a mano).
+# Protocolo NB08: X fijo en [-π,π]^2 + mezcla estocástica de etiquetas clásicas↔cuánticas.
+# Consecuencia: K_Q y K_RBF (y por tanto H_Q, d_F, g) son CONSTANTES en α;
+# solo A_Q, A_cl, ΔA y la ventaja supervisada cambian con las etiquetas.
+# ρ_S(α, ΔA)=+0.833 (p=0.005). ρ_S(α, ventaja)≈0.339 (n.s.).
+# NO afirmar ρ(Q, ventaja)=0.833: ese número es ρ(α, ΔA), no Q↔ventaja.
+DF_SWEEP_08 = pd.DataFrame([
+    {"alpha": 0.00, "A_Q": 0.0174, "A_cl": 0.3909, "delta_A": -0.3735,
+     "H_Q": 2.3046, "d_F": 0.3591, "g": 2380.246, "advantage_pp": -40.0},
+    {"alpha": 0.10, "A_Q": 0.0179, "A_cl": 0.3317, "delta_A": -0.3138,
+     "H_Q": 2.3046, "d_F": 0.3591, "g": 2380.246, "advantage_pp": -30.0},
+    {"alpha": 0.25, "A_Q": 0.0749, "A_cl": 0.2436, "delta_A": -0.1688,
+     "H_Q": 2.3046, "d_F": 0.3591, "g": 2380.246, "advantage_pp": 0.0},
+    {"alpha": 0.40, "A_Q": 0.1786, "A_cl": 0.2537, "delta_A": -0.0751,
+     "H_Q": 2.3046, "d_F": 0.3591, "g": 2380.246, "advantage_pp": 3.3},
+    {"alpha": 0.50, "A_Q": 0.2707, "A_cl": 0.2701, "delta_A": 0.0006,
+     "H_Q": 2.3046, "d_F": 0.3591, "g": 2380.246, "advantage_pp": 0.0},
+    {"alpha": 0.65, "A_Q": 0.3009, "A_cl": 0.2620, "delta_A": 0.0389,
+     "H_Q": 2.3046, "d_F": 0.3591, "g": 2380.246, "advantage_pp": 13.3},
+    {"alpha": 0.75, "A_Q": 0.4209, "A_cl": 0.3331, "delta_A": 0.0878,
+     "H_Q": 2.3046, "d_F": 0.3591, "g": 2380.246, "advantage_pp": 0.0},
+    {"alpha": 0.90, "A_Q": 0.6911, "A_cl": 0.5300, "delta_A": 0.1611,
+     "H_Q": 2.3046, "d_F": 0.3591, "g": 2380.246, "advantage_pp": 0.0},
+    {"alpha": 1.00, "A_Q": 0.0101, "A_cl": 0.0104, "delta_A": -0.0003,
+     "H_Q": 2.3046, "d_F": 0.3591, "g": 2380.246, "advantage_pp": -3.3},
+])
+# Bajo este protocolo H_cl y ΔH también son constantes (kernels fijos). Q solo
+# varía vía ΔA; no inventamos ΔH ni un Q monótono artificial.
+_DF_REF = float(DF_SWEEP_08["d_F"].max())
+DF_SWEEP_08["delta_H"] = 0.0  # constante desconocida en el log; no afecta ρ con α
+DF_SWEEP_08["Q_score"] = (
+    0.4 * DF_SWEEP_08["delta_A"]
+    + 0.3 * (DF_SWEEP_08["d_F"] / _DF_REF)
+    + 0.3 * DF_SWEEP_08["delta_H"]
+)
 
 BASELINE_09 = {
     "SKG Incidentes": {"Q_score": 0.1629, "advantage_pp": 8.3, "delta_A": -0.0103,
@@ -1056,61 +1066,55 @@ def fig_08_kernel_heatmaps():
 
 
 def fig_08_barrido_sintetico():
+    """Figura HONESTA del barrido NB08 (datos reales del notebook)."""
     df_sweep = DF_SWEEP_08
     alphas = df_sweep["alpha"].values
-    # Tres factores de Q + score + ventaja + scatter Q↔ventaja (coherente).
     fig, axes = plt.subplots(2, 3, figsize=(15, 9))
     fig.suptitle(
-        r"Barrido sintético controlado: factores de $\mathcal{Q}(\mathcal{D})$ vs $\alpha$"
+        r"Barrido sintético NB08 (datos reales): $\alpha$ = mezcla de etiquetas, $X$ fijo"
         "\n"
-        r"Protocolo corregido: $\alpha$ inyecta estructura (no solo etiquetas) · "
-        r"$\mathcal{Q}=w_1\Delta A+w_2\hat{d}_F+w_3\Delta H$",
-        fontsize=12, fontweight="bold",
+        r"Hallazgo robusto: $\rho_S(\alpha,\Delta A)=+0.833$ ($p=0.005$). "
+        r"$d_F$/$H$/$g$ constantes por diseño. "
+        r"No equivale a $\rho(\mathcal{Q},\mathrm{ventaja})$.",
+        fontsize=11, fontweight="bold",
     )
-    factor_panels = [
-        ("delta_A", r"$\Delta A$", r"Factor 1 — $\Delta A$" "\n" "alineación cuántico vs clásico", "#1565C0"),
-        ("d_F", r"$d_F$", r"Factor 2 — $d_F$" "\n" "divergencia geométrica", "#6A1B9A"),
-        ("delta_H", r"$\Delta H$", r"Factor 3 — $\Delta H$" "\n" "diversidad espectral relativa", "#00838F"),
-        ("Q_score", r"$\mathcal{Q}(\mathcal{D})$", r"Score compuesto $\mathcal{Q}$" "\n" "síntesis de los 3 factores", "#2E7D32"),
-        ("advantage_pp", "Ventaja (pp)", "Ventaja empírica QSVM\n(ground truth del barrido)", "#C62828"),
+    panels = [
+        ("delta_A", r"$\Delta A$",
+         r"$\Delta A$ vs $\alpha$" "\n" r"(sí varía · $\rho_S=+0.833$)", "#1565C0"),
+        ("A_Q", r"$A(K_Q,K_y)$",
+         r"$A_Q$ vs $\alpha$" "\n" "(alineación cuántica)", QUANTUM_COLOR),
+        ("A_cl", r"$A(K_{cl},K_y)$",
+         r"$A_{cl}$ vs $\alpha$" "\n" "(alineación clásica)", CLASSICAL_COLOR),
+        ("d_F", r"$d_F$",
+         r"$d_F$ vs $\alpha$" "\n" "(constante: $X$ fijo)", "#6A1B9A"),
+        ("H_Q", r"$H(K_Q)$",
+         r"$H(K_Q)$ vs $\alpha$" "\n" "(constante: $X$ fijo)", "#00838F"),
+        ("advantage_pp", "Ventaja (pp)",
+         r"Ventaja QSVM vs $\alpha$" "\n" r"($\rho_S(\alpha,\mathrm{adv})\approx 0.34$, n.s.)",
+         "#C62828"),
     ]
-    for ax, (col, ylabel, title, color) in zip(list(axes.flat)[:5], factor_panels):
-        y_vals = df_sweep[col].values
+    for ax, (col, ylabel, title, color) in zip(axes.flat, panels):
+        y_vals = df_sweep[col].values.astype(float)
         ax.plot(alphas, y_vals, "o-", color=color, linewidth=2.5, markersize=7,
                 markerfacecolor="white", markeredgecolor=color, markeredgewidth=2)
         ax.axhline(0, color="gray", linewidth=0.8, linestyle="--", alpha=0.5)
-        ax.fill_between(alphas, y_vals, 0, alpha=0.08, color=color)
-        ax.set_xlabel(r"$\alpha$ (estructura cuántica inyectada)")
+        if np.nanmax(y_vals) > 0 and np.nanmin(y_vals) < 0:
+            ax.fill_between(alphas, y_vals, 0, alpha=0.08, color=color)
+        ax.set_xlabel(r"$\alpha$ (fracción etiquetas cuánticas)")
         ax.set_ylabel(ylabel)
-        ax.set_title(title)
+        ax.set_title(title, fontsize=11)
         ax.set_xticks(alphas)
         ax.set_xticklabels([str(a) for a in alphas], rotation=45)
-        rho, pval = spearmanr(alphas, y_vals)
-        sign = "↑" if rho > 0 else "↓"
-        ax.text(0.05, 0.95, f"$\\rho_S(\\alpha,\\cdot)$={rho:.3f} {sign}\np={pval:.3f}",
-                transform=ax.transAxes, fontsize=9, verticalalignment="top",
-                bbox=dict(boxstyle="round", facecolor="wheat", alpha=0.4))
-
-    # Panel 6: Q vs ventaja (la evidencia citada)
-    ax = axes.flat[5]
-    q_vals = df_sweep["Q_score"].values
-    adv_vals = df_sweep["advantage_pp"].values
-    ax.scatter(q_vals, adv_vals, s=80, color="#2E7D32", zorder=5, edgecolors="white", linewidths=1.2)
-    for a, q, adv in zip(alphas, q_vals, adv_vals):
-        ax.annotate(f"{a:.2f}", (q, adv), textcoords="offset points", xytext=(4, 4), fontsize=8)
-    rho_qa, p_qa = spearmanr(q_vals, adv_vals)
-    ax.axhline(0, color="gray", lw=0.8, ls="--", alpha=0.6)
-    ax.axvline(0, color="gray", lw=0.8, ls="--", alpha=0.6)
-    ax.set_xlabel(r"Score $\mathcal{Q}(\mathcal{D})$")
-    ax.set_ylabel("Ventaja empírica (pp)")
-    ax.set_title(
-        r"$\mathcal{Q}$ vs ventaja" "\n"
-        f"$\\rho_S$={rho_qa:.3f} (p={p_qa:.3f}, n=9)"
-    )
-    ax.text(0.05, 0.95,
-            "Evidencia principal:\nel score anticipa\nla ventaja en el\nbarrido controlado",
-            transform=ax.transAxes, fontsize=9, va="top",
-            bbox=dict(boxstyle="round", facecolor="wheat", alpha=0.4))
+        if np.nanstd(y_vals) < 1e-12:
+            ax.text(0.05, 0.95, "constante\n(protocolo $X$ fijo)",
+                    transform=ax.transAxes, fontsize=9, va="top",
+                    bbox=dict(boxstyle="round", facecolor="#FFECB3", alpha=0.7))
+        else:
+            rho, pval = spearmanr(alphas, y_vals)
+            sign = "↑" if rho > 0 else "↓"
+            ax.text(0.05, 0.95, f"$\\rho_S(\\alpha,\\cdot)$={rho:.3f} {sign}\np={pval:.3f}",
+                    transform=ax.transAxes, fontsize=9, va="top",
+                    bbox=dict(boxstyle="round", facecolor="wheat", alpha=0.4))
     plt.tight_layout()
     save_fig("08_barrido_sintetico_alpha.png")
 

@@ -20,7 +20,7 @@ Con profundidad $p=1$, el QAOA reduce el coste de asignación de recursos en un 
 VQE converge al óptimo en instancias de hasta 6 activos, con una complejidad de circuito polinómica frente a la búsqueda exhaustiva exponencial \citep{peruzzo2014}. Para instancias mayores, la optimización cuadrática clásica sigue siendo superior en hardware simulado NISQ.
 
 \item \textbf{El score de cuanticidad $\mathcal{Q}(D)$ es un diagnóstico útil, no un oráculo de despliegue.} \label{conc:c1}
-La Conjetura~1 queda validada de forma parcial: $\rho_S = 0.833$ ($p = 0.005$) en el barrido sintético ($n=9$) es la evidencia principal; $\rho_S = 0.866$ sobre tres datasets vs.\ RBF ($n=3$) es orientativa y \textbf{no} implica que SKG sea cuántico-nativo. $d_F$ es el componente más informativo; $\Delta A$ se degrada con PCA a 2 qubits. Regla operativa: $\mathcal{Q}>0$ vs.\ RBF debe cruzarse siempre con GB/RF y, cuando exista, con $\mathcal{Q}_{\mathrm{rob}}$.
+La Conjetura~1 queda validada de forma parcial: en el barrido NB08 ($n=9$, $X$ fijo) $\rho_S(\alpha,\Delta A)=0.833$ ($p=0.005$) es el hallazgo robusto; \textbf{no} se interpreta como $\rho(\mathcal{Q},\mathrm{ventaja})$. $\rho_S=0.866$ sobre tres datasets vs.\ RBF ($n=3$) es orientativa y \textbf{no} implica que SKG sea cuántico-nativo. Regla operativa: $\mathcal{Q}>0$ vs.\ RBF debe cruzarse siempre con GB/RF y, cuando exista, con $\mathcal{Q}_{\mathrm{rob}}$.
 
 \item \textbf{El Framework QCR se plantea formalmente, con evidencia preliminar condicionada.} \label{conc:c2}
 La Conjetura~2 se define como contribución abierta. Notebook~09 reportó lifts \emph{vs.\ RBF} (re-uploading en Telco). Bajo $\mathcal{Q}_{\mathrm{rob}}$ (Sección~\ref{sec:qml_v2_revision}) Telco permanece \texttt{classical}; en SKG la rotación solo cambia geometría a \texttt{try-ZZ} sin lift de accuracy. QCR queda \textbf{planteado y delimitado} como filtro de geometría ---no como rescate operativo de SKG/Telco---; demostración fuerte = post-TFM (Capítulo~\ref{cap:futuro}).
@@ -58,7 +58,7 @@ La conclusión práctica para entornos empresariales como SKG Tecnología es: \t
 
 \subsection*{Conjetura 1 (C1): Indicadores de cuanticidad}
 
-$\mathcal{Q}(D)$ es monótonamente creciente con $\alpha$ en el barrido sintético ($\rho_S = 0.833$, $p = 0.005$, $n=9$) ---evidencia principal---. La correlación $\rho_S \approx 0.87$ sobre tres datasets vs.\ RBF ($n=3$) es orientativa y \textbf{no} implica que SKG sea cuántico-nativo. El componente más informativo es $d_F$. $\mathcal{Q}>0$ debe cruzarse siempre con GB/RF y $\mathcal{Q}_{\mathrm{rob}}$; la validez depende de la reducción dimensional (PCA vs SelectKBest).
+En el barrido NB08 ($n=9$), $\Delta A$ crece con $\alpha$ ($\rho_S=0.833$, $p=0.005$); $d_F$/$H$ quedan planos porque $X$ es fijo. Eso \textbf{no} demuestra que $\mathcal{Q}$ prediga ventaja con ese $\rho$. La correlación $\rho_S\approx 0.87$ sobre tres datasets vs.\ RBF ($n=3$) es orientativa y \textbf{no} implica que SKG sea cuántico-nativo. $\mathcal{Q}>0$ debe cruzarse siempre con GB/RF y $\mathcal{Q}_{\mathrm{rob}}$.
 
 \subsection*{Conjetura 2 (C2): Framework QCR}
 
@@ -99,7 +99,7 @@ Este trabajo contribuye a la literatura con:
 \begin{enumerate}
     \item \textbf{Evidencia empírica} sobre condiciones reales de ventaja cuántica usando datos empresariales propietarios (SKG Tecnología, Bogotá), evaluada en nueve casos de uso con tres tipos de dataset cada uno cuando aplica.
     \item \textbf{Metodología de evaluación comparativa reproducible} sobre tres familias de problemas (clasificación, regresión y optimización combinatoria), con código abierto en Qiskit~2.3.0.
-    \item \textbf{El indicador $\mathcal{Q}(D)$}: score compuesto de cuanticidad basado en alineación de kernels, entropía espectral y distancia de Frobenius, con correlación $\rho_S = 0.833$ ($p=0.005$) sobre barrido sintético.
+    \item \textbf{El indicador $\mathcal{Q}(D)$}: score compuesto de cuanticidad ($\Delta A$, $d_F$, $\Delta H$), con evidencia parcial en barrido NB08: $\rho_S(\alpha,\Delta A)=0.833$ ($p=0.005$); sin reclamar aún $\rho(\mathcal{Q},\mathrm{ventaja})$ equivalente.
     \item \textbf{El Framework QCR}: planteado formalmente (protocolo de cuatro pasos + Conjetura~\ref{conj:qcr}); Notebook~09 reportó $+4.2$~pp en Telco, matizado por $\mathcal{Q}_{\mathrm{rob}}$ (Sección~\ref{sec:qml_v2_revision}). Demostración fuerte = post-TFM.
     \item \textbf{El prototipo de arquitectura híbrida cuántico-clásica}: patrón de integración QAOA-COBYLA con criterios explícitos de activación según el tipo de problema, demostrado sobre el conjunto dominante mínimo (NP-difícil) y generalizable a cualquier problema formulable como QUBO en entornos empresariales.
     \item \textbf{Caracterización de la brecha} entre madurez metodológica y madurez de hardware en el estado actual de la computación cuántica aplicada a ciencia de datos.

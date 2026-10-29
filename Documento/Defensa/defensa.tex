@@ -515,13 +515,14 @@ $\rightarrow$ un número $\mathcal{Q}(\mathcal{D})$
 \end{column}
 \begin{column}{0.40\textwidth}
 \begin{block}{Evidencia (TFM)}
-Barrido $\alpha$ ($n{=}9$): inyectamos
-estructura y medimos los mismos
-factores ($\Delta A$, $d_F$, $\Delta H$).\\[0.25em]
-$\rho_S(\mathcal{Q},\mathrm{ventaja}){=}0.833$
+Barrido $\alpha$ ($n{=}9$, NB08):
+mezcla de etiquetas, $X$ fijo.\\[0.25em]
+Hallazgo robusto:
+$\rho_S(\alpha,\Delta A){=}0.833$
 ($p{=}0.005$).\\[0.25em]
-{\footnotesize El score anticipa
-\emph{cuándo} conviene lo cuántico.}
+{\footnotesize $d_F$/$H$ constantes por diseño;
+no confundir con
+$\rho(\mathcal{Q},\mathrm{ventaja})$.}
 \end{block}
 \vspace{0.5em}
 \begin{block}{Propuesta}
@@ -569,81 +570,27 @@ Siempre contrastar con el \textbf{clásico}
 \includegraphics[width=\linewidth,height=0.78\textheight,keepaspectratio]{08_barrido_sintetico_alpha.png}
 \end{column}
 \begin{column}{0.36\textwidth}
-\begin{block}{Qué muestra}
+\begin{block}{Qué es (NB08 real)}
 {\footnotesize
 \begin{itemize}
-  \item $\alpha$ inyecta \textbf{estructura}
-        (no solo etiquetas).
-  \item Suben los tres factores
-        ($\Delta A$, $d_F$, $\Delta H$)
-        y el score $\mathcal{Q}$.
-  \item $\rho_S(\mathcal{Q},\mathrm{ventaja}){=}0.833$
-        ($p{=}0.005$, $n{=}9$):
-        el score \emph{anticipa}
-        la ventaja en el barrido.
+  \item $\alpha$: fracción de etiquetas
+        cuánticas ($X$ fijo).
+  \item $\Delta A$ crece con $\alpha$:
+        $\rho_S{=}0.833$ ($p{=}0.005$).
+  \item $d_F$ y $H$ \textbf{constantes}
+        (kernels no cambian con labels).
+  \item La ventaja supervisada es
+        ruidosa ($\rho_S{\approx}0.34$).
 \end{itemize}}
 \end{block}
-{\footnotesize Mismos factores que en la
-siguiente diapositiva (3 datasets).}
-\end{column}
-\end{columns}
-\end{frame}
-
-\begin{frame}{Validación P1 --- factores de $\mathcal{Q}$ en 3 datasets}
-\begin{columns}[T]
-\begin{column}{0.62\textwidth}
-\centering
-\includegraphics[width=\linewidth,height=0.78\textheight,keepaspectratio]{08_test_cuanticidad_datasets.png}
-\end{column}
-\begin{column}{0.36\textwidth}
-\begin{block}{Qué se mide}
+\begin{alertblock}{Límite}
 {\footnotesize
-Mismos factores que el barrido $\alpha$,
-ahora en nativo / SKG / Telco:
-\begin{itemize}
-  \item $\Delta A$ --- alineación
-  \item $\hat{d}_F$ --- geometría
-  \item $\Delta H$ --- diversidad /
-        concentración
-\end{itemize}
-$\Rightarrow$ score
-$\mathcal{Q}=w_1\Delta A+w_2\hat{d}_F+w_3\Delta H$.}
-\end{block}
-\vspace{0.35em}
-\begin{block}{Lectura}
-{\footnotesize
-Tres perfiles distintos
-(p.~ej.\ Telco: $\Delta H{=}{-}1.13$).\\[0.25em]
-Diagnóstico \emph{a priori} ---
-no sustituye validar vs.\ el clásico.}
-\end{block}
-\end{column}
-\end{columns}
-\end{frame}
-
-\begin{frame}{Validación P1 --- geometría de kernel (contraste de bloques)}
-\begin{columns}[T]
-\begin{column}{0.62\textwidth}
-\centering
-\includegraphics[width=\linewidth,height=0.78\textheight,keepaspectratio]{08_kernel_heatmaps_comparativa.png}
-\end{column}
-\begin{column}{0.36\textwidth}
-\begin{block}{Qué mirar}
-{\footnotesize
-Contraste $=$ similitud media
-dentro de clase $-$ entre clases.\\[0.35em]
-\begin{itemize}
-  \item \textbf{Nativo:} $K_Q$ marca
-        bloques; el clásico no.
-  \item \textbf{SKG:} contraste
-        similar Q$\approx$C.
-  \item \textbf{Telco:} el clásico
-        marca más que $K_Q$.
-\end{itemize}}
-\end{block}
-{\footnotesize Correlato visual de
-$\Delta A$ / $d_F$ / $\Delta H$ ---
-no es el veredicto operativo.}
+No afirmar que $\mathcal{Q}$ predice
+ventaja con $\rho{=}0.833$:
+ese número es $\rho(\alpha,\Delta A)$.
+Un barrido structure-aware queda
+como trabajo futuro.}
+\end{alertblock}
 \end{column}
 \end{columns}
 \end{frame}
@@ -743,7 +690,7 @@ $\neq$ ventaja frente al mejor \textbf{clásico}; bajo $\mathcal{Q}_{\mathrm{rob
 \begin{frame}{Conclusiones (III) --- conjeturas y adopción}
 \begin{enumerate}
   \setcounter{enumi}{10}
-  \item $\mathcal{Q}(\mathcal{D})$: diagnóstico útil en barrido sintético ($\rho_S{=}0.833$);
+  \item $\mathcal{Q}(\mathcal{D})$: en barrido NB08, $\rho_S(\alpha,\Delta A){=}0.833$; no confundir con predicción de ventaja;
         en reales, $n$ pequeño y matizado por $\mathcal{Q}_{\mathrm{rob}}$.
   \item QCR: \textbf{planteado formalmente}; evidencia preliminar; no demostración ni rescate operativo.
   \item Adopción recomendada: \textbf{selectiva e híbrida} --- módulo cuántico como

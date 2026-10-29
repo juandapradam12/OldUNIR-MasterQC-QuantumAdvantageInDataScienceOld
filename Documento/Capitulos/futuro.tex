@@ -83,7 +83,7 @@ Finalmente, desde una perspectiva académica, las siguientes extensiones teóric
 
 \section[Extensión del score de cuanticidad]{Extensión del score de cuanticidad $\mathcal{Q}(\mathcal{D})$}
 
-El Capítulo~\ref{cap:investigacion_original} propone y valida empíricamente el score compuesto $\mathcal{Q}(\mathcal{D}) = w_1 \Delta A + w_2 \hat{d}_F + w_3 \Delta H$ como predictor del ranking de ventaja QSVM, con $\rho_S = 0.833$ ($p=0.005$) en un barrido sintético de nueve configuraciones. Sin embargo, la validación sobre los tres datasets reales del TFM ($n=3$) constituye evidencia orientativa, no concluyente. Las siguientes extensiones son necesarias para consolidar el resultado:
+El Capítulo~\ref{cap:investigacion_original} propone el score compuesto $\mathcal{Q}(\mathcal{D}) = w_1 \Delta A + w_2 \hat{d}_F + w_3 \Delta H$. El barrido NB08 ($n=9$, $X$ fijo) muestra $\rho_S(\alpha,\Delta A)=0.833$ ($p=0.005$), pero \textbf{no} valida aún a $\mathcal{Q}$ como predictor de ventaja bajo un protocolo structure-aware ($d_F$/$H$ quedaron constantes). La validación sobre tres datasets reales ($n=3$) es orientativa. Extensiones necesarias:
 
 \begin{itemize}
     \item \textbf{Validación sobre benchmarks con ventaja garantizada:} evaluar $\mathcal{Q}(\mathcal{D})$ sobre datasets de Bravyi et al. (2020) donde existe separación cuántico-clásica demostrada formalmente, verificando que $\mathcal{Q} > 0$ en todos ellos.
