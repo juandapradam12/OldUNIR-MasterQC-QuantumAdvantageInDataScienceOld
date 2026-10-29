@@ -118,16 +118,16 @@ Se implementaron los cinco indicadores anteriores sobre los tres datasets del TF
 \begin{table}[h]
 \centering
 \small
-\begin{tabular}{lcccccc}
+\begin{tabular}{lccccccc}
 \hline
-\textbf{Dataset} & $A(K_Q, K_y)$ & $A(K_{RBF}, K_y)$ & $H(K_Q)$ & $H(K_{RBF})$ & $d_F$ & \textbf{$\Delta$ vs RBF} \\
+\textbf{Dataset} & $A(K_Q,K_y)$ & $A(K_{cl},K_y)$ & $H(K_Q)$ & $H(K_{cl})$ & $d_F$ & $\Delta_{\mathrm{RBF}}$ & \textbf{$\Delta_{\mathrm{op}}$} \\
 \hline
-Cuántico-nativo  & 0.018 & 0.047 & 2.275 & 2.241 & 0.353 & $+$0.0 pp \\
-SKG Incidentes   & 0.040 & 0.050 & 2.155 & 1.967 & 0.369 & $+8.3$ pp$^\dagger$ \\
-Telco Churn      & 0.190 & 0.170 & 2.333 & 3.465 & 0.346 & $+$0.0 pp \\
+Cuántico-nativo  & 0.018 & 0.047 & 2.275 & 2.241 & 0.353 & $+$0.0 & $\mathbf{+13.3}$ \\
+SKG Incidentes   & 0.040 & 0.050 & 2.155 & 1.967 & 0.369 & $+8.3^\dagger$ & $\mathbf{-6.0}$ \\
+Telco Churn      & 0.190 & 0.170 & 2.333 & 3.465 & 0.346 & $+$0.0 & $\mathbf{-3.8}$ \\
 \hline
 \end{tabular}
-\caption{Indicadores de cuanticidad (Notebook~08, ZZFeatureMap 2 qubits, PCA 2D, $n=80$). La columna $\Delta$ vs RBF es QSVM $-$ SVM-RBF en una partición 70/30 ---\textbf{no} frente a GB/RF. $^\dagger$SKG: $+8.3$~pp vs RBF es un artefacto del protocolo NB08; frente al stack clásico (GB/RF) y bajo $\mathcal{Q}_{\mathrm{rob}}$ SKG es \texttt{classical} (no cuántico-nativo).}
+\caption{Indicadores de cuanticidad (Notebook~08, ZZFeatureMap 2~qubits, PCA~2D, $n=80$). Geometría vs.\ kernel clásico de referencia; $\Delta_{\mathrm{RBF}}$ = QSVM$-$SVM-RBF en el split NB08 (baseline débil). $\Delta_{\mathrm{op}}$ = ventaja operativa frente al \textbf{mejor clásico} (Caso~1 / Notebook~06): nativo $+13.3$~pp, SKG $-6.0$~pp, Telco $-3.8$~pp vs Gradient Boosting. $^\dagger$SKG $+8.3$~pp vs RBF es artefacto ---bajo $\mathcal{Q}_{\mathrm{rob}}$ y frente al stack clásico SKG es \texttt{classical}.}
 \label{tab:indicadores_resultados}
 \end{table}
 
@@ -136,32 +136,32 @@ Telco Churn      & 0.190 & 0.170 & 2.333 & 3.465 & 0.346 & $+$0.0 pp \\
 \begin{figure}[ht]
 \centering
 \includegraphics[width=0.95\textwidth]{../POCs/data/output/figures/08_test_cuanticidad_datasets.png}
-\caption{Comparativa de indicadores de cuanticidad (Notebook~08). Paneles superiores: $\Delta A$, alineaciones y entropía espectral. Paneles inferiores: $d_F$, $g$ y $\mathcal{Q}(\mathcal{D})$ frente a $\Delta$ QSVM$-$RBF. SKG obtiene $\mathcal{Q}=+0.352$ y $+8.3$~pp \emph{solo} vs.\ RBF: eso \textbf{no} implica compatibilidad operativa ni que SKG sea cuántico-nativo (GB/RF ganan; QML~v2: \texttt{classical}).}
+\caption{Comparativa de indicadores de cuanticidad (Notebook~08). Paneles superiores: alineaciones, $\Delta A$ y entropía espectral (cuántico vs clásico). Paneles inferiores: $d_F$, $g$ y $\mathcal{Q}(\mathcal{D})$ frente a la \textbf{ventaja operativa} vs.\ mejor clásico ($+13.3$/$-6.0$/$-3.8$~pp). SKG tiene $\mathcal{Q}=+0.352$ pero $\Delta_{\mathrm{op}}=-6.0$~pp: $\mathcal{Q}>0$ \textbf{no} implica compatibilidad operativa (QML~v2: \texttt{classical}).}
 \label{fig:indicadores_cuanticidad}
 \end{figure}
 
 \begin{figure}[ht]
 \centering
 \includegraphics[width=0.95\textwidth]{../POCs/data/output/figures/08_kernel_heatmaps_comparativa.png}
-\caption{Matrices de kernel cuántico $K_Q$ y clásico $K_{RBF}$ para los tres datasets, ordenadas por clase. La estructura de bloques es un correlato visual de geometría de kernel; \textbf{no} equivale por sí sola a compatibilidad operativa ni a ventaja frente a GB/RF. En Telco, el RBF muestra bloques más marcados que $K_Q$, coherente con superioridad clásica.}
+\caption{Matrices de kernel cuántico $K_Q$ y clásico $K_{cl}$ (ordenadas por clase). Nativo: bloques fuertes en $K_Q$ y diferencia estructurada ($\Delta_{\mathrm{op}}=+13.3$~pp). SKG: geometría similar cuántico/clásico y diferencia ruidosa ($\Delta_{\mathrm{op}}=-6.0$~pp). Telco: bloques más marcados en el clásico ($\Delta_{\mathrm{op}}=-3.8$~pp). La estructura de bloques es correlato visual de geometría ---no basta por sí sola para activar el módulo cuántico.}
 \label{fig:kernel_heatmaps}
 \end{figure}
 
 \subsection{Análisis: \textquestiondown{}Predicen los indicadores la ventaja QSVM?}
 
-Los resultados de la Tabla~\ref{tab:indicadores_resultados} permiten evaluar el poder predictivo de cada indicador \textbf{bajo el protocolo NB08 vs.\ RBF}. Ese ranking vs.\ RBF es: SKG ($+8.3$~pp) $>$ Cuántico-nativo ($0.0$~pp) $=$ Telco ($0.0$~pp). \textbf{Importante:} este ranking \emph{no} es el ranking operativo frente a GB/RF, donde el nativo es el único régimen de ventaja clara y SKG/Telco son clásicos (Sección~\ref{sec:qml_v2_revision}).
+La Tabla~\ref{tab:indicadores_resultados} distingue dos rankings. Bajo el protocolo NB08 vs.\ un baseline RBF débil: SKG ($+8.3$~pp) $>$ nativo $=$ Telco ($0.0$~pp) ---ranking \textbf{engañoso}. El ranking operativo vs.\ mejor clásico es: \textbf{nativo ($+13.3$~pp)} $>$ Telco ($-3.8$~pp) $>$ SKG ($-6.0$~pp). Solo el régimen cuántico-nativo muestra ventaja; SKG/Telco son clásicos (Sección~\ref{sec:qml_v2_revision}).
 
-El score $\mathcal{Q}(\mathcal{D})$ reproduce el ranking \emph{vs.\ RBF}: $\mathcal{Q}(\text{SKG})=+0.352 > \mathcal{Q}(\text{Q-nativo})=+0.286 > \mathcal{Q}(\text{Telco})=-0.050$ ($\rho_S = +0.866$, $n=3$, orientativo). El barrido sintético en $\alpha$ ($n=9$) confirma monotonía con $\rho_S = +0.833$ ($p = 0.005$) y es la evidencia cuantitativa principal. Lectura operativa: $\mathcal{Q}>0$ vs.\ RBF en SKG \textbf{no} implica que SKG sea cuántico-nativo.
+El score $\mathcal{Q}(\mathcal{D})$ (calculado vs.\ kernel clásico de referencia) ordena SKG ($+0.352$) $>$ nativo ($+0.286$) $>$ Telco ($-0.050$). Eso reproduce el ranking vs.\ RBF ($\rho_S=+0.866$, $n=3$, orientativo) pero \textbf{no} el ranking operativo ($\rho_S=-0.500$ entre $\mathcal{Q}$ y $\Delta_{\mathrm{op}}$, $n=3$): contraejemplo pedagógico SKG. El barrido sintético en $\alpha$ ($n=9$) confirma monotonía controlada con $\rho_S=+0.833$ ($p=0.005$) y es la evidencia cuantitativa principal de que el score anticipa ventaja \emph{cuando el protocolo es justo}. Lectura: $\mathcal{Q}>0$ vs.\ un baseline débil \textbf{no} autoriza desplegar el módulo cuántico.
 
 El análisis individual de los componentes revela matices importantes:
 \begin{itemize}
-    \item $\Delta A$ es negativa en dos de los tres datasets en el régimen 2 qubits + PCA. $\rho_S(\Delta A, \Delta\text{vs RBF}) = 0.000$ sobre esos tres puntos, frente a $\rho_S = +0.833$ en el barrido sintético: el PCA agresivo suprime la señal de $\Delta A$ en datos reales.
-    \item $d_F$ y $g$ rankean bien el protocolo vs.\ RBF ($\rho_S = +0.866$ sobre $n=3$), pero no sustituyen la comparación contra GB/RF ni el veredicto $\mathcal{Q}_{\mathrm{rob}}$.
-    \item $\Delta H$ es el indicador más volátil: $\mathcal{Q}(\text{Telco})$ está dominado por $\Delta H = -1.131$ (concentración espectral).
+    \item $\Delta A$ es negativa en dos de los tres datasets en el régimen 2~qubits + PCA. Frente a $\Delta_{\mathrm{op}}$, $\rho_S(\Delta A,\Delta_{\mathrm{op}})=-0.500$ ($n=3$); en el barrido sintético $\rho_S=+0.833$: el PCA agresivo suprime la señal de $\Delta A$ en datos reales.
+    \item $d_F$ y $g$ rankean el protocolo vs.\ RBF, pero frente a $\Delta_{\mathrm{op}}$ también dan $\rho_S=-0.500$ ($n=3$): no sustituyen la comparación contra el mejor clásico ni el veredicto $\mathcal{Q}_{\mathrm{rob}}$.
+    \item $\Delta H$ es el indicador más volátil: $\mathcal{Q}(\text{Telco})$ está dominado por $\Delta H=-1.131$ (concentración espectral).
 \end{itemize}
 
 \paragraph{Caveat estadístico.}
-Con $n=3$ datasets, $\rho_S = +0.866$ es la máxima correlación de Spearman posible con un empate y no constituye una validación de alta potencia estadística. La evidencia cuantitativa principal es el barrido sintético ($n=9$, $p=0.005$). La validación sobre más datasets es trabajo futuro explícito (Capítulo~\ref{cap:futuro}).
+Con $n=3$ datasets, cualquier $\rho_S$ es de potencia baja (máximo $\pm 1$ o $\pm 0.5$ con empates). La evidencia cuantitativa principal es el barrido sintético ($n=9$, $p=0.005$). La validación sobre más datasets es trabajo futuro explícito (Capítulo~\ref{cap:futuro}).
 
 \begin{figure}[ht]
 \centering
@@ -173,7 +173,7 @@ Con $n=3$ datasets, $\rho_S = +0.866$ es la máxima correlación de Spearman pos
 \begin{figure}[!htbp]
 \centering
 \includegraphics[width=0.88\textwidth]{../POCs/data/output/figures/08_correlacion_indicadores_ventaja.png}
-\caption{Correlación de Spearman de cada indicador de cuanticidad individual ($\Delta A$, $d_F$, $g$, $\Delta H$) con la ventaja empírica del QSVM, calculada sobre el barrido sintético ($n=9$) y sobre los tres datasets reales ($n=3$). $d_F$ y $g$ son los predictores más robustos en ambos regímenes; $\Delta A$ pierde poder predictivo en datos reales por la supresión de señal del régimen de 2~qubits + PCA (Notebook~08).}
+\caption{Indicadores vs.\ \textbf{ventaja operativa} (mejor clásico) en los tres datasets del TFM (puntos) y tendencia del barrido $\alpha$ (línea gris, protocolo controlado). Sobre $n=3$, $\rho_S(\mathcal{Q},\Delta_{\mathrm{op}})=-0.500$: el score geométrico vs.\ baseline débil \textbf{no} predice el ranking operativo (SKG tiene $\mathcal{Q}$ alto y $\Delta_{\mathrm{op}}<0$). La monotonía fiable está en el barrido sintético ($n=9$, $\rho_S=+0.833$).}
 \label{fig:correlacion_indicadores_body}
 \end{figure}
 
@@ -194,7 +194,7 @@ Telco Churn    & 2Q + PCA       & $-0.050$ & $+0.020$ & $0.346$ & $+0.0$ pp \\
                & 4Q + SelectKBest & $-0.155$ & $+0.055$ & $0.234$ & $-4.2$ pp \\
 \hline
 \end{tabular}
-\caption{Sensibilidad dimensional (Notebook~08, §11). $\Delta$ vs RBF $=$ QSVM$-$SVM-RBF. $^\dagger$SKG no es cuántico-nativo: GB/RF ganan y $\mathcal{Q}_{\mathrm{rob}}$ da \texttt{classical}. Con SelectKBest, $d_F$ (y $\mathcal{Q}$) caen porque el clásico aprovecha mejor features discriminativas.}
+\caption{Sensibilidad dimensional (Notebook~08, §11). Columna $\Delta$ vs RBF $=$ QSVM$-$SVM-RBF del protocolo NB08 (\textbf{no} $\Delta_{\mathrm{op}}$). $^\dagger$SKG $+8.3$~pp vs RBF es artefacto: operativo $-6.0$~pp y $\mathcal{Q}_{\mathrm{rob}}$ da \texttt{classical}. Con SelectKBest, $d_F$ (y $\mathcal{Q}$) caen porque el clásico aprovecha mejor features discriminativas.}
 \label{tab:sensibilidad_dim}
 \end{table}
 

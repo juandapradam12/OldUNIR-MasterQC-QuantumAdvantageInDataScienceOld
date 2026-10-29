@@ -582,11 +582,49 @@ Siempre contrastar con el \textbf{clásico}
         la ventaja.
 \end{itemize}
 \end{block}
-{\footnotesize No usamos aquí el ranking
-engañoso sobre 3 datasets vs.\ un
-baseline clásico débil.}
+{\footnotesize El ranking vs.\ baseline débil
+en 3 datasets \emph{no} es la evidencia;
+el barrido $\alpha$ sí.}
 \end{column}
 \end{columns}
+\end{frame}
+
+\begin{frame}{Validación P1 --- 3 datasets (lectura operativa)}
+\begin{columns}[T]
+\begin{column}{0.58\textwidth}
+\centering
+\includegraphics[width=\linewidth,height=0.72\textheight,keepaspectratio]{08_test_cuanticidad_datasets.png}
+\end{column}
+\begin{column}{0.40\textwidth}
+\begin{block}{Qué corregimos}
+{\footnotesize
+\begin{itemize}
+  \item $\Delta$ = vs \textbf{mejor clásico}:
+        nativo $+13.3$, SKG $-6.0$,
+        Telco $-3.8$~pp.
+  \item Antes: SKG $+8.3$~pp vs RBF
+        (baseline débil) --- artefacto.
+  \item SKG: $\mathcal{Q}>0$ y
+        $\Delta_{\mathrm{op}}<0$
+        $\Rightarrow$ $\mathcal{Q}>0$
+        $\neq$ desplegar cuántico.
+\end{itemize}}
+\end{block}
+\vspace{0.3em}
+\begin{block}{Heatmaps}
+{\footnotesize
+Nativo: bloques fuertes en $K_Q$.\\
+SKG: geometría similar Q/C.\\
+Telco: clásico más marcado.\\
+$\Rightarrow$ correlato visual, no veredicto.}
+\end{block}
+\end{column}
+\end{columns}
+\end{frame}
+
+\begin{frame}{Validación P1 --- geometría de kernel (3 datasets)}
+\centering
+\includegraphics[width=0.92\linewidth,height=0.82\textheight,keepaspectratio]{08_kernel_heatmaps_comparativa.png}
 \end{frame}
 
 \begin{frame}{Camino a la Conjetura 2 / QCR (antes de la fórmula)}

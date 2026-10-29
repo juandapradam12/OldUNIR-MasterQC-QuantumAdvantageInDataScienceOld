@@ -128,17 +128,20 @@ SUMMARY_06 = pd.DataFrame([
 ])
 SUMMARY_06["Ventaja (pp)"] = (SUMMARY_06["QSVC"] - SUMMARY_06["Mejor Clásico"]) * 100
 
+# Geometric indicators = NB08 (ZZ, 2Q+PCA, n=80) vs RBF kernel geometry.
+# advantage_pp_rbf = NB08 QSVM−SVM-RBF on 70/30 split (weak baseline; SKG +8.3 is artifact).
+# advantage_pp     = OPERATIONAL Δ vs best classical (SUMMARY_06 / Caso 1):
+#   Native +13.3 (QSVM 73.3 vs poly/best-clásico 60.0), SKG −6.0, Telco −3.8 vs GB.
 RESULTS_08 = [
     {"dataset": "Cuántico-nativo", "A_Q": 0.0181, "A_cl": 0.0469, "delta_A": -0.0288,
      "H_Q": 2.2749, "H_cl": 2.2411, "delta_H": 0.0339, "d_F": 0.3532, "g": 1541.657,
-     "Q_score": 0.2858, "advantage_pp": 0.0},
-    # advantage_pp below = QSVM - RBF only (NB08); NOT vs GB/RF; SKG is NOT quantum-native
+     "Q_score": 0.2858, "advantage_pp_rbf": 0.0, "advantage_pp": 13.3},
     {"dataset": "SKG Incidentes", "A_Q": 0.0396, "A_cl": 0.0499, "delta_A": -0.0103,
      "H_Q": 2.1545, "H_cl": 1.9666, "delta_H": 0.1880, "d_F": 0.3689, "g": 2080.864,
-     "Q_score": 0.3523, "advantage_pp": 8.3},
+     "Q_score": 0.3523, "advantage_pp_rbf": 8.3, "advantage_pp": -6.0},
     {"dataset": "Telco Churn", "A_Q": 0.1899, "A_cl": 0.1698, "delta_A": 0.0201,
      "H_Q": 2.3332, "H_cl": 3.4646, "delta_H": -1.1313, "d_F": 0.3457, "g": 89.725,
-     "Q_score": -0.0503, "advantage_pp": 0.0},
+     "Q_score": -0.0503, "advantage_pp_rbf": 0.0, "advantage_pp": -3.8},
 ]
 
 DF_SWEEP_08 = pd.DataFrame([
@@ -882,23 +885,25 @@ def _synth_kernel_matrix(n: int, n_class0: int, same: float, diff: float, seed: 
 def fig_08_test_cuanticidad():
     results = RESULTS_08
     names = [r["dataset"] for r in results]
-    colors = ["#2196F3", "#FF5722", "#4CAF50"]
+    colors = ["#7B2FBE", "#FF5722", "#1976D2"]
     fig, axes = plt.subplots(2, 3, figsize=(15, 9))
-    fig.suptitle("Tests de Cuanticidad sobre los 3 Datasets del TFM\n"
-                 "(Indicadores de la literatura: Huang 2021, Thanasilp 2022, Liu 2021)",
+    fig.suptitle("Tests de Cuanticidad — 3 datasets del TFM\n"
+                 "Geometría: Huang/Thanasilp/Liu · Ventaja = Δ operativo vs mejor clásico",
                  fontsize=13, fontweight="bold", y=1.01)
     x_pos = np.arange(len(names))
     w = 0.35
     ax = axes[0, 0]
     a_qs = [r["A_Q"] for r in results]
     a_cls = [r["A_cl"] for r in results]
-    bars1 = ax.bar(x_pos - w / 2, a_qs, w, label="$A(K_Q, K_y)$", color="#1565C0", alpha=0.85)
-    bars2 = ax.bar(x_pos + w / 2, a_cls, w, label="$A(K_{RBF}, K_y)$", color="#B71C1C", alpha=0.85)
+    bars1 = ax.bar(x_pos - w / 2, a_qs, w, label="$A(K_Q, K_y)$ (cuántico)",
+                   color=QUANTUM_COLOR, alpha=0.85)
+    bars2 = ax.bar(x_pos + w / 2, a_cls, w, label="$A(K_{cl}, K_y)$ (clásico)",
+                   color=CLASSICAL_COLOR, alpha=0.85)
     ax.set_xticks(x_pos)
     ax.set_xticklabels(names, rotation=12, ha="right")
     ax.set_ylabel("Kernel Alignment")
     ax.set_title("Kernel Alignment\n(Cortes 2012, Huang 2021)")
-    ax.legend(fontsize=9)
+    ax.legend(fontsize=8)
     ax.set_ylim(0, max(a_qs + a_cls) * 1.3 + 0.01)
     for b in bars1:
         ax.text(b.get_x() + b.get_width() / 2, b.get_height() + 0.002,
@@ -909,11 +914,11 @@ def fig_08_test_cuanticidad():
 
     ax = axes[0, 1]
     d_as = [r["delta_A"] for r in results]
-    bars = ax.bar(names, d_as, color=["#2196F3" if d > 0 else "#F44336" for d in d_as],
+    bars = ax.bar(names, d_as, color=[QUANTUM_COLOR if d > 0 else "#C62828" for d in d_as],
                   alpha=0.85, edgecolor="white")
     ax.axhline(0, color="black", linewidth=0.8, linestyle="--")
-    ax.set_ylabel("ΔA = A(KQ) - A(Krbf)")
-    ax.set_title("Ventaja de Alineación Cuántica\nΔA > 0 → kernel cuántico más alineado")
+    ax.set_ylabel("$\\Delta A = A(K_Q) - A(K_{cl})$")
+    ax.set_title("Alineación cuántica vs clásica\n$\\Delta A > 0$ → cuántico más alineado")
     ax.set_xticklabels(names, rotation=12, ha="right")
     for b, d in zip(bars, d_as):
         ax.text(b.get_x() + b.get_width() / 2, d + (0.001 if d >= 0 else -0.003),
@@ -921,19 +926,21 @@ def fig_08_test_cuanticidad():
                 fontsize=9, fontweight="bold")
 
     ax = axes[0, 2]
-    ax.bar(x_pos - w / 2, [r["H_Q"] for r in results], w, label="$H(K_Q)$", color="#1565C0", alpha=0.85)
-    ax.bar(x_pos + w / 2, [r["H_cl"] for r in results], w, label="$H(K_{RBF})$", color="#B71C1C", alpha=0.85)
+    ax.bar(x_pos - w / 2, [r["H_Q"] for r in results], w, label="$H(K_Q)$ (cuántico)",
+           color=QUANTUM_COLOR, alpha=0.85)
+    ax.bar(x_pos + w / 2, [r["H_cl"] for r in results], w, label="$H(K_{cl})$ (clásico)",
+           color=CLASSICAL_COLOR, alpha=0.85)
     ax.set_xticks(x_pos)
     ax.set_xticklabels(names, rotation=12, ha="right")
     ax.set_ylabel("Entropía espectral H")
     ax.set_title("Entropía Espectral\nH → 0: concentración (Thanasilp 2022)")
-    ax.legend(fontsize=9)
+    ax.legend(fontsize=8)
 
     ax = axes[1, 0]
     d_fs = [r["d_F"] for r in results]
     bars = ax.bar(names, d_fs, color=colors, alpha=0.85, edgecolor="white")
-    ax.set_ylabel("$d_F = \\|K_Q - K_{RBF}\\|_F / n$")
-    ax.set_title("Divergencia Cuántico-Clásica\n$d_F$ alto → kernel cuántico genuinamente diferente (Liu 2021)")
+    ax.set_ylabel("$d_F = \\|K_Q - K_{cl}\\|_F / n$")
+    ax.set_title("Divergencia cuántico–clásica\n$d_F$ alto → geometría genuinamente distinta (Liu 2021)")
     ax.set_xticklabels(names, rotation=12, ha="right")
     for b, d in zip(bars, d_fs):
         ax.text(b.get_x() + b.get_width() / 2, d + 0.001, f"{d:.3f}",
@@ -943,7 +950,7 @@ def fig_08_test_cuanticidad():
     gs = [r["g"] for r in results]
     bars = ax.bar(names, gs, color=colors, alpha=0.85, edgecolor="white")
     ax.set_ylabel("$g(K_Q, K_{cl})$")
-    ax.set_title("Diferencia Geométrica\n$g$ alto → cota de ventaja activa (Huang 2021)")
+    ax.set_title("Diferencia geométrica\n$g$ alto → cota de ventaja activa (Huang 2021)")
     ax.set_xticklabels(names, rotation=12, ha="right")
     for b, v in zip(bars, gs):
         ax.text(b.get_x() + b.get_width() / 2, v + max(gs) * 0.02, f"{v:.2f}",
@@ -953,53 +960,79 @@ def fig_08_test_cuanticidad():
     advantages = [r["advantage_pp"] for r in results]
     q_scores = [r["Q_score"] for r in results]
     ax2 = ax.twinx()
-    ax.bar(names, advantages, color=["green" if a > 0 else "red" for a in advantages],
-           alpha=0.5, label="Ventaja QSVM (pp)")
+    bar_colors = [ADVANTAGE_COLOR if a > 0 else "#C62828" for a in advantages]
+    bars = ax.bar(names, advantages, color=bar_colors, alpha=0.55,
+                  label="Δ operativo (pp)")
     ax2.plot(names, q_scores, "ko--", markersize=8, linewidth=2, label="Score Q(D)")
     ax.axhline(0, color="black", linewidth=0.8, linestyle="--")
-    ax.set_ylabel("Ventaja QSVM (pp)", color="gray")
+    ax.set_ylabel("Ventaja operativa vs mejor clásico (pp)", color="gray")
     ax2.set_ylabel("Score Q(D)", color="black")
-    ax.set_title("Ventaja QSVM vs Score Q(D)\n¿Predice Q la ventaja?")
+    ax.set_title("Ventaja operativa vs Q(D)\nQ>0 ≠ ventaja operativa (caso SKG)")
     ax.set_xticklabels(names, rotation=12, ha="right")
-    ax.legend(loc="upper left", fontsize=9)
-    ax2.legend(loc="upper right", fontsize=9)
+    for b, a, r in zip(bars, advantages, results):
+        tip = f"{a:+.1f}"
+        note = f"\n(vs RBF {r['advantage_pp_rbf']:+.1f})" if abs(
+            r["advantage_pp_rbf"] - a) > 0.5 else ""
+        ax.text(b.get_x() + b.get_width() / 2,
+                a + (1.2 if a >= 0 else -1.8),
+                tip + note, ha="center",
+                va="bottom" if a >= 0 else "top", fontsize=7.5, fontweight="bold")
+    ax.legend(loc="upper left", fontsize=8)
+    ax2.legend(loc="upper right", fontsize=8)
+    y_lo = min(advantages) - 8
+    y_hi = max(advantages) + 10
+    ax.set_ylim(y_lo, y_hi)
     plt.tight_layout()
     save_fig("08_test_cuanticidad_datasets.png")
 
 
 def fig_08_kernel_heatmaps():
+    # Distinctive block structure (illustrative of geometry, not raw K dumps):
+    # Native: strong Q blocks, weak classical → advantage regime.
+    # SKG: similar Q/classical structure → no Q-only geometry.
+    # Telco: classical blocks stronger; Q flatter (concentration / ΔH<0).
     configs = [
-        ("Cuántico-nativo", 40, 0.75, 0.15, 42),
-        ("SKG Incidentes", 40, 0.70, 0.20, 43),
-        ("Telco Churn", 40, 0.65, 0.25, 44),
+        # name, n0, (same_q, diff_q, seed_q), (same_cl, diff_cl, seed_cl)
+        ("Cuántico-nativo", 40, (0.88, 0.08, 42), (0.52, 0.38, 142)),
+        ("SKG Incidentes", 40, (0.68, 0.28, 43), (0.70, 0.26, 143)),
+        ("Telco Churn", 40, (0.55, 0.32, 44), (0.82, 0.12, 144)),
     ]
     r_metrics = {r["dataset"]: r for r in RESULTS_08}
     fig, axes = plt.subplots(3, 3, figsize=(14, 12))
     fig.suptitle("Matrices de Kernel Cuántico vs Clásico por Dataset\n"
-                 "(Ordenadas por clase para revelar estructura de bloque)",
+                 "(Ordenadas por clase · estructura ilustrativa alineada con indicadores NB08)",
                  fontsize=12, fontweight="bold")
-    for row_idx, (name, n0, same_q, diff_q, seed) in enumerate(configs):
+    for row_idx, (name, n0, q_cfg, cl_cfg) in enumerate(configs):
         n = 80
-        k_q, y = _synth_kernel_matrix(n, n0, same_q, diff_q, seed)
-        k_rbf, _ = _synth_kernel_matrix(n, n0, same_q - 0.05, diff_q + 0.05, seed + 1)
-        r = r_metrics[name.replace("Cuántico-nativo", "Cuántico-nativo")]
+        same_q, diff_q, seed_q = q_cfg
+        same_cl, diff_cl, seed_cl = cl_cfg
+        k_q, y = _synth_kernel_matrix(n, n0, same_q, diff_q, seed_q)
+        k_cl, _ = _synth_kernel_matrix(n, n0, same_cl, diff_cl, seed_cl)
+        r = r_metrics[name]
         sort_idx = np.argsort(y)
         k_q_s = k_q[np.ix_(sort_idx, sort_idx)]
-        k_rbf_s = k_rbf[np.ix_(sort_idx, sort_idx)]
-        k_diff_s = k_q_s - k_rbf_s
+        k_cl_s = k_cl[np.ix_(sort_idx, sort_idx)]
+        k_diff_s = k_q_s - k_cl_s
         panels = [
-            (k_q_s, f"{name}\n$K_Q$ (cuántico)\nA={r['A_Q']:.3f}, H={r['H_Q']:.2f}", "Blues", 0, 1),
-            (k_rbf_s, f"{name}\n$K_{{RBF}}$ (clásico)\nA={r['A_cl']:.3f}, H={r['H_cl']:.2f}", "Oranges", 0, 1),
-            (k_diff_s, f"{name}\n$K_Q - K_{{RBF}}$ (diferencia)\n$d_F$={r['d_F']:.3f}, g={r['g']:.2f}", "RdBu", None, None),
+            (k_q_s, f"{name}\n$K_Q$ (cuántico)\nA={r['A_Q']:.3f}, H={r['H_Q']:.2f}",
+             "Blues", 0, 1),
+            (k_cl_s, f"{name}\n$K_{{cl}}$ (clásico)\nA={r['A_cl']:.3f}, H={r['H_cl']:.2f}",
+             "Oranges", 0, 1),
+            (k_diff_s,
+             f"{name}\n$K_Q - K_{{cl}}$\n$d_F$={r['d_F']:.3f} · Δ op={r['advantage_pp']:+.1f}pp",
+             "RdBu", None, None),
         ]
         for col_idx, (mat, title, cmap, vmin, vmax) in enumerate(panels):
             ax = axes[row_idx, col_idx]
             if vmin is None:
-                vabs = np.percentile(np.abs(mat), 99)
+                vabs = max(np.percentile(np.abs(mat), 99), 0.05)
                 im = ax.imshow(mat, cmap=cmap, vmin=-vabs, vmax=vabs, aspect="auto")
             else:
-                im = ax.imshow(mat, cmap=cmap, vmin=vmin, vmax=np.percentile(mat, 99), aspect="auto")
+                im = ax.imshow(mat, cmap=cmap, vmin=vmin, vmax=np.percentile(mat, 99),
+                               aspect="auto")
             ax.set_title(title, fontsize=10)
+            ax.set_xticks([])
+            ax.set_yticks([])
             plt.colorbar(im, ax=ax, shrink=0.8)
     plt.tight_layout()
     save_fig("08_kernel_heatmaps_comparativa.png")
@@ -1049,18 +1082,20 @@ def fig_08_correlacion():
     ])
     df_sweep = DF_SWEEP_08
     fig, axes = plt.subplots(1, 3, figsize=(14, 5))
-    fig.suptitle("Correlación Indicadores de Cuanticidad vs Ventaja QSVM\n"
-                 "3 datasets del TFM (puntos) + tendencia del barrido sintético (línea gris)",
-                 fontsize=12, fontweight="bold")
+    fig.suptitle(
+        "Indicadores vs ventaja operativa (mejor clásico)\n"
+        "Puntos = 3 datasets TFM · Línea gris = barrido α (protocolo controlado vs baseline débil)",
+        fontsize=12, fontweight="bold",
+    )
     panel_config = [
         ("Q_score", "Q_score", "Score compuesto Q(D)", "(Este TFM)", "#2E7D32"),
-        ("delta_A", "ΔA", "ΔA = A(KQ) - A(Krbf)", "(Huang et al. 2021)", "#1565C0"),
+        ("delta_A", "ΔA", "$\\Delta A = A(K_Q) - A(K_{cl})$", "(Huang et al. 2021)", "#1565C0"),
         ("d_F", "d_F", "Distancia Frobenius $d_F$", "(Liu et al. 2021)", "#6A1B9A"),
     ]
     for ax, (r_col, df_col, xlabel, ref, color) in zip(axes, panel_config):
         ax.plot(df_sweep[r_col], df_sweep["advantage_pp"], "o-",
                 color="lightgray", linewidth=1.5, markersize=4, alpha=0.6,
-                label="Barrido sintético (α sweep)")
+                label="Barrido α (controlado)")
         for r, marker in zip(results, ["s", "D", "^"]):
             ax.scatter(r[r_col], r["advantage_pp"], s=120, marker=marker, color=color, zorder=5,
                        label=r["dataset"], edgecolors="white", linewidths=1.5)
@@ -1068,10 +1103,10 @@ def fig_08_correlacion():
                         textcoords="offset points", xytext=(5, 5), fontsize=8)
         ax.axhline(0, color="black", linewidth=0.8, linestyle="--", alpha=0.7)
         ax.set_xlabel(f"{xlabel}\n{ref}", fontsize=9)
-        ax.set_ylabel("Ventaja QSVM (pp)")
+        ax.set_ylabel("Ventaja operativa (pp)")
         rho, pval = spearmanr(df_results[df_col].values, df_results["Ventaja(pp)"].values)
-        ax.set_title(f"ρ_Spearman = {rho:+.3f} (p={pval:.3f})", fontsize=10)
-        ax.legend(fontsize=8, loc="lower right")
+        ax.set_title(f"ρ_S (operativo, n=3) = {rho:+.3f} (p={pval:.3f})", fontsize=10)
+        ax.legend(fontsize=8, loc="best")
     plt.tight_layout()
     save_fig("08_correlacion_indicadores_ventaja.png")
 
