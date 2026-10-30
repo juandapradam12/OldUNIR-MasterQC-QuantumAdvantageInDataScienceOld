@@ -19,26 +19,26 @@
 \graphicspath{{../Imagenes/}{../../POCs/data/output/figures/}{../}}
 
 % ── Diseño alineado con la plantilla de defensa de UNIR (PowerPoint) ──
-% Paleta de la plantilla: azul UNIR, verde azulado oscuro, gris de texto.
+% Paleta de la plantilla: azul UNIR, azul oscuro, grises (sin verdes ni rojos).
 \definecolor{unirazul}{HTML}{219BC3}
-\definecolor{unirteal}{HTML}{00566C}
+\definecolor{unirnavy}{HTML}{0E4A75}
 \definecolor{unirgris}{HTML}{858591}
 \definecolor{unirclaro}{HTML}{C0C0C8}
 \definecolor{ink}{HTML}{3D3D4A}
 % Los diagramas TikZ usan solo la paleta de la plantilla
 \colorlet{blue}{unirazul}
-\colorlet{orange}{unirteal}
+\colorlet{orange}{unirnavy}
 \colorlet{violet}{unirgris}
 
 \usetheme{default}
 \usefonttheme{professionalfonts}
 \setbeamercolor{normal text}{fg=ink,bg=white}
 \setbeamercolor{structure}{fg=unirazul}
-\setbeamercolor{alerted text}{fg=unirteal}
+\setbeamercolor{alerted text}{fg=unirnavy}
 \setbeamercolor{block title}{bg=unirazul,fg=white}
 \setbeamercolor{block body}{bg=unirazul!8}
-\setbeamercolor{block title alerted}{bg=unirteal,fg=white}
-\setbeamercolor{block body alerted}{bg=unirteal!8}
+\setbeamercolor{block title alerted}{bg=unirnavy,fg=white}
+\setbeamercolor{block body alerted}{bg=unirnavy!8}
 \setbeamerfont{block title}{series=\bfseries,size=\small}
 \setbeamersize{text margin left=0.85cm,text margin right=0.85cm}
 \setbeamertemplate{navigation symbols}{}
@@ -56,10 +56,10 @@
   \edef\unir@sec{\detokenize\expandafter{\insertsectionhead}}%
   \edef\unir@ttl{\detokenize\expandafter{\insertframetitle}}%
   \ifx\unir@sec\unir@ttl
-    {\fontsize{14}{16}\selectfont\bfseries\color{unirteal}\insertframetitle\par}%
+    {\fontsize{14}{16}\selectfont\bfseries\color{unirnavy}\insertframetitle\par}%
   \else
     {\fontsize{14}{16}\selectfont\bfseries\color{unirazul}\insertsectionhead\par}%
-    {\fontsize{14}{16}\selectfont\bfseries\color{unirteal}\insertframetitle\par}%
+    {\fontsize{14}{16}\selectfont\bfseries\color{unirnavy}\insertframetitle\par}%
   \fi
   \vskip 0.12cm}
 \makeatother
@@ -119,15 +119,15 @@ Director: Ricardo Rafael Domínguez Reyes}
   \node[text=white, anchor=west] at ($(current page.west)+(1.6,0)$) {{\fontsize{34}{38}\selectfont ÍNDICE}};
   \node[anchor=west, align=left, inner sep=0pt, font=\fontsize{11.5}{14}\bfseries\selectfont] at ($(current page.center)+(0.35,0)$)
     {
-    \textcolor{unirclaro}{01 --}\,\textcolor{unirteal}{Motivación}\\[0.30cm]
-    \textcolor{unirclaro}{02 --}\,\textcolor{unirteal}{Introducción}\\[0.30cm]
-    \textcolor{unirclaro}{03 --}\,\textcolor{unirteal}{Contexto y estado de la técnica}\\[0.30cm]
-    \textcolor{unirclaro}{04 --}\,\textcolor{unirteal}{Planteamiento y metodología}\\[0.30cm]
-    \textcolor{unirclaro}{05 --}\,\textcolor{unirteal}{Resultados: Q vs C}\\[0.30cm]
-    \textcolor{unirclaro}{06 --}\,\textcolor{unirteal}{Conjeturas: $\mathcal{Q}$ y QCR}\\[0.30cm]
-    \textcolor{unirclaro}{07 --}\,\textcolor{unirteal}{Evidencia de las conjeturas}\\[0.30cm]
-    \textcolor{unirclaro}{08 --}\,\textcolor{unirteal}{Conclusiones y limitaciones}\\[0.30cm]
-    \textcolor{unirclaro}{09 --}\,\textcolor{unirteal}{Trabajo futuro}
+    \textcolor{unirclaro}{01 --}\,\textcolor{unirnavy}{Motivación}\\[0.30cm]
+    \textcolor{unirclaro}{02 --}\,\textcolor{unirnavy}{Introducción}\\[0.30cm]
+    \textcolor{unirclaro}{03 --}\,\textcolor{unirnavy}{Contexto y estado de la técnica}\\[0.30cm]
+    \textcolor{unirclaro}{04 --}\,\textcolor{unirnavy}{Planteamiento y metodología}\\[0.30cm]
+    \textcolor{unirclaro}{05 --}\,\textcolor{unirnavy}{Resultados: Q vs C}\\[0.30cm]
+    \textcolor{unirclaro}{06 --}\,\textcolor{unirnavy}{Conjeturas: $\mathcal{Q}$ y QCR}\\[0.30cm]
+    \textcolor{unirclaro}{07 --}\,\textcolor{unirnavy}{Evidencia de las conjeturas}\\[0.30cm]
+    \textcolor{unirclaro}{08 --}\,\textcolor{unirnavy}{Conclusiones y limitaciones}\\[0.30cm]
+    \textcolor{unirclaro}{09 --}\,\textcolor{unirnavy}{Trabajo futuro}
     };
 \end{tikzpicture}
 \end{frame}
@@ -272,7 +272,7 @@ Evidencia empírica + protocolos justos + diagnóstico $\mathcal{Q}(\mathcal{D})
     \textbf{Fase 1 --- Datos:} nativo / SKG / público $\cdot$ normalización $\cdot$ PCA};
   \node[fase, draw=orange!60!black, fill=orange!9, below=0.35cm of f1] (f2) {
     \textbf{Fase 2 --- Algoritmos:} QSVM $\cdot$ QK-SVR $\cdot$ QAOA $\cdot$ VQE vs.\ GB / RF / RBF};
-  \node[fase, draw=teal!60!black, fill=teal!9, below=0.35cm of f2] (f3) {
+  \node[fase, draw=unirnavy!70!black, fill=unirnavy!9, below=0.35cm of f2] (f3) {
     \textbf{Fase 3 --- Evaluación:} CV $\cdot$ Acc / F1 / $R^2$ / AUC $\cdot$ escalabilidad};
   \node[fase, draw=violet!60!black, fill=violet!9, below=0.35cm of f3] (f4) {
     \textbf{Fase 4 --- Híbrido:} integración QAOA--COBYLA $\cdot$ criterios de activación $\cdot$ QCR};
@@ -953,8 +953,8 @@ en ausencia de eso, el clásico domina --- y eso también es un resultado.
 \begin{frame}[plain]
 \begin{tikzpicture}[remember picture,overlay]
   \node[align=center, inner sep=0pt, text width=8cm] (g) at (current page.center)
-    {{\fontsize{30}{34}\selectfont\bfseries\textcolor{unirazul}{muchas} \textcolor{unirteal}{gracias}}\par
-     \vspace{0.35cm}{\large\textcolor{unirteal}{\textquestiondown{}Preguntas?}}\par
+    {{\fontsize{30}{34}\selectfont\bfseries\textcolor{unirazul}{muchas} \textcolor{unirnavy}{gracias}}\par
+     \vspace{0.35cm}{\large\textcolor{unirnavy}{\textquestiondown{}Preguntas?}}\par
      \vspace{0.3cm}{\small\textcolor{unirgris}{Juan David Prada Malagón $\cdot$ UNIR}}};
   \draw[unirazul, line width=1.3pt] ($(g.north west)+(-1.0,0.6)$) -- ++(0,-0.9) ($(g.north west)+(-1.0,0.6)$) -- ++(0.9,0);
   \draw[unirazul, line width=1.3pt] ($(g.south east)+(1.0,-0.6)$) -- ++(0,0.9) ($(g.south east)+(1.0,-0.6)$) -- ++(-0.9,0);
