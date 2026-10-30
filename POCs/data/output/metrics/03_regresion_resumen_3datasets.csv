@@ -1,0 +1,7 @@
+Dataset,QK-SVR,Mejor Clásico,Tipo,Ventaja R²
+"1. Cuántico-nativo
+(por construcción)",0.9853787754375162,0.0199,Sintético cuántico,0.9654787754375161
+"2. SKG
+(Corredores Bogotá)",0.09790827986109263,0.6601034546648857,Datos reales SKG,-0.5621951748037931
+"3. Friedman #1
+(referencia sintética)",-0.15142160916080605,0.7766940891846528,Benchmark sintético clásico,-0.9281156983454588

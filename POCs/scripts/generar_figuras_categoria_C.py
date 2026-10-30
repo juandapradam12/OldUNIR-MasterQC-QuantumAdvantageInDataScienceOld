@@ -229,19 +229,19 @@ ax1.axhline(0, color="black", linewidth=1.2)
 ax1.set_xticks(x)
 ax1.set_xticklabels(datasets, fontsize=9)
 ax1.set_ylabel("Ventaja cuántica ($\\Delta R^2$)", fontsize=10)
-ax1.set_title(f"Solo el nativo es positivo ({gap[0]:+.3f}, marginal)\n(QK-SVR − mejor clásico)",
+ax1.set_title(f"Solo el nativo es positivo ({gap[0]:+.3f})\n(QK-SVR − mejor clásico)",
               fontweight="bold")
-ax1.set_ylim(gap.min() - 0.2, gap.max() + 0.3)
+ax1.set_ylim(gap.min() - 0.35, gap.max() + 0.35)
 
 for bar, val, verd in zip(bars_gap, gap, veredictos):
-    ypos = val + 0.03 if val >= 0 else val - 0.05
-    ax1.text(bar.get_x() + bar.get_width() / 2, ypos,
-             f"{val:+.3f}", ha="center", va="bottom",
+    centro = bar.get_x() + bar.get_width() / 2
+    positivo = val > 0
+    ax1.text(centro, val + (0.03 if positivo else -0.03), f"{val:+.3f}",
+             ha="center", va="bottom" if positivo else "top",
              fontsize=10, fontweight="bold")
-    ax1.text(bar.get_x() + bar.get_width() / 2,
-             gap.max() + 0.15 if val > 0 else gap.min() - 0.1, verd,
+    ax1.text(centro, val + (0.20 if positivo else -0.21), verd,
              ha="center", va="center", fontsize=8, fontweight="bold",
-             color=QUANTUM_COLOR if val > 0 else CLASSICAL_COLOR)
+             color=QUANTUM_COLOR if positivo else CLASSICAL_COLOR)
 
 plt.tight_layout()
 out_path = OUT / "03_regresion_3datasets.png"

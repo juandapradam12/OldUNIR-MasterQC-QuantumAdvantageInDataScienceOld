@@ -2,7 +2,7 @@ caso,capa,etiqueta,valor,unidad,fuente
 1,nativo,QSVM,38.3,pp,NB01 §13.6
 1,skg,QSVM,-4.5,pp,NB01 §13.6
 1,referencia,QSVM,-3.8,pp,NB01 §13.6
-2,nativo,QK-SVR,9.3,ΔR²×100,NB03 §13.5
+2,nativo,QK-SVR,96.5,ΔR²×100,NB03 §13.5
 2,skg,QK-SVR,-56.2,ΔR²×100,NB03 §13.5
 2,referencia,QK-SVR,-92.8,ΔR²×100,NB03 §13.5
 3,referencia,QAOA p=1,0.0,% coste,qml_v2.optimization
