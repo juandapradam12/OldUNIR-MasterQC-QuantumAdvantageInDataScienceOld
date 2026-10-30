@@ -85,7 +85,10 @@ def leer_metrica(nombre: str) -> pd.DataFrame:
     ruta = OUT_METRICS / nombre
     if not ruta.exists():
         raise FileNotFoundError(f"Falta {ruta}: ejecute el notebook que lo produce.")
-    return pd.read_csv(ruta)
+    tabla = pd.read_csv(ruta)
+    for col in tabla.select_dtypes(include="object"):
+        tabla[col] = tabla[col].str.replace(r"\s*\(Liu 2021\)", "", regex=True)
+    return tabla
 
 
 DF_01_RESULTS = leer_metrica("01_clasificacion_resultados.csv")
@@ -212,7 +215,7 @@ def fig_07_complejidad():
 def fig_07_kernel_advantage_detalle():
     adv_06, q_06, c_06 = quantum_advantage(DF_06, "accuracy", "max")
     fig, axes = plt.subplots(1, 2, figsize=(16, 6))
-    fig.suptitle("Quantum Kernel Advantage — Análisis detallado (Liu et al. 2021)",
+    fig.suptitle("Quantum Kernel Advantage — Análisis detallado",
                  fontsize=13, fontweight="bold")
 
     ax = axes[0]
@@ -232,12 +235,12 @@ def fig_07_kernel_advantage_detalle():
     ax.set_title(f"Accuracy en dataset cuántico\nVentaja: {adv_06:+.4f} ({adv_06 / c_06 * 100:+.1f}%)",
                  fontweight="bold")
     ax.set_xlabel("Accuracy")
-    ax.set_xlim(0.50, 1.06)
+    ax.set_xlim(0.0, 1.06)
 
     ax2 = axes[1]
     best_q_row = DF_06[DF_06["type"] == "quantum"].sort_values("accuracy").iloc[-1]
     best_cl_row = DF_06[DF_06["type"] == "classical"].sort_values("accuracy").iloc[-1]
-    metrics_labels = ["Accuracy", "F1-Score", "Velocidad\n(1/tiempo norm.)"]
+    metrics_labels = ["Accuracy", "F1-Score", "Velocidad relativa\n(1 − t / t_max)"]
     max_time = DF_06["time_s"].max()
     q_vals = [best_q_row["accuracy"], best_q_row.get("f1", best_q_row["accuracy"]),
               1 - best_q_row["time_s"] / max_time]
@@ -248,7 +251,7 @@ def fig_07_kernel_advantage_detalle():
     b1 = ax2.bar(x - width / 2, q_vals, width, color=QUANTUM_COLOR,
                  label="Quantum Kernel SVM", edgecolor="white")
     b2 = ax2.bar(x + width / 2, cl_vals, width, color=CLASSICAL_COLOR,
-                 label="SVM RBF / XGBoost", edgecolor="white")
+                 label=f"Mejor clásico ({best_cl_row['model']})", edgecolor="white")
     for bar, val in zip(list(b1) + list(b2), q_vals + cl_vals):
         ax2.text(bar.get_x() + bar.get_width() / 2, bar.get_height() + 0.01,
                  f"{val:.3f}", ha="center", va="bottom", fontsize=9)
@@ -368,7 +371,7 @@ def fig_07_heatmap():
         3: "CU3: QAOA\n(asignación)",
         4: "CU4: VQE\n(portafolio)",
         5: "CU5: QAOA\n(TSP)",
-        6: "CU6: QSVM\n(umbral Liu)",
+        6: "CU6: QSVM\n(umbral de tamaño)",
         7: "CU7: QAOA MDS\n(conj. dominante)",
         8: "CU8: OCSVM-ZZ\n(anomalías)",
         9: "CU9: QK-SVR\n(lags)",
@@ -480,7 +483,7 @@ def fig_06_learning_curves():
 
     fig, axes = plt.subplots(1, 2, figsize=(16, 5))
     fig.suptitle("Curvas de Aprendizaje — QSVM vs SVM-RBF\n"
-                 "Dataset Cuántico-Nativo (Liu 2021, ZZFeatureMap 2 qubits)",
+                 "Dataset cuántico-nativo (ZZFeatureMap 2 qubits)",
                  fontsize=13, fontweight="bold")
     ax = axes[0]
     ax.plot(n_train_vals, acc_qsvm, "o-", color=QUANTUM_COLOR, linewidth=2.5, markersize=8,
@@ -493,9 +496,9 @@ def fig_06_learning_curves():
     ax.set_xlabel("Tamaño del conjunto de entrenamiento")
     ax.set_ylabel("Accuracy")
     ax.set_title("Accuracy vs Tamaño de entrenamiento")
-    ax.set_ylim(0.35, 1.05)
+    ax.set_ylim(0.3, 1.25)
     ax.set_xlim(25, 185)
-    ax.legend(fontsize=9, loc="upper left")
+    ax.legend(fontsize=8.5, loc="upper center", ncol=2)
     gap_mean = acc_qsvm.mean() - acc_svm_rbf.mean()
     mid_y = (acc_qsvm.mean() + acc_svm_rbf.mean()) / 2
     ax.annotate(f"Δ medio = {gap_mean:+.1%}", xy=(100, mid_y), xytext=(70, mid_y + 0.1),
@@ -538,10 +541,10 @@ def fig_06_3datasets_comparativa():
     ax0.set_xticks(x6)
     ax0.set_xticklabels(summary["Dataset"], fontsize=9)
     ax0.set_ylabel("Accuracy (%)")
-    ax0.set_ylim(40, 118)
+    ax0.set_ylim(40, 100)
     ax0.set_title("Accuracy: QSVC vs Mejor Clásico\npor tipo de dataset", fontweight="bold")
     ax0.axhline(50, color="gray", lw=0.8, ls="--", alpha=0.5)
-    ax0.legend(fontsize=8, loc="upper right")
+    ax0.legend(fontsize=8, loc="upper left")
     for b in list(bq6) + list(bc6):
         ax0.text(b.get_x() + b.get_width() / 2, b.get_height() + 0.5,
                  f"{b.get_height():.1f}%", ha="center", va="bottom", fontsize=8, fontweight="bold")
@@ -560,7 +563,7 @@ def fig_06_3datasets_comparativa():
     ax1.set_xticklabels(summary["Dataset"], fontsize=9)
     ax1.set_ylabel("Ventaja cuántica (pp)")
     ax1.set_ylim(-12, 18)
-    ax1.set_title("Solo Liu > 0: SKG/Telco gana el clásico\n(QSVC − Mejor Clásico operativo)",
+    ax1.set_title("Solo el nativo > 0: SKG/Telco gana el clásico\n(QSVC − Mejor Clásico operativo)",
                   fontweight="bold")
     for b, (_, row) in zip(bg6, summary.iterrows()):
         yp = b.get_height() + 0.4 if b.get_height() >= 0 else b.get_height() - 1.8
@@ -571,7 +574,7 @@ def fig_06_3datasets_comparativa():
                  row["veredicto"], ha="center", va="center",
                  fontsize=8, fontweight="bold",
                  color=QUANTUM_COLOR if row["Ventaja (pp)"] > 0 else CLASSICAL_COLOR)
-    fig.suptitle("Quantum Kernel vs Mejor Clásico — ventaja SOLO en cuántico-nativo (Liu)",
+    fig.suptitle("Quantum Kernel vs Mejor Clásico — ventaja SOLO en cuántico-nativo",
                  fontsize=13, fontweight="bold", y=1.02)
     telco = summary.iloc[2]
     fig.text(0.5, -0.02,
@@ -744,7 +747,7 @@ def fig_06_boundaries():
 
         fig, axes = plt.subplots(1, 3, figsize=(18, 5))
         fig.suptitle("Fronteras de decision: Clasicos vs Quantum Kernel SVM\n"
-                     "(Dataset generado por ZZFeatureMap — Liu et al. 2021; 15 puntos de test)", fontsize=13)
+                     "(Dataset generado por ZZFeatureMap; 15 puntos de test)", fontsize=13)
         models_to_plot = [
             ("SVM RBF", classifiers["SVM RBF"], "#1976D2", "Clasico"),
             ("Gradient Boosting", classifiers["Gradient Boosting"], "#388E3C", "Clasico"),
@@ -985,7 +988,7 @@ def fig_08_correlacion():
     panel_config = [
         ("Q_score", "Q_score", "Score compuesto Q(D)", "(NB08)", "#2E7D32"),
         ("delta_A", "ΔA", r"$\Delta A = A(K_Q)-A(K_{cl})$", "(Huang 2021)", "#1565C0"),
-        ("d_F", "d_F", r"Distancia Frobenius $d_F$", "(Liu 2021)", "#6A1B9A"),
+        ("d_F", "d_F", r"Distancia Frobenius $d_F$", "(proxy propio)", "#6A1B9A"),
     ]
     for ax, (r_col, df_col, xlabel, ref, color) in zip(axes, panel_config):
         # Barrido: solo tiene sentido vs ΔA (d_F y Q_sweep no están bien definidos)
@@ -1242,7 +1245,7 @@ def _fig_estructura_familia(family: str, title_es: str, out_name: str,
                r"$\Delta A$ (Huang / Cortes)" "\n" r"$A(K_Q)-A(K_{\mathrm{RBF}})$",
                fmt="{:+.3f}", ylim=_ESTRUCTURA_YLIMS["delta_A"])
     _blue_bars(axes[1], labels, dF, r"$d_F$",
-               r"$d_F$ (Liu)" "\n" r"$\|K_Q-K_{\mathrm{RBF}}\|_F/n$",
+               r"$d_F$" "\n" r"$\|K_Q-K_{\mathrm{RBF}}\|_F/n$",
                fmt="{:.4f}", ylim=_ESTRUCTURA_YLIMS["d_F"])
     _blue_bars(axes[2], labels, dH, r"$\Delta H$",
                r"$\Delta H$ (Thanasilp)" "\n" r"$H(K_Q)-H(K_{\mathrm{RBF}})$",
@@ -1314,7 +1317,7 @@ def fig_08_estructura_tres_casos():
          r"$A(K_Q)-A(K_{\mathrm{RBF}})$", "{:+.2f}"),
         ("delta_H", r"$\Delta H$", r"Entropía espectral $\Delta H$ (Thanasilp)" "\n"
          r"$H(K_Q)-H(K_{\mathrm{RBF}})$", "{:+.2f}"),
-        ("d_F", r"$d_F$", r"Distancia Frobenius $d_F$ (Liu)" "\n"
+        ("d_F", r"$d_F$", r"Distancia Frobenius $d_F$" "\n"
          r"$\|K_Q-K_{\mathrm{RBF}}\|_F/n$", "{:.4f}"),
         ("g", r"$g$", r"Diferencia geométrica $g$ (Huang)" "\n"
          r"$\sqrt{\|K_Q^{1/2}(K_{\mathrm{RBF}}+\lambda I)^{-1}K_Q^{1/2}\|_2}$,  $\lambda=10^{-3}$", "{:.0f}"),

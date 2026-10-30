@@ -39,7 +39,7 @@ TITULOS = {
     3: "03 · QAOA\nAsignación",
     4: "04 · VQE\nPortafolio",
     5: "05 · QAOA\nTSP",
-    6: "06 · QSVM\nUmbral (Liu)",
+    6: "06 · QSVM\nUmbral de tamaño",
     7: "07 · QAOA MDS\nConjunto dominante",
     8: "08 · OCSVM-ZZ\nAnomalías",
     9: "09 · QK-SVR\nSeries temporales",

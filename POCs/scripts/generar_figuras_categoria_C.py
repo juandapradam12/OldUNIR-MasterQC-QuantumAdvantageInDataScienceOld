@@ -174,7 +174,7 @@ labels_classical = [
 ]
 
 datasets = [
-    "Dataset\ncuántico-nativo\n(Liu 2021)",
+    "Dataset\ncuántico-nativo",
     "SKG Bogotá\n(datos reales\nmovilidad)",
     "Friedman #1\n(sintético\nno-cuántico)",
 ]

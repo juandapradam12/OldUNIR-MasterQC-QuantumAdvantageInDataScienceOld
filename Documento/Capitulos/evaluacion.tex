@@ -52,7 +52,7 @@ El mecanismo que explica esta ventaja es la \textbf{alineación} entre el featur
 \begin{figure}[ht]
 \centering
 \includegraphics[width=0.95\textwidth]{../POCs/data/output/figures/06_quantum_kernel_boundaries.png}
-\caption{Fronteras de decisión del QSVM (izquierda) frente al mejor clasificador clásico, SVM-RBF (derecha), sobre el dataset cuántico-nativo proyectado en 2D. El QSVM genera una frontera curvada y más compleja (exactitud 93.3\%); el SVM-RBF produce una frontera más suave (53.3\%) y el Gradient Boosting una frontera por rectángulos (73.3\%). El test tiene solo 15 puntos (cada acierto equivale a 6.7~pp) y la frontera del QSVM se estima sobre una malla de $12\times12$, por lo que la figura es ilustrativa y no una medida de rendimiento; la evidencia cuantitativa es la del Caso~1.}
+\caption{Fronteras de decisión de SVM-RBF (izquierda), Gradient Boosting (centro) y QSVM (derecha) sobre el dataset cuántico-nativo en 2D. El QSVM genera una frontera curvada y más compleja (exactitud 93.3\%); el SVM-RBF, una frontera más suave (53.3\%), y el Gradient Boosting, una frontera por rectángulos (73.3\%). El test tiene solo 15 puntos (cada acierto equivale a 6.7~pp) y la frontera del QSVM se estima sobre una malla de $12\times12$, por lo que la figura es ilustrativa y no una medida de rendimiento; la evidencia cuantitativa es la del Caso~1.}
 \label{fig:kernel_boundaries}
 \end{figure}
 
@@ -73,17 +73,18 @@ El protocolo justo de \texttt{qml\_v2} (Tabla~\ref{tab:clasif_justa}) corrige es
 
 \begin{table}[ht]
 \centering
-\small
-\begin{tabular}{lcccccc}
+\footnotesize
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{lccccc}
 \toprule
 \textbf{Dataset} & \textbf{QSVM-ZZ} & \textbf{Mejor clásico (A)} & \textbf{$\Delta$ (A)} & \textbf{Mejor clásico (B)} & \textbf{$\Delta$ (B)} \\
 \midrule
-Cuántico-nativo & $88.8\pm5.8$ & Gradient Boosting $52.3\pm6.0$ & $+36.5$ & --- & --- \\
-SKG Incidentes & $49.5\pm7.0$ & Gradient Boosting $52.7\pm5.7$ & $-3.2$ & SVM lineal (7 var.) $56.2\pm5.3$ & $-6.7$ \\
-Telco Churn & $53.3\pm9.3$ & Regresión logística $77.2\pm4.3$ & $-23.8$ & Gradient Boosting (19 var.) $79.5\pm2.9$ & $-26.2$ \\
+Cuántico-nativo & $88.8\pm5.8$ & GB $52.3\pm6.0$ & $+36.5$ & --- & --- \\
+SKG Incidentes & $49.5\pm7.0$ & GB $52.7\pm5.7$ & $-3.2$ & SVM lineal (7 var.) $56.2\pm5.3$ & $-6.7$ \\
+Telco Churn & $53.3\pm9.3$ & Reg. logística $77.2\pm4.3$ & $-23.8$ & GB (19 var.) $79.5\pm2.9$ & $-26.2$ \\
 \bottomrule
 \end{tabular}
-\caption{Protocolo justo de clasificación (\texttt{qml\_v2.classification}): exactitud en test (\%, media $\pm$ desviación sobre 10 repeticiones; 140 ejemplos de entrenamiento y 60 de test). A: todos los modelos con las mismas 2 variables que el QSVM. B: clásicos con todas las variables originales. $\Delta$ en puntos porcentuales respecto al QSVM. Fuente: \texttt{fair\_classification\_all.csv}.}
+\caption{Protocolo justo de clasificación (\texttt{qml\_v2.classification}); GB = Gradient Boosting. Exactitud en test (\%, media $\pm$ desviación sobre 10 repeticiones; 140 ejemplos de entrenamiento y 60 de test). A: todos los modelos con las mismas 2 variables que el QSVM. B: clásicos con todas las variables originales. $\Delta$ en puntos porcentuales respecto al QSVM. Fuente: \texttt{fair\_classification\_all.csv}.}
 \label{tab:clasif_justa}
 \end{table}
 

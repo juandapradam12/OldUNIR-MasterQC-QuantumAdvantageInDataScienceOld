@@ -433,6 +433,7 @@ ventaja solo con novedad alineada al mapa.}
 \centering
 {\small
 \renewcommand{\arraystretch}{1.1}
+\setlength{\tabcolsep}{4pt}
 \begin{tabular}{@{}lccc@{}}
 \toprule
 \textbf{Capa} & \textbf{Problema} & \textbf{Cuántico} & \textbf{Clásico} \\
@@ -462,8 +463,7 @@ NN+2-opt (gap $0$) \\
   \item \textbf{TSP:} empate en calidad; \textbf{no} hay speedup --- modelado QUBO.
 \end{itemize}
 \end{block}
-{\footnotesize Optimización $\neq$ kernels: aquí el contraste es coste/calidad de solución, no accuracy.
-La estructura del paisaje QUBO se mide aparte (P1, notebook~11).}
+{\footnotesize Contraste en coste/calidad de solución; estructura QUBO: notebook~11.}
 \end{frame}
 
 % --- Síntesis compacta -----------------------------------------------
