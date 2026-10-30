@@ -364,7 +364,7 @@ Q-UMAP/MDS             & SKG Incidentes & $+0.163$ & $-0.018$ & $-0.181$ $\downa
 Q-UMAP/MDS             & Telco Churn    & $-0.228$ & $+0.071$ & $+0.299$ $\uparrow$ & $+0.0$ pp \\
 \hline
 \end{tabular}
-\caption{Variación de $\mathcal{Q}(\mathcal{D})$ y de $\Delta$ QSVM$-$RBF tras cada pre-mapeo (Notebook~09). Cifras \textbf{vs.\ RBF solamente}; no equivalen a ventaja operativa vs.\ GB/RF. Bajo $\mathcal{Q}_{\mathrm{rob}}$ (Sección~\ref{sec:qml_v2_revision}) Telco y SKG permanecen \texttt{classical} (la rotación en SKG cambia geometría, sin lift de accuracy garantizado). Q-UMAP usa MDS como fallback; sus cifras cambiaron al reejecutar con scikit-learn~1.9 (cambió la inicialización por defecto de MDS), por lo que es inestable y no se interpreta; las demás filas se reprodujeron exactamente.}
+\caption{Variación de $\mathcal{Q}(\mathcal{D})$ y de $\Delta$ QSVM$-$RBF tras cada pre-mapeo (Notebook~09). Aquí $\mathcal{Q}=0.4\,\Delta A+0.3\,d_F+0.3\,\Delta H$ con $d_F$ sin normalizar, 2~qubits y 80 muestras, de modo que sus valores base (SKG $+0.163$, Telco $-0.228$) no son comparables con los de la Tabla~\ref{tab:indicadores_resultados} (Notebook~08, protocolo con $\hat d_F$ normalizada). Cifras \textbf{vs.\ RBF solamente}; no equivalen a ventaja operativa vs.\ GB/RF. Bajo $\mathcal{Q}_{\mathrm{rob}}$ (Sección~\ref{sec:qml_v2_revision}) Telco y SKG permanecen \texttt{classical} (la rotación en SKG cambia geometría, sin lift de accuracy garantizado). Q-UMAP usa MDS como fallback; sus cifras cambiaron al reejecutar con scikit-learn~1.9 (cambió la inicialización por defecto de MDS), por lo que es inestable y no se interpreta; las demás filas se reprodujeron exactamente.}
 \label{tab:resultados_mapeos}
 \end{table}
 
