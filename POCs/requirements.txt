@@ -7,6 +7,9 @@ qiskit>=1.0.0
 qiskit-aer>=0.14.0
 qiskit-algorithms>=0.3.0
 qiskit-machine-learning>=0.7.0
+qiskit-optimization>=0.6.0
+qiskit-finance>=0.4.0
+pylatexenc>=2.10
 pennylane>=0.35.0
 pennylane-qiskit>=0.35.0
 
@@ -21,6 +24,9 @@ lightgbm>=4.3.0
 # Optimización
 # ========================================
 scipy>=1.12.0
+# PuLP 3.x/4.x cambió la API que usa qml_v2.optimization; se verificó con 2.9.
+pulp>=2.8,<3
+networkx>=3.0
 cvxpy>=1.4.0
 # gurobi>=11.0.0  # Descomentar si tienes licencia
 
@@ -37,6 +43,8 @@ plotly>=5.18.0
 # Utilidades
 # ========================================
 jupyter>=1.0.0
+nbformat>=5.9.0
+nbconvert>=7.0.0
 jupyterlab>=4.0.0
 ipykernel>=6.29.0
 tqdm>=4.66.0

@@ -12,6 +12,10 @@ Deben coincidir con la salida impresa de los notebooks (no con valores
 | `08_test_cuanticidad_resultados.csv` | Notebook 08, tabla resumen (protocolo NB08) |
 | `08_barrido_sintetico_alpha.csv` | Notebook 08, barrido α |
 | `09_mapeos_resultados.csv` | Notebook 09, tabla de estrategias |
+| `07_sintesis_resultados.csv` | `scripts/sintesis_resultados.py`: consolida los nueve casos leyendo solo CSV/JSON ejecutados; es la única fuente del panel y del mapa de calor de síntesis |
+| `01_clasificacion_*.csv`, `03_regresion_*.csv`, `04_portafolio_resultados.csv`, `06_*.csv` | Notebooks 01, 03, 04 y 06 reejecutados de principio a fin (Qiskit 2.6.1, kernel exacto) |
+| `qml_v2_*_summary.csv`, `fair_*.csv` | Módulos `python -m qml_v2.<módulo>` (semillas y repeticiones en los `*_config.json`) |
+| `10_mds_qaoa_*` | `python -m qml_v2.mds_qaoa` (simulador exacto verificado contra Qiskit) |
 | `estructura_por_caso_uso.csv` | Script `medir_estructura_por_caso.py`: ΔA, ΔH, d_F, g (+control nulo de ΔA) en clasif./reg./anomalías/optimización (paisaje QUBO); lógica en `qml_v2/estructura_casos.py`; notebook 11 |
 
 Reglas:
@@ -20,3 +24,5 @@ Reglas:
 3. Figuras de estructura cuántica usan **solo** ΔA, ΔH, d_F, g (+Q informativo) (mismas métricas entre casos de uso). En optimización se mide el paisaje QUBO (bitstrings→energía), no QAOA. No mezclar accuracy / R² / AUC ahí.
 4. Matrices $K$ no serializadas: no regenerar heatmaps a mano.
 5. Series de rotación: solo PNG exportada por NB09; no curvas proxy.
+6. Los scripts de figuras (`generar_figuras_*.py`) leen estos CSV y fallan si falta alguno; no contienen valores de respaldo. Las únicas figuras no empíricas son las teóricas del Capítulo 5 (complejidad, conteo de Grover, superposición), rotuladas como tales.
+7. Los muestreadores con *shots* deben llevar semilla; los kernels de los Notebooks 01, 03 y 06 usan la fidelidad exacta.
