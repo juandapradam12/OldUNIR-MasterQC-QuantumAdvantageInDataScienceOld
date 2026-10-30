@@ -233,6 +233,13 @@ Puede ampliarse con otras entradas ($\Delta_{\mathrm{op}}$, veredicto $\mathcal{
 \paragraph{Por qué no colapsar a un escalar $w^\top\mathcal{Q}$.}
 En el Notebook~08 se calculó también $q=w_1\Delta A+w_2\hat{d}_F+w_3\Delta H$ con pesos fijos $(0.4,0.3,0.3)$. Ese escalar mezcla escalas distintas ($\hat{d}_F\!\approx\!1$ empuja $q>0$ aunque $\Delta A<0$; $\Delta H$ puede dominar) y \textbf{ordena mal} frente a $\Delta_{\mathrm{op}}$: SKG maximiza $q$ ($+0.35$) con $\Delta_{\mathrm{op}}=-6.0$~pp. Por criterio de este TFM, el escalar \textbf{no} se usa como regla de adopción; se conserva solo como experimento negativo. La forma útil de $\mathcal{Q}(\mathcal{D})$ es el \textbf{vector}.
 
+\begin{figure}[ht]
+\centering
+\includegraphics[width=0.95\textwidth]{../POCs/data/output/figures/08_q_vector_nativo_vs_reales.png}
+\caption{Comparación del vector $\mathcal{Q}(\mathcal{D})=(\Delta A,\hat{d}_F,\Delta H)$ del dataset cuántico-nativo (control: único con $\Delta_{\mathrm{op}}>0$) frente a SKG y Telco. Componentes geométricos = Notebook~08; $\Delta_{\mathrm{op}}$ = Caso~1 (fuente distinta, panel separado). Hechos: el nativo tiene $\Delta A<0$; SKG maximiza $\hat{d}_F$ y $\Delta H$ con $\Delta_{\mathrm{op}}<0$; Telco combina $\Delta A>0$ con $\Delta H\ll 0$. Interpretación: leer el perfil completo y contrastar siempre con $\Delta_{\mathrm{op}}$ ---sin colapsar a un escalar.}
+\label{fig:q_vector_vs_nativo}
+\end{figure}
+
 \paragraph{Relación con la cota de Huang et al.}
 La cota de \citet{huang2021} motiva mirar alineación y geometría \emph{a la vez}; eso es precisamente un perfil, no un ranking unidimensional calibrado a $\Delta_{\mathrm{op}}$. La decisión de activar el módulo cuántico sigue exigiendo ganar al mejor clásico y alineación mapa--generador.
 

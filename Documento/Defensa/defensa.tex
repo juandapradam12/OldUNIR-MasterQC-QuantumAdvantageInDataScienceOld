@@ -605,40 +605,35 @@ como trabajo futuro.}
 \end{columns}
 \end{frame}
 
-\begin{frame}{P1 en datos reales --- leer el \textbf{vector}, no un escalar}
-\centering
-{\footnotesize
-\renewcommand{\arraystretch}{1.3}
-\begin{tabular}{@{}lccccc@{}}
-\toprule
-\textbf{Dataset} & $\Delta A$ & $\hat{d}_F$ & $\Delta H$ & $\Delta_{\mathrm{op}}$ & \textbf{\textquestiondown{}Tomar?} \\
-\midrule
-Nativo & $-0.029$ & $0.96$ & $+0.034$ & $\mathbf{+13.3}$ & \textbf{Sí} (mapa) \\
-SKG & $-0.010$ & $1.00$ & $+0.188$ & $-6.0$ & \textbf{No} \\
-Telco & $+0.020$ & $0.94$ & $-1.131$ & $-3.8$ & \textbf{No} \\
-\bottomrule
-\end{tabular}}
-
-\vspace{0.7em}
+\begin{frame}{P1 --- comparar el vector: nativo vs SKG / Telco}
 \begin{columns}[T]
-\begin{column}{0.48\textwidth}
-\begin{block}{Lectura del perfil}
-{\footnotesize
-Telco: cuello claro en $\Delta H$.
-SKG: geometría ``alta'' pero
-$\Delta_{\mathrm{op}}<0$ $\Rightarrow$ no adoptar.
-Nativo: gana en $\Delta_{\mathrm{op}}$
-(alineación mapa--dato).}
-\end{block}
+\begin{column}{0.62\textwidth}
+\centering
+\includegraphics[width=\linewidth,height=0.78\textheight,keepaspectratio]{08_q_vector_nativo_vs_reales.png}
 \end{column}
-\begin{column}{0.48\textwidth}
-\begin{alertblock}{Escalar $w^\top\mathcal{Q}$}
+\begin{column}{0.36\textwidth}
+\begin{block}{Cómo interpretar (hechos)}
 {\footnotesize
-Si se colapsa a un número
-(p.~ej.\ pesos $0.4/0.3/0.3$),
-SKG queda primero y se decide mal.
-Por eso $\mathcal{Q}$ se deja como
-\textbf{vector}.}
+\begin{itemize}
+  \item \textbf{Nativo} = único con
+        $\Delta_{\mathrm{op}}>0$ (control).
+  \item Nativo tiene $\Delta A<0$:
+        $\Delta A>0$ \textbf{no} es
+        necesario en este protocolo.
+  \item \textbf{SKG}: $\hat{d}_F$/$\Delta H$
+        altos, $\Delta_{\mathrm{op}}<0$
+        $\Rightarrow$ no adoptar.
+  \item \textbf{Telco}: $\Delta A>0$ pero
+        $\Delta H\ll 0$ y
+        $\Delta_{\mathrm{op}}<0$.
+\end{itemize}}
+\end{block}
+\begin{alertblock}{Regla}
+{\footnotesize
+Leer las tres entradas del vector
+\textbf{y} $\Delta_{\mathrm{op}}$.
+No colapsar a un escalar
+(SKG quedaría primero).}
 \end{alertblock}
 \end{column}
 \end{columns}
