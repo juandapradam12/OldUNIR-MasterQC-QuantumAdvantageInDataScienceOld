@@ -631,27 +631,21 @@ Eso era solo un nombre confuso para
 \begin{columns}[T]
 \begin{column}{0.62\textwidth}
 \centering
-\includegraphics[width=\linewidth,height=0.78\textheight,keepaspectratio]{08_estructura_tres_casos.png}
+\includegraphics[width=\linewidth,height=0.78\textheight,keepaspectratio]{08_estructura_comparativa_casos_uso.png}
 \end{column}
 \begin{column}{0.36\textwidth}
-\begin{block}{Lectura}
+\begin{block}{Cómo leerlo}
 {\footnotesize
-Tres plots = tres métricas.\\
-Una barra = un caso de uso
-(control Nativo / Nativo / \texttt{zz\_phase}).\\[0.3em]
+Un plot por métrica.\\
+En cada plot: eje X = caso de uso;
+3 barras = Nativo / SKG / Referencia.\\[0.3em]
 \begin{itemize}
-  \item $\Delta A>0$ en los tres
-  \item $d_F\approx 0.01$
+  \item $\Delta A$: solo el nativo $>0$
+        en los tres casos
+  \item $d_F\approx 0.01$ en todos
         (casi no discrimina)
-  \item $\Delta H$ similar
-        ($\sim 2$)
+  \item $\Delta H\approx 2$ en todos
 \end{itemize}}
-\end{block}
-\begin{block}{Detalle por dataset}
-{\footnotesize
-Figuras auxiliares en el documento:
-perfil dentro de cada familia
-(SKG, Telco, Friedman,\ldots).}
 \end{block}
 \end{column}
 \end{columns}
@@ -660,19 +654,20 @@ perfil dentro de cada familia
 \begin{frame}{P1 --- cómo interpretar}
 \begin{block}{\textquestiondown{}$\Delta A$ negativo + $\Delta H$ mínimo = estructura?}
 {\footnotesize
-\textbf{No.} El control de cada caso de uso tiene $\Delta A>0$
-(clasif.\ $+0.20$, reg.\ $+0.28$, anom.\ $+0.09$).}
+\textbf{No.} En los tres casos de uso el \textbf{nativo} tiene $\Delta A>0$
+(clasif.\ $+0.20$, reg.\ $+0.28$, anom.\ $+0.09$); los datos reales/referencia
+quedan en $\Delta A\le 0$. $\Delta H$ no es el mínimo en el nativo.}
 \end{block}
 \vspace{0.35em}
-\begin{block}{\textquestiondown{}$d_F$ discrimina entre casos de uso?}
+\begin{block}{\textquestiondown{}$d_F$ discrimina?}
 {\footnotesize
-\textbf{Aquí, apenas} ($\approx 0.01$ en los tres).}
+\textbf{Aquí, apenas}: $\approx 0.01$ en todos los datasets y casos de uso.}
 \end{block}
 \vspace{0.35em}
 \begin{alertblock}{Lectura defendible}
 {\footnotesize
-Misma geometría de estructura en clasif.\ / reg.\ / anomalías cuando el
-dato es el control alineado al mapa \citep{liu2021}.}
+Lo que separa estructura es $\Delta A$ (alineación mapa--dato \citep{liu2021,huang2021}),
+no $d_F$ ni $\Delta H$, y se repite en las tres familias.}
 \end{alertblock}
 \end{frame}
 

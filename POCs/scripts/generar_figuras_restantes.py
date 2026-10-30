@@ -1424,50 +1424,84 @@ def fig_08_perfil_anomalias():
 
 
 def fig_08_estructura_tres_casos():
-    """Un compuesto de 3 plots (una métrica cada uno); una barra por caso de uso.
+    """UN gráfico grande con 3 paneles: uno por métrica (ΔA, d_F, ΔH).
 
-    Barra = dataset control de cada familia (Nativo / Nativo / zz_phase),
-    para comparar estructura entre casos con la misma métrica.
+    En cada panel: eje X = caso de uso (clasificación / regresión / anomalías);
+    dentro de cada caso, una barra por rol de dataset (Nativo / SKG / Referencia).
+    Misma métrica y misma escala para poder comparar los casos de uso.
     """
     df = _load_estructura_por_caso()
-    # Control alineado al mapa ZZ en cada familia
-    controls = [
-        ("clasificacion", "Nativo", "Clasificación"),
-        ("regresion", "Nativo", "Regresión"),
-        ("anomalias", "zz_phase", "Anomalías"),
+    cases = [
+        ("clasificacion", "Clasificación", ["Nativo", "SKG", "Telco"]),
+        ("regresion", "Regresión", ["Nativo", "SKG", "Friedman"]),
+        ("anomalias", "Anomalías", ["zz_phase", "SKG", "moons"]),
     ]
-    labels = []
-    dA, dF, dH = [], [], []
-    for fam, ds, lab in controls:
-        row = df[(df["family"] == fam) & (df["dataset"] == ds)]
-        if row.empty:
-            SKIPPED.append(f"estructura_tres_casos: falta {fam}/{ds}")
-            return
-        r = row.iloc[0]
-        labels.append(lab)
-        dA.append(float(r["delta_A"]))
-        dF.append(float(r["d_F"]))
-        dH.append(float(r["delta_H"]))
+    roles = ["Nativo", "SKG", "Referencia"]
+    role_colors = ["#0D47A1", "#1976D2", "#90CAF9"]
+    metrics = [
+        ("delta_A", r"$\Delta A$", r"$\Delta A$ (Huang / Cortes)" "\n"
+         r"$A(K_Q)-A(K_{\mathrm{RBF}})$", "{:+.2f}"),
+        ("d_F", r"$d_F$", r"$d_F$ (Liu)" "\n"
+         r"$\|K_Q-K_{\mathrm{RBF}}\|_F/n$", "{:.4f}"),
+        ("delta_H", r"$\Delta H$", r"$\Delta H$ (Thanasilp)" "\n"
+         r"$H(K_Q)-H(K_{\mathrm{RBF}})$", "{:+.2f}"),
+    ]
 
-    fig, axes = plt.subplots(1, 3, figsize=(13.2, 4.8))
+    data: dict[tuple[str, int], dict[str, float]] = {}
+    ds_names: dict[tuple[str, int], str] = {}
+    for fam, _, names in cases:
+        for k, ds in enumerate(names):
+            row = df[(df["family"] == fam) & (df["dataset"] == ds)]
+            if row.empty:
+                SKIPPED.append(f"estructura_tres_casos: falta {fam}/{ds}")
+                return
+            r = row.iloc[0]
+            data[(fam, k)] = {c: float(r[c]) for c, *_ in metrics}
+            ds_names[(fam, k)] = ds
+
+    fig, axes = plt.subplots(1, 3, figsize=(15.5, 5.6))
     fig.suptitle(
-        r"Estructura cuántica $(\Delta A,\ d_F,\ \Delta H)$ — un plot por métrica"
-        "\n"
-        "Una barra por caso de uso (dataset control: Nativo / Nativo / zz_phase).  "
-        "Mismo protocolo; sin accuracy / $R^2$ / AUC.",
+        r"Estructura cuántica $(\Delta A,\ d_F,\ \Delta H)$: una métrica por panel, "
+        "comparando los casos de uso\n"
+        "Mismo protocolo (ZZ 2q, n=60, 3 repeats, RBF Frobenius-best); "
+        "sin accuracy / $R^2$ / AUC",
         fontsize=12, fontweight="bold",
     )
-    _blue_bars(axes[0], labels, dA, r"$\Delta A$",
-               r"$\Delta A$ (Huang / Cortes)" "\n" r"$A(K_Q)-A(K_{\mathrm{RBF}})$",
-               fmt="{:+.3f}", ylim=_ESTRUCTURA_YLIMS["delta_A"])
-    _blue_bars(axes[1], labels, dF, r"$d_F$",
-               r"$d_F$ (Liu)" "\n" r"$\|K_Q-K_{\mathrm{RBF}}\|_F/n$",
-               fmt="{:.4f}", ylim=_ESTRUCTURA_YLIMS["d_F"])
-    _blue_bars(axes[2], labels, dH, r"$\Delta H$",
-               r"$\Delta H$ (Thanasilp)" "\n" r"$H(K_Q)-H(K_{\mathrm{RBF}})$",
-               fmt="{:+.3f}", ylim=_ESTRUCTURA_YLIMS["delta_H"])
-    plt.tight_layout()
-    save_fig("08_estructura_tres_casos.png")
+    width = 0.26
+    x = np.arange(len(cases))
+    for ax, (col, ylab, title, fmt) in zip(axes, metrics):
+        allv = [data[(fam, k)][col] for fam, _, _ in cases for k in range(3)]
+        lo, hi = min(allv + [0.0]), max(allv + [0.0])
+        span = (hi - lo) or 1.0
+        ax.set_ylim(lo - 0.18 * span if lo < 0 else 0.0, hi + 0.22 * span)
+        for k, (role, color) in enumerate(zip(roles, role_colors)):
+            vals = [data[(fam, k)][col] for fam, _, _ in cases]
+            xs = x + (k - 1) * width
+            bars = ax.bar(xs, vals, width, color=color, edgecolor="white",
+                          label=role if col == "delta_A" else None)
+            ybot = ax.get_ylim()[0]
+            for b, v, (fam, _, _) in zip(bars, vals, cases):
+                rot = 90 if col == "d_F" else 0
+                ax.text(b.get_x() + b.get_width() / 2,
+                        v + (0.02 * span if v >= 0 else -0.02 * span),
+                        fmt.format(v), ha="center",
+                        va="bottom" if v >= 0 else "top",
+                        fontsize=7.5, fontweight="bold", rotation=rot)
+                covered = v >= 0 and ybot >= 0 and k < 2
+                ax.text(b.get_x() + b.get_width() / 2, ybot + 0.01 * span,
+                        ds_names[(fam, k)], ha="center", va="bottom",
+                        fontsize=7, rotation=90,
+                        color="white" if covered else "#37474F")
+        ax.axhline(0, color="#37474F", lw=0.9, ls="--")
+        ax.set_xticks(x)
+        ax.set_xticklabels([c[1] for c in cases], fontsize=10)
+        ax.set_ylabel(ylab, fontsize=11)
+        ax.set_title(title, fontsize=11)
+    handles = [mpatches.Patch(color=c, label=r) for r, c in zip(roles, role_colors)]
+    fig.legend(handles=handles, loc="lower center", ncol=3, fontsize=10,
+               title="Rol del dataset dentro de cada caso de uso", frameon=False)
+    plt.tight_layout(rect=(0, 0.09, 1, 0.93))
+    save_fig("08_estructura_comparativa_casos_uso.png")
 
 
 def fig_08_q_vector_vs_nativo():
