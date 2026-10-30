@@ -1,0 +1,21 @@
+# Versiones exactas del entorno de reejecución (Linux, Python 3.12.3).
+# Las cifras del TFM proceden de este entorno; el entorno del autor se describe en el Anexo A de la tesis.
+qiskit==2.6.1
+qiskit-aer==0.18.2
+qiskit-algorithms==0.4.0
+qiskit-machine-learning==0.9.1
+qiskit-optimization==0.7.0
+qiskit-finance==0.4.1
+scikit-learn==1.9.1
+xgboost==3.4.1
+scipy==1.18.1
+numpy==2.5.4
+pandas==3.1.0
+matplotlib==3.11.2
+seaborn==0.13.2
+networkx==3.7
+PuLP==2.9.0
+nbformat==5.11.1
+nbconvert==7.17.2
+ipykernel==7.4.0
+pytest==9.2.0

@@ -50,23 +50,18 @@ CAPAS = {
     "referencia": "Referencia",
     "complementario": "Complementario",
 }
-CASO_SIN_COMPARADOR = 7
 ETIQUETAS_DE_MODELO = {"QSVM", "QK-SVR", "QSVC"}
 UMBRAL_EMPATE = 1.0
 
 
-def color_barra(valor: float, caso: int) -> str:
-    if caso == CASO_SIN_COMPARADOR:
-        return AZUL_OSCURO
+def color_barra(valor: float) -> str:
     if abs(valor) < UMBRAL_EMPATE:
         return GRIS_CLARO
     return AZUL if valor > 0 else GRIS
 
 
-def veredicto(valores: np.ndarray, caso: int) -> str:
+def veredicto(valores: np.ndarray) -> str:
     """Etiqueta del panel según el signo de las ventajas (umbral de empate de 1 unidad)."""
-    if caso == CASO_SIN_COMPARADOR:
-        return "Sin comparador clásico"
     a_favor = (valores >= UMBRAL_EMPATE).any()
     en_contra = (valores <= -UMBRAL_EMPATE).any()
     if a_favor and en_contra:
@@ -86,7 +81,7 @@ def dibujar_panel(ax: plt.Axes, caso: int, filas: pd.DataFrame) -> str:
     valores = filas["valor"].to_numpy(dtype=float)
     posiciones = np.arange(len(valores))
 
-    barras = ax.barh(posiciones, valores, color=[color_barra(v, caso) for v in valores],
+    barras = ax.barh(posiciones, valores, color=[color_barra(v) for v in valores],
                      edgecolor="white", height=0.55)
     ax.axvline(0, color=CARBON, linewidth=0.8, linestyle="--", alpha=0.6)
     ax.set_yticks(posiciones)
@@ -102,7 +97,7 @@ def dibujar_panel(ax: plt.Axes, caso: int, filas: pd.DataFrame) -> str:
                 barra.get_y() + barra.get_height() / 2, f"{valor:+.1f}",
                 va="center", ha="left" if valor >= 0 else "right", fontsize=8, color=CARBON)
 
-    texto = veredicto(valores, caso)
+    texto = veredicto(valores)
     ax.text(0.98, 0.02, texto, transform=ax.transAxes, ha="right", va="bottom",
             fontsize=8, color=AZUL_OSCURO, fontweight="bold")
     return texto
@@ -134,9 +129,8 @@ def main() -> None:
             mpatches.Patch(color=AZUL, label="Ventaja cuántica"),
             mpatches.Patch(color=GRIS, label="Clásico superior"),
             mpatches.Patch(color=GRIS_CLARO, label="Empate (|Δ| < 1)"),
-            mpatches.Patch(color=AZUL_OSCURO, label="Métrica propia (sin comparador)"),
         ],
-        loc="lower center", bbox_to_anchor=(0.5, 0.045), ncol=4, fontsize=9,
+        loc="lower center", bbox_to_anchor=(0.5, 0.045), ncol=3, fontsize=9,
         framealpha=0.92, edgecolor=GRIS_CLARO,
     )
 

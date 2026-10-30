@@ -55,7 +55,7 @@ Building on these observations, the thesis advances two research proposals. Firs
 | 4 | Combinatorial optimization (portfolio) | Hybrid VQE | Does not reach the exact optimum on 3 of 6 assets (+34.0% cost gap); no advantage |
 | 5 | Combinatorial optimization (TSP) | Hybrid QAOA | Optimal parity with NN+2-opt — modeling value, not asymptotic speedup |
 | 6 | Classification (threshold setting) | Quantum kernel SVM | Advantage contingent on native structure |
-| 7 | Combinatorial optimization (dominating set) | Hybrid QAOA | Optimum recovered by sampling, but mean probability of measuring it is only 5.7% (p = 3); no classical comparator |
+| 7 | Combinatorial optimization (dominating set) | Hybrid QAOA | Ties exact ILP on the 6-node network (mean P(opt) 5.7%, p = 3); on Erdős–Rényi graphs (n = 6–15) QAOA reaches a minimum dominating set in 2 of 5 instances vs 5 of 5 for ILP and Greedy (−60 pp) |
 | 8 | Clustering-related (one-class anomalies) | OCSVM with ZZ kernel | Advantage only when novelty is map-aligned |
 | 9 | Forecasting (lag windows) | Quantum-kernel SVR | Advantage only when the target is map-aligned |
 

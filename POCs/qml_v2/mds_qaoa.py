@@ -246,7 +246,7 @@ def escalabilidad(ns=(6, 8, 10, 12, 15), density: float = 0.45, seed: int = SEED
         e_opt = float(diag.min())
         opt_k = int(np.argmin(diag))
         t0 = time.perf_counter()
-        best_cost_sampled, best_pk = np.inf, 0.0
+        best_cost_sampled, best_pk, best_k = np.inf, 0.0, -1
         rng = np.random.default_rng(seed + n)
         for r in range(n_restarts):
             x0 = np.random.default_rng(seed + 1000 * p + r).uniform(0, 2 * np.pi, 2 * p)
@@ -255,13 +255,22 @@ def escalabilidad(ns=(6, 8, 10, 12, 15), density: float = 0.45, seed: int = SEED
             pr = qaoa_probs(np.asarray(res.x), diag_ising, n, p)
             cnt = rng.multinomial(SHOTS, pr / pr.sum())
             seen = np.flatnonzero(cnt)
-            best_cost_sampled = min(best_cost_sampled, float(diag[seen].min()))
+            k_loc = int(seen[np.argmin(diag[seen])])
+            if float(diag[k_loc]) < best_cost_sampled:
+                best_cost_sampled, best_k = float(diag[k_loc]), k_loc
             best_pk = max(best_pk, float(pr[opt_k]))
         t_q = time.perf_counter() - t0
+        sel = [(best_k >> i) & 1 for i in range(n)]
+        es_dominante = all(any(sel[u] for u in closed[v]) for v in range(n))
+        n_opt = int(np.sum(np.isclose(diag, e_opt)))
+        p_unif = n_opt / 2 ** n
         rows.append(dict(n=n, n_aristas=len(edges), ilp_tamano=ilp_size, greedy_tamano=len(chosen),
                          qubo_optimo=e_opt, qaoa_mejor_coste_muestreado=best_cost_sampled,
-                         qaoa_mejor_p_opt=best_pk, t_greedy_s=t_greedy, t_ilp_s=t_ilp,
-                         t_qaoa_20reinicios_s=t_q))
+                         qaoa_tamano_mejor_muestra=int(sum(sel)), qaoa_mejor_muestra_es_dominante=es_dominante,
+                         n_optimos_qubo=n_opt, p_uniforme_opt=p_unif,
+                         p_hallar_uniforme_mismo_presupuesto=1 - (1 - p_unif) ** (n_restarts * SHOTS),
+                         qaoa_mejor_p_opt=best_pk, enriquecimiento_vs_uniforme=best_pk / p_unif,
+                         t_greedy_s=t_greedy, t_ilp_s=t_ilp, t_qaoa_20reinicios_s=t_q))
         print(rows[-1])
     return pd.DataFrame(rows)
 

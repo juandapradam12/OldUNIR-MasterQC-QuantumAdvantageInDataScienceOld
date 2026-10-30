@@ -273,10 +273,11 @@ Comparación de:
 
 ## 🛠️ Tecnologías
 
-- **Quantum:** Qiskit 1.x, PennyLane
-- **Clásico:** scikit-learn, XGBoost, scipy
-- **Análisis:** pandas, numpy, matplotlib, seaborn
-- **Optimización:** CVXPY, Gurobi (opcional)
+- **Quantum:** Qiskit 2.6.1 (`qiskit-aer` 0.18.2, `qiskit-algorithms` 0.4.0, `qiskit-machine-learning` 0.9.1, `qiskit-optimization` 0.7.0, `qiskit-finance` 0.4.1)
+- **Clásico:** scikit-learn 1.9.1, XGBoost 3.4.1, SciPy 1.18.1
+- **Análisis:** pandas 3.1.0, NumPy 2.5.4, matplotlib 3.11.2, seaborn 0.13.2, NetworkX 3.7
+- **Optimización:** PuLP 2.9.0 (CBC) y `scipy.optimize.milp` (HiGHS)
+- **Entorno de reejecución:** Python 3.12.3 en Linux; versiones exactas en `requirements-lock.txt` (el entorno del autor: Python 3.14, Qiskit 2.3.0; véase el Anexo A de la tesis)
 
 ## 📝 Notas
 

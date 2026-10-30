@@ -241,13 +241,13 @@ El análisis del umbral de ventaja del kernel (Notebook~06) confirma el caso~1 d
 
 \subsection{Naturaleza del problema y perspectiva de evaluación}
 
-El Caso de uso~7 tiene una naturaleza fundamentalmente diferente a los anteriores: el objetivo no es superar métricamente a un clasificador o regresor clásico equivalente, sino demostrar la viabilidad del \textbf{paradigma híbrido cuántico-clásico} aplicado a un problema NP-difícil con formulación QUBO natural. El \textit{Minimum Dominating Set} (MDS) pertenece a la clase NP-completo \citep{garey1979}: no existe algoritmo clásico polinómico conocido que garantice la solución óptima en el caso general. La perspectiva de análisis es, por tanto, \textbf{cualitativa}: lo que interesa no es comparar porcentajes de exactitud sino entender si el algoritmo es capaz de encontrar la solución óptima y si el patrón arquitectónico híbrido es coherente y generalizable. Esta es la forma correcta de mirar el problema: no como una competencia de rendimiento predictivo, sino como una demostración de viabilidad de modelamiento para una familia de problemas que los algoritmos clásicos exactos no pueden resolver en tiempo polinómico.
+El Caso de uso~7 tiene una naturaleza fundamentalmente diferente a los anteriores: el objetivo no es superar métricamente a un clasificador o regresor clásico equivalente, sino demostrar la viabilidad del \textbf{paradigma híbrido cuántico-clásico} aplicado a un problema NP-difícil con formulación QUBO natural. El \textit{Minimum Dominating Set} (MDS) pertenece a la clase NP-completo \citep{garey1979}: no existe algoritmo clásico polinómico conocido que garantice la solución óptima en el caso general. La evaluación combina por ello dos lecturas: una \textbf{cuantitativa}, comparable con el resto de casos (porcentaje de instancias en las que el método obtiene un conjunto dominante del tamaño del MDS exacto, frente a ILP y Greedy), y una de \textbf{modelamiento}, que estudia si el patrón arquitectónico híbrido es coherente y generalizable a cualquier problema QUBO.
 
 \subsection{Perspectiva de análisis: viabilidad de modelamiento en problemas NP-difíciles}
 
 La principal aportación del Caso~7 es de \textbf{modelamiento}: cualquier problema formulable como QUBO —cobertura de conjuntos, asignación, rutas, scheduling— puede ser resuelto directamente con el mismo loop híbrido QAOA-COBYLA, sin cambiar la arquitectura del algoritmo. Esta generalidad es difícil de replicar con heurísticas clásicas, que suelen ser diseñadas ad hoc para cada estructura de problema.
 
-Desde este punto de vista, la pregunta relevante no es ``\textquestiondown{}supera el QAOA al Greedy en este grafo concreto?'' —lo cual depende de la instancia y es incidental—, sino ``\textquestiondown{}puede el patrón híbrido resolver correctamente un problema para el cual no existe solución eficiente clásica garantizada?''. La respuesta experimental es afirmativa pero matizada (\texttt{qml\_v2.mds\_qaoa}, notebook~10): con $p=3$ y 20 reinicios de COBYLA, el estado de menor coste QUBO entre los medidos es el óptimo exacto $\{$Ana, Enrique$\}$ de la instancia de seis nodos. Sin embargo, el circuito \emph{no} concentra de forma fiable la probabilidad en el óptimo: la probabilidad exacta de medirlo es del $5.7\%$ en media sobre los reinicios y solo el mejor alcanza el $68.8\%$; con $p=1$ la media es del $2.6\%$. La recuperación del óptimo descansa en el muestreo y la selección del menor coste, no en una concentración sistemática de la masa de probabilidad.
+Desde este punto de vista, la pregunta relevante es ``\textquestiondown{}puede el patrón híbrido resolver correctamente un problema para el cual no existe solución eficiente clásica garantizada, y lo hace mejor que los clásicos?''. La respuesta experimental es afirmativa en lo primero para la red de seis nodos, pero sin ventaja frente a los métodos clásicos (\texttt{qml\_v2.mds\_qaoa}, notebook~10): con $p=3$ y 20 reinicios de COBYLA, el estado de menor coste QUBO entre los medidos es el óptimo exacto $\{$Ana, Enrique$\}$ de la instancia de seis nodos. Sin embargo, el circuito \emph{no} concentra de forma fiable la probabilidad en el óptimo: la probabilidad exacta de medirlo es del $5.7\%$ en media sobre los reinicios y solo el mejor alcanza el $68.8\%$; con $p=1$ la media es del $2.6\%$. La recuperación del óptimo descansa en el muestreo y la selección del menor coste, no en una concentración sistemática de la masa de probabilidad. Como referencia nula, una distribución uniforme asigna al óptimo la probabilidad $1/64=1.6\%$: el QAOA la multiplica por $1.7$ ($p=1$) y $3.6$ ($p=3$) en media, y por $44$ en el mejor reinicio; con el mismo presupuesto de 20 reinicios de 6\,000 shots, el muestreo uniforme encontraría el óptimo con probabilidad prácticamente igual a $1$, de modo que haberlo encontrado no es por sí solo evidencia a favor del QAOA. Frente a ILP y Greedy, que resuelven la instancia de forma exacta, el resultado es un empate en calidad ($0$~pp de instancias con MDS óptimo).
 
 \subsection{Complejidad computacional y análisis de escalabilidad}
 
@@ -273,23 +273,24 @@ QAOA (hardware)    & Circuito de profundidad $O(p\,|E|)$ & Probabilística, sin 
 
 La diferencia conceptual es que el \emph{coste por evaluación del circuito} QAOA en hardware es polinómico en el número de qubits y la profundidad, mientras que la fuerza bruta es exponencial. Esto \textbf{no} equivale a una ventaja: la calidad de la solución no está garantizada, el bucle clásico (COBYLA) puede quedar atrapado (en nuestros 60 reinicios solo uno alcanzó un coste esperado cercano al óptimo), el número de shots necesario para observar el óptimo no se conoce a priori, y el ruido de los dispositivos NISQ degrada el resultado \citep{preskill2018, cerezo2021}. En simulación clásica exacta, como la empleada en este TFM, la evaluación del vector de estados es $O(2^n)$.
 
-La Tabla~\ref{tab:escala_mds} recoge el experimento real sobre grafos de Erdős--Rényi (densidad 0.45, semilla 42, $p=3$, 20 reinicios de COBYLA, 6\,000 shots; \texttt{python -m qml\_v2.mds\_qaoa}). Greedy e ILP encuentran el MDS en todos los tamaños en menos de 25 ms; el tiempo de simulación de QAOA crece de 4.7 s ($n=6$) a 28.8 s ($n=15$) en nuestro simulador de vector de estados. El mejor estado muestreado por QAOA coincide con el óptimo del \emph{QUBO}, que para $n\ge 8$ no es el MDS (la penalización cuadrática favorece dominantes perfectos), y la probabilidad de medir ese óptimo cae de $14\%$ ($n=6$) a $0.1\%$ ($n=15$) en el mejor reinicio. La evidencia delimita lo que se ha medido: en este rango la simulación de QAOA no aporta ventaja de tiempo ni de calidad frente a Greedy/ILP; no se ha evaluado hardware real ni instancias con $n\gtrsim 50$, por lo que no puede afirmarse ni descartarse ventaja en ese régimen.
+La Tabla~\ref{tab:escala_mds} recoge el experimento real sobre grafos de Erdős--Rényi (densidad 0.45, semilla 42, $p=3$, 20 reinicios de COBYLA, 6\,000 shots; \texttt{python -m qml\_v2.mds\_qaoa}). Greedy e ILP encuentran el MDS en los cinco tamaños en menos de 10~ms; el tiempo de simulación de QAOA crece de 4.8~s ($n=6$) a 31.0~s ($n=15$) en nuestro simulador de vector de estados. La mejor muestra de QAOA coincide con el óptimo del \emph{QUBO}, pero solo para $n=6$ y $n=8$ ese óptimo es un conjunto dominante del tamaño del MDS; para $n\ge 10$ el óptimo del QUBO con $A=1$, $B=2$ ni siquiera es un conjunto dominante (la penalización no compensa dejar vértices sin cubrir), por lo que el límite es de \emph{formulación} y afectaría igual a cualquier solver exacto de ese QUBO. Medido como porcentaje de instancias con MDS óptimo, QAOA resuelve 2 de 5 (40\%) frente a 5 de 5 de ILP y de Greedy: una diferencia de $-60$~pp para el método cuántico. La probabilidad de medir el óptimo del QUBO cae de $14\%$ ($n=6$) a $0.1\%$ ($n=15$) en el mejor reinicio, entre $6$ y $51$ veces la de una distribución uniforme (columna $P_{\mathrm{unif}}$), y el muestreo uniforme con el mismo presupuesto lo encontraría con probabilidad $\approx 1$ en todos los tamaños. La evidencia delimita lo que se ha medido: en este rango la simulación de QAOA no aporta ventaja de tiempo ni de calidad frente a Greedy/ILP; no se ha evaluado hardware real ni instancias con $n\gtrsim 50$, por lo que no puede afirmarse ni descartarse ventaja en ese régimen.
 
 \begin{table}[ht]
 \centering
-\small
-\begin{tabular}{rrrrrrr}
+\footnotesize
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{rrrrrcrrr}
 \hline
-$n$ & Aristas & MDS (ILP) & MDS (Greedy) & Óptimo QUBO & $P_{\max}(\text{opt})$ & $t_{\text{QAOA}}$ (s) \\
+$n$ & Aristas & ILP & Greedy & Óptimo QUBO & Mejor muestra QAOA ($|S|$, ¿dominante?) & $P_{\max}(\text{opt})$ & $P_{\text{unif}}$ & $t_{\text{QAOA}}$ (s) \\
 \hline
-6  & 6  & 2 & 2 & 2 & 0.144 & 4.7 \\
-8  & 11 & 2 & 2 & 4 & 0.036 & 5.5 \\
-10 & 21 & 2 & 2 & 5 & 0.049 & 6.3 \\
-12 & 33 & 2 & 2 & 6 & 0.0045 & 8.8 \\
-15 & 50 & 3 & 3 & 8 & 0.0010 & 28.8 \\
+6  & 6  & 2 & 2 & 2 & 2 (sí) & 0.1439 & 0.0156 & 4.8 \\
+8  & 11 & 2 & 2 & 4 & 2 (sí) & 0.0356 & 0.0039 & 5.4 \\
+10 & 21 & 2 & 2 & 5 & 1 (no) & 0.0494 & 0.0010 & 6.4 \\
+12 & 33 & 2 & 2 & 6 & 2 (no) & 0.0045 & 0.0007 & 9.0 \\
+15 & 50 & 3 & 3 & 8 & 2 (no) & 0.0010 & 0.0001 & 31.0 \\
 \hline
 \end{tabular}
-\caption{Escalabilidad real del Caso~7 (ER, densidad 0.45). $P_{\max}(\text{opt})$: mayor probabilidad exacta de medir el óptimo del QUBO entre 20 reinicios de QAOA con $p=3$; $t_{\text{QAOA}}$: tiempo de los 20 reinicios (simulación NumPy). Fuente: \texttt{10\_mds\_qaoa\_escalabilidad.csv}.}
+\caption{Escalabilidad real del Caso~7 (ER, densidad 0.45). ILP y Greedy: tamaño del conjunto dominante hallado. Mejor muestra QAOA: tamaño del conjunto con menor coste QUBO entre las muestras de los 20 reinicios y si es dominante. $P_{\max}(\text{opt})$: mayor probabilidad exacta de medir el óptimo del QUBO entre 20 reinicios con $p=3$; $P_{\text{unif}}$: probabilidad del óptimo bajo una distribución uniforme (referencia nula); $t_{\text{QAOA}}$: tiempo de los 20 reinicios (simulación NumPy). Fuente: \texttt{10\_mds\_qaoa\_escalabilidad.csv}.}
 \label{tab:escala_mds}
 \end{table}
 
@@ -370,7 +371,7 @@ La Tabla~\ref{tab:sintesis} sintetiza los resultados principales del estudio com
 4 & VQE/QAOA & \multicolumn{3}{c}{VQE no alcanza el óptimo (brecha $+34.0\%$ en coste); QAOA infactible} \\
 5 & QAOA TSP & \multicolumn{2}{c}{empate óptimo vs NN+2-opt ($n=4$)} & Euclidean gap~$0$ \\
 6 & QSVM (umbral) & $+8.9$ pp ($n=150$, una partición) & $-4.0$ pp (clásico) & $-3.8$ pp vs GB (clásico) \\
-7 & QAOA MDS ($p=3$) & \multicolumn{3}{c}{Óptimo recuperado por selección; $P(\text{opt})$ media $5.7\%$, mejor reinicio $68.8\%$; sin comparador clásico} \\
+7 & QAOA MDS ($p=3$) & \multicolumn{3}{c}{Red de 6 nodos: empate con ILP ($0$ pp); ER $n=6$--$15$: $-60$ pp de instancias con MDS óptimo (2/5 frente a 5/5)} \\
 8 & OCSVM-ZZ & \textbf{+31.2 pp AUC} (\texttt{zz\_phase}) & $-29.9$ pp (inyectado) & $-29.1$ pp (moons), $-50.8$ pp (blobs) \\
 9 & QK-SVR lags & \textbf{+86.6\% MAE} (\texttt{zz\_lag}) & $-325.2\%$ (\texttt{skg\_speed}) & $-154.9\%$ (\texttt{sine}) \\
 \hline
@@ -442,7 +443,7 @@ La Tabla~\ref{tab:sintesis} sintetiza los resultados principales del estudio com
   % Fila 7 – CU7
   \node[font=\footnotesize] at (0,    -6.4) {7};
   \node[font=\footnotesize, align=left] at (2.4, -6.4) {QAOA MDS};
-  \node[amarillo] at (5.6,  -6.4) {\scriptsize Sin comparador};
+  \node[rojo]     at (5.6,  -6.4) {\scriptsize Desventaja};
   \node[amarillo] at (8.3,  -6.4) {\scriptsize Moderada};
   \node[amarillo] at (11.0, -6.4) {\scriptsize Moderado};
 
@@ -469,7 +470,7 @@ La Tabla~\ref{tab:sintesis} sintetiza los resultados principales del estudio com
   \node[right=4pt, font=\scriptsize] at (lr.east) {Desfavorable};
 
 \end{tikzpicture}
-\caption{Semáforo de resultados por caso de uso. Azul = favorable; gris claro = moderado, empate o condicional; gris = desfavorable. La columna ``Resultado'' se deriva de la Tabla~\ref{tab:sintesis}; ``Escalabilidad NISQ'' y ``Valor para SKG'' son valoraciones cualitativas del autor, no mediciones. Los Casos~8 y~9 son condicionales: hay ventaja cuando novedad o target están alineados con el feature map (aquí ZZ). Caso~7: sin comparador clásico.}
+\caption{Semáforo de resultados por caso de uso. Azul = favorable; gris claro = moderado, empate o condicional; gris = desfavorable. La columna ``Resultado'' se deriva de la Tabla~\ref{tab:sintesis}; ``Escalabilidad NISQ'' y ``Valor para SKG'' son valoraciones cualitativas del autor, no mediciones. Los Casos~8 y~9 son condicionales: hay ventaja cuando novedad o target están alineados con el feature map (aquí ZZ). Caso~7: empate en la red de 6 nodos y $-60$~pp de instancias con MDS óptimo en los grafos ER.}
 \label{fig:semaforo_resultados}
 \end{figure}
 
@@ -477,14 +478,14 @@ La Tabla~\ref{tab:sintesis} sintetiza los resultados principales del estudio com
 \begin{figure}[!htbp]
 \centering
 \includegraphics[width=0.97\textwidth]{../POCs/data/output/figures/07_dashboard_ventaja_cuantica.png}
-\caption{Dashboard de los nueve casos de uso, generado a partir de \texttt{07\_sintesis\_resultados.csv}. Cada panel usa la unidad de su caso (pp de exactitud, $\Delta R^2\times100$, \% de coste, pp de AUC, \% de MAE o $P(\text{óptimo})$); positivo favorece al método cuántico. Azul = ventaja cuántica; gris = clásico superior; gris claro = empate; azul oscuro = métrica propia sin comparador clásico. Coherente con la Tabla~\ref{tab:sintesis}.}
+\caption{Dashboard de los nueve casos de uso, generado a partir de \texttt{07\_sintesis\_resultados.csv}. Cada panel usa la unidad de su caso (pp de exactitud, $\Delta R^2\times100$, \% de coste, pp de AUC, \% de MAE o pp de instancias con MDS óptimo); positivo favorece al método cuántico. Azul = ventaja cuántica; gris = clásico superior; gris claro = empate. Coherente con la Tabla~\ref{tab:sintesis}.}
 \label{fig:dashboard_sintesis}
 \end{figure}
 
 \begin{figure}[!htbp]
 \centering
 \includegraphics[width=0.90\textwidth]{../POCs/data/output/figures/07_heatmap_ventaja_por_dominio.png}
-\caption{Mapa de calor de la ventaja cuántica sobre el mejor clásico por caso de uso y tipo de dataset, con la unidad indicada en cada fila; el color se satura en $\pm80$ y la anotación conserva el valor real. Las celdas azules aparecen solo con alineación feature map--generador (Casos~1, 2, 6, 8 y~9 en datos nativos). Las celdas grises reflejan dominio clásico. Los Casos~3, 4 y~5 no distinguen tipo de dataset y se sitúan en la columna de referencia; el Caso~7 no tiene comparador clásico y no se representa.}
+\caption{Mapa de calor de la ventaja cuántica sobre el mejor clásico por caso de uso y tipo de dataset, con la unidad indicada en cada fila; el color se satura en $\pm80$ y la anotación conserva el valor real. Las celdas azules aparecen solo con alineación feature map--generador (Casos~1, 2, 6, 8 y~9 en datos nativos). Las celdas grises reflejan dominio clásico. Los Casos~3, 4 y~5 no distinguen tipo de dataset y se sitúan en la columna de referencia; el Caso~7 se mide en pp de instancias con MDS óptimo frente a ILP/Greedy y se sitúa en la columna de referencia.}
 \label{fig:heatmap_ventaja_body}
 \end{figure}
 

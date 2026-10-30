@@ -391,7 +391,7 @@ También: Q más lento ($1/t\approx 0$).}
 \begin{columns}[T]
 \begin{column}{0.68\textwidth}
 \centering
-\includegraphics[width=\linewidth,height=0.72\textheight,keepaspectratio]{03_regresion_3datasets.png}
+\includegraphics[width=\linewidth,height=0.68\textheight,keepaspectratio]{03_regresion_3datasets.png}
 \end{column}
 \begin{column}{0.30\textwidth}
 \begin{block}{Q vs C}
@@ -401,8 +401,7 @@ También: Q más lento ($1/t\approx 0$).}
   \item \textbf{Friedman:} gana C\\{\footnotesize($\Delta R^2{=}{-}0.928$)}
 \end{itemize}
 \end{block}
-{\footnotesize Misma lectura que clasificación:
-ventaja solo con estructura alineada.}
+{\footnotesize Ventaja solo con estructura alineada.}
 \end{column}
 \end{columns}
 \end{frame}
@@ -433,7 +432,7 @@ ventaja solo con novedad alineada al mapa.}
 \centering
 {\small
 \renewcommand{\arraystretch}{1.1}
-\setlength{\tabcolsep}{4pt}
+\setlength{\tabcolsep}{3pt}
 \begin{tabular}{@{}lccc@{}}
 \toprule
 \textbf{Capa} & \textbf{Problema} & \textbf{Cuántico} & \textbf{Clásico} \\
@@ -444,8 +443,8 @@ QAOA = óptimo exacto (5/5); sin ventaja &
 Hungarian / PuLP \\
 Sintético &
 MDS (cobertura) &
-óptimo por selección; $P{=}68.8\%$ (mejor reinicio) &
-fuerza bruta / Greedy \\
+6 nodos: óptimo (= ILP); ER $n{=}6$--$15$: MDS óptimo 2/5 &
+ILP / Greedy: 5/5 \\
 Referencia &
 Portafolio (3 de 6) &
 VQE no alcanza el óptimo (brecha $+34.0\%$) &
@@ -459,7 +458,7 @@ NN+2-opt (gap $0$) \\
 \begin{block}{Q vs C (misma pregunta)}
 \begin{itemize}
   \item \textbf{Asignación y portafolio:} sin ventaja; el QAOA iguala al exacto y el VQE no lo alcanza.
-  \item \textbf{MDS:} Q recupera el óptimo por muestreo y selección; $P(\mathrm{opt})$ media $5.7\%$ ($p{=}3$, 20 reinicios).
+  \item \textbf{MDS:} empate en la red de 6 nodos ($P(\mathrm{opt})$ media $5.7\%$); en grafos ER gana C ($-60$\,pp de instancias con MDS óptimo).
   \item \textbf{TSP:} empate en calidad; \textbf{no} hay speedup --- modelado QUBO.
 \end{itemize}
 \end{block}
@@ -794,7 +793,7 @@ con un mapeo de vuelta al espacio original cuando haga falta?}
   \draw[->, dashed, thick] (Y.south) to[bend left=10] node[below]{$\rho$ (si hace falta)} (X.south);
 \end{tikzpicture}
 \end{center}
-\vspace{-1.3em}
+\vspace{-2em}
 \begin{columns}[T]
 \begin{column}{0.50\textwidth}
 \begin{block}{Qu\'e se pide de $\psi$}
@@ -845,7 +844,7 @@ Prototipos (NB~09): sin ventaja frente al cl\'asico fuerte. Sin demostraci\'on.}
   \setcounter{enumi}{5}
   \item Optimización: QAOA iguala al óptimo exacto en asignación (5/5) y empata en TSP $n{=}4$
         (valor de \emph{modelado}, no speedup); VQE no alcanza el óptimo del portafolio.
-  \item MDS: óptimo recuperado por selección; $P(\mathrm{opt})$ del mejor reinicio $68.8\%$, media $5.7\%$.
+  \item MDS: empate en 6 nodos; en grafos ER ($n{=}6$--$15$) QAOA obtiene el MDS óptimo en 2/5 instancias (ILP y Greedy, 5/5).
   \item Coste de simulación del kernel $O(n^2)$: obstáculo práctico actual.
   \item Metodologías maduras vs.\ hardware inmaduro: resultados mixtos son esperables en NISQ.
 \end{enumerate}

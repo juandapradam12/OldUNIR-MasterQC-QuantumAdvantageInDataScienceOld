@@ -107,14 +107,49 @@ def caso6_umbral() -> list[dict]:
     ]
 
 
+def _mds_minimo_fuerza_bruta(nodos: list[str], aristas: list[list[str]]) -> int:
+    """Tamaño del conjunto dominante mínimo de un grafo pequeño, por enumeración exhaustiva."""
+    indice = {nombre: i for i, nombre in enumerate(nodos)}
+    cerrado = [1 << i for i in range(len(nodos))]
+    for u, v in aristas:
+        cerrado[indice[u]] |= 1 << indice[v]
+        cerrado[indice[v]] |= 1 << indice[u]
+    todos = (1 << len(nodos)) - 1
+    mejor = len(nodos)
+    for mascara in range(1 << len(nodos)):
+        cubierto = 0
+        for i in range(len(nodos)):
+            if mascara >> i & 1:
+                cubierto |= cerrado[i]
+        if cubierto == todos:
+            mejor = min(mejor, bin(mascara).count("1"))
+    return mejor
+
+
 def caso7_mds() -> list[dict]:
-    """Experimento propio de MDS: probabilidad exacta de medir el óptimo."""
+    """QAOA (p=3) frente a ILP/Greedy: porcentaje de instancias con un conjunto dominante mínimo.
+
+    Una instancia cuenta como resuelta si la mejor muestra de QAOA (menor coste QUBO entre
+    los 6000 shots de los 20 reinicios) es un conjunto dominante del tamaño del MDS exacto.
+    ILP resuelve por definición el 100 % y Greedy se mide contra el tamaño del ILP.
+    """
     datos = json.loads((METRICS / "10_mds_qaoa_resumen.json").read_text())
-    por_p = datos["resumen_por_p"]
+    probs = pd.read_csv(METRICS / "10_mds_qaoa_probabilidades.csv", dtype={"bitstring": str})
+    optimo = probs.loc[probs["coste_qubo"] == datos["optimo_coste"]].iloc[0]
+    if optimo["conteos_6000_shots"] == 0:
+        raise ValueError("El óptimo del QUBO no aparece entre las muestras del mejor reinicio.")
+    tamano_mds = _mds_minimo_fuerza_bruta(datos["nodes"], datos["edges"])
+    resuelto_red6 = len(datos["optimo_conjunto"]) == tamano_mds
+
+    esc = pd.read_csv(METRICS / "10_mds_qaoa_escalabilidad.csv")
+    resuelta = esc["qaoa_mejor_muestra_es_dominante"] & (esc["qaoa_tamano_mejor_muestra"] == esc["ilp_tamano"])
+    mejor_clasico = max(1.0, float((esc["greedy_tamano"] == esc["ilp_tamano"]).mean()))
     return [
-        _fila(7, "nativo", f"p={p} media", 100 * r["p_opt_media"], "% P(óptimo)", "qml_v2.mds_qaoa")
-        for p, r in por_p.items()
-    ] + [_fila(7, "nativo", "p=3 mejor", 100 * por_p["3"]["p_opt_max"], "% P(óptimo)", "qml_v2.mds_qaoa")]
+        _fila(7, "referencia", "red de 6 nodos", 100 * (float(resuelto_red6) - 1.0),
+              "pp instancias con MDS óptimo", "qml_v2.mds_qaoa"),
+        _fila(7, "referencia", "grafos ER n=6–15", 100 * (float(resuelta.mean()) - mejor_clasico),
+              "pp instancias con MDS óptimo", "qml_v2.mds_qaoa"),
+    ]
 
 
 def caso8_anomalias() -> list[dict]:

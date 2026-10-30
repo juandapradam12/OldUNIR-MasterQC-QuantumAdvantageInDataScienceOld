@@ -11,10 +11,8 @@ caso,capa,etiqueta,valor,unidad,fuente
 6,nativo,QSVC,8.9,pp,NB06 §5
 6,skg,QSVC,-4.0,pp,NB06 §5
 6,referencia,QSVC,-3.8,pp,NB06 §5
-7,nativo,p=1 media,2.6,% P(óptimo),qml_v2.mds_qaoa
-7,nativo,p=2 media,3.6,% P(óptimo),qml_v2.mds_qaoa
-7,nativo,p=3 media,5.7,% P(óptimo),qml_v2.mds_qaoa
-7,nativo,p=3 mejor,68.8,% P(óptimo),qml_v2.mds_qaoa
+7,referencia,red de 6 nodos,0.0,pp instancias con MDS óptimo,qml_v2.mds_qaoa
+7,referencia,grafos ER n=6–15,-60.0,pp instancias con MDS óptimo,qml_v2.mds_qaoa
 8,nativo,zz_phase,31.2,pp AUC,qml_v2.anomaly
 8,complementario,telco_injected,-32.0,pp AUC,qml_v2.anomaly
 8,skg,skg_injected,-29.9,pp AUC,qml_v2.anomaly

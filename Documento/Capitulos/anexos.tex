@@ -44,18 +44,42 @@ Además, el paquete reproducible \texttt{POCs/qml\_v2/} concentra los protocolos
 \label{anx:entorno}
 % =====================================================================
 
-Los experimentos se ejecutaron en el siguiente entorno:
+Los experimentos se ejecutaron en dos entornos. Las cifras, tablas y figuras de este documento proceden de las ejecuciones del entorno~B, que reproduce los cuadernos y los módulos \texttt{qml\_v2}; el entorno~A es el del autor, donde se desarrolló el código.
 
-\begin{itemize}
-    \item \textbf{Sistema operativo}: macOS (Apple M-series, 16~GB RAM)
-    \item \textbf{Python}: 3.14
-    \item \textbf{Framework cuántico}: Qiskit~2.3.0 + \texttt{qiskit-aer}~0.15
-    \item \textbf{Aprendizaje automático clásico}: scikit-learn~1.8.0, XGBoost~3.2.0
-    \item \textbf{Optimización clásica}: SciPy~1.15, PuLP~2.9 (solver CBC)
-    \item \textbf{Análisis de datos}: NumPy~2.2, pandas~2.3, matplotlib~3.10
-\end{itemize}
+\begin{table}[ht]
+\centering
+\small
+\begin{tabular}{lll}
+\hline
+\textbf{Componente} & \textbf{Entorno A (autor)} & \textbf{Entorno B (reejecución)} \\
+\hline
+Sistema operativo & macOS (Apple M-series, 16~GB RAM) & Linux (kernel 6.12) \\
+Python & 3.14 (Notebook~07: 3.14.4) & 3.12.3 \\
+Qiskit & 2.3.0 & 2.6.1 \\
+\texttt{qiskit-aer} & 0.15 & 0.18.2 \\
+\texttt{qiskit-algorithms} & --- & 0.4.0 \\
+\texttt{qiskit-machine-learning} & --- & 0.9.1 \\
+\texttt{qiskit-optimization} & --- & 0.7.0 \\
+\texttt{qiskit-finance} & --- & 0.4.1 \\
+scikit-learn & 1.8.0 & 1.9.1 \\
+XGBoost & 3.2.0 & 3.4.1 \\
+SciPy & 1.15 & 1.18.1 \\
+NumPy & 2.2 & 2.5.4 \\
+pandas & 2.3 & 3.1.0 \\
+matplotlib & 3.10 & 3.11.2 \\
+seaborn & --- & 0.13.2 \\
+NetworkX & --- & 3.7 \\
+PuLP (solver CBC) & 2.9 & 2.9.0 \\
+Jupyter (\texttt{nbconvert}, \texttt{ipykernel}) & --- & 7.17.2, 7.4.0 \\
+\texttt{pytest} & --- & 9.2.0 \\
+\LaTeX{} & --- & TeX Live 2023 (pdfTeX 1.40.25) \\
+\hline
+\end{tabular}
+\caption{Versiones de los entornos de ejecución. Una celda con guiones indica que la versión no se registró en el entorno A. Los metadatos de los cuadernos registran Python~3.12.3 para los Notebooks~01, 03, 04, 06, 08, 09, 10 y 11, Python~3.11.13 para los Notebooks~02 y~05, y Python~3.14.4 para el Notebook~07.}
+\label{tab:entornos}
+\end{table}
 
-El archivo \texttt{POCs/requirements.txt} fija las versiones mínimas (no exactas) de las dependencias. La verificación independiente de resultados de este trabajo se realizó reejecutando los cuadernos y los módulos \texttt{qml\_v2} en Linux con Python~3.12.3, Qiskit~2.6.1, qiskit-machine-learning~0.9.1, qiskit-optimization~0.7.0, scikit-learn~1.9.1, XGBoost~3.4.1 y PuLP~2.9.0; las cifras de este documento se contrastaron con esas ejecuciones y las discrepancias halladas se corrigieron. Los datos de SKG Tecnología son privados y no se distribuyen, de modo que los resultados sobre SKG solo son reproducibles por la propia organización.
+El archivo \texttt{POCs/requirements.txt} fija las versiones mínimas (no exactas) de las dependencias, y PuLP se limita a la serie~2 porque las series~3 y~4 cambiaron la API que usa \texttt{qml\_v2.optimization}. Los paquetes \texttt{geopandas}, \texttt{umap-learn} y \texttt{yfinance} no estaban instalados en el entorno~B: el Notebook~04 leyó los precios de la caché \texttt{portfolio\_prices.csv}, el Notebook~09 usó MDS en lugar de UMAP (Estrategia~4) y el Notebook~02, que requiere \texttt{geopandas} y datos propios, conserva las salidas de su ejecución original. Las cifras de este documento se contrastaron con las ejecuciones del entorno~B y las discrepancias halladas se corrigieron; los resultados de \texttt{qml\_v2} (clasificación, regresión, anomalías, series temporales, alineación de mapas, MDS-QAOA, TSP y optimización) coincidieron salvo en los tiempos de ejecución. Los datos de SKG Tecnología son privados y no se distribuyen, de modo que los resultados sobre SKG solo son reproducibles por la propia organización.
 
 % =====================================================================
 \section{Datasets utilizados}

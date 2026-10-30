@@ -381,8 +381,7 @@ def fig_07_heatmap():
         "skg": "Dataset SKG\n(datos reales)",
         "referencia": "Dataset de\nreferencia",
     }
-    # CU7 mide P(óptimo), sin comparador clásico: no es una ventaja y queda fuera.
-    sintesis = sintesis[(sintesis["caso"] != 7) & sintesis["capa"].isin(columnas)]
+    sintesis = sintesis[sintesis["capa"].isin(columnas)]
     valores = sintesis.pivot(index="caso", columns="capa", values="valor")
     valores = valores.reindex(index=list(nombres), columns=list(columnas))
     unidades = sintesis.groupby("caso")["unidad"].first()
