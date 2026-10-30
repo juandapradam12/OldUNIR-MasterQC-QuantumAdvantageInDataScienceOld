@@ -145,11 +145,11 @@ La contribución teórica central del Capítulo~\ref{cap:investigacion_original}
   \;\Big[\xrightarrow{\;\psi^{-1}\;}\; \mathbf{x}^* \;\text{(solo en optimización)}\Big]
 \end{equation}
 
-donde $\psi: \mathcal{X} \rightarrow \mathcal{Z}$ es una transformación polinómica que convierte cualquier dataset clásico en cuántico-compatible. Esta conjetura permanece abierta, y su demostración o refutación constituye la línea de investigación post-TFM de mayor impacto potencial. La hoja de ruta propuesta es la siguiente:
+donde $\psi: \mathcal{X} \rightarrow \mathcal{Z}$ es una transformación ---no necesariamente polinómica, en analogía con la transformada de Fourier, que nace de un kernel--- que convierte cualquier dataset clásico en cuántico-compatible. Esta conjetura permanece abierta, y su demostración o refutación constituye la línea de investigación post-TFM de mayor impacto potencial. La hoja de ruta propuesta es la siguiente:
 
 \begin{enumerate}
-  \item \textbf{Caracterización de la clase de distribuciones $p(\mathbf{x},y)$ para las que existe $\psi$ polinómico.} \\
-  Determinar si la existencia de $\psi$ depende de propiedades universales de la distribución (como suavidad, separabilidad de clases o estructura espectral) o si existen distribuciones para las cuales ninguna $\psi$ polinómica produce $\mathcal{Q}(\psi(\mathcal{D})) > 0$. Un contraejemplo de esta segunda hipótesis constituiría una refutación de la conjetura.
+  \item \textbf{Caracterización de la clase de distribuciones $p(\mathbf{x},y)$ para las que existe $\psi$.} \\
+  Determinar si la existencia de $\psi$ depende de propiedades universales de la distribución (como suavidad, separabilidad de clases o estructura espectral) o si existen distribuciones para las cuales ninguna $\psi$ produce $\mathcal{Q}(\psi(\mathcal{D})) > 0$. Un contraejemplo de esta segunda hipótesis constituiría una refutación de la conjetura.
 
   \item \textbf{Demostración de invarianza de error: $\varepsilon(f_Q^* \circ \psi) \leq \varepsilon(f_C^*)$.} \\
   Probar que la ventaja cuántica obtenida en $\mathcal{Z}$ no se destruye al componer con $\psi$. Esto requiere una cota de la distorsión informacional introducida por $\psi$ ---análoga a la preservación de separabilidad en PCA de kernels--- en términos del score $\mathcal{Q}$ y de la cota de Huang et al.\ \citep{huang2021}.
@@ -162,7 +162,7 @@ donde $\psi: \mathcal{X} \rightarrow \mathcal{Z}$ es una transformación polinó
 \end{enumerate}
 
 \paragraph{Impacto potencial.}
-Si la Conjetura~\ref{conj:qcr} se demostrara en su forma fuerte ---es decir, si existiera $\psi$ polinómica para toda distribución--- implicaría que la computación cuántica puede ofrecer ventaja sobre \emph{cualquier} dataset clásico, dado el preprocesamiento adecuado. Aunque el horizonte temporal de esta demostración es incierto, incluso su versión débil ---existencia de $\psi$ para familias específicas de distribuciones--- tendría un impacto metodológico directo en el diseño de pipelines de aprendizaje automático cuántico en entornos empresariales.
+Si la Conjetura~\ref{conj:qcr} se demostrara en su forma fuerte ---es decir, si existiera $\psi$ para toda distribución--- implicaría que la computación cuántica puede ofrecer ventaja sobre \emph{cualquier} dataset clásico, dado el preprocesamiento adecuado. Aunque el horizonte temporal de esta demostración es incierto, incluso su versión débil ---existencia de $\psi$ para familias específicas de distribuciones--- tendría un impacto metodológico directo en el diseño de pipelines de aprendizaje automático cuántico en entornos empresariales.
 
 \subsection{Extensiones operativas del framework}
 
@@ -220,7 +220,7 @@ La combinación del score $\mathcal{Q}(\mathcal{D})$ y el Framework QCR --- vali
   \node[item, draw=violet!45, fill=violet!5, below=0.35cm of h3] (l1)
     {\textbf{Corrección de errores}\\\scriptsize hardware tolerante a fallos};
   \node[item, draw=violet!45, fill=violet!5, below=0.25cm of l1] (l2)
-    {\textbf{Demostración Conjetura QCR}\\\scriptsize $\exists\,\psi$ polinómica; back-mapping $\psi^{-1}$};
+    {\textbf{Demostración Conjetura QCR}\\\scriptsize $\exists\,\psi$; back-mapping $\psi^{-1}$};
   \node[item, draw=violet!45, fill=violet!5, below=0.25cm of l2] (l3)
     {\textbf{QCR generalizado}\\\scriptsize PauliMap + IQP + TwoLocal};
   \node[item, draw=violet!45, fill=violet!5, below=0.25cm of l3] (l4)

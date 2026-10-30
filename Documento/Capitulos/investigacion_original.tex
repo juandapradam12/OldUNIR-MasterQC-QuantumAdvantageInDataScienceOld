@@ -413,7 +413,7 @@ El framework QCR es, en su esencia, el intento operativo de verificar la siguien
 Sea $\mathcal{D} = \{(\mathbf{x}_i, y_i)\}_{i=1}^n \subset \mathcal{X} \times \mathcal{Y}$ un dataset con distribución arbitraria y sin estructura cuántica nativa $(\mathcal{Q}(\mathcal{D}) \leq 0)$. La conjetura establece que existen:
 \begin{enumerate}
   \item Un \textbf{espacio de representación cuántico-compatible} $\mathcal{Z}$,
-  \item Una transformación $\psi: \mathcal{X} \rightarrow \mathcal{Z}$ computable en tiempo polinómico,
+  \item Una transformación $\psi: \mathcal{X} \rightarrow \mathcal{Z}$ que conserve la estructura y la información del dato ---no necesariamente polinómica como función: la transformada de Fourier, por analogía, se define a partir de un núcleo y no es un polinomio---,
   \item Un modelo cuántico óptimo $f_Q^*: \mathcal{Z} \rightarrow \mathcal{Y}$,
 \end{enumerate}
 tales que el ciclo completo de inferencia
@@ -440,7 +440,7 @@ La Conjetura~\ref{conj:qcr} es no trivial por tres razones:
 \begin{enumerate}
   \item \textbf{Existencia del espacio $\mathcal{Z}$}: La conjetura afirma que, para cualquier distribución de datos clásica, existe al menos un espacio en el que dicha distribución adquiere estructura cuántica explotable. Esto no implica que $\mathcal{Z}$ sea único ni que $\psi$ sea eficientemente encontrable: la existencia es la afirmación mínima necesaria para que el programa de investigación sea científicamente coherente.
 
-  \item \textbf{Computabilidad polinómica de $\psi$}: Si $\psi$ tuviese coste exponencial, la ventaja cuántica en $\mathcal{Z}$ no se traduciría en ventaja global. La condición de polinomialidad es la que distingue la conjetura de la trivialidad: siempre es posible construir un mapeo exponencialmente costoso que haga cuántico cualquier dataset, pero tal mapeo no sería útil en la práctica.
+  \item \textbf{Forma y coste de $\psi$}: no se exige que $\psi$ sea un polinomio; la analogía es la transformada de Fourier, cuyo núcleo $e^{-i\omega x}$ la define y que conserva la información (es invertible). Lo que sí debe contabilizarse es el coste de calcular $\psi$: si fuese exponencial, la ventaja cuántica en $\mathcal{Z}$ no se traduciría en ventaja global, y siempre es posible construir un mapeo costoso que haga cuántico cualquier dataset sin utilidad práctica. Por el teorema de Bochner, los kernels invariantes por traslación son transformadas de Fourier de una medida, de modo que el mapa de características de un kernel es un mapeo de tipo Fourier.
 
   \item \textbf{El back-mapping $\psi^{-1}$ en optimización}: Para clasificación y regresión, el ciclo no requiere volver al espacio original porque la etiqueta $\hat{y}$ pertenece a $\mathcal{Y}$, no a $\mathcal{X}$. Sin embargo, en problemas de optimización combinatoria, la solución cuántica $\mathbf{z}^*$ debe ser decodificable en términos de decisiones reales (asignación de agentes, rutas, activos financieros). Esto impone que $\psi$ sea invertible o, al menos, que exista un decodificador $\psi^{-1}$ que preserve la factibilidad de la solución.
 \end{enumerate}
@@ -448,7 +448,7 @@ La Conjetura~\ref{conj:qcr} es no trivial por tres razones:
 \paragraph{Estado de la conjetura.}
 La Conjetura~\ref{conj:qcr} es actualmente \textbf{abierta}: no existe demostración general de existencia ni contraejemplo conocido. El alcance de este TFM es \textbf{plantearla formalmente} y aportar evidencia preliminar (Notebook~09: re-uploading en Telco elevaba $\mathcal{Q}$ y $+4.2$~pp \emph{vs.\ RBF}; QML~v2 con $\mathcal{Q}_{\mathrm{rob}}$ deja Telco \texttt{classical} y en SKG solo un cambio geométrico \texttt{try-ZZ} por rotación, \textbf{sin} lift de accuracy). Eso muestra plausibilidad del programa, no un rescate operativo ni una demostración. Su prueba formal requiere:
 \begin{itemize}
-  \item Caracterizar la clase de distribuciones $p(\mathbf{x}, y)$ para las que existe $\psi$ polinómico con $\mathcal{Q}(\psi(\mathcal{D})) > 0$.
+  \item Caracterizar la clase de distribuciones $p(\mathbf{x}, y)$ para las que existe $\psi$ con $\mathcal{Q}(\psi(\mathcal{D})) > 0$ y coste de cálculo asumible.
   \item Demostrar que la ventaja cuántica en $\mathcal{Z}$ se traduce en ventaja en $\mathcal{X}$ bajo condiciones de invarianza: $\varepsilon(f_Q^* \circ \psi) \leq \varepsilon(f_C^*)$.
   \item Proporcionar un algoritmo de construcción de $\psi$ con garantías de aproximación.
 \end{itemize}

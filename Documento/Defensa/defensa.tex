@@ -452,9 +452,10 @@ Ventaja cuántica \textbf{condicionada}: aparece con alineación mapa--generador
 
   \vspace{1.0em}
   \item \textbf{P2 --- mapeos cuántico-compatibles}\\[0.35em]
-        Si no hay estructura nativa, \textquestiondown{}existe un mapeo $\psi$ a un espacio
-        de representación que induzca esa estructura
-        \textbf{sin pérdida de información} (en lo posible)?
+        Si no hay estructura nativa, \textquestiondown{}existe un nuevo mapeo $\psi$ y un espacio
+        de representación donde se conserve la estructura e información del dato,
+        adquiera estructura cuántica, y haya mapa de vuelta si hace falta?
+        (analogía: Fourier)
 \end{enumerate}
 \end{block}
 \end{frame}
@@ -710,88 +711,81 @@ no $d_F$, $g$ ni $\Delta H$. Optimizaci\'on: paisaje QUBO con 2 qubits
 \end{alertblock}
 \end{frame}
 
-\begin{frame}{Camino a la Conjetura 2 / QCR (antes de la fórmula)}
-\begin{enumerate}
-  \item Si el diagnóstico dice ``clásico'', el default es el stack clásico.
-  \item Pero la pregunta correcta es:
-        \textquestiondown{}falla el \textbf{dato} o el \textbf{espacio de representación}?
-  \item Hipótesis: existe $\psi:\mathcal{X}\to\mathcal{Z}$ polinómica que induzca
-        geometría usable por el feature map \textbf{sin} destruir la señal.
-  \item \textbf{Notebook~09:} cuatro prototipos --- ZZ-compatibles, rotación $\max d_F$,
-        re-uploading, Q-UMAP/MDS.
-  \item Resultado: subidas locales de $\mathcal{Q}$ vs.\ baseline clásico débil;
-        bajo $\mathcal{Q}_{\mathrm{rob}}$ Telco sigue \texttt{classical} y SKG solo
-        cambia geometría (\texttt{try-ZZ}), \textbf{sin} lift vs.\ el clásico fuerte.
-\end{enumerate}
-\begin{alertblock}{Lectura}
-QCR es un \textbf{programa de investigación} formalizado desde la evidencia --- no un algoritmo cerrado ni un rescate operativo.
-\end{alertblock}
-\end{frame}
-
-\begin{frame}{Conjetura 2 --- espacio de representación QCR}
-Si $\mathcal{Q}(\mathcal{D})\le 0$, se conjetura $\mathcal{Z}$ y $\psi:\mathcal{X}\to\mathcal{Z}$ \textbf{polinómica} tales que
-\begin{equation}
-  \mathbf{x}\xrightarrow{\psi}\mathbf{z}\xrightarrow{f_Q^\star}\hat{y}
-  \qquad\text{con}\quad
-  \mathcal{Q}(\psi(\mathcal{D}))>0
-  \;\;\text{y}\;\;
-  \varepsilon(f_Q^\star\circ\psi)\le\varepsilon(f_C^\star).
-\end{equation}
+\begin{frame}{Camino a la Conjetura 2 --- la analogía de Fourier}
 \begin{columns}[T]
-\begin{column}{0.48\textwidth}
-\begin{block}{Intuición}
-Transformar el dato \emph{antes} del kernel para que el mapa ``vea'' estructura usable.
+\begin{column}{0.52\textwidth}
+\begin{block}{La pregunta natural de un matemático}
+{\footnotesize
+Un problema dif\'icil en el dominio original se vuelve simple en otro espacio,
+y se regresa si hace falta. Ejemplo: la transformada de Fourier
+$\hat f(\omega)=\int f(x)\,e^{-i\omega x}\,dx$
+convierte convoluci\'on en producto.\\[0.3em]
+Tres propiedades la hacen \'util:
+\begin{itemize}
+  \item \textbf{conserva la informaci\'on} (es invertible);
+  \item en el nuevo espacio la \textbf{estructura se ve} (se vuelve diagonal);
+  \item tiene \textbf{mapa de vuelta}.
+\end{itemize}}
 \end{block}
 \end{column}
-\begin{column}{0.48\textwidth}
+\begin{column}{0.44\textwidth}
+\begin{block}{Y no es un mapa arbitrario}
+{\footnotesize
+Viene de un \textbf{n\'ucleo} (kernel) $e^{-i\omega x}$.
+Por el teorema de Bochner, los kernels invariantes por traslaci\'on
+son transformadas de Fourier de una medida:
+el mapa de caracter\'isticas de un kernel \emph{es} un mapeo de tipo Fourier.}
+\end{block}
+\end{column}
+\end{columns}
+\vspace{0.4em}
+\begin{alertblock}{La analog\'ia con el kernel cu\'antico}
+{\footnotesize
+Si el dato no tiene estructura cu\'antica, \textquestiondown{}existe un \textbf{nuevo mapeo $\psi$ y un espacio de
+representaci\'on $\mathcal{Z}$} donde se conserve la estructura e informaci\'on del dato,
+adquiera estructura cu\'antica y se pueda sacar partido de los algoritmos cu\'anticos,
+con un mapeo de vuelta al espacio original cuando haga falta?}
+\end{alertblock}
+\end{frame}
+
+\begin{frame}{Conjetura 2 --- espacio de representaci\'on QCR}
+\begin{center}
+\begin{tikzpicture}[font=\footnotesize, thick,
+    box/.style={rectangle, rounded corners=3pt, draw=blue!55!black, fill=blue!8,
+                minimum width=2.4cm, minimum height=0.9cm, align=center}]
+  \node[box] (X) at (0,0) {Espacio original\\$\mathcal{X}$};
+  \node[box, minimum width=3.6cm] (Z) at (5.2,0) {Representaci\'on cu\'antica\\$\mathcal{Z}$};
+  \node[box] (Y) at (10.2,0) {Resultado\\$\hat y$ o soluci\'on};
+  \draw[->, very thick] (X) -- node[above]{$\psi$} (Z);
+  \draw[->, very thick] (Z) -- node[above]{$f_Q$} (Y);
+  \draw[->, dashed, thick] (Y.south) to[bend left=22] node[below]{$\rho$ (si hace falta)} (X.south);
+\end{tikzpicture}
+\end{center}
+\vspace{-1.0em}
+\begin{columns}[T]
+\begin{column}{0.56\textwidth}
+\begin{block}{Qu\'e se pide de $\psi$}
+{\footnotesize
+\begin{enumerate}
+  \item \textbf{Conserva estructura e informaci\'on} de los datos.
+  \item \textbf{Estructura cu\'antica}: $\mathcal{Q}(\psi(\mathcal{D}))>0$.
+  \item \textbf{Mapa de vuelta} $\rho$ al espacio original cuando se necesite
+        (p.\,ej.\ en optimizaci\'on).
+  \item Utilidad: $\varepsilon(f_Q^\star\circ\psi)\le\varepsilon(f_C^\star)$.
+\end{enumerate}
+\par\vspace{0.2em}$\psi$ \textbf{no tiene por qu\'e ser un polinomio}: Fourier usa exponenciales
+y nace de un kernel. Si se reclama ventaja global, el coste de calcular $\psi$ debe contarse.}
+\end{block}
+\end{column}
+\begin{column}{0.40\textwidth}
 \begin{alertblock}{Estado}
-Conjetura \textbf{abierta}.\\
-Este TFM la \textbf{plantea} + evidencia preliminar --- no demostración.
+{\footnotesize
+Conjetura \textbf{abierta}: este TFM la \textbf{plantea}.
+Prototipos preliminares (NB~09: ZZ-compatibles, rotaci\'on, re-uploading, Q-UMAP):
+sin ventaja frente al cl\'asico fuerte. No hay demostraci\'on.}
 \end{alertblock}
 \end{column}
 \end{columns}
-\end{frame}
-
-\begin{frame}{Evidencia P2 --- diagnóstico nativo / SKG / Telco}
-\centering
-\includegraphics[width=\textwidth,height=0.72\textheight,keepaspectratio]{09_qcr_framework_diagnostico.png}
-\vspace{0.15em}
-\centering\footnotesize
-Solo el \textbf{nativo} gana vs mejor clásico (clasificación $+13.3$\,pp). SKG: $\mathcal{Q}>0$ vs RBF pero gana GB/RF.
-Telco: cuello $\Delta H$. Misma lectura en regresión / anomalías.
-\end{frame}
-
-\begin{frame}{Evidencia P2 --- mapeos QCR (SKG y Telco)}
-\begin{columns}[c]
-\begin{column}{0.55\textwidth}
-\centering
-\includegraphics[width=\linewidth,height=0.72\textheight,keepaspectratio]{09_mapeos_comparativa.png}
-\end{column}
-\begin{column}{0.43\textwidth}
-\begin{block}{Por qué no el nativo}
-{\footnotesize
-El dataset cuántico-nativo \textbf{ya}
-tiene ventaja operativa ($+13.3$~pp).
-QCR se plantea para datos
-\textbf{sin} esa alineación.}
-\end{block}
-\begin{alertblock}{Lectura}
-{\footnotesize
-Lifts vs.\ RBF en SKG/Telco
-$\neq$ rescate operativo.
-Bajo $\mathcal{Q}_{\mathrm{rob}}$ Telco sigue
-\texttt{classical}; SKG no es nativo.}
-\end{alertblock}
-\end{column}
-\end{columns}
-\end{frame}
-
-\begin{frame}{Evidencia P2 --- barrido de rotaciones (SKG / Telco)}
-\centering
-\includegraphics[width=\textwidth,height=0.72\textheight,keepaspectratio]{09_barrido_rotaciones.png}
-\vspace{0.15em}
-\centering\footnotesize
-NB09 solo sobre datasets reales (nativo no requiere rotación). Series del notebook; sin proxy.
 \end{frame}
 
 % =====================================================================
@@ -862,18 +856,6 @@ en ausencia de eso, el clásico domina --- y eso también es un resultado.
 \end{itemize}
 \end{frame}
 
-\begin{frame}{Criterio de integridad}
-\begin{block}{Qué es un buen resultado en este TFM}
-Argumentar y discutir desde lo \textbf{medido}: ventaja condicionada,
-resultados negativos, potencia baja ($n{=}3$), protocolos distintos.
-\end{block}
-\begin{alertblock}{Qué no se hace}
-Alterar datos, embellecer series, mezclar $\Delta_{\mathrm{RBF}}$ con
-la ventaja operativa de clasificación, ni fabricar artefactos ausentes.
-Si falta la medición, se omite o se declara el límite.
-\end{alertblock}
-\end{frame}
-
 % =====================================================================
 \section{Trabajo futuro}
 % =====================================================================
@@ -933,21 +915,6 @@ Si falta la medición, se omite o se declara el límite.
   \node[item, draw=violet!45, fill=violet!5, below=0.18cm of l1] (l2) {Demostrar / refutar QCR};
   \node[item, draw=violet!45, fill=violet!5, below=0.18cm of l2] (l3) {QCR multi-mapa + publicación};
 \end{tikzpicture}
-\end{frame}
-
-\begin{frame}{Validación cruzada ZZ vs Pauli-Y (principio general)}
-\begin{block}{Resultado (QML~v2, $n{=}120$, 5 repeats)}
-\begin{itemize}
-  \item Generador ZZ $\Rightarrow$ QSVM-ZZ $0.828$ vs RBF $0.478$
-  \item Generador Pauli-Y $\Rightarrow$ QSVM-PauliY $0.550$ vs RBF $0.517$
-  \item Kernel ZZ \emph{desalineado} cae a $0.406$
-\end{itemize}
-\end{block}
-\vspace{0.5em}
-\begin{alertblock}{Lectura}
-La ventaja sigue al \textbf{emparejamiento} mapa--generador.
-ZZ es el mapa del corpus principal; \textbf{no} el único admisible.
-\end{alertblock}
 \end{frame}
 
 \begin{frame}[plain]
