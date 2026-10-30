@@ -183,6 +183,26 @@ def geometric_difference(K_Q: np.ndarray, K_cl: np.ndarray, eps: float = 1e-6) -
     return float(np.sqrt(np.linalg.norm(M, "fro")))
 
 
+def geometric_difference_huang(
+    K_Q: np.ndarray, K_cl: np.ndarray, lam: float = 1e-3
+) -> float:
+    """Diferencia geométrica g_CQ de Huang et al. (2021), con norma espectral.
+
+    g = sqrt( || sqrt(K_Q) (K_cl + lam I)^{-1} sqrt(K_Q) ||_2 ), con ambos kernels
+    normalizados a Tr(K) = n. A diferencia de ``geometric_difference`` (norma de
+    Frobenius, eps=1e-6), la regularización lam acota la inversa y evita que g
+    refleje solo el condicionamiento del RBF.
+    """
+    n = K_Q.shape[0]
+    K_Q = K_Q * (n / max(float(np.trace(K_Q)), 1e-12))
+    K_cl = K_cl * (n / max(float(np.trace(K_cl)), 1e-12))
+    w, v = np.linalg.eigh((K_Q + K_Q.T) / 2.0)
+    K_Q_sqrt = (v * np.sqrt(np.maximum(w, 0.0))) @ v.T
+    inv = np.linalg.inv((K_cl + K_cl.T) / 2.0 + lam * np.eye(n))
+    M = K_Q_sqrt @ inv @ K_Q_sqrt
+    return float(np.sqrt(np.linalg.norm((M + M.T) / 2.0, 2)))
+
+
 def logistic_gate(x: float, kappa: float = 20.0) -> float:
     """σ(κx) ∈ (0,1); ≈0 for x≪0, ≈1 for x≫0."""
     z = float(np.clip(kappa * x, -60.0, 60.0))
@@ -271,6 +291,7 @@ def _indicators_on_matrix(
 
     d_F = frobenius_distance(K_Q, K_rbf, normalize=True)
     g = geometric_difference(K_Q, K_rbf)
+    g_huang = geometric_difference_huang(K_Q, K_rbf)
     H_Q = spectral_entropy(K_Q)
     H_cl = spectral_entropy(K_rbf)
 
@@ -309,6 +330,7 @@ def _indicators_on_matrix(
         "d_F": d_F,
         "d_F_norm": rob["d_F_norm"],
         "g": g,
+        "g_huang": g_huang,
         "geom_gate": rob["geom_gate"],
         "geom_term": rob["geom_term"],
         "Q_rob": rob["Q_rob"],

@@ -4,8 +4,10 @@ Indicadores (qml_v2.quantumness, sin medir ventaja supervisada):
   ΔA  = A(K_Q, yyᵀ) − A(K_RBF, yyᵀ)      (Cortes / Huang)
   ΔH  = H(K_Q) − H(K_RBF)                (Thanasilp)
   d_F = ‖K_Q − K_RBF‖_F / n               (Liu)
-  g   = diferencia geométrica             (Huang)
-  Q   = 0.4·ΔA + 0.3·d̂_F + 0.3·ΔH         (compuesto TFM; solo informativo)
+  g   = diferencia geométrica de Huang (norma espectral, kernels con Tr K = n,
+        regularización λ=1e-3; ver quantumness.geometric_difference_huang)
+  Q   = 0.4·ΔA + 0.2·d̂_F + 0.2·ΔH + 0.2·ĝ  (compuesto TFM; solo informativo)
+        con d̂_F = d_F/max d_F y ĝ = g/max g sobre los casos medidos.
 
 Protocolo único: ZZFeatureMap 2 qubits, reps=2, entanglement full,
 StandardScaler → PCA(2) → MinMax[−π, π], n_sample=60, n_repeats=3,
@@ -42,7 +44,8 @@ CFG = QuantumnessConfig(
     random_state=42,
 )
 
-INDICATORS = ["delta_A", "delta_H", "d_F", "g"]
+INDICATORS = ["delta_A", "delta_H", "d_F"]
+Q_WEIGHTS = {"delta_A": 0.4, "d_F_hat": 0.2, "delta_H": 0.2, "g_hat": 0.2}
 
 
 @dataclass
@@ -111,6 +114,9 @@ def measure_job(job: Job, cfg: QuantumnessConfig = CFG, verbose: bool = True) ->
     for key in INDICATORS:
         out[key] = float(df[key].mean())
         out[f"{key}_std"] = float(df[key].std(ddof=0))
+    out["g"] = float(df["g_huang"].mean())
+    out["g_std"] = float(df["g_huang"].std(ddof=0))
+    out["g_legacy"] = float(df["g"].mean())
     out.update(
         H_Q=float(df["H_Q"].mean()),
         H_cl=float(df["H_cl"].mean()),
@@ -125,7 +131,7 @@ def measure_job(job: Job, cfg: QuantumnessConfig = CFG, verbose: bool = True) ->
         print(
             f"  [{job.family:13s}] {job.name:12s} ΔA={out['delta_A']:+.4f} "
             f"(nulo {out['delta_A_null']:+.4f}±{out['delta_A_null_std']:.4f})  "
-            f"ΔH={out['delta_H']:.3f}  d_F={out['d_F']:.4f}  g={out['g']:.0f}  "
+            f"ΔH={out['delta_H']:.3f}  d_F={out['d_F']:.4f}  g={out['g']:.1f}  "
             f"pcaVar={out['pca_var']:.2f}  ({out['seconds']}s)"
         )
     return out
@@ -249,6 +255,15 @@ def supervised_jobs() -> list[Job]:
     X, y = make_moons_anomaly(n_total=160, random_state=42)
     jobs.append(Job("anomalias", "moons", [(X, y)]))
     return jobs
+
+
+def add_q_composite(df: pd.DataFrame) -> pd.DataFrame:
+    """Añade d̂_F, ĝ y el compuesto Q con g como cuarto término (informativo)."""
+    df = df.copy()
+    df["d_F_hat"] = df["d_F"] / df["d_F"].max()
+    df["g_hat"] = df["g"] / df["g"].max()
+    df["Q_comp"] = sum(w * df[c] for c, w in Q_WEIGHTS.items())
+    return df
 
 
 def measure_all(include_optimization: bool = True, verbose: bool = True) -> pd.DataFrame:

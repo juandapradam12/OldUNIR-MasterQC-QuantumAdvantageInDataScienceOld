@@ -487,7 +487,7 @@ Si no: gana el \textbf{clásico}.
 \vspace{0.5em}
 \begin{block}{Idea corregida}
 No un escalar: un \textbf{vector}
-$\mathcal{Q}(\mathcal{D})=(\Delta A,\hat{d}_F,\Delta H,\ldots)$
+$\mathcal{Q}(\mathcal{D})=(\Delta A,\hat{d}_F,\Delta H,\hat g,\ldots)$
 que se \emph{mira} componente a componente.
 \end{block}
 \end{column}
@@ -511,6 +511,10 @@ que se \emph{mira} componente a componente.
         Bajo/negativo: todas las similitudes se parecen
         (concentración) $\Rightarrow$ poca info útil
         \citep{thanasilp2022}.
+  \item $\hat g$ --- \textquestiondown{}el RBF reproduce la geometr\'ia
+        cu\'antica?\\
+        Cerca de $1$: s\'i; grande: no (necesario, no suficiente)
+        \citep{huang2021}.
 \end{itemize}}
 \end{block}
 \end{column}
@@ -527,7 +531,7 @@ $\rho(\mathcal{Q},\mathrm{ventaja})$.}
 \end{block}
 \vspace{0.5em}
 \begin{block}{Propuesta (vector)}
-$\mathcal{Q}(\mathcal{D})=(\Delta A,\hat{d}_F,\Delta H)$.\\[0.3em]
+$\mathcal{Q}(\mathcal{D})=(\Delta A,\hat{d}_F,\Delta H,\hat g)$.\\[0.3em]
 Perfil geométrico vs.\ RBF ---
 la decisión mira la ventaja vs.\ mejor clásico
 \textbf{por familia} (clasif./reg./anomalías).
@@ -540,7 +544,7 @@ la decisión mira la ventaja vs.\ mejor clásico
 \begin{equation}
   \mathcal{Q}(\mathcal{D})
   \;=\;
-  \bigl(\Delta A,\; \hat{d}_F,\; \Delta H\bigr)
+  \bigl(\Delta A,\; \hat{d}_F,\; \Delta H,\; \hat g\bigr)
   \qquad\text{(perfil; sin pesos)}
   \label{eq:Q}
 \end{equation}
@@ -559,6 +563,8 @@ operativo --- por eso no se usa para decidir.}
   \item $\hat{d}_F$: \textquestiondown{}geometría distinta?
   \item $\Delta H$: \textquestiondown{}diversidad o
         concentración?
+  \item $\hat g$: \textquestiondown{}el RBF reproduce
+        la geometr\'ia cu\'antica?
 \end{itemize}}
 \end{block}
 \end{column}
@@ -645,13 +651,12 @@ cl\'asico y en el cu\'antico. $g$ peque\~no: el kernel cl\'asico ya reproduce
 la geometr\'ia cu\'antica; $g$ grande: no.\\[0.3em]
 $d$ = dimensi\'on efectiva del dato en el espacio de Hilbert.}
 \end{block}
-\begin{alertblock}{Lo que dice nuestra medici\'on}
-{\footnotesize
-$g$ es \textbf{necesario, no suficiente}: no usa $y$.
-Nuestra $g$ ($\varepsilon{=}10^{-6}$, norma de Frobenius) depende del
-condicionamiento del RBF y sale casi igual en todos los casos:
-\textbf{no discrimina}. Pendiente: recalcular con la definici\'on de Huang
-(norma espectral, $\lambda>0$).}
+\begin{alertblock}{Nuestra medici\'on}
+{\scriptsize
+$g$: necesario, no suficiente; no usa $y$.
+Huang ($\lambda{=}10^{-3}$): $g\approx 76$--$85$ en casi todos los casos
+(42 en anomal\'ias-SKG, artefacto). $g\gg1$ pero igual para nativos y reales:
+\textbf{no discrimina}. Antes $\approx 3000$ (artefacto de condicionamiento).}
 \end{alertblock}
 \end{column}
 \end{columns}
@@ -820,7 +825,7 @@ NB09 solo sobre datasets reales (nativo no requiere rotación). Series del noteb
 \begin{frame}{Conclusiones (III) --- conjeturas y adopción}
 \begin{enumerate}
   \setcounter{enumi}{10}
-  \item $\mathcal{Q}(\mathcal{D})$ como \textbf{vector} $(\Delta A,\hat{d}_F,\Delta H)$;
+  \item $\mathcal{Q}(\mathcal{D})$ como \textbf{vector} $(\Delta A,\hat{d}_F,\Delta H,\hat g)$;
         el escalar colapsado no se usa; sí $\rho_S(\alpha,\Delta A){=}0.833$.
   \item QCR: \textbf{planteado}; evidencia preliminar vs.\ RBF; no rescate operativo.
   \item Adopción recomendada: \textbf{selectiva e híbrida} --- módulo cuántico como

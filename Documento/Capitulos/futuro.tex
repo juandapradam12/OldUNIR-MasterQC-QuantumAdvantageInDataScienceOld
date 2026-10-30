@@ -83,11 +83,11 @@ Finalmente, desde una perspectiva académica, las siguientes extensiones teóric
 
 \section[Extensión del score de cuanticidad]{Extensión del score de cuanticidad $\mathcal{Q}(\mathcal{D})$}
 
-El Capítulo~\ref{cap:investigacion_original} propone el score compuesto $\mathcal{Q}(\mathcal{D}) = w_1 \Delta A + w_2 \hat{d}_F + w_3 \Delta H$. El barrido NB08 ($n=9$, $X$ fijo) muestra $\rho_S(\alpha,\Delta A)=0.833$ ($p=0.005$), pero \textbf{no} valida aún a $\mathcal{Q}$ como predictor de ventaja bajo un protocolo structure-aware ($d_F$/$H$ quedaron constantes). La validación sobre tres datasets reales ($n=3$) es orientativa. Extensiones necesarias:
+El Capítulo~\ref{cap:investigacion_original} propone el score compuesto $\mathcal{Q}(\mathcal{D}) = w_1 \Delta A + w_2 \hat{d}_F + w_3 \Delta H + w_4 \hat{g}$. El barrido NB08 ($n=9$, $X$ fijo) muestra $\rho_S(\alpha,\Delta A)=0.833$ ($p=0.005$), pero \textbf{no} valida aún a $\mathcal{Q}$ como predictor de ventaja bajo un protocolo structure-aware ($d_F$/$H$ quedaron constantes). La validación sobre tres datasets reales ($n=3$) es orientativa. Extensiones necesarias:
 
 \begin{itemize}
     \item \textbf{Validación sobre benchmarks con ventaja garantizada:} evaluar $\mathcal{Q}(\mathcal{D})$ sobre datasets de Bravyi et al. (2020) donde existe separación cuántico-clásica demostrada formalmente, verificando que $\mathcal{Q} > 0$ en todos ellos.
-    \item \textbf{Optimización de los pesos $(w_1, w_2, w_3)$:} los pesos actuales $(0.4, 0.3, 0.3)$ son heurísticos. Una regresión supervisada sobre un corpus de datasets anotados con su ventaja QSVM real permitiría calibrarlos de forma óptima.
+    \item \textbf{Optimización de los pesos $(w_1, w_2, w_3, w_4)$:} los pesos actuales $(0.4, 0.2, 0.2, 0.2)$ son una convención heurística. Una regresión supervisada sobre un corpus de datasets anotados con su ventaja QSVM real permitiría calibrarlos de forma óptima.
     \item \textbf{Extensión a más feature maps:} el módulo \texttt{feature\_map\_alignment} ya contrastó ZZ vs Pauli-Y en sintéticos. Queda escalar a \texttt{IQP Encoding}, \texttt{TwoLocal} y datasets reales, recalibrando $\mathcal{Q}$ por familia de circuito.
     \item \textbf{Certificación estadística de ventaja:} aplicar los tests estadísticos de \cite{huang2021} para certificar formalmente si los datasets reales de SKG presentan la propiedad de separación cuántica-clásica necesaria para garantizar ventaja, más allá de la estimación empírica del score.
     \item \textbf{Análisis de barren plateaus:} estudiar la presencia de gradientes exponencialmente pequeños en los VQC entrenados, evaluando si las configuraciones utilizadas están afectadas por este fenómeno \citep{cerezo2023}.

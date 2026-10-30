@@ -26,7 +26,7 @@ def main() -> None:
     path = OUT / "estructura_por_caso_uso.csv"
     df.to_csv(path, index=False)
     print(f"\nGuardado: {path}")
-    print(df[["family", "dataset", "delta_A", "delta_A_null", "delta_H", "d_F", "g"]].to_string(index=False))
+    print(df[["family", "dataset", "delta_A", "delta_A_null", "delta_H", "d_F", "g", "g_legacy"]].to_string(index=False))
 
 
 if __name__ == "__main__":

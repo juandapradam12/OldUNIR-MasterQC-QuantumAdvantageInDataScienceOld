@@ -19,8 +19,8 @@ Con profundidad $p=1$, el QAOA reduce el coste de asignación de recursos en un 
 \item \textbf{VQE es competitivo para optimización de portafolio a pequeña escala.}
 VQE converge al óptimo en instancias de hasta 6 activos, con una complejidad de circuito polinómica frente a la búsqueda exhaustiva exponencial \citep{peruzzo2014}. Para instancias mayores, la optimización cuadrática clásica sigue siendo superior en hardware simulado NISQ.
 
-\item \textbf{$\mathcal{Q}(\mathcal{D})$ se adopta como vector $(\Delta A,\hat{d}_F,\Delta H)$, no como escalar.} \label{conc:c1}
-Colapsar el perfil a $w^\top\mathcal{Q}$ con pesos fijos falla como ranking operativo (SKG maximiza el escalar y pierde en $\Delta_{\mathrm{op}}$). El vector sí permite leer cuellos (p.~ej.\ Telco en $\Delta H$). Del barrido NB08 se sostiene $\rho_S(\alpha,\Delta A)=0.833$ ($p=0.005$). Regla de adopción: alineación mapa--generador y $\Delta_{\mathrm{op}}>0$; el perfil geométrico informa, no decide solo.
+\item \textbf{$\mathcal{Q}(\mathcal{D})$ se adopta como vector $(\Delta A,\hat{d}_F,\Delta H,\hat{g})$, no como escalar.} \label{conc:c1}
+Colapsar el perfil a $w^\top\mathcal{Q}$ con pesos fijos falla como ranking operativo (SKG maximiza el escalar y pierde en $\Delta_{\mathrm{op}}$). El vector sí permite leer cuellos (p.~ej.\ Telco en $\Delta H$). Del barrido NB08 se sostiene $\rho_S(\alpha,\Delta A)=0.833$ ($p=0.005$). Con el protocolo unificado en cuatro casos de uso (clasificación, regresión, anomalías y paisajes QUBO de optimización) y un control nulo ($y$ permutada), solo los nativos superan el ruido de $\Delta A$; $\Delta H$, $d_F$ y $g$ (definición de \citet{huang2021}) quedan casi planos y, salvo $\Delta A$, no usan las etiquetas. Regla de adopción: alineación mapa--generador y $\Delta_{\mathrm{op}}>0$; el perfil geométrico informa, no decide solo.
 
 \item \textbf{El Framework QCR se plantea formalmente, con evidencia preliminar condicionada.} \label{conc:c2}
 La Conjetura~2 se define como contribución abierta. Notebook~09 reportó lifts \emph{vs.\ RBF} (re-uploading en Telco). Bajo $\mathcal{Q}_{\mathrm{rob}}$ (Sección~\ref{sec:qml_v2_revision}) Telco permanece \texttt{classical}; en SKG la rotación solo cambia geometría a \texttt{try-ZZ} sin lift de accuracy. QCR queda \textbf{planteado y delimitado} como filtro de geometría ---no como rescate operativo de SKG/Telco---; demostración fuerte = post-TFM (Capítulo~\ref{cap:futuro}).
@@ -47,6 +47,31 @@ El Caso~9: QK-SVR-ZZ gana en \texttt{zz\_lag} (MAE $0.056$ vs Ridge $0.414$); en
 Tabla cruzada ($n=120$, 5 repeats): generador ZZ $\Rightarrow$ QSVM-ZZ $0.828$ (RBF $0.478$); generador Pauli-Y $\Rightarrow$ QSVM-PauliY $0.550$ (RBF $0.517$), y el kernel ZZ desalineado cae a $0.406$. ZZ es el mapa del corpus principal; no es el único admisible.
 
 \end{enumerate}
+
+\section{Trazabilidad entre objetivos y conclusiones}
+
+La Tabla~\ref{tab:trazabilidad} indica qué conclusión principal responde a cada objetivo específico del Capítulo~\ref{cap:objetivos}.
+
+\begin{table}[ht]
+\centering
+\small
+\begin{tabular}{@{}p{0.50\textwidth}p{0.38\textwidth}@{}}
+\toprule
+\textbf{Objetivo específico} & \textbf{Conclusiones principales} \\
+\midrule
+1. Conjuntos de datos empresariales & 1, 2, 8 \\
+2. Implementación de algoritmos cuánticos & 1, 2, 3, 4, 11 \\
+3. Implementación de referencias clásicas & 1, 2, 3, 8, 11 \\
+4. Diseño de los experimentos comparativos (nueve casos) & 1, 2, 3, 10, 11, 12, 13 \\
+5. Evaluación del rendimiento comparativo & 1, 2, 3, 4, 7 \\
+6. Condiciones de ventaja cuántica & 1, 5, 10, 12, 13 \\
+7. Prototipo de arquitectura híbrida & 9 \\
+8. Perfil de estructura $\mathcal{Q}(\mathcal{D})$ y framework QCR & 5, 6 \\
+\bottomrule
+\end{tabular}
+\caption{Trazabilidad objetivos específicos $\rightarrow$ conclusiones principales (numeración de la lista anterior).}
+\label{tab:trazabilidad}
+\end{table}
 
 \section{Respuesta a las preguntas de investigación}
 
@@ -106,7 +131,7 @@ Este trabajo contribuye a la literatura con:
 \begin{enumerate}
     \item \textbf{Evidencia empírica} sobre condiciones reales de ventaja cuántica usando datos empresariales propietarios (SKG Tecnología, Bogotá), evaluada en nueve casos de uso con tres tipos de dataset cada uno cuando aplica.
     \item \textbf{Metodología de evaluación comparativa reproducible} sobre tres familias de problemas (clasificación, regresión y optimización combinatoria), con código abierto en Qiskit~2.3.0.
-    \item \textbf{Perfil $\mathcal{Q}(\mathcal{D})=(\Delta A,\hat{d}_F,\Delta H)$}: vector de métricas para leer geometría; el escalar colapsado se descarta como regla de adopción (contraejemplo SKG). Emparejamiento mapa--generador + $\Delta_{\mathrm{op}}$ cierran la decisión.
+    \item \textbf{Perfil $\mathcal{Q}(\mathcal{D})=(\Delta A,\hat{d}_F,\Delta H,\hat{g})$}: vector de métricas para leer geometría; el escalar colapsado se descarta como regla de adopción (contraejemplo SKG). Emparejamiento mapa--generador + $\Delta_{\mathrm{op}}$ cierran la decisión.
     \item \textbf{El Framework QCR}: planteado formalmente (protocolo de cuatro pasos + Conjetura~\ref{conj:qcr}); Notebook~09 reportó $+4.2$~pp en Telco, matizado por $\mathcal{Q}_{\mathrm{rob}}$ (Sección~\ref{sec:qml_v2_revision}). Demostración fuerte = post-TFM.
     \item \textbf{El prototipo de arquitectura híbrida cuántico-clásica}: patrón de integración QAOA-COBYLA con criterios explícitos de activación según el tipo de problema, demostrado sobre el conjunto dominante mínimo (NP-difícil) y generalizable a cualquier problema formulable como QUBO en entornos empresariales.
     \item \textbf{Caracterización de la brecha} entre madurez metodológica y madurez de hardware en el estado actual de la computación cuántica aplicada a ciencia de datos.

@@ -1439,10 +1439,11 @@ def fig_08_estructura_tres_casos():
     Misma métrica y misma escala para poder comparar los casos de uso.
     """
     df = _load_estructura_por_caso()
-    # Compuesto del TFM con los MISMOS componentes medidos (pesos 0.4/0.3/0.3);
-    # d̂_F = d_F / max(d_F) sobre todas las filas. Solo informativo.
-    df["d_F_hat"] = df["d_F"] / df["d_F"].max()
-    df["Q_comp"] = 0.4 * df["delta_A"] + 0.3 * df["d_F_hat"] + 0.3 * df["delta_H"]
+    # Compuesto del TFM con los MISMOS componentes medidos y g como cuarto término
+    # (pesos 0.4/0.2/0.2/0.2; d̂_F y ĝ normalizados por el máximo). Solo informativo.
+    from qml_v2.estructura_casos import add_q_composite
+
+    df = add_q_composite(df)
     cases = [
         ("clasificacion", "Clasificación", ["Nativo", "SKG", "Telco"]),
         ("regresion", "Regresión", ["Nativo", "SKG", "Friedman"]),
@@ -1459,9 +1460,9 @@ def fig_08_estructura_tres_casos():
         ("d_F", r"$d_F$", r"Distancia Frobenius $d_F$ (Liu)" "\n"
          r"$\|K_Q-K_{\mathrm{RBF}}\|_F/n$", "{:.4f}"),
         ("g", r"$g$", r"Diferencia geométrica $g$ (Huang)" "\n"
-         r"$\sqrt{\|K_Q^{1/2}K_{\mathrm{RBF}}^{-1}K_Q^{1/2}\|_F}$", "{:.0f}"),
+         r"$\sqrt{\|K_Q^{1/2}(K_{\mathrm{RBF}}+\lambda I)^{-1}K_Q^{1/2}\|_2}$,  $\lambda=10^{-3}$", "{:.0f}"),
         ("Q_comp", r"$\mathcal{Q}$", r"Compuesto $\mathcal{Q}$ (este TFM)" "\n"
-         r"$0.4\,\Delta A+0.3\,\hat d_F+0.3\,\Delta H$", "{:+.2f}"),
+         r"$0.4\,\Delta A+0.2\,\hat d_F+0.2\,\Delta H+0.2\,\hat g$", "{:+.2f}"),
     ]
 
     data: dict[tuple[str, int], dict[str, float]] = {}
@@ -1535,6 +1536,7 @@ def fig_08_estructura_tres_casos():
         "(banda azul); el resto, dentro del ruido o por debajo (RBF alinea mejor).\n"
         r"$\Delta H$, $d_F$, $g$ casi planos; excepción: anomalías-SKG" "\n"
         "(outliers 8σ comprimen el MinMax; artefacto de escala).\n"
+        r"En optimización $\Delta H,d_F,g$ solo dependen del nº de bits." "\n"
         r"Optimización = paisaje QUBO (bitstrings→energía), no QAOA." "\n"
         r"$\mathcal{Q}$: informativo, no es regla de decisión.",
         transform=ax_note.transAxes, fontsize=10, va="top", color="#263238",

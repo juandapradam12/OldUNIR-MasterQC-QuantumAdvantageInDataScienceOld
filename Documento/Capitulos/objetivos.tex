@@ -1,5 +1,5 @@
 % !TEX root = ../main.tex
-\chapter{Objetivos}
+\chapter{Objetivos}\label{cap:objetivos}
 
 El estado de la técnica presentado en el capítulo anterior evidencia que, a pesar del avance teórico en computación cuántica aplicada a la ciencia de datos, persiste una brecha significativa entre los resultados obtenidos en condiciones ideales y los alcanzables en entornos productivos reales. Este trabajo se propone abordar dicha brecha mediante un análisis comparativo riguroso, orientado a la toma de decisiones en contextos empresariales. En este capítulo se definen los objetivos que guían la investigación.
 
@@ -25,4 +25,6 @@ Para alcanzar el objetivo general, se establecen los siguientes objetivos espec�
     \item \textbf{Analizar las condiciones de ventaja cuántica}, identificando los factores ---como el tamaño del dataset, la dimensionalidad del problema, la profundidad del circuito o la naturaleza combinatoria del problema--- que determinan cuándo y en qué medida los algoritmos cuánticos superan a los clásicos \citep{huang2021, cerezo2023}.
 
     \item \textbf{Diseñar e implementar el prototipo de arquitectura híbrida cuántico-clásica} (Sección~\ref{sec:prototipo_hibrido}) que ilustre cómo los módulos cuánticos pueden integrarse en pipelines empresariales existentes como herramienta adicional y selectiva, con criterios explícitos de activación según el tipo de problema y la escala de la instancia \citep{cerezo2021}.
+
+    \item \textbf{Formular y contrastar un perfil de estructura cuántica $\mathcal{Q}(\mathcal{D})$} ---vector de indicadores de la literatura (alineación, entropía espectral, distancia de Frobenius y diferencia geométrica; \citealp{huang2021, liu2021, thanasilp2022})--- medido con un protocolo único y un control nulo en clasificación, regresión, anomalías y optimización, y plantear el \emph{framework} de mapeos cuántico-compatibles (QCR) como contribución original, delimitando qué puede y qué no puede concluirse de esos indicadores.
 \end{enumerate}
