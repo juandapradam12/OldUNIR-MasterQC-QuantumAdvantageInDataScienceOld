@@ -36,7 +36,7 @@ El análisis de escalabilidad (Tabla~\ref{tab:escala_clasificacion}) revela que 
 \begin{figure}[ht]
 \centering
 \includegraphics[width=0.92\textwidth]{../POCs/data/output/figures/01_escalabilidad_ventaja_clasificacion.png}
-\caption{Evolución de la exactitud de QSVM y del mejor clasificador clásico (SVM-RBF) en función del tamaño del conjunto de entrenamiento. Las barras verdes (eje derecho) muestran la ventaja cuántica en puntos porcentuales, robusta en todo el rango $n \in [30, 180]$ con una media de $+40.9$ pp.}
+\caption{Evolución de la exactitud de QSVM y del mejor clasificador clásico (SVM-RBF) en función del tamaño del conjunto de entrenamiento. Las barras grises (eje derecho) muestran la ventaja cuántica en puntos porcentuales, robusta en todo el rango $n \in [30, 180]$ con una media de $+40.9$ pp.}
 \label{fig:escala_clasificacion}
 \end{figure}
 
@@ -412,7 +412,7 @@ La Tabla~\ref{tab:sintesis} sintetiza los resultados principales del estudio com
   \node[right=4pt, font=\scriptsize] at (lr.east) {Desfavorable};
 
 \end{tikzpicture}
-\caption{Semáforo de resultados por caso de uso. Verde = favorable; amarillo = moderado/condicional; rojo = desfavorable. Casos~8 y~9 son condicionales: ventaja cuando novedad/target están alineados con el feature map (aquí ZZ). Caso~5: empate óptimo QAOA vs NN+2-opt (valor de modelado).}
+\caption{Semáforo de resultados por caso de uso. Azul = favorable; gris claro = moderado/condicional; gris = desfavorable. Casos~8 y~9 son condicionales: ventaja cuando novedad/target están alineados con el feature map (aquí ZZ). Caso~5: empate óptimo QAOA vs NN+2-opt (valor de modelado).}
 \label{fig:semaforo_resultados}
 \end{figure}
 
@@ -420,14 +420,14 @@ La Tabla~\ref{tab:sintesis} sintetiza los resultados principales del estudio com
 \begin{figure}[!htbp]
 \centering
 \includegraphics[width=0.97\textwidth]{../POCs/data/output/figures/07_dashboard_ventaja_cuantica.png}
-\caption{Dashboard comparativo de los nueve casos de uso: métrica principal cuántica vs.\ clásica por dominio (pp, $\Delta R^2$, $\Delta$\% coste/Sharpe, AUC, MAE o $P(\text{óptimo})$). Verde = ventaja cuántica; rojo = clásico superior; naranja = empate o resultado condicional (alineación feature map $\leftrightarrow$ generador). Coherente con la Tabla~\ref{tab:sintesis}.}
+\caption{Dashboard comparativo de los nueve casos de uso: métrica principal cuántica vs.\ clásica por dominio (pp, $\Delta R^2$, $\Delta$\% coste/Sharpe, AUC, MAE o $P(\text{óptimo})$). Gris oscuro = ventaja cuántica; gris = clásico superior; gris claro = empate o resultado condicional (alineación feature map $\leftrightarrow$ generador). Coherente con la Tabla~\ref{tab:sintesis}.}
 \label{fig:dashboard_sintesis}
 \end{figure}
 
 \begin{figure}[!htbp]
 \centering
 \includegraphics[width=0.90\textwidth]{../POCs/data/output/figures/07_heatmap_ventaja_por_dominio.png}
-\caption{Mapa de calor de la ventaja cuántica relativa por caso de uso (CU1--CU9) y tipo de dataset. Las celdas verdes concentran alineación feature map--generador (Casos~1, 6, 8, 9 en datos nativos), optimización combinatoria (Casos~3, 4, 7) o empate óptimo verificable (Caso~5). Las celdas rojas reflejan dominio clásico en datos reales sin esa alineación.}
+\caption{Mapa de calor de la ventaja cuántica relativa por caso de uso (CU1--CU9) y tipo de dataset. Las celdas azules concentran alineación feature map--generador (Casos~1, 6, 8, 9 en datos nativos), optimización combinatoria (Casos~3, 4, 7) o empate óptimo verificable (Caso~5). Las celdas grises reflejan dominio clásico en datos reales sin esa alineación.}
 \label{fig:heatmap_ventaja_body}
 \end{figure}
 
