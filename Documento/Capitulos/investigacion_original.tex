@@ -33,6 +33,13 @@ donde $\langle \cdot, \cdot \rangle_F$ denota el producto interno de Frobenius. 
 
 \citet{huang2021} adaptaron este concepto al contexto cuántico, proponiendo el \textit{geometric difference} $g(K_Q, K_{cl})$ como medida de la separación entre los espacios de características cuántico y clásico. Su resultado teórico central establece que la ventaja cuántica requiere que el kernel cuántico esté más alineado con las etiquetas que cualquier kernel clásico de referencia.
 
+\begin{figure}[ht]
+\centering
+\includegraphics[width=0.62\textwidth]{Imagenes/huang2021_fig2_geometria_kernel.png}
+\caption{Geometría del kernel clásico y cuántico. Las letras A, B, \dots{} son puntos de datos $\{x_i\}$ en espacios distintos; las flechas representan la similitud (función kernel) entre datos. La diferencia geométrica $g$ compara las similitudes entre modelos (flechas naranja/roja: $g$ pequeño; naranja/azul: $g$ mayor) y $d$ es una dimensión efectiva del conjunto de datos en el espacio de Hilbert cuántico. Reproducida de \citet{huang2021}, Fig.~2, bajo licencia CC~BY~4.0.}
+\label{fig:huang_geometria}
+\end{figure}
+
 \subsection{Concentración exponencial y entropía espectral}
 
 \citet{thanasilp2022} identificaron que los kernels cuánticos exhiben \textit{concentración exponencial} bajo cuatro condiciones: alta expresividad del mapa de datos, mediciones globales, entrelazamiento excesivo y ruido. La concentración implica que todos los valores del kernel convergen a una constante, lo que destruye la información discriminativa.

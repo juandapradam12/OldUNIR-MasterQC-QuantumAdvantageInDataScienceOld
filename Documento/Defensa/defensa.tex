@@ -630,6 +630,33 @@ Eso era solo un nombre confuso para
 \end{alertblock}
 \end{frame}
 
+\begin{frame}{P1 --- qué mide $g$ (Huang et al., 2021)}
+\begin{columns}[T]
+\begin{column}{0.56\textwidth}
+\centering
+\includegraphics[width=\linewidth,height=0.78\textheight,keepaspectratio]{huang2021_fig2_geometria_kernel.png}\\[-0.2em]
+{\tiny Fig.~2 de \citet{huang2021}, CC~BY~4.0}
+\end{column}
+\begin{column}{0.42\textwidth}
+\begin{block}{Idea}
+{\footnotesize
+$g$ compara las \textbf{flechas} (similitudes kernel) entre puntos en el espacio
+cl\'asico y en el cu\'antico. $g$ peque\~no: el kernel cl\'asico ya reproduce
+la geometr\'ia cu\'antica; $g$ grande: no.\\[0.3em]
+$d$ = dimensi\'on efectiva del dato en el espacio de Hilbert.}
+\end{block}
+\begin{alertblock}{Lo que dice nuestra medici\'on}
+{\footnotesize
+$g$ es \textbf{necesario, no suficiente}: no usa $y$.
+Nuestra $g$ ($\varepsilon{=}10^{-6}$, norma de Frobenius) depende del
+condicionamiento del RBF y sale casi igual en todos los casos:
+\textbf{no discrimina}. Pendiente: recalcular con la definici\'on de Huang
+(norma espectral, $\lambda>0$).}
+\end{alertblock}
+\end{column}
+\end{columns}
+\end{frame}
+
 \begin{frame}{P1 --- los cinco indicadores en los cuatro casos de uso}
 \begin{columns}[T]
 \begin{column}{0.66\textwidth}
