@@ -19,8 +19,8 @@ Con profundidad $p=1$, el QAOA reduce el coste de asignación de recursos en un 
 \item \textbf{VQE es competitivo para optimización de portafolio a pequeña escala.}
 VQE converge al óptimo en instancias de hasta 6 activos, con una complejidad de circuito polinómica frente a la búsqueda exhaustiva exponencial \citep{peruzzo2014}. Para instancias mayores, la optimización cuadrática clásica sigue siendo superior en hardware simulado NISQ.
 
-\item \textbf{El score compuesto $\mathcal{Q}(D)$ no tiene sentido operativo en esta evidencia.} \label{conc:c1}
-Se propuso $\mathcal{Q}=w_1\Delta A+w_2\hat{d}_F+w_3\Delta H$ como diagnóstico a priori. Los datos lo desmienten como regla de adopción: SKG tiene el $\mathcal{Q}$ más alto ($+0.35$) y $\Delta_{\mathrm{op}}=-6.0$~pp; solo el nativo tiene $\Delta_{\mathrm{op}}>0$. Lo que sí se sostiene del barrido NB08 es $\rho_S(\alpha,\Delta A)=0.833$ ($p=0.005$) ---alineación, no el escalar $\mathcal{Q}$. Regla operativa del TFM: alineación mapa--generador y ganar al mejor clásico; no $\mathcal{Q}>0$ vs.\ RBF.
+\item \textbf{$\mathcal{Q}(\mathcal{D})$ se adopta como vector $(\Delta A,\hat{d}_F,\Delta H)$, no como escalar.} \label{conc:c1}
+Colapsar el perfil a $w^\top\mathcal{Q}$ con pesos fijos falla como ranking operativo (SKG maximiza el escalar y pierde en $\Delta_{\mathrm{op}}$). El vector sí permite leer cuellos (p.~ej.\ Telco en $\Delta H$). Del barrido NB08 se sostiene $\rho_S(\alpha,\Delta A)=0.833$ ($p=0.005$). Regla de adopción: alineación mapa--generador y $\Delta_{\mathrm{op}}>0$; el perfil geométrico informa, no decide solo.
 
 \item \textbf{El Framework QCR se plantea formalmente, con evidencia preliminar condicionada.} \label{conc:c2}
 La Conjetura~2 se define como contribución abierta. Notebook~09 reportó lifts \emph{vs.\ RBF} (re-uploading en Telco). Bajo $\mathcal{Q}_{\mathrm{rob}}$ (Sección~\ref{sec:qml_v2_revision}) Telco permanece \texttt{classical}; en SKG la rotación solo cambia geometría a \texttt{try-ZZ} sin lift de accuracy. QCR queda \textbf{planteado y delimitado} como filtro de geometría ---no como rescate operativo de SKG/Telco---; demostración fuerte = post-TFM (Capítulo~\ref{cap:futuro}).
@@ -58,7 +58,7 @@ La conclusión práctica para entornos empresariales como SKG Tecnología es: \t
 
 \subsection*{Conjetura 1 (C1): Indicadores de cuanticidad}
 
-La Conjetura~1, en la forma ``$\mathcal{Q}(\mathcal{D})$ diagnostica a priori la ventaja'', \textbf{no se sostiene} con los tres datasets del TFM. El barrido NB08 sí muestra que $\Delta A$ crece con $\alpha$ ($\rho_S=0.833$, $p=0.005$); eso no salva el escalar compuesto. Hallazgo negativo explícito: un score que ordena mal frente a $\Delta_{\mathrm{op}}$ no debe usarse para activar el módulo cuántico.
+La Conjetura~1 se reformula: $\mathcal{Q}(\mathcal{D})$ es un \textbf{perfil vectorial} de métricas, no un oráculo escalar. La versión $w^\top\mathcal{Q}$ queda como experimento negativo (ordena mal vs.\ $\Delta_{\mathrm{op}}$). El barrido NB08 sostiene $\rho_S(\alpha,\Delta A)=0.833$ ($p=0.005$). Activar el módulo cuántico exige $\Delta_{\mathrm{op}}>0$ y alineación mapa--generador.
 
 \subsection*{Conjetura 2 (C2): Framework QCR}
 
@@ -106,7 +106,7 @@ Este trabajo contribuye a la literatura con:
 \begin{enumerate}
     \item \textbf{Evidencia empírica} sobre condiciones reales de ventaja cuántica usando datos empresariales propietarios (SKG Tecnología, Bogotá), evaluada en nueve casos de uso con tres tipos de dataset cada uno cuando aplica.
     \item \textbf{Metodología de evaluación comparativa reproducible} sobre tres familias de problemas (clasificación, regresión y optimización combinatoria), con código abierto en Qiskit~2.3.0.
-    \item \textbf{Hallazgo negativo sobre $\mathcal{Q}(D)$}: el score compuesto propuesto no predice $\Delta_{\mathrm{op}}$ (contraejemplo SKG). Aporte: delimitar que $\Delta A$/$d_F$/$\Delta H$ por separado y el emparejamiento mapa--generador son el lenguaje útil; el escalar $\mathcal{Q}$ no lo es.
+    \item \textbf{Perfil $\mathcal{Q}(\mathcal{D})=(\Delta A,\hat{d}_F,\Delta H)$}: vector de métricas para leer geometría; el escalar colapsado se descarta como regla de adopción (contraejemplo SKG). Emparejamiento mapa--generador + $\Delta_{\mathrm{op}}$ cierran la decisión.
     \item \textbf{El Framework QCR}: planteado formalmente (protocolo de cuatro pasos + Conjetura~\ref{conj:qcr}); Notebook~09 reportó $+4.2$~pp en Telco, matizado por $\mathcal{Q}_{\mathrm{rob}}$ (Sección~\ref{sec:qml_v2_revision}). Demostración fuerte = post-TFM.
     \item \textbf{El prototipo de arquitectura híbrida cuántico-clásica}: patrón de integración QAOA-COBYLA con criterios explícitos de activación según el tipo de problema, demostrado sobre el conjunto dominante mínimo (NP-difícil) y generalizable a cualquier problema formulable como QUBO en entornos empresariales.
     \item \textbf{Caracterización de la brecha} entre madurez metodológica y madurez de hardware en el estado actual de la computación cuántica aplicada a ciencia de datos.

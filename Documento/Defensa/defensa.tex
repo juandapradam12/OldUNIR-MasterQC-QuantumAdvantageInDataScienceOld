@@ -458,7 +458,7 @@ Ventaja cuántica \textbf{condicionada}: aparece con alineación mapa--generador
 \end{block}
 \end{frame}
 
-\begin{frame}{Camino a la Conjetura 1 (I) --- por qué un score}
+\begin{frame}{Camino a la Conjetura 1 (I) --- por qué un perfil}
 \begin{columns}[T]
 \begin{column}{0.48\textwidth}
 \begin{block}{Literatura}
@@ -484,11 +484,10 @@ Ventaja si el mapa que estructura el dato
 Si no: gana el \textbf{clásico}.
 \end{block}
 \vspace{0.5em}
-\begin{block}{Idea (y su fallo)}
-Se probó juntar tres preguntas
-en un escalar $\mathcal{Q}$ \emph{a priori}.
-En datos reales \textbf{no} ordena
-la ventaja operativa.
+\begin{block}{Idea corregida}
+No un escalar: un \textbf{vector}
+$\mathcal{Q}(\mathcal{D})=(\Delta A,\hat{d}_F,\Delta H,\ldots)$
+que se \emph{mira} componente a componente.
 \end{block}
 \end{column}
 \end{columns}
@@ -526,31 +525,52 @@ no confundir con
 $\rho(\mathcal{Q},\mathrm{ventaja})$.}
 \end{block}
 \vspace{0.5em}
-\begin{block}{Propuesta (acotada)}
-$\mathcal{Q}=w_1\Delta A+w_2\hat{d}_F+w_3\Delta H$.\\[0.3em]
-Lenguaje geométrico vs.\ RBF ---
-\textbf{no} regla de despliegue.
+\begin{block}{Propuesta (vector)}
+$\mathcal{Q}(\mathcal{D})=(\Delta A,\hat{d}_F,\Delta H)$.\\[0.3em]
+Perfil geométrico vs.\ RBF ---
+la decisión usa además $\Delta_{\mathrm{op}}$.
 \end{block}
 \end{column}
 \end{columns}
 \end{frame}
 
-\begin{frame}{Conjetura 1 --- el score $\mathcal{Q}$ \textbf{no} funciona}
+\begin{frame}{Conjetura 1 --- $\mathcal{Q}(\mathcal{D})$ como \textbf{vector}, no escalar}
 \begin{equation}
-  \mathcal{Q}(\mathcal{D})=w_1\Delta A + w_2\hat{d}_F + w_3\Delta H
+  \mathcal{Q}(\mathcal{D})
+  \;=\;
+  \bigl(\Delta A,\; \hat{d}_F,\; \Delta H\bigr)
+  \qquad\text{(perfil; sin pesos)}
   \label{eq:Q}
 \end{equation}
 {\footnotesize
-Problema de diseño: $\hat{d}_F\!\approx\!1$ siempre empuja $\mathcal{Q}>0$ aunque $\Delta A<0$;
-$\Delta H$ puede dominar la escala; pesos $(0.4,0.3,0.3)$ fijos, no calibrados a $\Delta_{\mathrm{op}}$.}
+Opcional en el documento: un escalar $w^\top\mathcal{Q}$ se probó y \textbf{falla} como ranking
+operativo --- por eso no se usa para decidir.}
 
-\vspace{0.5em}
-\begin{alertblock}{Veredicto del TFM}
-El escalar $\mathcal{Q}$ \textbf{no tiene sentido operativo}: ordena mal frente a
-$\Delta_{\mathrm{op}}$ (SKG $Q{=}{+}0.35$ y $\Delta_{\mathrm{op}}{=}{-}6$~pp).
-Lo útil son los componentes por separado y, sobre todo, la alineación mapa--generador
-+ ganar al mejor clásico --- no un número compuesto vs.\ RBF.
+\vspace{0.4em}
+\begin{columns}[T]
+\begin{column}{0.48\textwidth}
+\begin{block}{Cómo se lee}
+{\footnotesize
+\begin{itemize}
+  \item $\Delta A$: \textquestiondown{}mejor alineación
+        que el clásico?
+  \item $\hat{d}_F$: \textquestiondown{}geometría distinta?
+  \item $\Delta H$: \textquestiondown{}diversidad o
+        concentración?
+\end{itemize}}
+\end{block}
+\end{column}
+\begin{column}{0.48\textwidth}
+\begin{alertblock}{Límite}
+{\footnotesize
+El vector describe geometría vs.\ RBF.
+La adopción exige además
+$\Delta_{\mathrm{op}}>0$
+(mejor clásico) y alineación
+mapa--generador.}
 \end{alertblock}
+\end{column}
+\end{columns}
 \end{frame}
 
 \begin{frame}{Validación P1 --- barrido sintético ($\alpha$)}
@@ -585,42 +605,41 @@ como trabajo futuro.}
 \end{columns}
 \end{frame}
 
-\begin{frame}{P1 en datos reales --- $\mathcal{Q}$ ordena mal}
+\begin{frame}{P1 en datos reales --- leer el \textbf{vector}, no un escalar}
 \centering
-{\small
-\renewcommand{\arraystretch}{1.35}
-\begin{tabular}{@{}lccc@{}}
+{\footnotesize
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{@{}lccccc@{}}
 \toprule
-\textbf{Dataset} & $\mathcal{Q}$ (vs RBF) & $\Delta_{\mathrm{op}}$ (mejor C) & \textbf{\textquestiondown{}Tomar cuántico?} \\
+\textbf{Dataset} & $\Delta A$ & $\hat{d}_F$ & $\Delta H$ & $\Delta_{\mathrm{op}}$ & \textbf{\textquestiondown{}Tomar?} \\
 \midrule
-Cuántico-nativo & $+0.29$ & $\mathbf{+13.3}$~pp & \textbf{Sí} (mapa alineado) \\
-SKG Incidentes & $\mathbf{+0.35}$ (máx.) & $-6.0$~pp & \textbf{No} (gana GB/RF) \\
-Telco Churn & $-0.05$ & $-3.8$~pp & \textbf{No} (gana GB) \\
+Nativo & $-0.029$ & $0.96$ & $+0.034$ & $\mathbf{+13.3}$ & \textbf{Sí} (mapa) \\
+SKG & $-0.010$ & $1.00$ & $+0.188$ & $-6.0$ & \textbf{No} \\
+Telco & $+0.020$ & $0.94$ & $-1.131$ & $-3.8$ & \textbf{No} \\
 \bottomrule
 \end{tabular}}
 
-\vspace{0.8em}
+\vspace{0.7em}
 \begin{columns}[T]
 \begin{column}{0.48\textwidth}
-\begin{alertblock}{Por qué $\mathcal{Q}$ no tiene sentido}
+\begin{block}{Lectura del perfil}
 {\footnotesize
-El ranking de $\mathcal{Q}$ $\neq$ ranking de
-$\Delta_{\mathrm{op}}$. Si el score
-``de cuanticidad'' señala a SKG y en SKG
-gana el clásico, el score \textbf{no}
-sirve para decidir.}
-\end{alertblock}
+Telco: cuello claro en $\Delta H$.
+SKG: geometría ``alta'' pero
+$\Delta_{\mathrm{op}}<0$ $\Rightarrow$ no adoptar.
+Nativo: gana en $\Delta_{\mathrm{op}}$
+(alineación mapa--dato).}
+\end{block}
 \end{column}
 \begin{column}{0.48\textwidth}
-\begin{block}{Qué sí se puede tomar}
+\begin{alertblock}{Escalar $w^\top\mathcal{Q}$}
 {\footnotesize
-\begin{enumerate}
-  \item Alineación mapa--generador.
-  \item $\Delta_{\mathrm{op}}>0$ vs.\ mejor clásico.
-  \item Componentes sueltos como
-        \emph{descripción}, no como score.
-\end{enumerate}}
-\end{block}
+Si se colapsa a un número
+(p.~ej.\ pesos $0.4/0.3/0.3$),
+SKG queda primero y se decide mal.
+Por eso $\mathcal{Q}$ se deja como
+\textbf{vector}.}
+\end{alertblock}
 \end{column}
 \end{columns}
 \end{frame}
@@ -740,8 +759,8 @@ NB09 solo sobre datasets reales (nativo no requiere rotación). Series del noteb
 \begin{frame}{Conclusiones (III) --- conjeturas y adopción}
 \begin{enumerate}
   \setcounter{enumi}{10}
-  \item $\mathcal{Q}(\mathcal{D})$ compuesto: \textbf{no} sostenido como criterio
-        (ordena mal vs.\ $\Delta_{\mathrm{op}}$); sí $\rho_S(\alpha,\Delta A){=}0.833$.
+  \item $\mathcal{Q}(\mathcal{D})$ como \textbf{vector} $(\Delta A,\hat{d}_F,\Delta H)$;
+        el escalar colapsado no se usa; sí $\rho_S(\alpha,\Delta A){=}0.833$.
   \item QCR: \textbf{planteado}; evidencia preliminar vs.\ RBF; no rescate operativo.
   \item Adopción recomendada: \textbf{selectiva e híbrida} --- módulo cuántico como
         herramienta adicional, no sustituto del stack clásico (SKG).
