@@ -7,36 +7,35 @@ Este capítulo presenta el análisis cuantitativo y cualitativo de los resultado
 \section{Caso de uso 1: Clasificación supervisada}
 % =====================================================================
 
-\subsection{Dataset cuántico-nativo: ventaja cuántica demostrada}
+\subsection{Dataset cuántico-nativo: ventaja por construcción}
 
-Los resultados sobre el dataset con estructura cuántica explícita constituyen la demostración empírica más sólida del estudio. El QSVM alcanzó una exactitud del \textbf{91.7\%}, frente al 53.3\% del mejor clasificador clásico (SVM polinomial de grado 3; SVM-RBF: 46.7\%, Gradient Boosting: 51.7\%, SVM lineal: 45.0\%), lo que supone una \textbf{ventaja de +38.3 puntos porcentuales (pp)}. Este resultado es el esperado por construcción, y coherente con la idea de \cite{liu2021} y \cite{huang2021} de que la ventaja exige un kernel alineado con las etiquetas: cuando estas se definen mediante una función cuántica, el kernel cuántico las aprende con alta precisión mientras que los clasificadores clásicos probados (RBF, polinomial, lineal y Gradient Boosting) quedan cerca del azar.
+Los resultados sobre el dataset con estructura cuántica explícita constituyen la evidencia empírica más clara del estudio, aunque obtenida sobre datos alineados con el kernel por construcción. El QSVM alcanzó una exactitud del \textbf{91.7\%}, frente al 53.3\% del mejor clasificador clásico (SVM polinomial de grado 3; SVM-RBF: 46.7\%, Gradient Boosting: 51.7\%, SVM lineal: 45.0\%), lo que supone una \textbf{ventaja de +38.3 puntos porcentuales (pp)}. Este resultado es el esperado por construcción, y coherente con la idea de \cite{liu2021} y \cite{huang2021} de que la ventaja exige un kernel alineado con las etiquetas: cuando estas se definen mediante una función cuántica, el kernel cuántico las aprende con alta precisión mientras que los clasificadores clásicos probados (RBF, polinomial, lineal y Gradient Boosting) quedan cerca del azar.
 
-El análisis de escalabilidad (Tabla~\ref{tab:escala_clasificacion}) muestra que esta ventaja no depende de un tamaño de muestra particular: es positiva en todo el rango $n \in [30, 180]$ evaluado, con una ventaja media de \textbf{+40.9 pp} y una máxima de \textbf{+48.9 pp} para $n=50$.
+El análisis de escalabilidad (Tabla~\ref{tab:escala_clasificacion}) repite el experimento 10 veces por tamaño (\texttt{python -m qml\_v2.scalability}): en cada repetición se regenera el dataset con una semilla distinta, se reserva el 30\% como test y se entrena con los primeros $n$ ejemplos. La ventaja del QSVM sobre el mejor clásico (SVM-RBF o Gradient Boosting) es positiva en las 10 repeticiones de los seis tamaños $n \in [30, 180]$, con una media de \textbf{+33.2 pp} (de $+27.1$~pp para $n=30$ a $+37.6$~pp para $n=180$) y un intervalo de confianza del 95\% que no incluye el cero en ningún tamaño (límite inferior mínimo: $+22.1$~pp). La exactitud del QSVM crece con $n$ ($79.6\%$ a $92.6\%$), mientras que los clásicos permanecen cerca del azar. La partición única del Notebook~01 (media $+40.9$~pp, máximo $+48.9$~pp para $n=50$) cae por encima de este rango y debe leerse como una realización optimista.
 
 \begin{table}[h]
 \centering
-\begin{tabular}{ccccc}
+\small
+\begin{tabular}{rccccc}
 \hline
-\textbf{$n$ train} & \textbf{QSVM (\%)} & \textbf{Mejor clásico (\%)} & \textbf{Ventaja (pp)} \\
+$n$ & QSVM (\%) & SVM-RBF (\%) & Grad.\ Boosting (\%) & $\Delta$ vs.\ mejor clásico (pp) [IC 95\%] & Rep.\ con ventaja \\
 \hline
-30  & 88.9 & 46.7 (SVM-RBF) & +42.2 \\
-50  & 91.1 & 42.2 (SVM-RBF) & +48.9 \\
-80  & 85.6 & 48.9 (SVM-RBF) & +36.7 \\
-100 & 85.6 & 47.8 (SVM-RBF) & +37.8 \\
-140 & 88.9 & 44.4 (SVM-RBF) & +44.4 \\
-180 & 91.1 & 55.6 (SVM-RBF) & +35.6 \\
-\hline
-\textbf{Media} & \textbf{88.5} & \textbf{47.6} & \textbf{+40.9} \\
+30 & $79.6\pm5.9$ & $51.0\pm4.9$ & $49.0\pm5.2$ & $+27.1$ [$+22.1$, $+32.2$] & 10/10 \\
+50 & $87.1\pm5.1$ & $49.9\pm4.2$ & $53.1\pm5.6$ & $+32.9$ [$+27.7$, $+38.1$] & 10/10 \\
+80 & $88.4\pm2.5$ & $48.6\pm5.8$ & $55.0\pm6.2$ & $+32.9$ [$+27.9$, $+37.9$] & 10/10 \\
+100 & $89.6\pm4.2$ & $48.7\pm4.8$ & $55.8\pm7.5$ & $+33.8$ [$+27.3$, $+40.2$] & 10/10 \\
+140 & $90.0\pm3.1$ & $50.9\pm3.9$ & $54.7\pm4.3$ & $+35.1$ [$+32.2$, $+38.0$] & 10/10 \\
+180 & $92.6\pm2.6$ & $49.0\pm3.6$ & $55.0\pm6.2$ & $+37.6$ [$+33.4$, $+41.7$] & 10/10 \\
 \hline
 \end{tabular}
-\caption{Escalabilidad de la ventaja cuántica en clasificación (dataset cuántico-nativo, ZZFeatureMap 2 qubits).}
+\caption{Escalabilidad de la ventaja cuántica en clasificación (dataset cuántico-nativo, ZZFeatureMap de 2 qubits): media $\pm$ desviación sobre 10 repeticiones y 90 ejemplos de test por repetición. El $\Delta$ se calcula en cada repetición frente al mejor de los dos clásicos; el IC es de 95\% (t de Student). Fuente: \texttt{fair\_scalability\_native.csv}.}
 \label{tab:escala_clasificacion}
 \end{table}
 
 \begin{figure}[ht]
 \centering
 \includegraphics[width=0.92\textwidth]{../POCs/data/output/figures/01_escalabilidad_ventaja_clasificacion.png}
-\caption{Escalabilidad de QSVM vs.\ SVM-RBF en el dataset cuántico-nativo según el tamaño del conjunto de entrenamiento ($n \in [30, 180]$; salida del Notebook~01). Izquierda: exactitud en test de ambos modelos. Derecha: ventaja del QSVM en puntos porcentuales, positiva en todos los tamaños evaluados (media $+40.9$~pp). Cada punto es una única partición, por lo que las diferencias entre tamaños no son estadísticamente concluyentes; los datasets reales (SKG, Telco) no se evaluaron en esta curva.}
+\caption{Escalabilidad de la ventaja cuántica en el dataset cuántico-nativo según el tamaño del conjunto de entrenamiento ($n \in [30, 180]$; 10 repeticiones por tamaño). Izquierda: exactitud media $\pm$ desviación de QSVM, SVM-RBF y Gradient Boosting. Derecha: ventaja del QSVM sobre el mejor clásico con su intervalo de confianza del 95\%; entre paréntesis, repeticiones con ventaja. Los datasets reales (SKG, Telco) no se evaluaron en esta curva. Fuente: \texttt{fair\_scalability\_native.csv}.}
 \label{fig:escala_clasificacion}
 \end{figure}
 
@@ -46,7 +45,7 @@ El mecanismo que explica esta ventaja es la \textbf{alineación} entre el featur
 \begin{itemize}
   \item El dataset es artificial: está diseñado a medida para el kernel cuántico. La ventaja observada es una cota superior del rendimiento cuántico en condiciones ideales.
   \item La simulación exacta sin ruido es optimista respecto al hardware NISQ real; la decoherencia reduciría la fidelidad del kernel y, por tanto, la ventaja.
-  \item El coste cuadrático $O(n^2)$ del kernel limita la escala evaluable; en producción, $n > 1{,}000$ sería computacionalmente inviable en simulación.
+  \item El kernel exige $O(n^2)$ evaluaciones de fidelidad; con 2 qubits la simulación exacta es inmediata, pero en hardware, con la fidelidad estimada por muestreo y más qubits, ese coste limita la escala.
 \end{itemize}
 
 \begin{figure}[ht]
@@ -98,7 +97,7 @@ Telco Churn & $53.3\pm9.3$ & Reg. logística $77.2\pm4.3$ & $-23.8$ & GB (19 var
 \begin{figure}[!htbp]
 \centering
 \includegraphics[width=\textwidth]{../POCs/data/output/figures/06_learning_curves_quantum_advantage.png}
-\caption{Curvas de aprendizaje del QSVM y del mejor clasificador clásico (SVM-RBF) en función del tamaño de entrenamiento $n \in [30, 180]$, sobre el dataset cuántico-nativo del Caso~1 (salida del Notebook~01, una partición por tamaño; izquierda: exactitud; derecha: ventaja en puntos porcentuales). La brecha es positiva en todo el rango evaluado y no se cierra al aumentar $n$; como cada punto procede de una única partición, las diferencias entre tamaños no son estadísticamente concluyentes.}
+\caption{Curvas de aprendizaje del QSVM y del SVM-RBF en función del tamaño de entrenamiento $n \in [30, 180]$, sobre el dataset cuántico-nativo del Caso~1 (media de 10 repeticiones; la banda es $\pm$ una desviación típica; derecha: ventaja media sobre el SVM-RBF en puntos porcentuales). La brecha es positiva en todo el rango evaluado y no se cierra al aumentar $n$. Fuente: \texttt{fair\_scalability\_native.csv}.}
 \label{fig:learning_curves}
 \end{figure}
 
@@ -226,12 +225,12 @@ A esta escala no hay ventaja de tiempo: NN+2-opt es óptimo en milisegundos. El 
 \section{Caso de uso 6: Análisis del umbral de ventaja del kernel}
 % =====================================================================
 
-El análisis del umbral de ventaja del kernel (Notebook~06) confirma el caso~1 desde la escalabilidad. En el dataset \textbf{cuántico-nativo} ($n=150$, 45 puntos de test) el QSVC obtuvo 68.9\% frente al 60.0\% del mejor clásico (SVM polinomial): \textbf{+8.9 pp}, equivalente a cuatro aciertos más sobre una única partición. La dirección es la esperada cuando generador y feature map coinciden, pero el tamaño de la muestra impide darle valor estadístico por sí sola; la evidencia sólida de este régimen es la del Caso~1. Sobre \textbf{SKG} (Incidentes Bogotá) el clásico fue superior: QSVC 56.7\% frente a 60.7\% ($-4.0$~pp). Sobre \textbf{Telco} el veredicto operativo es el mismo: QSVM 76.0\% frente a Gradient Boosting 79.8\% (\textbf{$-3.8$~pp}); bajo $\mathcal{Q}_{\mathrm{rob}}$ Telco permanece \texttt{classical}. SKG y Telco \textbf{no} son cuántico-nativos. Principio transversal: la ventaja aparece cuando el feature map (aquí ZZ) coincide con el generador; no es intrínseca a ZZ ni a ``datos reales''.
+El análisis del umbral de ventaja del kernel (Notebook~06) complementa el caso~1 con una partición adicional por tamaño (Figura~\ref{fig:kernel_escalabilidad}, Anexo). En el dataset \textbf{cuántico-nativo} ($n=150$, 45 puntos de test) el QSVC obtuvo 68.9\% frente al 60.0\% del mejor clásico (SVM polinomial): \textbf{+8.9 pp}, equivalente a cuatro aciertos más sobre una única partición. La dirección es la esperada cuando generador y feature map coinciden, pero el tamaño de la muestra impide darle valor estadístico por sí sola; la evidencia sólida de este régimen es la del Caso~1. Sobre \textbf{SKG} (Incidentes Bogotá) el clásico fue superior: QSVC 56.7\% frente a 60.7\% ($-4.0$~pp). Sobre \textbf{Telco} el veredicto operativo es el mismo: QSVM 76.0\% frente a Gradient Boosting 79.8\% (\textbf{$-3.8$~pp}); bajo $\mathcal{Q}_{\mathrm{rob}}$ Telco permanece \texttt{classical}. SKG y Telco \textbf{no} son cuántico-nativos. Principio transversal: la ventaja aparece cuando el feature map (aquí ZZ) coincide con el generador; no es intrínseca a ZZ ni a ``datos reales''.
 
 \begin{figure}[!htbp]
 \centering
 \includegraphics[width=0.92\textwidth]{../POCs/data/output/figures/07_kernel_advantage_detalle.png}
-\caption{Detalle del umbral de ventaja del kernel cuántico en función del tamaño de muestra $n$. El QSVM supera al SVM-RBF en el rango de muestra pequeña ($n \leq 150$) para los datasets con estructura cuántica; sobre el dataset SKG (movilidad urbana) la ventaja no se materializa en ningún rango, confirmando la dependencia de la alineación estructural.}
+\caption{Detalle del Notebook~06 sobre el dataset cuántico-nativo ($n=150$, 45 puntos de test, una única partición). Izquierda: exactitud de cada modelo (QSVM 68.9\%, mejor clásico: SVM polinomial, 60.0\%). Derecha: exactitud, F1 y velocidad relativa ($1-t/t_{\max}$) del QSVM frente al mejor clásico; el QSVM es más lento. Un acierto equivale a 2.2~pp, por lo que la figura es ilustrativa; la evidencia cuantitativa es la del Caso~1.}
 \label{fig:kernel_advantage_detalle}
 \end{figure}
 
@@ -523,5 +522,5 @@ El hilo conductor de los nueve casos de uso es precisamente la demostración de 
 
 \subsection{Resultados adicionales y visualización}
 
-El análisis de escalabilidad del caso~1 se sintetiza en la Figura~\ref{fig:escala_clasificacion}: ventaja positiva en $n \in [30, 180]$ \textbf{solo} en el régimen cuántico-nativo (una partición por tamaño). La geometría de kernel se reporta vía los indicadores tabulares del Capítulo~\ref{cap:investigacion_original} ($\Delta A$, $d_F$, $\Delta H$); no se usan heatmaps regenerados a posteriori (las matrices $K$ no se exportaron a artefactos). $\mathcal{Q}>0$ vs.\ un baseline débil no basta como veredicto operativo.
+El análisis de escalabilidad del caso~1 se sintetiza en la Figura~\ref{fig:escala_clasificacion}: ventaja positiva en $n \in [30, 180]$ (10 repeticiones por tamaño) \textbf{solo} en el régimen cuántico-nativo. La geometría de kernel se reporta vía los indicadores tabulares del Capítulo~\ref{cap:investigacion_original} ($\Delta A$, $d_F$, $\Delta H$); no se usan heatmaps regenerados a posteriori (las matrices $K$ no se exportaron a artefactos). $\mathcal{Q}>0$ vs.\ un baseline débil no basta como veredicto operativo.
 

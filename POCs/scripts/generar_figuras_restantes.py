@@ -475,52 +475,45 @@ def fig_01_qsvm_vs_svm_directo():
 # ── Notebook 06 ────────────────────────────────────────────────────────────────
 
 def fig_06_learning_curves():
-    escalabilidad = leer_metrica("01_clasificacion_escalabilidad.csv")
-    n_train_vals = escalabilidad["n_train"].to_numpy()
-    acc_qsvm = escalabilidad["acc_quantum"].to_numpy()
-    acc_svm_rbf = escalabilidad["acc_classical"].to_numpy()
+    """Curvas de aprendizaje del dataset nativo: media y desviación de 10 repeticiones."""
+    esc = leer_metrica("fair_scalability_native.csv")
+    n_train_vals = esc["n_train"].to_numpy()
+    n_rep = int(esc["n_repeticiones"].iloc[0])
+    acc_qsvm, std_qsvm = esc["qsvm_media"].to_numpy() / 100, esc["qsvm_std"].to_numpy() / 100
+    acc_svm_rbf, std_rbf = esc["rbf_media"].to_numpy() / 100, esc["rbf_std"].to_numpy() / 100
 
     fig, axes = plt.subplots(1, 2, figsize=(16, 5))
     fig.suptitle("Curvas de Aprendizaje — QSVM vs SVM-RBF\n"
-                 "Dataset cuántico-nativo (ZZFeatureMap 2 qubits)",
+                 f"Dataset cuántico-nativo (ZZFeatureMap 2 qubits, {n_rep} repeticiones)",
                  fontsize=13, fontweight="bold")
     ax = axes[0]
     ax.plot(n_train_vals, acc_qsvm, "o-", color=QUANTUM_COLOR, linewidth=2.5, markersize=8,
             label=f"Quantum Kernel SVM  (media={acc_qsvm.mean():.1%})", zorder=5)
     ax.plot(n_train_vals, acc_svm_rbf, "s--", color=CLASSICAL_COLOR, linewidth=2, markersize=7,
             label=f"SVM-RBF clásico      (media={acc_svm_rbf.mean():.1%})", zorder=4)
-    ax.fill_between(n_train_vals, acc_svm_rbf, acc_qsvm, alpha=0.15,
-                    color=QUANTUM_COLOR, label="Región de ventaja cuántica")
+    ax.fill_between(n_train_vals, acc_qsvm - std_qsvm, acc_qsvm + std_qsvm, alpha=0.15, color=QUANTUM_COLOR)
+    ax.fill_between(n_train_vals, acc_svm_rbf - std_rbf, acc_svm_rbf + std_rbf, alpha=0.15, color=CLASSICAL_COLOR)
     ax.axhline(0.5, color="gray", lw=1, ls=":", alpha=0.6, label="Azar (50%)")
     ax.set_xlabel("Tamaño del conjunto de entrenamiento")
-    ax.set_ylabel("Accuracy")
+    ax.set_ylabel("Accuracy (media ± desviación)")
     ax.set_title("Accuracy vs Tamaño de entrenamiento")
     ax.set_ylim(0.3, 1.25)
     ax.set_xlim(25, 185)
     ax.legend(fontsize=8.5, loc="upper center", ncol=2)
-    gap_mean = acc_qsvm.mean() - acc_svm_rbf.mean()
-    mid_y = (acc_qsvm.mean() + acc_svm_rbf.mean()) / 2
-    ax.annotate(f"Δ medio = {gap_mean:+.1%}", xy=(100, mid_y), xytext=(70, mid_y + 0.1),
-                fontsize=10, color=QUANTUM_COLOR, fontweight="bold",
-                arrowprops=dict(arrowstyle="->", color=QUANTUM_COLOR, lw=1.5))
 
     ax2 = axes[1]
-    advantage_pp = (acc_qsvm - acc_svm_rbf) * 100
-    bar_colors = [ADVANTAGE_COLOR if v > 0 else "#D32F2F" for v in advantage_pp]
-    bars = ax2.bar(n_train_vals.astype(str), advantage_pp, color=bar_colors, edgecolor="white", width=0.6)
-    ax2.axhline(0, color="black", lw=0.8, ls="--")
-    ax2.axhline(advantage_pp.mean(), color=ADVANTAGE_COLOR, lw=1.5, ls="-.",
-                alpha=0.7, label=f"Media = {advantage_pp.mean():+.1f}pp")
+    advantage_pp = esc["delta_vs_rbf_pp"].to_numpy()
+    bars = ax2.bar(n_train_vals.astype(str), advantage_pp, color=ADVANTAGE_COLOR, edgecolor="white", width=0.6)
+    ax2.axhline(advantage_pp.mean(), color=QUANTUM_COLOR, lw=1.5, ls="-.", alpha=0.7,
+                label=f"Media = {advantage_pp.mean():+.1f}pp")
     for bar, val in zip(bars, advantage_pp):
-        ypos = bar.get_height() + 0.5 if val >= 0 else bar.get_height() - 2.5
-        ax2.text(bar.get_x() + bar.get_width() / 2, ypos, f"{val:+.1f}pp",
-                 ha="center", fontsize=9, fontweight="bold",
-                 color=ADVANTAGE_COLOR if val >= 0 else "#D32F2F")
+        ax2.text(bar.get_x() + bar.get_width() / 2, bar.get_height() + 0.5, f"{val:+.1f}pp",
+                 ha="center", fontsize=9, fontweight="bold", color=ADVANTAGE_COLOR)
     ax2.set_xlabel("Tamaño de entrenamiento")
     ax2.set_ylabel("Ventaja cuántica (pp) = QSVM − SVM-RBF")
-    ax2.set_title("Ventaja cuántica por tamaño de muestra\n(positivo = cuántico mejor)")
+    ax2.set_title("Ventaja cuántica media por tamaño de muestra\n(positivo = cuántico mejor)")
     ax2.legend(fontsize=9, loc="upper right")
-    ax2.set_ylim(advantage_pp.min() - 10, advantage_pp.max() + 12)
+    ax2.set_ylim(0, advantage_pp.max() + 10)
     plt.tight_layout()
     save_fig("06_learning_curves_quantum_advantage.png")
 

@@ -146,14 +146,14 @@ Las figuras del circuito ZZFeatureMap (Figura~\ref{fig:zzfeaturemap_circuit}) y 
 \begin{figure}[htbp]
 \centering
 \includegraphics[width=0.95\textwidth]{../POCs/data/output/figures/06_quantum_kernel_3datasets_comparativa.png}
-\caption{Comparativa de exactitud del QSVM frente a cuatro clasificadores clásicos (Gradient Boosting, Random Forest, SVM-RBF, Regresión Logística) en los tres datasets del TFM. La ventaja de $+38.3$~pp sobre el dataset cuántico-nativo contrasta con la desventaja de $-4.5$~pp sobre SKG Incidentes y $-3.8$~pp sobre Telco Churn (Notebook~06).}
+\caption{Comparativa de exactitud del QSVC frente al mejor clasificador clásico en los tres datasets del Notebook~06 (una única partición por dataset). La ventaja de $+8.9$~pp sobre el dataset cuántico-nativo ($n=150$, 45 puntos de test) contrasta con la desventaja de $-4.0$~pp sobre SKG Incidentes y $-3.8$~pp sobre Telco Churn.}
 \label{fig:quantum_kernel_3ds}
 \end{figure}
 
 \begin{figure}[htbp]
 \centering
 \includegraphics[width=0.90\textwidth]{../POCs/data/output/figures/06_quantum_kernel_escalabilidad.png}
-\caption{Escalabilidad del kernel cuántico: tiempo de cómputo de la matriz $K_Q$ (simulación exacta) en función de $n$. El coste cuadrático $O(n^2)$ limita la viabilidad de la simulación a $n < 200$; en hardware real el coste es $O(n \cdot d)$ con $d$ la profundidad del circuito (Notebook~06).}
+\caption{Exactitud del QSVM y del mejor clásico (Gradient Boosting) en el dataset cuántico-nativo según el número total de muestras ($n=50$ a $150$, 30\% de test) y diferencia entre ambos (Notebook~06). Cada barra procede de una única partición con 15 a 45 puntos de test (un acierto equivale a 2--7~pp): el QSVM queda por debajo de Gradient Boosting para $n=50$ y $80$ y por encima para $n\ge 100$. La repetición con 10 semillas (Tabla~\ref{tab:escala_clasificacion}) da una ventaja positiva en todos los tamaños, de modo que esta figura debe leerse como una realización ruidosa y no como un umbral de ventaja.}
 \label{fig:kernel_escalabilidad}
 \end{figure}
 

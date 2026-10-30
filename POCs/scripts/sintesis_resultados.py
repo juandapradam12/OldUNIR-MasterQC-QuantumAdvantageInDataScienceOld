@@ -145,7 +145,7 @@ def caso7_mds() -> list[dict]:
     resuelta = esc["qaoa_mejor_muestra_es_dominante"] & (esc["qaoa_tamano_mejor_muestra"] == esc["ilp_tamano"])
     mejor_clasico = max(1.0, float((esc["greedy_tamano"] == esc["ilp_tamano"]).mean()))
     return [
-        _fila(7, "referencia", "red de 6 nodos", 100 * (float(resuelto_red6) - 1.0),
+        _fila(7, "complementario", "red de 6 nodos", 100 * (float(resuelto_red6) - 1.0),
               "pp instancias con MDS óptimo", "qml_v2.mds_qaoa"),
         _fila(7, "referencia", "grafos ER n=6–15", 100 * (float(resuelta.mean()) - mejor_clasico),
               "pp instancias con MDS óptimo", "qml_v2.mds_qaoa"),
