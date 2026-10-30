@@ -3,7 +3,7 @@
 Indicadores (qml_v2.quantumness, sin medir ventaja supervisada):
   ΔA  = A(K_Q, yyᵀ) − A(K_RBF, yyᵀ)      (Cortes / Huang)
   ΔH  = H(K_Q) − H(K_RBF)                (Thanasilp)
-  d_F = ‖K_Q − K_RBF‖_F / n               (Liu)
+  d_F = ‖K_Q − K_RBF‖_F / n               (proxy propio, cf. Liu)
   g   = diferencia geométrica de Huang (norma espectral, kernels con Tr K = n,
         regularización λ=1e-3; ver quantumness.geometric_difference_huang)
   Q   = 0.4·ΔA + 0.2·d̂_F + 0.2·ΔH + 0.2·ĝ  (compuesto TFM; solo informativo)

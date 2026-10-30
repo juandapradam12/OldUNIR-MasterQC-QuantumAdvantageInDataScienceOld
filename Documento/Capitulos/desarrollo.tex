@@ -112,17 +112,17 @@ donde $|\phi(x_i)\rangle$ es el estado cuántico codificado por un \texttt{ZZFea
   \item \textbf{Preprocesamiento}: Escalado al rango $[-\pi, \pi]$ mediante \texttt{MinMaxScaler} para garantizar la correcta codificación angular en las puertas de rotación.
   \item \textbf{Construcción del kernel}: \texttt{FidelityQuantumKernel} con \texttt{ComputeUncompute} como estimador de fidelidad y \texttt{StatevectorSampler} como backend. La matriz de kernel de entrenamiento ($200 \times 200$) requirió $40{,}000$ evaluaciones de circuito.
   \item \textbf{Entrenamiento}: \texttt{SVC(kernel=``precomputed'', C=1.0)} con la matriz de kernel cuántico. Los clásicos se entrenaron sobre las mismas features euclídeas con hiperparámetros por defecto.
-  \item \textbf{Análisis de escalabilidad}: Experimentos adicionales con $n \in \{30, 50, 80, 100, 140, 180\}$ para evaluar la robustez de la ventaja cuántica.
+  \item \textbf{Análisis de escalabilidad}: Experimentos adicionales con $n \in \{30, 50, 80, 100, 140, 180\}$ para comprobar si la ventaja depende del tamaño de entrenamiento (una partición por tamaño).
   \item \textbf{Evaluación}: Accuracy, F1-score y matriz de confusión sobre test ($n=120$).
 \end{enumerate}
 
 \paragraph{Resultados preliminares.}
-El QSVM alcanzó una exactitud del \textbf{91.7\%}, frente al 53.3\% del mejor clasificador clásico (SVM polinomial de grado 3; SVM-RBF: 46.7\%, Gradient Boosting: 51.7\%, SVM lineal: 45.0\%): \textbf{ventaja de +38.3 pp}. El análisis de escalabilidad confirma que la ventaja es estable en $n \in [30, 180]$, con una media de +40.9 pp y un máximo de +48.9 pp para $n=50$.
+El QSVM alcanzó una exactitud del \textbf{91.7\%}, frente al 53.3\% del mejor clasificador clásico (SVM polinomial de grado 3; SVM-RBF: 46.7\%, Gradient Boosting: 51.7\%, SVM lineal: 45.0\%): \textbf{ventaja de +38.3 pp}. El análisis de escalabilidad muestra una ventaja positiva en todos los tamaños $n \in [30, 180]$ (una partición por tamaño), con una media de +40.9 pp y un máximo de +48.9 pp para $n=50$.
 
 \paragraph{Ventajas identificadas.}
 \begin{itemize}
-  \item El kernel cuántico captura exactamente la estructura del espacio de Hilbert que define las etiquetas, produciendo una ventaja masiva y teóricamente fundada.
-  \item La ventaja es robusta e independiente del tamaño de muestra en el rango evaluado, evidenciando una separación de clases cualitativa y no meramente estadística.
+  \item El kernel cuántico captura exactamente la estructura del espacio de Hilbert que define las etiquetas, produciendo una ventaja amplia que es esperable por construcción, al coincidir mapa y generador de etiquetas.
+  \item La ventaja es positiva en todos los tamaños de muestra evaluados; con una única partición por tamaño, las diferencias entre tamaños no son estadísticamente concluyentes.
   \item El resultado es coherente con la idea, formalizada por \cite{liu2021} y \cite{huang2021}, de que la ventaja requiere alineación entre kernel y etiquetas; no reproduce la separación rigurosa de \cite{liu2021}, que no es simulable clásicamente.
 \end{itemize}
 
@@ -176,26 +176,26 @@ Como benchmark de dominio público se empleó el dataset \textit{Telco Customer 
 \paragraph{Procedimiento experimental.}
 \begin{enumerate}
   \item \textbf{Preprocesamiento}: Eliminación de columnas de identificador; imputación de \texttt{TotalCharges} (11 nulos); codificación de categóricas (LabelEncoder y OrdinalEncoder).
-  \item \textbf{Reducción dimensional}: PCA a 2 componentes (varianza explicada: 72.3\%) para QSVM; clásicos sobre las 20 features originales.
-  \item \textbf{Submuestreo}: $n_{\text{train}} = 200$, $n_{\text{test}} = 100$ para QSVM; entrenamiento completo para clásicos.
-  \item \textbf{Gestión del desbalanceo}: \texttt{class\_weight=``balanced''} en clasificadores aplicables; umbral de clasificación ajustado a 0.35 para maximizar F1 de la clase positiva.
-  \item \textbf{Evaluación}: Accuracy, F1 macro, F1 por clase, AUC-ROC.
+  \item \textbf{Reducción dimensional}: PCA a 4 componentes (varianza explicada: 48.5\%) para el QSVM; clásicos sobre las 21 variables (20 originales más dos derivadas, \texttt{charge\_ratio} y \texttt{num\_services}).
+  \item \textbf{Submuestreo}: 100 ejemplos de entrenamiento y 50 de test para el QSVM; los clásicos usan la partición completa (5\,634 de entrenamiento, 1\,409 de test). La comparación es por tanto asimétrica (véase la Tabla~\ref{tab:clasif_justa} para el protocolo justo).
+  \item \textbf{Gestión del desbalanceo}: \texttt{class\_weight=``balanced''} en SVM-RBF y Random Forest, y \texttt{scale\_pos\_weight} en XGBoost.
+  \item \textbf{Evaluación}: Accuracy, precisión, recall y F1 ponderados.
 \end{enumerate}
 
 \paragraph{Resultados preliminares.}
-El QSVM obtuvo exactitud del \textbf{76.0\%} (F1-macro: 0.68), frente al \textbf{79.8\%} del Gradient Boosting (F1-macro: 0.789): \textbf{desventaja de $-$3.8 pp}. La Regresión Logística (78.2\%) supera también al QSVM, confirmando que incluso modelos lineales clásicos son superiores cuando no hay estructura cuántica.
+El QSVM obtuvo exactitud del \textbf{76.0\%} (F1 ponderado: 0.656), frente al \textbf{79.8\%} del Gradient Boosting (F1 ponderado: 0.789): \textbf{desventaja de $-$3.8 pp}, sobre un test de solo 50 ejemplos para el QSVM. Bajo el protocolo justo del Capítulo~\ref{cap:evaluacion}, la desventaja en Telco es de $-23.8$~pp.
 
 \paragraph{Ventajas identificadas.}
 \begin{itemize}
-  \item El QSVM mantiene rendimiento razonable (76\%) con solo 2 features PCA, evidenciando que el kernel cuántico actúa como regularizador implícito efectivo en espacios de alta dimensión reducida.
+  \item El QSVM alcanza una exactitud del 76.0\% con solo 4 componentes PCA, pero sobre un test de 50 ejemplos (una desviación de un solo ejemplo equivale a 2~pp), por lo que esta cifra no permite concluir que el kernel cuántico actúe como regularizador.
   \item El resultado confirma la validez del diseño experimental: la ausencia de estructura cuántica produce la victoria clásica esperada, lo que valida la metodología comparativa.
 \end{itemize}
 
 \paragraph{Limitaciones identificadas.}
 \begin{itemize}
-  \item La reducción de 20 a 2 features es una penalización severa para el QSVM; los clásicos usan toda la información disponible, haciendo la comparación asimétrica en dimensionalidad de entrada.
+  \item La reducción de 21 variables a 4 componentes PCA (48.5\% de varianza explicada) penaliza al QSVM; los clásicos usan toda la información disponible, lo que hace la comparación asimétrica en dimensionalidad de entrada.
   \item El dataset presenta desbalanceo de clase que el QSVM gestiona con menos flexibilidad que los métodos basados en árboles de decisión.
-  \item El tamaño de submuestra cuántico ($n=200$) es insuficiente para capturar la distribución del churn de forma estadísticamente robusta.
+  \item La submuestra cuántica (100 ejemplos de entrenamiento y 50 de test) es insuficiente para estimar con robustez estadística la distribución del churn.
 \end{itemize}
 
 % ---
@@ -226,12 +226,6 @@ Telco Customer Churn       & 0.735 & 0.747 & $-0.013$ & SVM-RBF (marginal) \\
 \label{fig:qsvm_vs_svm_directo}
 \end{figure}
 
-\begin{figure}[ht]
-\centering
-\includegraphics[width=\textwidth]{../POCs/data/output/figures/01_clasificacion_escalabilidad.png}
-\caption{Escalabilidad de QSVM vs.\ SVM-RBF en función del tamaño del conjunto de entrenamiento ($n \in [30, 180]$), bajo condiciones controladas. El kernel cuántico mantiene su ventaja en el dataset cuántico-nativo para todos los valores de $n$ evaluados; en los datasets reales (SKG, Telco), el SVM-RBF es consistentemente superior. Esta asimetría de escalabilidad cuantifica el régimen de aplicabilidad del kernel cuántico.}
-\label{fig:clasificacion_escalabilidad}
-\end{figure}
 
 \paragraph{Interpretación.}
 El contraste directo revela un patrón coherente con la expectativa de \cite{liu2021} y \cite{huang2021} de que la ventaja depende de la alineación entre kernel y datos:

@@ -17,7 +17,7 @@ The opening markdown still describes a modular package (`DatasetLoader`, `src/mo
 The notebook really runs **three experiments**:
 
 1. **Telco Churn** (Kaggle) — sections 2–10. Quantum on a tiny PCA subset; classical on the full table. This is the *unfair* comparison you later corrected in §16.
-2. **Quantum-native synthetic** (Liu-style) — sections 11–12, 15. Labels come from the same circuit as the kernel. This is where QSVM is *supposed* to win.
+2. **Quantum-native synthetic** (Havlíček-style) — sections 11–12, 15. Labels come from the same circuit as the kernel. This is where QSVM is *supposed* to win.
 3. **SKG incidents** (practice data) — section 13. Same pattern as Telco: quantum on a subsample + PCA; classical on the full feature table.
 
 Section 16 is the important methodological fix: **same SVC, same C, same 2-D PCA, only the kernel changes** (ZZ vs RBF), on all three datasets.
@@ -136,7 +136,7 @@ For each random \(x \in [-\pi,\pi]^2\):
 
 Then QSVM uses **the same** `ZZFeatureMap` as the kernel. Classical SVM-RBF / poly / linear / GB see only the 2-D points, not the circuit.
 
-This is Liu 2021-style: advantage by **construction**. If QSVM did *not* win here, the kernel implementation would be suspect. If it *does* win, you have not shown that Telco or SKG should use QSVM. You have shown the kernel is working.
+This follows the Havlíček 2019 construction: advantage by **construction**. If QSVM did *not* win here, the kernel implementation would be suspect. If it *does* win, you have not shown that Telco or SKG should use QSVM. You have shown the kernel is working.
 
 Same train/test split (30%) for quantum and classical — this cell is **fair**.
 

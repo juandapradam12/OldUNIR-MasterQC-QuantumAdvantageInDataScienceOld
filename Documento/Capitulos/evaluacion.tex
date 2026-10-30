@@ -11,7 +11,7 @@ Este capítulo presenta el análisis cuantitativo y cualitativo de los resultado
 
 Los resultados sobre el dataset con estructura cuántica explícita constituyen la demostración empírica más sólida del estudio. El QSVM alcanzó una exactitud del \textbf{91.7\%}, frente al 53.3\% del mejor clasificador clásico (SVM polinomial de grado 3; SVM-RBF: 46.7\%, Gradient Boosting: 51.7\%, SVM lineal: 45.0\%), lo que supone una \textbf{ventaja de +38.3 puntos porcentuales (pp)}. Este resultado es el esperado por construcción, y coherente con la idea de \cite{liu2021} y \cite{huang2021} de que la ventaja exige un kernel alineado con las etiquetas: cuando estas se definen mediante una función cuántica, el kernel cuántico las aprende con alta precisión mientras que los clasificadores clásicos probados (RBF, polinomial, lineal y Gradient Boosting) quedan cerca del azar.
 
-El análisis de escalabilidad (Tabla~\ref{tab:escala_clasificacion}) revela que esta ventaja no es un artefacto estadístico de un tamaño de muestra particular, sino que es robusta y consistente en todo el rango $n \in [30, 180]$ evaluado, con una ventaja media de \textbf{+40.9 pp} y una máxima de \textbf{+48.9 pp} para $n=50$.
+El análisis de escalabilidad (Tabla~\ref{tab:escala_clasificacion}) muestra que esta ventaja no depende de un tamaño de muestra particular: es positiva en todo el rango $n \in [30, 180]$ evaluado, con una ventaja media de \textbf{+40.9 pp} y una máxima de \textbf{+48.9 pp} para $n=50$.
 
 \begin{table}[h]
 \centering
@@ -36,7 +36,7 @@ El análisis de escalabilidad (Tabla~\ref{tab:escala_clasificacion}) revela que 
 \begin{figure}[ht]
 \centering
 \includegraphics[width=0.92\textwidth]{../POCs/data/output/figures/01_escalabilidad_ventaja_clasificacion.png}
-\caption{Evolución de la exactitud de QSVM y del mejor clasificador clásico (SVM-RBF) en función del tamaño del conjunto de entrenamiento. Las barras grises (eje derecho) muestran la ventaja cuántica en puntos porcentuales, robusta en todo el rango $n \in [30, 180]$ con una media de $+40.9$ pp.}
+\caption{Escalabilidad de QSVM vs.\ SVM-RBF en el dataset cuántico-nativo según el tamaño del conjunto de entrenamiento ($n \in [30, 180]$; salida del Notebook~01). Izquierda: exactitud en test de ambos modelos. Derecha: ventaja del QSVM en puntos porcentuales, positiva en todos los tamaños evaluados (media $+40.9$~pp). Cada punto es una única partición, por lo que las diferencias entre tamaños no son estadísticamente concluyentes; los datasets reales (SKG, Telco) no se evaluaron en esta curva.}
 \label{fig:escala_clasificacion}
 \end{figure}
 
@@ -52,7 +52,7 @@ El mecanismo que explica esta ventaja es la \textbf{alineación} entre el featur
 \begin{figure}[ht]
 \centering
 \includegraphics[width=0.95\textwidth]{../POCs/data/output/figures/06_quantum_kernel_boundaries.png}
-\caption{Fronteras de decisión del QSVM (izquierda) frente al mejor clasificador clásico, SVM-RBF (derecha), sobre el dataset cuántico-nativo proyectado en 2D. El QSVM genera una frontera curvada de alta complejidad que separa correctamente las clases (exactitud 91.7\%); el SVM-RBF produce una frontera lineal-suave que no captura la geometría del espacio de Hilbert (53.3\%). Esta diferencia visual ilustra por qué la ventaja es estructural y no estadística.}
+\caption{Fronteras de decisión del QSVM (izquierda) frente al mejor clasificador clásico, SVM-RBF (derecha), sobre el dataset cuántico-nativo proyectado en 2D. El QSVM genera una frontera curvada y más compleja (exactitud 93.3\%); el SVM-RBF produce una frontera más suave (53.3\%) y el Gradient Boosting una frontera por rectángulos (73.3\%). El test tiene solo 15 puntos (cada acierto equivale a 6.7~pp) y la frontera del QSVM se estima sobre una malla de $12\times12$, por lo que la figura es ilustrativa y no una medida de rendimiento; la evidencia cuantitativa es la del Caso~1.}
 \label{fig:kernel_boundaries}
 \end{figure}
 
@@ -67,21 +67,37 @@ La pequeña brecha de rendimiento ($-$4.5 pp) sugiere que el QSVM no es inferior
 
 \subsection{Dataset Telco Churn: caso control validado}
 
-Sobre el dataset de referencia, el QSVM obtuvo un \textbf{76.0\%} de exactitud frente al \textbf{79.8\%} del Gradient Boosting: \textbf{desventaja de $-$3.8 pp}. El hecho de que incluso la Regresión Logística (78.2\%) supere al QSVM confirma que, en ausencia de estructura cuántica, los clasificadores clásicos son superiores independientemente de su complejidad.
+Sobre el dataset de referencia, el QSVM obtuvo un \textbf{76.0\%} de exactitud frente al \textbf{79.8\%} del Gradient Boosting: \textbf{desventaja de $-$3.8 pp}. Esta comparación del Notebook~01 es \textbf{asimétrica}, y conviene leerla como una cota optimista para el QSVM: los clasificadores clásicos usan las 21 variables, 5\,634 ejemplos de entrenamiento y los 1\,409 de test, mientras que el QSVM usa 4 componentes PCA (48.5\% de la varianza), 100 ejemplos de entrenamiento y solo 50 de test, de modo que cada acierto equivale a 2 pp. Por eso la cifra de $-3.8$~pp no es una medida homogénea de la brecha.
 
-Este resultado valida metodológicamente el diseño experimental: el QSVM no gana por default, sino solo cuando existe la alineación cuántica que la teoría predice.
+El protocolo justo de \texttt{qml\_v2} (Tabla~\ref{tab:clasif_justa}) corrige esa asimetría: mismas particiones, mismo número de ejemplos y, en la tabla~A, las mismas variables para todos los modelos, con 10 repeticiones. En Telco el QSVM queda en $53.3\pm9.3\%$ frente al $77.2\pm4.3\%$ de la regresión logística ($-23.8$~pp), y a $26.2$~pp del Gradient Boosting con todas las variables. Esto confirma, con mayor margen, que en ausencia de estructura cuántica los clasificadores clásicos son superiores: el QSVM no gana por defecto, sino solo cuando existe la alineación entre mapa y datos que la teoría sugiere.
+
+\begin{table}[ht]
+\centering
+\small
+\begin{tabular}{lcccccc}
+\toprule
+\textbf{Dataset} & \textbf{QSVM-ZZ} & \textbf{Mejor clásico (A)} & \textbf{$\Delta$ (A)} & \textbf{Mejor clásico (B)} & \textbf{$\Delta$ (B)} \\
+\midrule
+Cuántico-nativo & $88.8\pm5.8$ & Gradient Boosting $52.3\pm6.0$ & $+36.5$ & --- & --- \\
+SKG Incidentes & $49.5\pm7.0$ & Gradient Boosting $52.7\pm5.7$ & $-3.2$ & SVM lineal (7 var.) $56.2\pm5.3$ & $-6.7$ \\
+Telco Churn & $53.3\pm9.3$ & Regresión logística $77.2\pm4.3$ & $-23.8$ & Gradient Boosting (19 var.) $79.5\pm2.9$ & $-26.2$ \\
+\bottomrule
+\end{tabular}
+\caption{Protocolo justo de clasificación (\texttt{qml\_v2.classification}): exactitud en test (\%, media $\pm$ desviación sobre 10 repeticiones; 140 ejemplos de entrenamiento y 60 de test). A: todos los modelos con las mismas 2 variables que el QSVM. B: clásicos con todas las variables originales. $\Delta$ en puntos porcentuales respecto al QSVM. Fuente: \texttt{fair\_classification\_all.csv}.}
+\label{tab:clasif_justa}
+\end{table}
 
 \begin{figure}[!htbp]
 \centering
 \includegraphics[width=0.95\textwidth]{../POCs/data/output/figures/01_clasificacion_comparacion.png}
-\caption{Comparativa de todos los modelos evaluados en los tres datasets de clasificación. Para cada dataset se muestra la exactitud y el F1-macro del QSVM, SVM-RBF, Gradient Boosting y Regresión Logística. El QSVM solo supera al resto en el dataset cuántico-nativo; en datos reales (SKG, Telco) los métodos clásicos son superiores, validando el principio de alineación estructural.}
+\caption{Comparativa de los modelos evaluados en Telco Churn (Notebook~01): F1 ponderado, exactitud y tiempo de entrenamiento. Los modelos clásicos usan las 21 variables y la partición completa; el QSVM y el VQC, 4 componentes PCA y 100/50 ejemplos de entrenamiento/test (comparación asimétrica; véase la Tabla~\ref{tab:clasif_justa}).}
 \label{fig:clasificacion_comparacion}
 \end{figure}
 
 \begin{figure}[!htbp]
 \centering
 \includegraphics[width=\textwidth]{../POCs/data/output/figures/06_learning_curves_quantum_advantage.png}
-\caption{Curvas de aprendizaje del QSVM y del mejor clasificador clásico (SVM-RBF) en función del tamaño de entrenamiento $n \in [30, 180]$, para los tres datasets del Caso~1. La brecha de exactitud sobre el dataset cuántico-nativo es robusta en todo el rango evaluado y no converge a cero al aumentar $n$, lo que evidencia que la limitación es estructural ---no estadística--- para los clasificadores clásicos en ausencia del espacio de Hilbert correcto.}
+\caption{Curvas de aprendizaje del QSVM y del mejor clasificador clásico (SVM-RBF) en función del tamaño de entrenamiento $n \in [30, 180]$, sobre el dataset cuántico-nativo del Caso~1 (salida del Notebook~01, una partición por tamaño; izquierda: exactitud; derecha: ventaja en puntos porcentuales). La brecha es positiva en todo el rango evaluado y no se cierra al aumentar $n$; como cada punto procede de una única partición, las diferencias entre tamaños no son estadísticamente concluyentes.}
 \label{fig:learning_curves}
 \end{figure}
 
@@ -490,7 +506,7 @@ La Tabla~\ref{tab:sintesis} sintetiza los resultados principales del estudio com
 Los resultados evidencian tres patrones transversales que son coherentes con el estado actual de la teoría y la tecnología cuántica:
 
 \begin{enumerate}
-  \item \textbf{La ventaja cuántica requiere alineación dato--feature map}: La ventaja robusta en datos nativos es coherente con \cite{huang2021}: el feature map (ZZ u otro) debe estar alineado con el generador; ZZ es el mapa validado empíricamente en este TFM, no un monopolio. En datos reales sin esa alineación, Gradient Boosting y Random Forest mantienen su superioridad.
+  \item \textbf{La ventaja cuántica requiere alineación dato--feature map}: La ventaja observada en datos nativos es coherente con \cite{huang2021}: el feature map (ZZ u otro) debe estar alineado con el generador; ZZ es el mapa validado empíricamente en este TFM, no un monopolio. En datos reales sin esa alineación, Gradient Boosting y Random Forest mantienen su superioridad.
 
   \item \textbf{El cuello de botella es la escala}: En todos los casos, la principal limitación práctica del enfoque cuántico no es la calidad del algoritmo sino el coste cuadrático del kernel ($O(n^2)$) y el número de qubits disponibles \citep{haug2023, cerezo2021}. Esta limitación es una función del hardware actual, no del algoritmo en sí.
 
@@ -505,5 +521,5 @@ El hilo conductor de los nueve casos de uso es precisamente la demostración de 
 
 \subsection{Resultados adicionales y visualización}
 
-El análisis de escalabilidad del caso~1 se sintetiza en la Figura~\ref{fig:escala_clasificacion}: ventaja robusta en $n \in [30, 180]$ \textbf{solo} en el régimen cuántico-nativo. La geometría de kernel se reporta vía los indicadores tabulares del Capítulo~\ref{cap:investigacion_original} ($\Delta A$, $d_F$, $\Delta H$); no se usan heatmaps regenerados a posteriori (las matrices $K$ no se exportaron a artefactos). $\mathcal{Q}>0$ vs.\ un baseline débil no basta como veredicto operativo.
+El análisis de escalabilidad del caso~1 se sintetiza en la Figura~\ref{fig:escala_clasificacion}: ventaja positiva en $n \in [30, 180]$ \textbf{solo} en el régimen cuántico-nativo (una partición por tamaño). La geometría de kernel se reporta vía los indicadores tabulares del Capítulo~\ref{cap:investigacion_original} ($\Delta A$, $d_F$, $\Delta H$); no se usan heatmaps regenerados a posteriori (las matrices $K$ no se exportaron a artefactos). $\mathcal{Q}>0$ vs.\ un baseline débil no basta como veredicto operativo.
 

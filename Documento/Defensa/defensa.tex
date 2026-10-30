@@ -352,7 +352,7 @@ pipeline clásico \\
 \toprule
 \textbf{Familia} & \textbf{Nativo} & \textbf{SKG} & \textbf{Referencia} \\
 \midrule
-1. Clasificación (QSVM) & Liu ZZ & Incidentes Bogotá & Telco Churn \\
+1. Clasificación (QSVM) & ZZ sintético & Incidentes Bogotá & Telco Churn \\
 2. Regresión (QK-SVR) & target alineado & Movilidad Bogotá & Friedman \#1 \\
 3. Anomalías (OCSVM-ZZ) & \texttt{zz\_phase} & outliers inyectados & moons \\
 4. Optimización (QAOA) & asignación QUBO & cobertura MDS & TSP $n{=}4$ \\
@@ -377,7 +377,7 @@ Sin formalismo, sin ejemplos narrativos, sin algoritmos fuera del TFM.
 \begin{itemize}
   \item \textbf{Nativo:} gana Q\\{\footnotesize(+8.9\,pp)}
   \item \textbf{SKG:} gana C\\{\footnotesize($-4.0$\,pp)}
-  \item \textbf{Telco:} gana C\\{\footnotesize($-3.8$\,pp vs GB)}
+  \item \textbf{Telco:} gana C\\{\footnotesize($-3.8$\,pp vs GB; $-23.8$\,pp en protocolo justo)}
 \end{itemize}
 \end{block}
 {\footnotesize Baseline = mejor clásico.
@@ -455,7 +455,6 @@ empate óptimo &
 NN+2-opt (gap $0$) \\
 \bottomrule
 \end{tabular}}
-\vspace{0.4em}
 \begin{block}{Q vs C (misma pregunta)}
 \begin{itemize}
   \item \textbf{Asignación y portafolio:} sin ventaja; el QAOA iguala al exacto y el VQE no lo alcanza.
