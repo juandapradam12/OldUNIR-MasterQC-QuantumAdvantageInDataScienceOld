@@ -15,6 +15,7 @@ Deben coincidir con la salida impresa de los notebooks (no con valores
 | `07_sintesis_resultados.csv` | `scripts/sintesis_resultados.py`: consolida los nueve casos leyendo solo CSV/JSON ejecutados; es la única fuente del panel y del mapa de calor de síntesis |
 | `01_clasificacion_*.csv`, `03_regresion_*.csv`, `04_portafolio_resultados.csv`, `06_*.csv` | Notebooks 01, 03, 04 y 06 reejecutados de principio a fin (Qiskit 2.6.1, kernel exacto) |
 | `qml_v2_*_summary.csv`, `fair_*.csv` | Módulos `python -m qml_v2.<módulo>` (semillas y repeticiones en los `*_config.json`) |
+| `fair_scalability_native*.csv` | `python -m qml_v2.scalability` (6 tamaños × 10 repeticiones; kernel de fidelidad exacto verificado contra `FidelityQuantumKernel`) |
 | `10_mds_qaoa_*` | `python -m qml_v2.mds_qaoa` (simulador exacto verificado contra Qiskit) |
 | `estructura_por_caso_uso.csv` | Script `medir_estructura_por_caso.py`: ΔA, ΔH, d_F, g (+control nulo de ΔA) en clasif./reg./anomalías/optimización (paisaje QUBO); lógica en `qml_v2/estructura_casos.py`; notebook 11 |
 
@@ -26,3 +27,5 @@ Reglas:
 5. Series de rotación: solo PNG exportada por NB09; no curvas proxy.
 6. Los scripts de figuras (`generar_figuras_*.py`) leen estos CSV y fallan si falta alguno; no contienen valores de respaldo. Las únicas figuras no empíricas son las teóricas del Capítulo 5 (complejidad, conteo de Grover, superposición), rotuladas como tales.
 7. Los muestreadores con *shots* deben llevar semilla; los kernels de los Notebooks 01, 03 y 06 usan la fidelidad exacta.
+8. `scripts/verificar_cifras_tesis.py` comprueba que las cifras de los capítulos coinciden con estos CSV; debe terminar sin faltas antes de compilar.
+9. El notebook 07 no contiene valores propios: ejecuta la síntesis y el panel a partir de los CSV de los demás casos.

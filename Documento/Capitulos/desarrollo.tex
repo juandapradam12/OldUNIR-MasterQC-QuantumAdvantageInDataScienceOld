@@ -261,14 +261,14 @@ El kernel cuántico de fidelidad es, por construcción, el estimador natural de 
 
 \paragraph{Procedimiento experimental.}
 \begin{enumerate}
-  \item \textbf{Generación}: 200 muestras $x_i \in [0,2\pi]^2$ con $y_i=\langle ZZ\rangle$ calculado con \texttt{Statevector}; las entradas se reescalan a $[0,\pi]$ y se divide 140/60 (entrenamiento/test, semilla 42).
+  \item \textbf{Generación}: 200 muestras $x_i \in [-\pi,\pi]^2$ con $y_i=\langle ZZ\rangle$ calculado con \texttt{Statevector}; las entradas que recibe el kernel son exactamente aquellas con las que se calculó la etiqueta, y se divide 140/60 (entrenamiento/test, semilla 42).
   \item \textbf{Construcción del kernel}: \texttt{ZZFeatureMap} (2 qubits, \texttt{reps=2}, entrelazamiento completo) y \texttt{FidelityQuantumKernel}.
-  \item \textbf{Entrenamiento}: \texttt{SVR(kernel=``precomputed'', C=1.0, epsilon=0.02)} con el kernel cuántico; los clásicos (Ridge, Random Forest, SVR-RBF y SVR-Poly) se entrenan sobre las mismas entradas.
+  \item \textbf{Entrenamiento}: \texttt{SVR(kernel=``precomputed'', C=10.0, epsilon=0.1)} con el kernel cuántico; los clásicos (Ridge, Random Forest, SVR-RBF y SVR-Poly) se entrenan sobre las mismas entradas.
   \item \textbf{Evaluación}: $R^2$ y RMSE sobre el conjunto de test.
 \end{enumerate}
 
-\paragraph{Resultados preliminares.}
-El QK-SVR obtuvo $R^2 = 0.102$ frente a $R^2 = 0.009$ del mejor clásico (SVR-Poly): $\Delta R^2 = +0.093$. La diferencia favorece al kernel cuántico, pero ambos valores absolutos son bajos.
+\paragraph{Resultados.}
+El QK-SVR obtuvo $R^2 = 0.985$ frente a $R^2 = 0.020$ del mejor clásico (SVR-Poly): $\Delta R^2 = +0.965$. Los clásicos no superan el nivel de una predicción constante, mientras que el kernel cuántico reproduce la función porque esta es, por construcción, lineal en su espacio de características.
 
 \paragraph{Ventajas identificadas.}
 \begin{itemize}
@@ -278,8 +278,8 @@ El QK-SVR obtuvo $R^2 = 0.102$ frente a $R^2 = 0.009$ del mejor clásico (SVR-Po
 
 \paragraph{Limitaciones identificadas.}
 \begin{itemize}
-  \item Con $C=1$ y $\varepsilon=0.02$ el QK-SVR explica solo el 10\% de la varianza de una función que su propio kernel representa de forma natural; no se exploraron otros hiperparámetros.
-  \item Una sola partición de 60 puntos de test no permite estimar la incertidumbre de la diferencia $\Delta R^2=+0.093$.
+  \item No se exploraron otros hiperparámetros; los clásicos podrían mejorar con una búsqueda sobre $C$ y $\varepsilon$.
+  \item Una sola partición de 60 puntos de test no permite estimar la incertidumbre de la diferencia; el protocolo justo (10 repeticiones) la acota: $\Delta R^2=+1.002$ con desviación $0.002$ del QK-SVR.
 \end{itemize}
 
 % ---

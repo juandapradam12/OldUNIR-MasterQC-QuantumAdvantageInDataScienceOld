@@ -396,7 +396,7 @@ También: Q más lento ($1/t\approx 0$).}
 \begin{column}{0.30\textwidth}
 \begin{block}{Q vs C}
 \begin{itemize}
-  \item \textbf{Nativo:} gana Q (marginal)\\{\footnotesize($\Delta R^2{=}{+}0.093$; $R^2$ de $0.102$ vs $0.009$)}
+  \item \textbf{Nativo:} gana Q (por construcción)\\{\footnotesize($\Delta R^2{=}{+}0.965$; $R^2$ de $0.985$ vs $0.020$)}
   \item \textbf{SKG:} gana C\\{\footnotesize($\Delta R^2{=}{-}0.562$)}
   \item \textbf{Friedman:} gana C\\{\footnotesize($\Delta R^2{=}{-}0.928$)}
 \end{itemize}
@@ -443,7 +443,7 @@ QAOA = óptimo exacto (5/5); sin ventaja &
 Hungarian / PuLP \\
 Sintético &
 MDS (cobertura) &
-6 nodos: óptimo (= ILP); ER $n{=}6$--$15$: MDS óptimo 2/5 &
+6 nodos: óptimo; ER $n{=}6$--$15$: MDS óptimo 2/5 &
 ILP / Greedy: 5/5 \\
 Referencia &
 Portafolio (3 de 6) &
@@ -833,7 +833,7 @@ Prototipos (NB~09): sin ventaja frente al cl\'asico fuerte. Sin demostraci\'on.}
         (ZZ medido aquí; Pauli-Y confirma el mismo principio).
   \item En \textbf{datos reales} SKG/Telco \textbf{sin} esa estructura: gana el \textbf{clásico}
         (no son cuántico-nativos).
-  \item Regresión: ventaja marginal solo en el dataset nativo ($\Delta R^2{=}{+}0.093$); en Friedman y en movilidad SKG, el clásico domina.
+  \item Regresión: ventaja solo en el dataset nativo, por construcción ($\Delta R^2{=}{+}0.965$); en Friedman y en movilidad SKG, el clásico domina.
   \item Anomalías / lags: misma regla --- solo con target alineado
         (\texttt{zz\_phase}, \texttt{zz\_lag}).
 \end{enumerate}

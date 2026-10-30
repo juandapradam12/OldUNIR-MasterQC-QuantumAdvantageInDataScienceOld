@@ -50,7 +50,7 @@ Building on these observations, the thesis advances two research proposals. Firs
 | Case | Problem family | Quantum method | Principal finding |
 |:---:|---|---|---|
 | 1 | Classification | Quantum kernel SVM | Large gains under map-aligned data; classical superior otherwise |
-| 2 | Regression | Quantum-kernel SVR | Marginal edge only on the native dataset (ΔR² = +0.093); classical methods win on SKG and Friedman #1 |
+| 2 | Regression | Quantum-kernel SVR | Edge only on the native dataset, by construction (ΔR² = +0.965; +1.002 in the fair 10-repeat protocol); classical methods win on SKG and Friedman #1 |
 | 3 | Combinatorial optimization (assignment) | Hybrid QAOA | Matches the exact optimum on 5/5 instances (same cost as Hungarian and ILP); no advantage |
 | 4 | Combinatorial optimization (portfolio) | Hybrid VQE | Does not reach the exact optimum on 3 of 6 assets (+34.0% cost gap); no advantage |
 | 5 | Combinatorial optimization (TSP) | Hybrid QAOA | Optimal parity with NN+2-opt — modeling value, not asymptotic speedup |

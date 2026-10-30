@@ -105,7 +105,7 @@ Telco Churn & $53.3\pm9.3$ & Reg. logística $77.2\pm4.3$ & $-23.8$ & GB (19 var
 \section{Caso de uso 2: Regresión con kernel cuántico}
 % =====================================================================
 
-Los resultados de regresión son mayoritariamente negativos para el kernel cuántico: solo el dataset construido con el propio mapa de características muestra una diferencia a su favor, y esa diferencia es pequeña en términos absolutos. La Tabla~\ref{tab:regresion_3ds} resume los resultados.
+Los resultados de regresión son mayoritariamente negativos para el kernel cuántico: solo el dataset construido con el propio mapa de características muestra una diferencia a su favor, que es por construcción. La Tabla~\ref{tab:regresion_3ds} resume los resultados del Notebook~03 (una partición) y la Tabla~\ref{tab:regresion_justa}, los del protocolo justo de \texttt{qml\_v2} (10 repeticiones, mismas particiones y variables).
 
 \begin{table}[h]
 \centering
@@ -113,7 +113,7 @@ Los resultados de regresión son mayoritariamente negativos para el kernel cuán
 \hline
 \textbf{Dataset} & \textbf{QK-SVR ($R^2$)} & \textbf{Mejor clásico ($R^2$)} & \textbf{$\Delta R^2$} & \textbf{Resultado} \\
 \hline
-Cuántico-nativo  & $+0.102$  & $+0.009$ (SVR-Poly)  & $\mathbf{+0.093}$ & \textbf{Ventaja (marginal)} \\
+Cuántico-nativo  & $+0.985$  & $+0.020$ (SVR-Poly)  & $\mathbf{+0.965}$ & \textbf{Ventaja (por construcción)} \\
 SKG Corredores   & $+0.098$  & $+0.660$ (GradBoost) & $-0.562$ & Desventaja \\
 Friedman \#1     & $-0.151$  & $+0.777$ (XGBoost)   & $-0.928$ & Desventaja \\
 \hline
@@ -122,14 +122,14 @@ Friedman \#1     & $-0.151$  & $+0.777$ (XGBoost)   & $-0.928$ & Desventaja \\
 \label{tab:regresion_3ds}
 \end{table}
 
-\subsection{Dataset cuántico-nativo: ventaja pequeña en términos absolutos}
+\subsection{Dataset cuántico-nativo: ventaja por construcción}
 
-El dataset cuántico-nativo de regresión se genera con $y(\mathbf{x})=\langle ZZ\rangle$ evaluado sobre el estado preparado por el propio \texttt{ZZFeatureMap} (2 qubits, 200 muestras). El QK-SVR obtuvo $R^2=0.102$ frente a $R^2=0.009$ del mejor clásico (SVR-Poly), una diferencia de $\Delta R^2=+0.093$. La dirección es la esperada cuando el generador coincide con el mapa, pero el valor absoluto es bajo: el modelo explica solo el 10\% de la varianza de una función que es, por construcción, lineal en el espacio de características cuántico. Con esta configuración ($C=1$, $\varepsilon=0.02$, sin búsqueda de hiperparámetros) el resultado no permite afirmar que el kernel cuántico regrese bien su propio generador; solo que supera a unos clásicos que tampoco lo aprenden.
+El dataset cuántico-nativo de regresión se genera con $y(\mathbf{x})=\langle ZZ\rangle$ evaluado sobre el estado preparado por el propio \texttt{ZZFeatureMap} (2 qubits, 200 muestras, $\mathbf{x}\in[-\pi,\pi]^2$). El QK-SVR obtuvo $R^2=0.985$ frente a $R^2=0.020$ del mejor clásico (SVR-Poly), una diferencia de $\Delta R^2=+0.965$: el kernel cuántico reproduce casi exactamente la función objetivo porque esta es lineal en su espacio de características, mientras que ninguno de los modelos clásicos supera el nivel de una predicción constante ($R^2\approx0$). El protocolo justo confirma el resultado con 10 repeticiones ($R^2=0.986\pm0.002$ frente a $-0.016\pm0.139$ de Random Forest; $\Delta R^2=+1.002$). Como en clasificación, esta ventaja es \textbf{por construcción}: el objetivo se genera con el mismo mapa que usa el kernel, y no demuestra ventaja sobre datos reales.
 
 \paragraph{Limitaciones.}
 \begin{itemize}
-  \item Los hiperparámetros del SVR no se optimizaron para este rango de objetivo; una búsqueda sobre $C$ y $\varepsilon$ podría modificar tanto el $R^2$ cuántico como el clásico.
-  \item Con 140 muestras de entrenamiento y una única partición, la diferencia de $0.093$ no tiene intervalo de confianza asociado.
+  \item Los hiperparámetros no se optimizaron para este rango de objetivo. En el Notebook~03 el QK-SVR usa $C=10$, $\varepsilon=0.1$ y los SVR clásicos sus valores por defecto ($C=1$); en el protocolo justo todos los SVR usan $C=10$, $\varepsilon=0.1$. Una búsqueda sobre $C$ y $\varepsilon$ podría modificar el $R^2$ de los clásicos.
+  \item El Notebook~03 usa una única partición (140 entrenamientos, 60 de test) y no ofrece intervalo de confianza; la repetición del protocolo justo sí lo hace (desviación $0.002$ del QK-SVR).
 \end{itemize}
 
 \subsection{Dataset SKG Tecnología: limitaciones estructurales}
@@ -146,10 +146,32 @@ El QK-SVR obtuvo $R^2 = 0.098$ (RMSE = 11.04 km/h) frente al $R^2 = 0.660$ del G
 
 Sobre el benchmark sintético Friedman~\#1 \citep{friedman1991}, con $y=10\sin(\pi x_1x_2)+20(x_3-0.5)^2+10x_4+5x_5+\varepsilon$, el QK-SVR obtuvo $R^2=-0.151$ frente a $R^2=0.777$ de XGBoost (también superan al kernel cuántico la regresión lineal, $0.641$, y Random Forest, $0.704$): $\Delta R^2=-0.928$. Aunque el término $\sin(\pi x_1x_2)$ recuerda a la interacción $x_ix_j$ codificada por las puertas $ZZ$, el kernel cuántico con dos o cinco componentes no lo aprovecha. Friedman~\#1 no es un problema de ventaja cuántica: es una referencia clásica en la que los métodos de árboles dominan.
 
+\subsection{Protocolo justo de regresión}
+
+Como en el Caso~1, las comparaciones SKG y Friedman del Notebook~03 son asimétricas (el QK-SVR usa 150 ejemplos y 2 componentes PCA; los clásicos, todo el conjunto y todas las variables). El protocolo \texttt{qml\_v2.regression} las homogeneiza (Tabla~\ref{tab:regresion_justa}): mismas particiones (140/60), 10 repeticiones y, en la tabla~A, las mismas variables para todos los modelos. El patrón se mantiene y se acentúa: el QK-SVR gana solo en el dataset nativo ($\Delta R^2=+1.002$) y pierde en SKG ($-0.150$ frente a Ridge con las mismas 2 variables; $-0.227$ frente a SVR-RBF con las 3 originales) y en Friedman~\#1 ($-0.657$ con 2 componentes; $-1.069$ con las 5 variables y 5 qubits). En SKG ningún modelo supera $R^2=0.11$ con estos 140 ejemplos, por lo que la brecha es pequeña en términos absolutos; los valores del Notebook~03 en SKG ($0.098$ frente a $0.660$) reflejan sobre todo la diferencia de datos de entrenamiento, no una limitación del kernel por sí sola.
+
+\begin{table}[ht]
+\centering
+\footnotesize
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{lccccc}
+\toprule
+\textbf{Dataset} & \textbf{QK-SVR} & \textbf{Mejor clásico (A)} & \textbf{$\Delta R^2$ (A)} & \textbf{Mejor clásico (B)} & \textbf{$\Delta R^2$ (B)} \\
+\midrule
+Cuántico-nativo & $0.986\pm0.002$ & RF $-0.016\pm0.139$ & $+1.002$ & --- & --- \\
+SKG Corredores & $-0.118\pm0.081$ & Ridge $0.032\pm0.079$ & $-0.150$ & SVR-RBF $0.109\pm0.120$ & $-0.227$ \\
+Friedman \#1 (2 comp.) & $-0.098\pm0.096$ & Ridge $0.559\pm0.122$ & $-0.657$ & SVR-RBF $0.903\pm0.009$ & $-1.001$ \\
+Friedman \#1 (5 qubits) & $-0.181\pm0.111$ & SVR-RBF $0.889\pm0.013$ & $-1.069$ & SVR-RBF $0.890\pm0.012$ & $-1.071$ \\
+\bottomrule
+\end{tabular}
+\caption{Protocolo justo de regresión (\texttt{qml\_v2.regression}); $R^2$ en test (media $\pm$ desviación sobre 10 repeticiones; 140 ejemplos de entrenamiento y 60 de test; $C=10$, $\varepsilon=0.1$ en todos los SVR). A: todos los modelos con las mismas variables que el QK-SVR. B: clásicos con todas las variables originales (3 en SKG, 5 en Friedman). RF = Random Forest. Fuente: \texttt{qml\_v2\_regression\_all.csv}.}
+\label{tab:regresion_justa}
+\end{table}
+
 \begin{figure}[!htbp]
 \centering
 \includegraphics[width=0.96\textwidth]{../POCs/data/output/figures/03_regresion_3datasets.png}
-\caption{Comparativa de regresión cuántica (QK-SVR) vs.\ clásica en los tres datasets del TFM. Panel izquierdo: $R^2$ absoluto por modelo. Panel derecho: ventaja neta $\Delta R^2$. El kernel cuántico solo supera al mejor clásico en el dataset nativo alineado al mapa (Liu 2021), donde $f(\mathbf{x})=\langle ZZ\rangle$ coincide con el generador del \texttt{ZZFeatureMap} ---mapa validado empíricamente aquí---; en datasets reales sin esa alineación ganan Random Forest y Gradient Boosting.}
+\caption{Comparativa de regresión cuántica (QK-SVR) vs.\ clásica en los tres datasets del TFM. Panel izquierdo: $R^2$ absoluto por modelo. Panel derecho: ventaja neta $\Delta R^2$. El kernel cuántico solo supera al mejor clásico en el dataset nativo alineado al mapa, donde $f(\mathbf{x})=\langle ZZ\rangle$ coincide con el generador del \texttt{ZZFeatureMap} ---mapa validado empíricamente aquí---; en datasets reales sin esa alineación ganan Random Forest y Gradient Boosting.}
 \label{fig:regresion_3datasets}
 \end{figure}
 
@@ -365,7 +387,7 @@ La Tabla~\ref{tab:sintesis} sintetiza los resultados principales del estudio com
 \textbf{CU} & \textbf{Algoritmo cuántico} & \textbf{Dataset cuántico-nativo} & \textbf{Dataset SKG} & \textbf{Dataset referencia} \\
 \hline
 1 & QSVM & \textbf{+38.3 pp} & $-$4.5 pp & $-$3.8 pp \\
-2 & QK-SVR & \textbf{$+0.093\,\Delta R^2$} (marginal) & $-0.562\,\Delta R^2$ & $-0.928\,\Delta R^2$ \\
+2 & QK-SVR & \textbf{$+0.965\,\Delta R^2$} & $-0.562\,\Delta R^2$ & $-0.928\,\Delta R^2$ \\
 3 & QAOA ($p=1$) & \multicolumn{3}{c}{Iguala al óptimo exacto en 5/5 instancias; sin ventaja (coste idéntico)} \\
 4 & VQE/QAOA & \multicolumn{3}{c}{VQE no alcanza el óptimo (brecha $+34.0\%$ en coste); QAOA infactible} \\
 5 & QAOA TSP & \multicolumn{2}{c}{empate óptimo vs NN+2-opt ($n=4$)} & Euclidean gap~$0$ \\
@@ -375,7 +397,7 @@ La Tabla~\ref{tab:sintesis} sintetiza los resultados principales del estudio com
 9 & QK-SVR lags & \textbf{+86.6\% MAE} (\texttt{zz\_lag}) & $-325.2\%$ (\texttt{skg\_speed}) & $-154.9\%$ (\texttt{sine}) \\
 \hline
 \end{tabular}
-\caption{Síntesis cuántico vs clásico, generada por \texttt{scripts/sintesis\_resultados.py} a partir de las salidas ejecutadas. Positivo = favorece al método cuántico; unidades: pp de exactitud (CU1, CU6), $\Delta R^2$ (CU2), pp de AUC (CU8) y mejora relativa del MAE (CU9). Negrita = ventaja sobre el mejor clásico. En kernels, la ventaja aparece \textbf{solo} en el régimen cuántico-nativo (Liu); en SKG y Telco gana GB/RF (Telco $-3.8$~pp frente a Gradient Boosting). Los Casos~1, 2 y~6 usan una sola partición con 45--60 puntos de test (granularidad de $\pm2.2$~pp).}
+\caption{Síntesis cuántico vs clásico, generada por \texttt{scripts/sintesis\_resultados.py} a partir de las salidas ejecutadas. Positivo = favorece al método cuántico; unidades: pp de exactitud (CU1, CU6), $\Delta R^2$ (CU2), pp de AUC (CU8) y mejora relativa del MAE (CU9). Negrita = ventaja sobre el mejor clásico. En kernels, la ventaja aparece \textbf{solo} en el régimen cuántico-nativo (datos generados por el propio mapa); en SKG y Telco gana GB/RF (Telco $-3.8$~pp frente a Gradient Boosting). Los Casos~1, 2 y~6 usan una sola partición con 45--60 puntos de test (granularidad de $\pm2.2$~pp).}
 \label{tab:sintesis}
 \end{table}
 
