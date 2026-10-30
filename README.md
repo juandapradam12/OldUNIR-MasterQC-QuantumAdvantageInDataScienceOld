@@ -41,7 +41,7 @@ Building on these observations, the thesis advances two research proposals. Firs
 | Quantumness score $\mathcal{Q}(D)$ (and robust $\mathcal{Q}_{\mathrm{rob}}$) | Diagnostic score estimating whether a dataset’s geometry favors a quantum kernel before expensive experiments | Empirically evaluated (e.g. Spearman $\rho_S = 0.833$, $p = 0.005$, $n = 9$ on the synthetic sweep) |
 | QCR Framework | Formal protocol and open conjecture on remapping classical data to raise $\mathcal{Q}$ (quantum-compatible remappings) | **Formally posed** with preliminary evidence — strong validation left as a research line |
 
-**Core finding.** Advantage is **real but conditional**. It appears when the **feature map is aligned with how the data were generated**, or when the problem is combinatorial / QUBO and the hybrid design is sound. Without that alignment, classical methods typically dominate. Practical conclusion: treat quantum methods as an *additional, selective* tool inside a **hybrid** stack, activated after alignment / $\mathcal{Q}$ diagnosis or when a QUBO formulation is viable.
+**Core finding.** Advantage is **real but conditional**. It appears when the **feature map is aligned with how the data were generated**. Without that alignment, classical methods typically dominate. In combinatorial optimization (cases 3–5, 7) QAOA/VQE are valid solvers of the QUBO model but show **no advantage** over exact classical solvers at the sizes simulated here. Practical conclusion: treat quantum methods as an *additional, selective* tool inside a **hybrid** stack, activated after alignment / $\mathcal{Q}$ diagnosis.
 
 ---
 
@@ -50,12 +50,12 @@ Building on these observations, the thesis advances two research proposals. Firs
 | Case | Problem family | Quantum method | Principal finding |
 |:---:|---|---|---|
 | 1 | Classification | Quantum kernel SVM | Large gains under map-aligned data; classical superior otherwise |
-| 2 | Regression | Quantum-kernel SVR | Classical methods preferred on typical operational regression |
-| 3 | Combinatorial optimization (assignment) | Hybrid QAOA | −30.3% cost relative to greedy under a matched protocol |
-| 4 | Combinatorial optimization (portfolio) | Hybrid VQE | Near-parity / modest improvement at small instance sizes |
+| 2 | Regression | Quantum-kernel SVR | Marginal edge only on the native dataset (ΔR² = +0.093); classical methods win on SKG and Friedman #1 |
+| 3 | Combinatorial optimization (assignment) | Hybrid QAOA | Matches the exact optimum on 5/5 instances (same cost as Hungarian and ILP); no advantage |
+| 4 | Combinatorial optimization (portfolio) | Hybrid VQE | Does not reach the exact optimum on 3 of 6 assets (+34.0% cost gap); no advantage |
 | 5 | Combinatorial optimization (TSP) | Hybrid QAOA | Optimal parity with NN+2-opt — modeling value, not asymptotic speedup |
 | 6 | Classification (threshold setting) | Quantum kernel SVM | Advantage contingent on native structure |
-| 7 | Combinatorial optimization (dominating set) | Hybrid QAOA | End-to-end hybrid pattern on an NP-hard coverage problem |
+| 7 | Combinatorial optimization (dominating set) | Hybrid QAOA | Optimum recovered by sampling, but mean probability of measuring it is only 5.7% (p = 3); no classical comparator |
 | 8 | Clustering-related (one-class anomalies) | OCSVM with ZZ kernel | Advantage only when novelty is map-aligned |
 | 9 | Forecasting (lag windows) | Quantum-kernel SVR | Advantage only when the target is map-aligned |
 

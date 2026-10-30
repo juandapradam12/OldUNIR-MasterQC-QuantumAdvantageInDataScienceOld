@@ -375,8 +375,8 @@ Sin formalismo, sin ejemplos narrativos, sin algoritmos fuera del TFM.
 \begin{column}{0.30\textwidth}
 \begin{block}{Q vs C}
 \begin{itemize}
-  \item \textbf{Nativo:} gana Q\\{\footnotesize(+13.3\,pp)}
-  \item \textbf{SKG:} gana C\\{\footnotesize($-6.0$\,pp)}
+  \item \textbf{Nativo:} gana Q\\{\footnotesize(+8.9\,pp)}
+  \item \textbf{SKG:} gana C\\{\footnotesize($-4.0$\,pp)}
   \item \textbf{Telco:} gana C\\{\footnotesize($-3.8$\,pp vs GB)}
 \end{itemize}
 \end{block}
@@ -396,9 +396,9 @@ También: Q más lento ($1/t\approx 0$).}
 \begin{column}{0.30\textwidth}
 \begin{block}{Q vs C}
 \begin{itemize}
-  \item \textbf{Nativo:} gana Q\\{\footnotesize($\Delta R^2{=}{+}0.60$)}
-  \item \textbf{Friedman:} gana C\\{\footnotesize($\Delta R^2{=}{-}0.13$)}
-  \item \textbf{SKG:} gana C\\{\footnotesize($\Delta R^2{=}{-}0.34$)}
+  \item \textbf{Nativo:} gana Q (marginal)\\{\footnotesize($\Delta R^2{=}{+}0.093$; $R^2$ de $0.102$ vs $0.009$)}
+  \item \textbf{SKG:} gana C\\{\footnotesize($\Delta R^2{=}{-}0.562$)}
+  \item \textbf{Friedman:} gana C\\{\footnotesize($\Delta R^2{=}{-}0.928$)}
 \end{itemize}
 \end{block}
 {\footnotesize Misma lectura que clasificación:
@@ -437,14 +437,18 @@ ventaja solo con novedad alineada al mapa.}
 \toprule
 \textbf{Capa} & \textbf{Problema} & \textbf{Cuántico} & \textbf{Clásico} \\
 \midrule
-Nativo / control &
+Sintético &
 Asignación QUBO &
-\textbf{QAOA $-$30.3\% coste} &
-Greedy \\
-SKG-like &
+QAOA = óptimo exacto (5/5); sin ventaja &
+Hungarian / PuLP \\
+Sintético &
 MDS (cobertura) &
-\textbf{óptimo por selección; $P{=}68.8\%$ (mejor reinicio)} &
+óptimo por selección; $P{=}68.8\%$ (mejor reinicio) &
 fuerza bruta / Greedy \\
+Referencia &
+Portafolio (3 de 6) &
+VQE no alcanza el óptimo (brecha $+34.0\%$) &
+fuerza bruta \\
 Referencia &
 TSP $n{=}4$ &
 empate óptimo &
@@ -454,7 +458,7 @@ NN+2-opt (gap $0$) \\
 \vspace{0.4em}
 \begin{block}{Q vs C (misma pregunta)}
 \begin{itemize}
-  \item \textbf{Asignación:} gana Q en coste a escala moderada.
+  \item \textbf{Asignación y portafolio:} sin ventaja; el QAOA iguala al exacto y el VQE no lo alcanza.
   \item \textbf{MDS:} Q recupera el óptimo por muestreo y selección; $P(\mathrm{opt})$ media $5.7\%$ ($p{=}3$, 20 reinicios).
   \item \textbf{TSP:} empate en calidad; \textbf{no} hay speedup --- modelado QUBO.
 \end{itemize}
@@ -475,13 +479,13 @@ La estructura del paisaje QUBO se mide aparte (P1, notebook~11).}
 Clasificación & \textbf{gana Q} & gana C & gana C \\
 Regresión & \textbf{gana Q} & gana C & gana C \\
 Anomalías & \textbf{gana Q} & gana C & gana C \\
-Optimización & \textbf{gana Q} (coste) & \textbf{viable} (óptimo) & empate \\
+Optimización & \multicolumn{3}{c}{sin ventaja: QAOA empata con el exacto; VQE no lo alcanza} \\
 \bottomrule
 \end{tabular}}
 \vspace{0.8em}
 \begin{block}{Mensaje único}
 Ventaja cuántica \textbf{condicionada}: aparece con alineación mapa--generador
-(o QUBO viable). En datos reales SKG/Telco sin esa estructura: pipeline clásico.
+(en optimización, QUBO viable sin ventaja medida). En datos reales SKG/Telco sin esa estructura: pipeline clásico.
 \end{block}
 \end{frame}
 
@@ -831,7 +835,7 @@ Prototipos (NB~09): sin ventaja frente al cl\'asico fuerte. Sin demostraci\'on.}
         (ZZ medido aquí; Pauli-Y confirma el mismo principio).
   \item En \textbf{datos reales} SKG/Telco \textbf{sin} esa estructura: gana el \textbf{clásico}
         (no son cuántico-nativos).
-  \item Regresión: ventaja acotada (Friedman); en movilidad SKG, el clásico domina.
+  \item Regresión: ventaja marginal solo en el dataset nativo ($\Delta R^2{=}{+}0.093$); en Friedman y en movilidad SKG, el clásico domina.
   \item Anomalías / lags: misma regla --- solo con target alineado
         (\texttt{zz\_phase}, \texttt{zz\_lag}).
 \end{enumerate}
@@ -840,9 +844,8 @@ Prototipos (NB~09): sin ventaja frente al cl\'asico fuerte. Sin demostraci\'on.}
 \begin{frame}{Conclusiones (II) --- híbridos y coste}
 \begin{enumerate}
   \setcounter{enumi}{5}
-  \item QAOA reduce coste de asignación $\approx 30\%$ vs.\ Greedy a escala moderada.
-  \item VQE competitivo en portafolio pequeño; TSP $n{=}4$: empate óptimo
-        (valor de \emph{modelado}, no speedup).
+  \item Optimización: QAOA iguala al óptimo exacto en asignación (5/5) y empata en TSP $n{=}4$
+        (valor de \emph{modelado}, no speedup); VQE no alcanza el óptimo del portafolio.
   \item MDS: óptimo recuperado por selección; $P(\mathrm{opt})$ del mejor reinicio $68.8\%$, media $5.7\%$.
   \item Coste de simulación del kernel $O(n^2)$: obstáculo práctico actual.
   \item Metodologías maduras vs.\ hardware inmaduro: resultados mixtos son esperables en NISQ.

@@ -33,7 +33,7 @@ La Tabla~\ref{tab:notebooks} describe los diez notebooks Jupyter que implementan
 10 & \nolinkurl{10_dominante_minimo_QAOA_vs_clasico} & Paradigma híbrido QAOA-COBYLA en MDS (Caso~7) & Red social sintética, grafos Erdős-Rényi \\
 \bottomrule
 \end{tabularx}
-\caption{Catálogo de notebooks de pruebas de concepto. Todos ejecutables con Qiskit~2.3.0, scikit-learn~1.8.0 y Python~3.14.}
+\caption{Catálogo de notebooks de pruebas de concepto. Todos ejecutables con las dependencias del Anexo~\ref{anx:entorno}.}
 \label{tab:notebooks}
 \end{table}
 
@@ -55,7 +55,7 @@ Los experimentos se ejecutaron en el siguiente entorno:
     \item \textbf{Análisis de datos}: NumPy~2.2, pandas~2.3, matplotlib~3.10
 \end{itemize}
 
-El archivo \texttt{POCs/requirements.txt} contiene las versiones exactas de todas las dependencias necesarias para reproducir los experimentos.
+El archivo \texttt{POCs/requirements.txt} fija las versiones mínimas (no exactas) de las dependencias. La verificación independiente de resultados de este trabajo se realizó reejecutando los cuadernos y los módulos \texttt{qml\_v2} en Linux con Python~3.12.3, Qiskit~2.6.1, qiskit-machine-learning~0.9.1, qiskit-optimization~0.7.0, scikit-learn~1.9.1, XGBoost~3.4.1 y PuLP~2.9.0; las cifras de este documento se contrastaron con esas ejecuciones y las discrepancias halladas se corrigieron. Los datos de SKG Tecnología son privados y no se distribuyen, de modo que los resultados sobre SKG solo son reproducibles por la propia organización.
 
 % =====================================================================
 \section{Datasets utilizados}
@@ -138,7 +138,7 @@ Las figuras del circuito ZZFeatureMap (Figura~\ref{fig:zzfeaturemap_circuit}) y 
 \label{anx:figuras_nb07}
 % =====================================================================
 
-El dashboard comparativo (Figura~\ref{fig:dashboard_sintesis}), el mapa de calor (Figura~\ref{fig:heatmap_ventaja_body}) y el diagrama radar (Figura~\ref{fig:radar_ventaja_body}) se encuentran en el cuerpo del documento (Capítulo~5 y Capítulo~7). La siguiente figura complementa ese análisis con la comparativa de complejidad computacional teórica.
+El dashboard comparativo (Figura~\ref{fig:dashboard_sintesis}) y el mapa de calor (Figura~\ref{fig:heatmap_ventaja_body}) se encuentran en el cuerpo del documento (Capítulo~5 y Capítulo~7). La siguiente figura complementa ese análisis con la comparativa de complejidad computacional teórica.
 
 \begin{figure}[htbp]
 \centering

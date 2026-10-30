@@ -115,7 +115,7 @@ donde $|\phi(x_i)\rangle$ es el estado cuántico codificado por un \texttt{ZZFea
 \end{enumerate}
 
 \paragraph{Resultados preliminares.}
-El QSVM alcanzó una exactitud del \textbf{91.7\%}, frente al 53.3\% del mejor clasificador clásico (SVM-RBF): \textbf{ventaja de +38.3 pp}. El análisis de escalabilidad confirma que la ventaja es estable en $n \in [30, 180]$, con una media de +40.9 pp y un máximo de +48.9 pp para $n=50$.
+El QSVM alcanzó una exactitud del \textbf{91.7\%}, frente al 53.3\% del mejor clasificador clásico (SVM polinomial de grado 3; SVM-RBF: 46.7\%, Gradient Boosting: 51.7\%, SVM lineal: 45.0\%): \textbf{ventaja de +38.3 pp}. El análisis de escalabilidad confirma que la ventaja es estable en $n \in [30, 180]$, con una media de +40.9 pp y un máximo de +48.9 pp para $n=50$.
 
 \paragraph{Ventajas identificadas.}
 \begin{itemize}
@@ -261,31 +261,29 @@ Se generó un dataset de regresión donde los valores objetivo son la expectaci�
 \begin{equation}
   y_i = \langle\phi(x_i)|\,Z \otimes Z\,|\phi(x_i)\rangle \in [-1, 1]
 \end{equation}
-El kernel cuántico de fidelidad es, por construcción, el estimador natural de esta función. Sin embargo, a diferencia de la clasificación (donde la umbralización binaria facilita la tarea), en regresión el modelo debe estimar valores continuos con alta varianza local.
+El kernel cuántico de fidelidad es, por construcción, el estimador natural de esta función: el dato está generado por el mismo mapa que define el kernel.
 
 \paragraph{Procedimiento experimental.}
 \begin{enumerate}
-  \item \textbf{Generación}: 500 muestras $x_i \in [-\pi, \pi]^2$; split 150/80 para QK-SVR y 300/100 para clásicos.
-  \item \textbf{Escalado del target}: \texttt{MinMaxScaler} a $[0,1]$ antes del SVR para mejorar la convergencia.
-  \item \textbf{Construcción del kernel}: Misma configuración que clasificación (\texttt{ZZFeatureMap}, 2 qubits, \texttt{FidelityQuantumKernel}).
-  \item \textbf{Entrenamiento}: \texttt{SVR(kernel=``precomputed'', C=1.0, epsilon=0.1)} con kernel cuántico.
-  \item \textbf{Evaluación}: $R^2$, RMSE, MAE sobre test.
+  \item \textbf{Generación}: 200 muestras $x_i \in [0,2\pi]^2$ con $y_i=\langle ZZ\rangle$ calculado con \texttt{Statevector}; las entradas se reescalan a $[0,\pi]$ y se divide 140/60 (entrenamiento/test, semilla 42).
+  \item \textbf{Construcción del kernel}: \texttt{ZZFeatureMap} (2 qubits, \texttt{reps=2}, entrelazamiento completo) y \texttt{FidelityQuantumKernel}.
+  \item \textbf{Entrenamiento}: \texttt{SVR(kernel=``precomputed'', C=1.0, epsilon=0.02)} con el kernel cuántico; los clásicos (Ridge, Random Forest, SVR-RBF y SVR-Poly) se entrenan sobre las mismas entradas.
+  \item \textbf{Evaluación}: $R^2$ y RMSE sobre el conjunto de test.
 \end{enumerate}
 
 \paragraph{Resultados preliminares.}
-El QK-SVR obtuvo $R^2 = -0.151$ (RMSE = 0.611), mientras que XGBoost alcanzó $R^2 = 0.777$ (RMSE = 0.271): \textbf{desventaja de $\Delta R^2 = -0.928$}.
+El QK-SVR obtuvo $R^2 = 0.102$ frente a $R^2 = 0.009$ del mejor clásico (SVR-Poly): $\Delta R^2 = +0.093$. La diferencia favorece al kernel cuántico, pero ambos valores absolutos son bajos.
 
 \paragraph{Ventajas identificadas.}
 \begin{itemize}
-  \item El kernel cuántico captura la geometría del espacio de características, lo que se manifiesta en su ventaja sobre el dataset Friedman \#1 (véase sección~\ref{sec:friedman}).
+  \item Es el único dataset de regresión en el que el kernel cuántico supera al mejor clásico, y es precisamente aquel cuyo generador coincide con el mapa de características.
   \item La implementación de regresión cuántica es directamente reutilizable sin modificar la arquitectura del modelo.
 \end{itemize}
 
 \paragraph{Limitaciones identificadas.}
 \begin{itemize}
-  \item La función objetivo continua presenta alta varianza local que el SVR con regularización estándar no captura bien; se necesitaría búsqueda de hiperparámetros extendida o un regresor cuántico variacional dedicado.
-  \item La reducción de tamaño de entrenamiento (150 vs 300 para clásicos) perjudica desproporcionadamente al QK-SVR, que se beneficia de más vectores de soporte.
-  \item Los métodos de árboles superan al SVR precomputado porque pueden memorizar localmente la función sin las restricciones de margen del SVM.
+  \item Con $C=1$ y $\varepsilon=0.02$ el QK-SVR explica solo el 10\% de la varianza de una función que su propio kernel representa de forma natural; no se exploraron otros hiperparámetros.
+  \item Una sola partición de 60 puntos de test no permite estimar la incertidumbre de la diferencia $\Delta R^2=+0.093$.
 \end{itemize}
 
 % ---
@@ -330,28 +328,26 @@ Como benchmark estándar en regresión no lineal se utilizó el dataset sintéti
 \begin{equation}
   y = 10\sin(\pi x_1 x_2) + 20(x_3 - 0.5)^2 + 10x_4 + 5x_5 + \varepsilon, \quad \varepsilon \sim \mathcal{N}(0, 1)
 \end{equation}
-La componente $\sin(\pi x_1 x_2)$ es una función oscilatoria no separable con estructura geométrica que los kernels de rotación cuántica pueden capturar de forma natural.
+La componente $\sin(\pi x_1 x_2)$ es una interacción multiplicativa oscilatoria; el término $\phi(x_i,x_j)=(\pi-x_i)(\pi-x_j)$ del \texttt{ZZFeatureMap} motivó probar si el kernel cuántico la captura, pero el dataset no está generado por ese mapa.
 
 \paragraph{Procedimiento experimental.}
 \begin{enumerate}
-  \item \textbf{Generación}: \texttt{make\_friedman1(n\_samples=500, noise=1.0)}. Split: 150/80 (QK-SVR) y 300/100 (clásicos).
-  \item \textbf{Reducción y escalado}: PCA a 2 componentes sobre 5 features; escalado a $[-\pi, \pi]$.
-  \item \textbf{Evaluación}: $R^2$, RMSE, MAE.
+  \item \textbf{Generación}: \texttt{make\_friedman1(n\_samples=300, noise=1.0)}, 5 características y partición 70/30 (210/90, semilla 42).
+  \item \textbf{Escalado}: estandarización y reescalado a $[0,\pi]$; sin reducción de dimensión (5 qubits, \texttt{ZZFeatureMap} con \texttt{reps=2}).
+  \item \textbf{QK-SVR}: por coste del simulador se usan los primeros 150 puntos de entrenamiento y 60 de test; $(C,\varepsilon)$ se elige por rejilla maximizando $R^2$ sobre esos 60 puntos de test, lo que favorece al QK-SVR frente a los clásicos (sin ajuste) y no cambia el signo del resultado.
+  \item \textbf{Clásicos}: regresión lineal, Random Forest y XGBoost entrenados con las 210 muestras y evaluados sobre los mismos 60 puntos.
 \end{enumerate}
 
 \paragraph{Resultados preliminares.}
-El QK-SVR obtuvo $R^2 = 0.102$ (RMSE = 3.41), frente al $R^2 = 0.009$ del mejor clásico con kernel precomputado (SVR-Poly): \textbf{ventaja de $\Delta R^2 = +0.093$ (+979\% relativo)}.
+El QK-SVR obtuvo $R^2 = -0.151$ (RMSE = 4.83) frente a $R^2 = 0.777$ de XGBoost (RMSE = 2.13): $\Delta R^2 = -0.928$.
 
-\paragraph{Ventajas identificadas.}
-\begin{itemize}
-  \item El kernel cuántico captura la componente $\sin(\pi x_1 x_2)$ de la función objetivo, una correlación no lineal entre dos variables que los kernels clásicos estándar no modelan bien con 2 features PCA.
-  \item El resultado sugiere que los kernels de rotación cuántica pueden tener ventaja en problemas con funciones trigonométricas no separables, precisamente el tipo de funciones que las puertas de rotación del circuito cuántico implementan.
-\end{itemize}
+\paragraph{Lectura.}
+El kernel cuántico no es competitivo en este benchmark clásico: queda por debajo incluso de la regresión lineal ($R^2=0.641$) y de Random Forest ($R^2=0.704$). El resultado es coherente con el criterio de alineación entre mapa y generador: Friedman~\#1 no está generado por el \texttt{ZZFeatureMap}.
 
 \paragraph{Limitaciones identificadas.}
 \begin{itemize}
-  \item La ventaja se mide contra SVR-Poly con kernel precomputado; los métodos de árboles (XGBoost, Random Forest) siguen siendo superiores en $R^2$ absoluto porque no están restringidos al submuestreo cuántico.
-  \item La ventaja en $R^2$ absoluto es modesta (0.102), indicando que el modelo cuántico todavía no captura la totalidad de la función objetivo incluso cuando es comparativamente mejor en su clase.
+  \item El QK-SVR se entrena con 150 puntos y se evalúa con 60, y sus hiperparámetros se eligen sobre ese mismo test; los clásicos no tuvieron ajuste equivalente. Ambas decisiones favorecen al kernel cuántico, de modo que el signo del resultado no se explica por ellas.
+  \item Una única partición no proporciona intervalo de confianza.
 \end{itemize}
 
 % =====================================================================
@@ -360,41 +356,39 @@ El QK-SVR obtuvo $R^2 = 0.102$ (RMSE = 3.41), frente al $R^2 = 0.009$ del mejor 
 
 \subsection{Descripción del problema y formulación QUBO}
 
-El QAOA \citep{farhi2014} se aplicó a la optimización de la asignación de agentes a zonas de intervención, problema operativo central de SKG Tecnología en la gestión de flotas de emergencia. El problema se formula como QUBO:
+El QAOA \citep{farhi2014} se aplicó al problema de asignación de agentes a tareas, núcleo de la gestión de flotas de SKG Tecnología. Dada una matriz de costes $C\in\mathbb{R}^{n\times n}$, se busca una permutación que minimice
 \begin{equation}
-  \min_{x \in \{0,1\}^n} x^T Q x + c^T x
+  \min_{x\in\{0,1\}^{n\times n}} \sum_{i,j} C_{ij}\,x_{ij}
+  \quad\text{s.a.}\quad \sum_j x_{ij}=1\;\forall i,\qquad \sum_i x_{ij}=1\;\forall j,
 \end{equation}
-donde $x_i = 1$ indica que el agente $i$ es asignado a su zona objetivo, y la matriz $Q$ codifica los costes de asignación con penalizaciones por violación de restricciones de capacidad.
+donde $x_{ij}=1$ indica que el agente $j$ atiende la tarea $i$. Las restricciones se incorporan al Hamiltoniano mediante \texttt{QuadraticProgramToQubo} de Qiskit Optimization; para $n=3$ el problema usa nueve qubits.
 
 \subsection{Procedimiento experimental}
+
+El módulo \texttt{POCs/qml\_v2/optimization.py} aplica el mismo modelo a todos los métodos:
 \begin{enumerate}
-  \item \textbf{Construcción del QUBO}: Función de coste de asignación a partir de \texttt{agents.csv} con 10--20 agentes y 5--10 zonas.
-  \item \textbf{Conversión a Hamiltoniano}: El QUBO se convirtió a \texttt{SparsePauliOp} de Qiskit.
-  \item \textbf{QAOA}: \texttt{QAOAAnsatz} con profundidad $p=1$, optimizador COBYLA, 100 iteraciones máximas.
-  \item \textbf{Comparación}: Greedy (asignación voraz por menor coste individual), búsqueda local (hill climbing con reinicio aleatorio).
-  \item \textbf{Métricas}: Coste total de la solución, gap respecto al óptimo, tiempo de cómputo.
+  \item \textbf{Instancias}: cinco matrices $3\times3$ con costes uniformes en $[1,10]$ y semillas 42--46.
+  \item \textbf{Referencia exacta}: algoritmo húngaro y PuLP/CBC; deben coincidir.
+  \item \textbf{Greedy}: cada tarea toma el agente libre de menor coste.
+  \item \textbf{QAOA}: \texttt{QAOA} de Qiskit con $p=1$, \texttt{StatevectorSampler} y COBYLA (80 iteraciones máximas, 3 reinicios); la solución se decodifica de las variables binarias y se evalúa con el coste original, no con la energía del QUBO.
+  \item \textbf{Métricas}: coste, brecha frente al óptimo exacto, factibilidad y tiempo.
 \end{enumerate}
 
-\paragraph{Resultados preliminares.}
-QAOA ($p=1$) logró una reducción de coste del \textbf{$-$30.3\% respecto al Greedy} en instancias de 10--20 agentes. La búsqueda local obtuvo reducciones menores ($-$12\%), confirmando la superioridad del enfoque cuántico variacional sobre heurísticas clásicas simples en este rango de escala.
-
-\paragraph{Ventajas identificadas.}
-\begin{itemize}
-  \item QAOA explora el espacio de soluciones binarias mediante superposición cuántica, escapando de mínimos locales que atrapan al Greedy y a la búsqueda local determinista.
-  \item La formulación QUBO es directamente aplicable a los datos reales de asignación de SKG sin transformaciones adicionales.
-\end{itemize}
+\paragraph{Resultados.}
+QAOA alcanza el óptimo exacto en las cinco instancias; Greedy lo falla en una ($+35.2\%$) y queda en media un $7.0\%$ por encima. Los métodos exactos tardan menos de $0.02$~s frente a cientos de segundos de la simulación de QAOA. El análisis se presenta en el Capítulo~\ref{cap:evaluacion}.
 
 \paragraph{Limitaciones identificadas.}
 \begin{itemize}
-  \item Con profundidad $p=1$, QAOA es una aproximación de primer orden; $p \geq 3$ requiere circuitos más profundos, incompatibles con el hardware NISQ actual por decoherencia.
-  \item Para instancias con $n > 50$ variables binarias, el número de qubits requeridos supera la capacidad del hardware NISQ actual, y la simulación clásica exacta se vuelve computacionalmente inviable.
+  \item Con $n=3$ hay solo seis soluciones factibles; el resultado valida el \emph{pipeline} pero no discrimina entre métodos potentes.
+  \item La formulación usa $n^2$ variables binarias; $n=6$ ya requiere 36 qubits, fuera del alcance de la simulación de vector de estados.
+  \item El problema de asignación es polinómico, por lo que no es un candidato natural a ventaja cuántica; sirve como banco de pruebas del flujo QUBO--QAOA.
 \end{itemize}
 
 % =====================================================================
 \section{Caso de uso 4: Optimización de portafolio (VQE/QAOA)}
 % =====================================================================
 
-Se aplicó VQE (\textit{Variational Quantum Eigensolver}) y QAOA a la selección óptima de activos financieros, formulada como la minimización de la varianza del portafolio sujeta a una rentabilidad mínima esperada. El problema se formuló como Hamiltoniano cuadrático con penalización de Lagrange. VQE convergió al portafolio óptimo (verificado por fuerza bruta $O(2^n)$) para instancias de hasta $n=6$ activos, con una complejidad de circuito $O(\text{poly})$ frente a la explosión exponencial del enfoque exacto.
+Se aplicó VQE (\textit{Variational Quantum Eigensolver}) y QAOA a la selección de tres activos entre seis, formulada como el problema cuadrático binario $\min_x\, q\,x^\top\Sigma x-\mu^\top x$ sujeto a $\sum_i x_i=3$, con $q=0.5$ y $\mu,\Sigma$ estimados con retornos logarítmicos diarios anualizados (EC, CIB, AAPL, MSFT, GOOGL y AMZN, 2022--2023). La restricción de presupuesto se incorpora al Hamiltoniano de Ising con un término de penalización (\texttt{QuadraticProgramToQubo}). El óptimo exacto se obtiene por fuerza bruta sobre las $2^6$ configuraciones. Los resultados, incluida la comparación con el óptimo, se discuten en el Capítulo~\ref{cap:evaluacion}.
 
 \paragraph{Limitaciones identificadas.}
 \begin{itemize}
@@ -458,7 +452,7 @@ El valor del Caso~5 es de \textbf{protocolo y modelado QUBO/QAOA}, no de speedup
 Este caso de uso complementa el caso 1 con un análisis específico del umbral de tamaño de muestra a partir del cual el kernel cuántico supera a los kernels clásicos. Siguiendo el marco teórico de \cite{liu2021}, se evaluó el régimen de ventaja en el dataset cuántico-nativo ($n \in [50, 200]$) y se contrastó con controles reales (SKG, Telco) donde \textbf{no} hay alineación mapa--generador.
 
 \paragraph{Resultados.}
-En el dataset cuántico-nativo ($n=150$), la ventaja fue de \textbf{+8.9 pp} vs.\ SVM-RBF (68.9\% vs 60.0\%): régimen alineado. SKG (Incidentes Bogotá) \textbf{no} es cuántico-nativo: QSVC 54.0\% vs 60.7\% clásico ($-6.7$~pp). Telco tampoco: QSVM 76.0\% vs Gradient Boosting 79.8\% (\textbf{$-3.8$~pp}); el baseline operativo es GB/RF, no un RBF aislado en subconjunto pequeño.
+En el dataset cuántico-nativo ($n=150$, 45 puntos de test), el QSVC obtuvo 68.9\% frente al 60.0\% del mejor clásico (SVM polinomial): \textbf{+8.9 pp}, es decir, cuatro aciertos más sobre una única partición, por lo que la diferencia no es estadísticamente concluyente por sí sola; la evidencia robusta de este régimen es la del Caso~1 (protocolo con 10 repeticiones). SKG (Incidentes Bogotá) \textbf{no} es cuántico-nativo: QSVC 56.7\% frente a 60.7\% del mejor clásico ($-4.0$~pp). Telco tampoco: QSVM 76.0\% frente a 79.8\% de Gradient Boosting (\textbf{$-3.8$~pp}); el baseline operativo es GB/RF, no un RBF aislado en un subconjunto pequeño. Una versión previa del Notebook~06 estimaba el kernel con un muestreador de 1024 \emph{shots} sin semilla, de modo que el mismo experimento daba 71.1\% y 66.7\% en dos ejecuciones; se sustituyó por el cálculo exacto de la fidelidad, que es determinista y coincide con el resto de cuadernos.
 
 \paragraph{Limitaciones identificadas.}
 \begin{itemize}
@@ -846,6 +840,6 @@ El prototipo conceptual se articula en cuatro capas:
 
 \subsection{Posicionamiento como herramienta complementaria}
 
-Una reflexión importante que emerge del análisis experimental es que la arquitectura híbrida no tiene sentido como sistema aislado, sino como \textbf{herramienta adicional dentro del stack tecnológico existente}. En el caso de SKG Tecnología, el sistema actual de gestión de incidentes y asignación de recursos seguiría operando con sus algoritmos clásicos consolidados. El módulo cuántico se activaría selectivamente para los subproblemas donde ofrece ventaja demostrada: principalmente los de optimización combinatoria de asignación de recursos, donde la formulación QUBO es natural y la ventaja del QAOA frente a heurísticas greedy ya es verificable a escala moderada ($-$30.3\% en coste de asignación con $p=1$).
+Una reflexión importante que emerge del análisis experimental es que la arquitectura híbrida no tiene sentido como sistema aislado, sino como \textbf{herramienta adicional dentro del stack tecnológico existente}. En el caso de SKG Tecnología, el sistema actual de gestión de incidentes y asignación de recursos seguiría operando con sus algoritmos clásicos consolidados. El módulo cuántico solo se activaría en los subproblemas donde se demuestre una ventaja medible. En los experimentos de este trabajo eso se cumple de forma condicional en clasificación con estructura cuántica (Caso~1) y no se cumple en optimización combinatoria de asignación de recursos, donde la formulación QUBO es natural y el QAOA con $p=1$ recupera el óptimo, pero empata con los métodos exactos (Caso~3).
 
 La adopción de esta arquitectura no requiere reemplazar ningún sistema existente, sino añadir un módulo con interfaz bien definida ---$2p$ parámetros de entrada, 1 escalar de salida--- que puede ser desactivado sin consecuencias si el hardware cuántico no está disponible o si el problema no cumple los criterios de activación de la Tabla~\ref{tab:flujo_hibrido}.

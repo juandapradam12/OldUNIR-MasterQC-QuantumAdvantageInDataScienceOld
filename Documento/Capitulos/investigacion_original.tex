@@ -129,21 +129,24 @@ Se implementaron los cinco indicadores anteriores sobre los tres datasets del TF
 \hline
 \textbf{Dataset} & $A(K_Q,K_y)$ & $A(K_{cl},K_y)$ & $H(K_Q)$ & $H(K_{cl})$ & $d_F$ & $\Delta_{\mathrm{RBF}}$ & \textbf{$\Delta_{\mathrm{op}}$} \\
 \hline
-Cuántico-nativo  & 0.018 & 0.047 & 2.275 & 2.241 & 0.353 & $+$0.0 & $\mathbf{+13.3}$ \\
-SKG Incidentes   & 0.040 & 0.050 & 2.155 & 1.967 & 0.369 & $+8.3^\dagger$ & $\mathbf{-6.0}$ \\
+Cuántico-nativo  & 0.027 & 0.056 & 2.307 & 3.427 & 0.358 & $+4.2$ & $\mathbf{+8.9}$ \\
+SKG Incidentes   & 0.040 & 0.050 & 2.155 & 1.967 & 0.369 & $+8.3^\dagger$ & $\mathbf{-4.0}$ \\
 Telco Churn      & 0.190 & 0.170 & 2.333 & 3.465 & 0.346 & $+$0.0 & $\mathbf{-3.8}$ \\
 \hline
 \end{tabular}
-\caption{Indicadores de cuanticidad (Notebook~08, ZZFeatureMap 2~qubits, PCA~2D, $n=80$). Geometría vs.\ kernel clásico de referencia; $\Delta_{\mathrm{RBF}}$ = QSVM$-$SVM-RBF en el split NB08 (baseline débil). Columna $\Delta_{\mathrm{op}}$ = accuracy(QSVM)$-$accuracy(\textbf{mejor clásico}) en \textbf{clasificación} (Notebook~06): nativo $+13.3$~pp, SKG $-6.0$~pp, Telco $-3.8$~pp vs Gradient Boosting --- no es una métrica geométrica. $^\dagger$SKG $+8.3$~pp vs RBF es artefacto ---bajo $\mathcal{Q}_{\mathrm{rob}}$ y frente al stack clásico SKG es \texttt{classical}.}
+\caption{Indicadores de cuanticidad (Notebook~08, ZZFeatureMap 2~qubits, PCA~2D, $n=80$). Geometría vs.\ kernel clásico de referencia; $\Delta_{\mathrm{RBF}}$ = QSVM$-$SVM-RBF en el split NB08 (baseline débil). Columna $\Delta_{\mathrm{op}}$ = accuracy(QSVM)$-$accuracy(\textbf{mejor clásico}) en \textbf{clasificación} (Notebook~06): nativo $+8.9$~pp, SKG $-4.0$~pp, Telco $-3.8$~pp vs Gradient Boosting --- no es una métrica geométrica. Los indicadores del dataset nativo dependen del etiquetado por autovector del kernel, que es sensible al \emph{backend} numérico (véase la nota siguiente). $^\dagger$SKG $+8.3$~pp vs RBF es artefacto ---bajo $\mathcal{Q}_{\mathrm{rob}}$ y frente al stack clásico SKG es \texttt{classical}.}
 \label{tab:indicadores_resultados}
 \end{table}
+
+\paragraph{Sensibilidad numérica del dataset nativo.}
+En el Notebook~08 las etiquetas del dataset nativo se definen por el signo de un autovector de $K_Q$, elección que es inestable cuando hay autovalores casi degenerados. Al reejecutar el cuaderno de principio a fin (Qiskit~2.6.1, NumPy~2.5) los indicadores de ese dataset cambiaron respecto a la ejecución original ($\Delta H$ de $+0.034$ a $-1.120$, $\mathcal{Q}$ de $+0.286$ a $-0.056$, $\Delta_{\mathrm{RBF}}$ de $0.0$ a $+4.2$~pp), mientras que SKG, Telco y el barrido $\alpha$ se reprodujeron exactamente. La tabla recoge las cifras reejecutadas; la conclusión es que $\Delta H$ y $\mathcal{Q}$ del dataset nativo \textbf{no} son estables frente al entorno numérico y no deben leerse como una propiedad del dataset.
 
 \subsection{Figuras de resultados}
 
 \begin{figure}[ht]
 \centering
 \includegraphics[width=0.95\textwidth]{../POCs/data/output/figures/08_test_cuanticidad_datasets.png}
-\caption{Perfil vectorial $\mathcal{Q}(\mathcal{D})=(\Delta A,d_F,\Delta H)$ sobre los tres datasets (Notebook~08). Fila superior: componentes del vector. Fila inferior: alineaciones, entropías de apoyo y el escalar ponderado $w^\top\mathcal{Q}$ (experimento; \textbf{no} regla de adopción). Telco dominado por $\Delta H=-1.131$. La decisión operativa usa $\Delta_{\mathrm{op}}$ (Tabla~\ref{tab:indicadores_resultados}), no el escalar.}
+\caption{Perfil vectorial $\mathcal{Q}(\mathcal{D})=(\Delta A,d_F,\Delta H)$ sobre los tres datasets (Notebook~08). Fila superior: componentes del vector. Fila inferior: alineaciones, entropías de apoyo y el escalar ponderado $w^\top\mathcal{Q}$ (experimento; \textbf{no} regla de adopción). Telco y nativo dominados por $\Delta H$ ($-1.131$ y $-1.120$). La decisión operativa usa $\Delta_{\mathrm{op}}$ (Tabla~\ref{tab:indicadores_resultados}), no el escalar.}
 \label{fig:indicadores_cuanticidad}
 \end{figure}
 
@@ -152,15 +155,15 @@ Las matrices $K_Q$/$K_{cl}$ viven en memoria durante la ejecución del Notebook~
 
 \subsection{Análisis: \textquestiondown{}Predicen los indicadores la ventaja QSVM?}
 
-La Tabla~\ref{tab:indicadores_resultados} distingue dos rankings. Bajo el protocolo NB08 vs.\ un baseline RBF débil: SKG ($+8.3$~pp) $>$ nativo $=$ Telco ($0.0$~pp) ---ranking \textbf{engañoso}. El ranking operativo vs.\ mejor clásico es: \textbf{nativo ($+13.3$~pp)} $>$ Telco ($-3.8$~pp) $>$ SKG ($-6.0$~pp). Solo el régimen cuántico-nativo muestra ventaja; SKG/Telco son clásicos (Sección~\ref{sec:qml_v2_revision}).
+La Tabla~\ref{tab:indicadores_resultados} distingue dos rankings. Bajo el protocolo NB08 vs.\ un baseline RBF débil: SKG ($+8.3$~pp) $>$ nativo ($+4.2$~pp) $>$ Telco ($0.0$~pp) ---ranking \textbf{engañoso}. El ranking operativo vs.\ mejor clásico es: \textbf{nativo ($+8.9$~pp)} $>$ Telco ($-3.8$~pp) $>$ SKG ($-4.0$~pp). Solo el régimen cuántico-nativo muestra ventaja; SKG/Telco son clásicos (Sección~\ref{sec:qml_v2_revision}).
 
-El score $\mathcal{Q}(\mathcal{D})$ (calculado vs.\ kernel clásico de referencia) ordena SKG ($+0.352$) $>$ nativo ($+0.286$) $>$ Telco ($-0.050$). Eso reproduce el ranking vs.\ RBF ($\rho_S=+0.866$, $n=3$, orientativo) pero \textbf{no} el ranking operativo ($\rho_S=-0.500$ entre $\mathcal{Q}$ y $\Delta_{\mathrm{op}}$, $n=3$): contraejemplo pedagógico SKG. El barrido sintético NB08 ($n=9$, $X$ fijo + mezcla de etiquetas) muestra $\rho_S(\alpha,\Delta A)=+0.833$ ($p=0.005$): hallazgo robusto sobre alineación. Bajo ese protocolo $d_F$ y $H$ son constantes, y $\rho_S(\alpha,\mathrm{ventaja})\approx 0.34$ (n.s.) ---\textbf{no} se afirma que $\mathcal{Q}$ prediga ventaja con $\rho=0.833$. Lectura: $\mathcal{Q}>0$ vs.\ un baseline débil \textbf{no} autoriza desplegar el módulo cuántico.
+El score $\mathcal{Q}(\mathcal{D})$ (calculado vs.\ kernel clásico de referencia) ordena SKG ($+0.352$) $>$ Telco ($-0.050$) $>$ nativo ($-0.056$): el único dataset con ventaja operativa queda el último. Frente al ranking vs.\ RBF la relación es débil ($\rho_S=+0.5$, $n=3$) y frente al ranking operativo es inversa ($\rho_S=-1.0$ entre $\mathcal{Q}$ y $\Delta_{\mathrm{op}}$, $n=3$): en esta implementación, con 2 qubits y PCA a 2 dimensiones, $\mathcal{Q}$ \textbf{no} identifica el régimen nativo. El barrido sintético NB08 ($n=9$, $X$ fijo + mezcla de etiquetas) muestra $\rho_S(\alpha,\Delta A)=+0.833$ ($p=0.005$): hallazgo robusto sobre alineación. Bajo ese protocolo $d_F$ y $H$ son constantes, y $\rho_S(\alpha,\mathrm{ventaja})\approx 0.34$ (n.s.) ---\textbf{no} se afirma que $\mathcal{Q}$ prediga ventaja con $\rho=0.833$. Lectura: $\mathcal{Q}>0$ vs.\ un baseline débil \textbf{no} autoriza desplegar el módulo cuántico.
 
 El análisis individual de los componentes revela matices importantes:
 \begin{itemize}
     \item $\Delta A$ es negativa en dos de los tres datasets en el régimen 2~qubits + PCA. Frente a $\Delta_{\mathrm{op}}$, $\rho_S(\Delta A,\Delta_{\mathrm{op}})=-0.500$ ($n=3$); en el barrido NB08 $\rho_S(\alpha,\Delta A)=+0.833$: el PCA agresivo suprime la señal de $\Delta A$ en datos reales.
-    \item $d_F$ y $g$ rankean el protocolo vs.\ RBF, pero frente a $\Delta_{\mathrm{op}}$ también dan $\rho_S=-0.500$ ($n=3$): no sustituyen la comparación contra el mejor clásico ni el veredicto $\mathcal{Q}_{\mathrm{rob}}$.
-    \item $\Delta H$ es el indicador más volátil: $\mathcal{Q}(\text{Telco})$ está dominado por $\Delta H=-1.131$ (concentración espectral).
+    \item $d_F$ y $g$ frente a $\Delta_{\mathrm{op}}$ dan $\rho_S=-0.5$ y $-1.0$ ($n=3$): no sustituyen la comparación contra el mejor clásico ni el veredicto $\mathcal{Q}_{\mathrm{rob}}$.
+    \item $\Delta H$ es el indicador más volátil: $\mathcal{Q}$ de Telco y del nativo están dominados por $\Delta H=-1.131$ y $-1.120$ (concentración espectral).
 \end{itemize}
 
 \paragraph{Caveat estadístico.}
@@ -208,7 +211,7 @@ Telco Churn    & 2Q + PCA       & $-0.050$ & $+0.020$ & $0.346$ & $+0.0$ pp \\
                & 4Q + SelectKBest & $-0.155$ & $+0.055$ & $0.234$ & $-4.2$ pp \\
 \hline
 \end{tabular}
-\caption{Sensibilidad dimensional (Notebook~08, §11). Columna $\Delta$ vs RBF $=$ QSVM$-$SVM-RBF del protocolo NB08 (\textbf{no} $\Delta_{\mathrm{op}}$). $^\dagger$SKG $+8.3$~pp vs RBF es artefacto: operativo $-6.0$~pp y $\mathcal{Q}_{\mathrm{rob}}$ da \texttt{classical}. Con SelectKBest, $d_F$ (y $\mathcal{Q}$) caen porque el clásico aprovecha mejor features discriminativas.}
+\caption{Sensibilidad dimensional (Notebook~08, §11). Columna $\Delta$ vs RBF $=$ QSVM$-$SVM-RBF del protocolo NB08 (\textbf{no} $\Delta_{\mathrm{op}}$). $^\dagger$SKG $+8.3$~pp vs RBF es artefacto: operativo $-4.0$~pp y $\mathcal{Q}_{\mathrm{rob}}$ da \texttt{classical}. Con SelectKBest, $d_F$ (y $\mathcal{Q}$) caen porque el clásico aprovecha mejor features discriminativas.}
 \label{tab:sensibilidad_dim}
 \end{table}
 
@@ -239,7 +242,7 @@ donde:
 Puede ampliarse con otras entradas ($\Delta_{\mathrm{op}}$, veredicto $\mathcal{Q}_{\mathrm{rob}}$, etc.). La lectura es la de un \emph{perfil}: p.~ej.\ Telco muestra cuello en $\Delta H$; SKG puede tener $\hat{d}_F$ alto y aun así $\Delta_{\mathrm{op}}<0$.
 
 \paragraph{Por qué no colapsar a un escalar $w^\top\mathcal{Q}$.}
-En el Notebook~08 se calculó también $q=w_1\Delta A+w_2\hat{d}_F+w_3\Delta H$ con pesos fijos $(0.4,0.3,0.3)$; con $\hat g$ como cuarto término la convención del protocolo unificado es $\mathcal{Q}_{\mathrm{comp}}=0.4\,\Delta A+0.2\,\hat d_F+0.2\,\Delta H+0.2\,\hat g$ (se conserva $0.4$ para $\Delta A$ y el resto se reparte a partes iguales; es una convención, no un ajuste). Ese escalar mezcla escalas distintas ($\hat{d}_F\!\approx\!1$ empuja $q>0$ aunque $\Delta A<0$; $\Delta H$ puede dominar) y \textbf{ordena mal} frente a $\Delta_{\mathrm{op}}$: SKG maximiza $q$ ($+0.35$) con $\Delta_{\mathrm{op}}=-6.0$~pp. Por criterio de este TFM, el escalar \textbf{no} se usa como regla de adopción; se conserva solo como experimento negativo. La forma útil de $\mathcal{Q}(\mathcal{D})$ es el \textbf{vector}.
+En el Notebook~08 se calculó también $q=w_1\Delta A+w_2\hat{d}_F+w_3\Delta H$ con pesos fijos $(0.4,0.3,0.3)$; con $\hat g$ como cuarto término la convención del protocolo unificado es $\mathcal{Q}_{\mathrm{comp}}=0.4\,\Delta A+0.2\,\hat d_F+0.2\,\Delta H+0.2\,\hat g$ (se conserva $0.4$ para $\Delta A$ y el resto se reparte a partes iguales; es una convención, no un ajuste). Ese escalar mezcla escalas distintas ($\hat{d}_F\!\approx\!1$ empuja $q>0$ aunque $\Delta A<0$; $\Delta H$ puede dominar) y \textbf{ordena mal} frente a $\Delta_{\mathrm{op}}$: SKG maximiza $q$ ($+0.35$) con $\Delta_{\mathrm{op}}=-4.0$~pp. Por criterio de este TFM, el escalar \textbf{no} se usa como regla de adopción; se conserva solo como experimento negativo. La forma útil de $\mathcal{Q}(\mathcal{D})$ es el \textbf{vector}.
 
 \begin{figure}[ht]
 \centering
@@ -355,11 +358,11 @@ Rotación max. $d_F$    & SKG Incidentes & $+0.163$ & $+0.170$ & $+0.007$ $\upar
 Rotación max. $d_F$    & Telco Churn    & $-0.228$ & $+0.096$ & $+0.323$ $\uparrow$ & $+4.2$ pp \\
 Re-uploading reps=3    & SKG Incidentes & $+0.163$ & $+0.212$ & $+0.049$ $\uparrow$ & $+16.7$ pp \\
 Re-uploading reps=3    & Telco Churn    & $-0.228$ & $+0.167$ & $+0.395$ $\uparrow$ & $+4.2$ pp \\
-Q-UMAP/MDS             & SKG Incidentes & $+0.163$ & $+0.054$ & $-0.109$ $\downarrow$ & $-8.3$ pp \\
-Q-UMAP/MDS             & Telco Churn    & $-0.228$ & $-0.248$ & $-0.020$ $\downarrow$ & $+4.2$ pp \\
+Q-UMAP/MDS             & SKG Incidentes & $+0.163$ & $-0.018$ & $-0.181$ $\downarrow$ & $-29.2$ pp \\
+Q-UMAP/MDS             & Telco Churn    & $-0.228$ & $+0.071$ & $+0.299$ $\uparrow$ & $+0.0$ pp \\
 \hline
 \end{tabular}
-\caption{Variación de $\mathcal{Q}(\mathcal{D})$ y de $\Delta$ QSVM$-$RBF tras cada pre-mapeo (Notebook~09). Cifras \textbf{vs.\ RBF solamente}; no equivalen a ventaja operativa vs.\ GB/RF. Bajo $\mathcal{Q}_{\mathrm{rob}}$ (Sección~\ref{sec:qml_v2_revision}) Telco y SKG permanecen \texttt{classical} (la rotación en SKG cambia geometría, sin lift de accuracy garantizado). Q-UMAP usa MDS como fallback.}
+\caption{Variación de $\mathcal{Q}(\mathcal{D})$ y de $\Delta$ QSVM$-$RBF tras cada pre-mapeo (Notebook~09). Cifras \textbf{vs.\ RBF solamente}; no equivalen a ventaja operativa vs.\ GB/RF. Bajo $\mathcal{Q}_{\mathrm{rob}}$ (Sección~\ref{sec:qml_v2_revision}) Telco y SKG permanecen \texttt{classical} (la rotación en SKG cambia geometría, sin lift de accuracy garantizado). Q-UMAP usa MDS como fallback; sus cifras cambiaron al reejecutar con scikit-learn~1.9 (cambió la inicialización por defecto de MDS), por lo que es inestable y no se interpreta; las demás filas se reprodujeron exactamente.}
 \label{tab:resultados_mapeos}
 \end{table}
 
@@ -531,7 +534,7 @@ Esta hoja de ruta formal se desarrolla en el Capítulo~\ref{cap:futuro}.
 \begin{figure}[ht]
 \centering
 \includegraphics[width=0.90\textwidth]{../POCs/data/output/figures/09_qcr_framework_diagnostico.png}
-\caption{Diagnóstico $\mathcal{Q}(\mathcal{D})$ en los \textbf{tres} datasets del TFM (NB08, mismo protocolo): cuántico-nativo, SKG y Telco. Solo el nativo tiene $\Delta_{\mathrm{op}}>0$ ($+13.3$~pp). SKG: $\mathcal{Q}>0$ vs.\ RBF pero GB/RF ganan (QML~v2: \texttt{classical}). Telco: cuello $\Delta H=-1.131$. Misma lectura que en los casos de uso de clasificación / regresión / anomalías.}
+\caption{Diagnóstico $\mathcal{Q}(\mathcal{D})$ en los \textbf{tres} datasets del TFM (NB08, mismo protocolo): cuántico-nativo, SKG y Telco. Solo el nativo tiene $\Delta_{\mathrm{op}}>0$ ($+8.9$~pp), pero su $\mathcal{Q}$ es negativo. SKG: $\mathcal{Q}>0$ vs.\ RBF pero GB/RF ganan (QML~v2: \texttt{classical}). Telco: cuello $\Delta H=-1.131$; nativo: $\Delta H=-1.120$. Misma lectura que en los casos de uso de clasificación / regresión / anomalías.}
 \label{fig:qcr_diagnostico}
 \end{figure}
 
