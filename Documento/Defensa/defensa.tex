@@ -525,10 +525,10 @@ no confundir con
 $\rho(\mathcal{Q},\mathrm{ventaja})$.}
 \end{block}
 \vspace{0.5em}
-\begin{block}{Propuesta}
+\begin{block}{Propuesta (acotada)}
 $\mathcal{Q}=w_1\Delta A+w_2\hat{d}_F+w_3\Delta H$.\\[0.3em]
-Diagnóstico \emph{a priori}, no oráculo:
-validar siempre frente al clásico.
+Lenguaje geométrico vs.\ RBF ---
+\textbf{no} regla de despliegue.
 \end{block}
 \end{column}
 \end{columns}
@@ -548,16 +548,17 @@ $\Delta H$: diversidad espectral del kernel cuántico.}
 \vspace{0.4em}
 \begin{columns}[T]
 \begin{column}{0.48\textwidth}
-\begin{block}{Qué sí}
-Diagnóstico \emph{a priori} de si el
-régimen es favorable al \textbf{cuántico}.
+\begin{block}{Qué sí (débil)}
+Vocabulario para \emph{hablar} de
+geometría cuántico vs clásico
+($\Delta A$, $d_F$, $\Delta H$).
 \end{block}
 \end{column}
 \begin{column}{0.48\textwidth}
 \begin{alertblock}{Qué no}
-$\mathcal{Q}>0$ $\neq$ desplegar cuántico.
-Siempre contrastar con el \textbf{clásico}
-(y $\mathcal{Q}_{\mathrm{rob}}$).
+No hay pista en $\mathcal{Q}$ sola para
+activar el módulo cuántico.
+La decisión operativa es otra slide.
 \end{alertblock}
 \end{column}
 \end{columns}
@@ -595,39 +596,50 @@ como trabajo futuro.}
 \end{columns}
 \end{frame}
 
-\begin{frame}{Límite de P1 --- 3 datasets: $\mathcal{Q}$ $\neq$ $\Delta_{\mathrm{op}}$}
-\begin{columns}[T]
-\begin{column}{0.62\textwidth}
+\begin{frame}{P1 en datos reales --- no hay pista operativa en $\mathcal{Q}$}
 \centering
-\includegraphics[width=\linewidth,height=0.78\textheight,keepaspectratio]{08_test_cuanticidad_datasets.png}
-\end{column}
-\begin{column}{0.36\textwidth}
-\begin{block}{Cifras reales (NB08)}
-{\footnotesize
-\begin{tabular}{@{}lrr@{}}
- & $\mathcal{Q}$ & $\Delta_{\mathrm{op}}$ \\
-Nativo & $+0.29$ & $\mathbf{+13.3}$ \\
-SKG & $+0.35$ & $-6.0$ \\
-Telco & $-0.05$ & $-3.8$ \\
+{\small
+\renewcommand{\arraystretch}{1.35}
+\begin{tabular}{@{}lccc@{}}
+\toprule
+\textbf{Dataset} & $\mathcal{Q}$ (vs RBF) & $\Delta_{\mathrm{op}}$ (mejor C) & \textbf{\textquestiondown{}Tomar cuántico?} \\
+\midrule
+Cuántico-nativo & $+0.29$ & $\mathbf{+13.3}$~pp & \textbf{Sí} (mapa alineado) \\
+SKG Incidentes & $+0.35$ & $-6.0$~pp & \textbf{No} (gana GB/RF) \\
+Telco Churn & $-0.05$ & $-3.8$~pp & \textbf{No} (gana GB) \\
+\bottomrule
 \end{tabular}}
-\end{block}
-\begin{alertblock}{Cómo defenderlo}
+
+\vspace{0.8em}
+\begin{columns}[T]
+\begin{column}{0.48\textwidth}
+\begin{alertblock}{Lo que esta tabla dice}
 {\footnotesize
-No es un fallo de datos: es el
-\textbf{resultado}. $\mathcal{Q}$ mide
-geometría vs.\ RBF; $\Delta_{\mathrm{op}}$
-mira al mejor clásico.
-SKG es el contraejemplo:
-$\mathcal{Q}$ alto, gana GB/RF.
-Solo el nativo tiene
-$\Delta_{\mathrm{op}}>0$.}
+SKG tiene el $\mathcal{Q}$ \emph{más alto}
+y aun así \textbf{no} se toma el módulo
+cuántico. Por tanto $\Delta A$, $d_F$,
+$\Delta H$ y $\mathcal{Q}$ \textbf{no}
+son pista de despliegue.}
 \end{alertblock}
-{\footnotesize $n{=}3$: orientativo.
-P1 se apoya en el barrido $\alpha$
-($\rho(\alpha,\Delta A){=}0.833$),
-no en predicción operativa.}
+\end{column}
+\begin{column}{0.48\textwidth}
+\begin{block}{Qué sí se puede tomar}
+{\footnotesize
+\begin{enumerate}
+  \item Alineación mapa--generador
+        (nativo / \texttt{zz\_phase}).
+  \item Ganar al \textbf{mejor clásico}
+        ($\Delta_{\mathrm{op}}>0$), no solo a RBF.
+  \item $\mathcal{Q}_{\mathrm{rob}}$ / veredicto
+        \texttt{classical} en QML~v2.
+\end{enumerate}}
+\end{block}
 \end{column}
 \end{columns}
+\vspace{0.4em}
+\centering\footnotesize
+Los 6 paneles de factores quedan en el documento como medición geométrica;
+en defensa no se presentan como criterio de adopción.
 \end{frame}
 
 \begin{frame}{Camino a la Conjetura 2 / QCR (antes de la fórmula)}
