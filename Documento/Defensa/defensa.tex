@@ -606,102 +606,112 @@ como trabajo futuro.}
 \end{columns}
 \end{frame}
 
-\begin{frame}{P1 --- Clasificación: geometría $\mathcal{Q}$ + resultado}
+\begin{frame}{P1 --- qué comparamos (mismas métricas)}
+\begin{block}{Estructura cuántica = $(\Delta A,\ d_F,\ \Delta H)$}
+{\footnotesize
+\begin{itemize}
+  \item $\Delta A = A(K_Q,yy^\top)-A(K_{\mathrm{RBF}},yy^\top)$ --- \citep{huang2021}
+  \item $d_F=\|K_Q-K_{\mathrm{RBF}}\|_F/n$ --- \citep{liu2021}
+  \item $\Delta H = H(K_Q)-H(K_{\mathrm{RBF}})$ --- \citep{thanasilp2022}
+\end{itemize}
+\textbf{Mismo protocolo} en clasificación, regresión y anomalías
+(ZZ 2q, $n{=}60$, 3 repeats, RBF Frobenius-best).\\
+No se mezcla accuracy / $R^2$ / AUC en estos plots.}
+\end{block}
+\vspace{0.5em}
+\begin{alertblock}{Nota: no hay $\Delta_{\mathrm{op}}$ aquí}
+{\footnotesize
+Eso era solo un nombre confuso para
+``accuracy(QSVM)$-$accuracy(mejor clásico)'' en clasificación.
+\textbf{No} es métrica de estructura. Se retiró de estas figuras.}
+\end{alertblock}
+\end{frame}
+
+\begin{frame}{P1 --- Clasificación: $(\Delta A,\ d_F,\ \Delta H)$}
 \begin{columns}[T]
-\begin{column}{0.60\textwidth}
+\begin{column}{0.62\textwidth}
 \centering
 \includegraphics[width=\linewidth,height=0.78\textheight,keepaspectratio]{08_perfil_clasificacion.png}
 \end{column}
-\begin{column}{0.38\textwidth}
-\begin{block}{Panel inferior-derecho}
+\begin{column}{0.36\textwidth}
+\begin{block}{Lectura}
 {\footnotesize
-\textbf{No} es una métrica geométrica.\\
-Es simplemente:\\[0.2em]
-accuracy(QSVM) $-$ accuracy(mejor clásico),
-en puntos porcentuales.\\[0.3em]
-Nativo $+13.3$, SKG $-6.0$, Telco $-3.8$.}
-\end{block}
-\begin{block}{Geometría (NB08)}
-{\footnotesize
-$\Delta A$: nativo $-0.029$ (no $>0$).\\
-$\Delta H$: nativo $+0.034$ (no el mín.; Telco $-1.131$).\\
-$\hat{d}_F$: $0.94$--$1.00$ $\Rightarrow$ casi no discrimina.}
-\end{block}
-\begin{block}{vs literatura}
-{\footnotesize
-Huang esperaría $\Delta A>0$; Liu: $d_F$ no separa; Thanasilp: $\Delta H\ll 0$ = concentración.}
+\begin{itemize}
+  \item Nativo: $\Delta A{+}0.20$
+  \item SKG: $\Delta A{\approx}0$
+  \item Telco: $\Delta A{-}0.09$
+  \item $d_F{\approx}0.01$ en los tres
+        (casi no discrimina)
+\end{itemize}}
 \end{block}
 \end{column}
 \end{columns}
 \end{frame}
 
-\begin{frame}{P1 --- Regresión: mismo criterio, otra métrica}
+\begin{frame}{P1 --- Regresión: las \textbf{mismas} métricas}
 \begin{columns}[T]
 \begin{column}{0.62\textwidth}
 \centering
 \includegraphics[width=\linewidth,height=0.78\textheight,keepaspectratio]{08_perfil_regresion.png}
 \end{column}
 \begin{column}{0.36\textwidth}
-\begin{block}{Qué se mide}
-{\footnotesize
-$R^2$(QK-SVR) $-$ $R^2$(mejor clásico).\\
-NB08 \textbf{no} midió $\mathcal{Q}$ aquí --- no se inventa.}
-\end{block}
-\begin{block}{Resultado}
+\begin{block}{Lectura}
 {\footnotesize
 \begin{itemize}
-  \item Nativo: $\Delta R^2{=}{+}0.60$
-  \item Friedman: $-0.13$
-  \item SKG: $-0.34$
+  \item Nativo: $\Delta A{+}0.28$
+  \item Friedman: $\Delta A{-}0.32$
+  \item SKG: $\Delta A{-}0.04$
+  \item $d_F$ otra vez $\approx 0.01$
 \end{itemize}
-Misma lectura: solo gana con estructura alineada.}
+Misma escala que clasificación.}
 \end{block}
 \end{column}
 \end{columns}
 \end{frame}
 
-\begin{frame}{P1 --- Anomalías: mismo criterio, otra métrica}
+\begin{frame}{P1 --- Anomalías: las \textbf{mismas} métricas}
 \begin{columns}[T]
 \begin{column}{0.62\textwidth}
 \centering
 \includegraphics[width=\linewidth,height=0.78\textheight,keepaspectratio]{08_perfil_anomalias.png}
 \end{column}
 \begin{column}{0.36\textwidth}
-\begin{block}{Qué se mide}
-{\footnotesize
-AUC(OCSVM-ZZ) $-$ AUC(mejor clásico), en pp.\\
-Sin geometría $\mathcal{Q}$ inventada.}
-\end{block}
-\begin{block}{Resultado}
+\begin{block}{Lectura}
 {\footnotesize
 \begin{itemize}
-  \item \texttt{zz\_phase}: $+31.1$\,pp
-  \item SKG: $-29.9$\,pp
-  \item moons: $-29.1$\,pp
+  \item \texttt{zz\_phase}: $\Delta A{+}0.09$
+  \item SKG / moons: $\Delta A{\approx}0$
+  \item $d_F$ otra vez $\approx 0.01$
 \end{itemize}
-Solo gana con novedad alineada al mapa.}
+Misma escala que clasif./reg.}
 \end{block}
 \end{column}
 \end{columns}
 \end{frame}
 
+\begin{frame}{P1 --- las tres familias juntas}
+\centering
+\includegraphics[width=0.95\linewidth,height=0.82\textheight,keepaspectratio]{08_estructura_tres_casos.png}
+\end{frame}
+
 \begin{frame}{P1 --- cómo interpretar}
-\begin{block}{\textquestiondown{}Estructura cuántica $=$ $\Delta A$ negativo y $\Delta H$ mínimo?}
+\begin{block}{\textquestiondown{}$\Delta A$ negativo + $\Delta H$ mínimo = estructura?}
 {\footnotesize
-\textbf{No.} En clasificación el nativo gana ($+13.3$\,pp de accuracy) con $\Delta A<0$ y $\Delta H=+0.034$.
-El mínimo $\Delta H$ es Telco ($-1.131$): concentración \citep{thanasilp2022}, no ventaja.}
+\textbf{No.} El control nativo tiene $\Delta A>0$ en las tres familias.
+Friedman (regresión) tiene el $\Delta A$ más negativo ($-0.32$): sin alineación mapa--dato.}
 \end{block}
 \vspace{0.35em}
-\begin{block}{\textquestiondown{}$d_F$ discrimina?}
+\begin{block}{\textquestiondown{}$d_F$ discrimina entre datasets?}
 {\footnotesize
-\textbf{Aquí, apenas} ($0.94$--$1.00$). Cumple ``kernel no trivial'' \citep{liu2021}, no ordena quién gana.}
+\textbf{Aquí, apenas} ($\approx 0.01$ en todos). El kernel ZZ es distinto del RBF,
+pero $d_F$ no ordena nativo vs SKG/Telco/Friedman.}
 \end{block}
 \vspace{0.35em}
 \begin{alertblock}{Lectura defendible}
 {\footnotesize
-Un plot \textbf{por caso de uso}. Geometría $\mathcal{Q}$ solo en clasificación (lo medido).
-Adopción = ventaja vs mejor clásico en la métrica de la familia (accuracy / $R^2$ / AUC)
-+ alineación mapa--generador \citep{liu2021}.}
+Comparar \textbf{las mismas} métricas entre casos de uso.
+Patrón: $\Delta A>0$ en el control nativo (clasif./reg./anomalías);
+$\Delta A\le 0$ en datos sin estructura ZZ. Alineación mapa--generador \citep{liu2021}.}
 \end{alertblock}
 \end{frame}
 

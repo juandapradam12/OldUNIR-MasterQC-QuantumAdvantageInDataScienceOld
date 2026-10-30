@@ -1308,7 +1308,8 @@ def fig_09_qcr_framework():
     save_fig("09_qcr_framework_diagnostico.png")
 
 
-def _blue_bars(ax, labels, vals, ylab, title, fmt="{:+.3f}", highlight0=True):
+def _blue_bars(ax, labels, vals, ylab, title, fmt="{:+.3f}", highlight0=True,
+               ylim=None):
     """Barras azules compartidas por los perfiles por caso de uso."""
     colors = ["#0D47A1", "#1976D2", "#90CAF9"]
     bars = ax.bar(labels, vals, color=colors[: len(labels)], edgecolor="white",
@@ -1319,12 +1320,16 @@ def _blue_bars(ax, labels, vals, ylab, title, fmt="{:+.3f}", highlight0=True):
         bars[0].set_edgecolor("#01579B")
     ax.set_ylabel(ylab, fontsize=10)
     ax.set_title(title, fontsize=10.5)
-    ymax = max(vals) if vals else 0.0
-    ymin = min(vals) if vals else 0.0
-    pad = max(0.08 * (ymax - ymin + 1e-9), 0.04)
+    if ylim is not None:
+        ax.set_ylim(*ylim)
+        ymin, ymax = ylim
+    else:
+        ymax = max(vals) if vals else 0.0
+        ymin = min(vals) if vals else 0.0
+    pad = max(0.06 * (ymax - ymin + 1e-9), 0.01)
     for b, v in zip(bars, vals):
-        inside = v < -0.2 * max(abs(ymin), abs(ymax), 1e-9) and abs(v) > 0.15
-        if inside:
+        inside = v < ymin + 0.35 * (ymax - ymin) and v < -0.05 * max(abs(ymin), abs(ymax), 1e-9)
+        if inside and abs(v) > 0.05:
             ax.text(b.get_x() + b.get_width() / 2, v / 2, fmt.format(v),
                     ha="center", va="center", fontsize=9, fontweight="bold", color="white")
         else:
@@ -1336,122 +1341,128 @@ def _blue_bars(ax, labels, vals, ylab, title, fmt="{:+.3f}", highlight0=True):
     ax.tick_params(axis="x", labelsize=9)
 
 
-def fig_08_perfil_clasificacion():
-    """Clasificación: geometría Q (NB08) + ventaja vs mejor clásico (pp accuracy).
+def _load_estructura_por_caso() -> pd.DataFrame:
+    path = OUT_METRICS / "estructura_por_caso_uso.csv"
+    if not path.exists():
+        raise FileNotFoundError(
+            f"Falta {path}. Ejecutar: python3 POCs/scripts/medir_estructura_por_caso.py"
+        )
+    return pd.read_csv(path)
 
-    Sin símbolo Δ_op. Sin Δ_RBF. Sin mezclar otras familias.
-    """
-    results = RESULTS_08
-    d_F_ref = max(r["d_F"] for r in results) or 1.0
-    labels = ["Nativo", "SKG", "Telco"]
-    delta_A = [r["delta_A"] for r in results]
-    d_f_hat = [r["d_F"] / d_F_ref for r in results]
-    delta_H = [r["delta_H"] for r in results]
-    # accuracy(QSVM) − accuracy(mejor clásico), en pp — Notebook 06 / clasificación
-    vent_acc = [OPERATIONAL_08[r["dataset"]] for r in results]
 
-    fig, axes = plt.subplots(2, 2, figsize=(12, 8.0))
+# Escalas compartidas para comparar las MISMAS métricas entre familias
+_ESTRUCTURA_YLIMS = {
+    "delta_A": (-0.40, 0.35),
+    "d_F": (0.0, 0.015),
+    "delta_H": (0.0, 2.5),
+}
+
+
+def _fig_estructura_familia(family: str, title_es: str, out_name: str,
+                            alias: str | None = None) -> None:
+    """Una figura = un caso de uso = SOLO (ΔA, d_F, ΔH). Sin accuracy/R²/AUC."""
+    df = _load_estructura_por_caso()
+    sub = df[df["family"] == family].copy()
+    if sub.empty:
+        SKIPPED.append(f"{out_name}: sin filas para family={family}")
+        return
+    labels = sub["dataset"].tolist()
+    dA = sub["delta_A"].tolist()
+    dF = sub["d_F"].tolist()
+    dH = sub["delta_H"].tolist()
+
+    fig, axes = plt.subplots(1, 3, figsize=(13.2, 4.6))
     fig.suptitle(
-        "Clasificación — perfil geométrico "
-        r"$\mathcal{Q}=(\Delta A,\hat{d}_F,\Delta H)$"
-        " + resultado vs mejor clásico"
+        f"{title_es} — métricas de estructura cuántica "
+        r"$(\Delta A,\ d_F,\ \Delta H)$"
         "\n"
-        "Geometría: NB08 (mismo protocolo).  "
-        "Panel inferior-derecho: accuracy(QSVM) − accuracy(GB/RF), en pp.",
+        "Mismo protocolo en las tres familias: ZZ 2q, n=60, 3 repeats, "
+        r"baseline = RBF Frobenius-best.  "
+        "No se mezclan accuracy / $R^2$ / AUC.",
         fontsize=11.5, fontweight="bold",
     )
-    _blue_bars(axes[0, 0], labels, delta_A, r"$\Delta A$",
-               r"$\Delta A$ (Huang / Cortes)" "\n" r"$A(K_Q)-A(K_{cl})$")
-    _blue_bars(axes[0, 1], labels, d_f_hat, r"$\hat{d}_F$",
-               r"$\hat{d}_F$ (Liu)" "\n" r"$\|K_Q-K_{cl}\|_F$ norm.")
-    _blue_bars(axes[1, 0], labels, delta_H, r"$\Delta H$",
-               r"$\Delta H$ (Thanasilp)" "\n" r"$H(K_Q)-H(K_{cl})$")
-    _blue_bars(axes[1, 1], labels, vent_acc, "pp de accuracy",
-               "Resultado operativo (clasificación)" "\n"
-               "QSVM − mejor clásico (GB/RF)",
-               fmt="{:+.1f}")
+    _blue_bars(axes[0], labels, dA, r"$\Delta A$",
+               r"$\Delta A$ (Huang / Cortes)" "\n" r"$A(K_Q)-A(K_{\mathrm{RBF}})$",
+               fmt="{:+.3f}", ylim=_ESTRUCTURA_YLIMS["delta_A"])
+    _blue_bars(axes[1], labels, dF, r"$d_F$",
+               r"$d_F$ (Liu)" "\n" r"$\|K_Q-K_{\mathrm{RBF}}\|_F/n$",
+               fmt="{:.4f}", ylim=_ESTRUCTURA_YLIMS["d_F"])
+    _blue_bars(axes[2], labels, dH, r"$\Delta H$",
+               r"$\Delta H$ (Thanasilp)" "\n" r"$H(K_Q)-H(K_{\mathrm{RBF}})$",
+               fmt="{:+.3f}", ylim=_ESTRUCTURA_YLIMS["delta_H"])
     plt.tight_layout()
-    path = OUT / "08_perfil_clasificacion.png"
+    path = OUT / out_name
     plt.savefig(path, dpi=150, bbox_inches="tight")
     WRITTEN.append(path)
-    # Alias histórico para refs antiguas en tesis
-    alias = OUT / "08_q_vector_nativo_vs_reales.png"
-    plt.savefig(alias, dpi=150, bbox_inches="tight")
-    WRITTEN.append(alias)
+    if alias:
+        alias_path = OUT / alias
+        plt.savefig(alias_path, dpi=150, bbox_inches="tight")
+        WRITTEN.append(alias_path)
     plt.close()
 
 
-def fig_08_perfil_regresion():
-    """Regresión: R² cuántico / clásico / diferencia. Sin inventar geometría Q."""
-    labels = ["Nativo", "Friedman", "SKG"]
-    r2_q = [0.891, 0.712, 0.243]
-    r2_c = [0.287, 0.841, 0.587]
-    delta = [q - c for q, c in zip(r2_q, r2_c)]
-
-    fig, axes = plt.subplots(1, 3, figsize=(13.5, 4.8))
-    fig.suptitle(
-        "Regresión — perfil operativo (sin geometría "
-        r"$\mathcal{Q}$"
-        ": NB08 solo midió clasificación)"
-        "\n"
-        r"Métrica: $R^2$.  Modelo Q: QK-SVR (ZZ).  "
-        "Diferencia = $R^2$(QK-SVR) − $R^2$(mejor clásico).",
-        fontsize=11.5, fontweight="bold",
+def fig_08_perfil_clasificacion():
+    """Clasificación: solo ΔA, d_F, ΔH (mismas métricas que regresión/anomalías)."""
+    _fig_estructura_familia(
+        "clasificacion", "Clasificación", "08_perfil_clasificacion.png",
+        alias="08_q_vector_nativo_vs_reales.png",
     )
-    _blue_bars(axes[0], labels, r2_q, r"$R^2$",
-               "QK-SVR (cuántico)" "\n" r"$R^2$",
-               fmt="{:.3f}", highlight0=True)
-    axes[0].set_ylim(-0.05, 1.15)
-    _blue_bars(axes[1], labels, r2_c, r"$R^2$",
-               "Mejor clásico" "\n" "SVR-RBF / RF / RF",
-               fmt="{:.3f}", highlight0=False)
-    axes[1].set_ylim(-0.05, 1.15)
-    _blue_bars(axes[2], labels, delta, r"$\Delta R^2$",
-               "Resultado operativo (regresión)" "\n"
-               r"$R^2$(Q) − $R^2$(mejor clásico)",
-               fmt="{:+.2f}")
-    plt.tight_layout()
-    save_fig("08_perfil_regresion.png")
+
+
+def fig_08_perfil_regresion():
+    """Regresión: solo ΔA, d_F, ΔH (mismas métricas que clasificación/anomalías)."""
+    _fig_estructura_familia(
+        "regresion", "Regresión", "08_perfil_regresion.png",
+    )
 
 
 def fig_08_perfil_anomalias():
-    """Anomalías: AUC cuántico / clásico / diferencia. Sin inventar geometría Q."""
-    labels = ["zz_phase", "SKG", "moons"]
-    auc_q = [0.864, 0.694, 0.599]
-    auc_c = [0.553, 0.993, 0.890]
-    delta_pp = [(q - c) * 100 for q, c in zip(auc_q, auc_c)]
-
-    fig, axes = plt.subplots(1, 3, figsize=(13.5, 4.8))
-    fig.suptitle(
-        "Anomalías — perfil operativo (sin geometría "
-        r"$\mathcal{Q}$"
-        ": NB08 solo midió clasificación)"
-        "\n"
-        "Métrica: ROC-AUC.  Modelo Q: OCSVM-ZZ.  "
-        "Diferencia = AUC(Q) − AUC(mejor clásico), en pp.",
-        fontsize=11.5, fontweight="bold",
+    """Anomalías: solo ΔA, d_F, ΔH (mismas métricas que clasificación/regresión)."""
+    _fig_estructura_familia(
+        "anomalias", "Anomalías", "08_perfil_anomalias.png",
     )
-    _blue_bars(axes[0], labels, auc_q, "ROC-AUC",
-               "OCSVM-ZZ (cuántico)" "\n" "AUC",
-               fmt="{:.3f}")
-    axes[0].set_ylim(0.4, 1.12)
-    _blue_bars(axes[1], labels, auc_c, "ROC-AUC",
-               "Mejor clásico" "\n" "IF / LOF / IF",
-               fmt="{:.3f}", highlight0=False)
-    axes[1].set_ylim(0.4, 1.12)
-    _blue_bars(axes[2], labels, delta_pp, "pp de AUC",
-               "Resultado operativo (anomalías)" "\n"
-               "AUC(Q) − AUC(mejor clásico)",
-               fmt="{:+.1f}")
+
+
+def fig_08_estructura_tres_casos():
+    """Comparativa lado a lado: mismas 3 métricas × 3 familias."""
+    df = _load_estructura_por_caso()
+    families = [
+        ("clasificacion", "Clasificación"),
+        ("regresion", "Regresión"),
+        ("anomalias", "Anomalías"),
+    ]
+    metrics = [
+        ("delta_A", r"$\Delta A$", "{:+.3f}", _ESTRUCTURA_YLIMS["delta_A"]),
+        ("d_F", r"$d_F$", "{:.4f}", _ESTRUCTURA_YLIMS["d_F"]),
+        ("delta_H", r"$\Delta H$", "{:+.3f}", _ESTRUCTURA_YLIMS["delta_H"]),
+    ]
+    fig, axes = plt.subplots(3, 3, figsize=(13.5, 10.5))
+    fig.suptitle(
+        r"Estructura cuántica $(\Delta A,\ d_F,\ \Delta H)$ en los tres casos de uso"
+        "\n"
+        "Filas = métricas (comparables).  Columnas = casos de uso.  "
+        "Mismo protocolo; sin accuracy/$R^2$/AUC.",
+        fontsize=12, fontweight="bold",
+    )
+    for j, (fam, fam_title) in enumerate(families):
+        sub = df[df["family"] == fam]
+        labels = sub["dataset"].tolist()
+        for i, (col, ylab, fmt, ylim) in enumerate(metrics):
+            ax = axes[i, j]
+            vals = sub[col].tolist()
+            title = fam_title if i == 0 else ""
+            _blue_bars(ax, labels, vals, ylab if j == 0 else "", title,
+                       fmt=fmt, ylim=ylim)
     plt.tight_layout()
-    save_fig("08_perfil_anomalias.png")
+    save_fig("08_estructura_tres_casos.png")
 
 
 def fig_08_q_vector_vs_nativo():
-    """Compat: genera el perfil de clasificación (nombre histórico)."""
+    """Genera los tres perfiles de estructura + la comparativa conjunta."""
     fig_08_perfil_clasificacion()
     fig_08_perfil_regresion()
     fig_08_perfil_anomalias()
+    fig_08_estructura_tres_casos()
 
 
 def main():
