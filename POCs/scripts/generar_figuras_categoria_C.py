@@ -7,6 +7,7 @@ Genera las 3 figuras de Categoría C para el TFM.
 """
 
 import numpy as np
+import pandas as pd
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
 import networkx as nx
@@ -149,28 +150,38 @@ print(f"✅  Guardado: {out_path}")
 
 
 # ──────────────────────────────────────────────────────────────────────────────
-# C2 — Regresión Cuántica vs Clásica en 3 datasets
-# Valores R² basados en los resultados experimentales de Nb03 (TFM):
-#   Dataset cuántico-nativo: QK-SVR gana (estructura cuántica exacta)
-#   Dataset Friedman #1:     Clásicos (RF/XGB) ganan (función suave, no cuántica)
-#   Dataset SKG Bogotá:      Clásicos ganan (datos reales sin estructura cuántica)
+# C2 — Regresión cuántica vs clásica en 3 datasets
+# Todos los valores se leen de las salidas ejecutadas del Notebook 03:
+#   03_regresion_resumen_3datasets.csv  (R² cuántico, mejor clásico, ventaja)
+#   03_regresion_ventaja_cuantica.csv   (modelos del dataset cuántico-nativo)
+#   03_regresion_skg_bc.csv             (modelos del dataset SKG)
+#   03_regresion_resultados.csv         (modelos de Friedman #1)
 # ──────────────────────────────────────────────────────────────────────────────
-datasets = [
-    "Dataset\ncuántico-nativo\n(Liu 2021)",
-    "Friedman #1\n(sintético\nno-cuántico)",
-    "SKG Bogotá\n(datos reales\nmovilidad)",
+AZUL_UNIR = "#219BC3"
+GRIS_UNIR = "#858591"
+CARBON_UNIR = "#4A4A57"
+QUANTUM_COLOR = AZUL_UNIR
+CLASSICAL_COLOR = GRIS_UNIR
+
+resumen_reg = pd.read_csv(METRICS / "03_regresion_resumen_3datasets.csv")
+nativo_cl = pd.read_csv(METRICS / "03_regresion_ventaja_cuantica.csv").query("type == 'classical'")
+skg_cl = pd.read_csv(METRICS / "03_regresion_skg_bc.csv").query("Tipo == 'Clásico'")
+friedman_cl = pd.read_csv(METRICS / "03_regresion_resultados.csv").query("type == 'classical'")
+labels_classical = [
+    nativo_cl.loc[nativo_cl["r2"].idxmax(), "model"],
+    skg_cl.loc[skg_cl["R2"].idxmax(), "Modelo"],
+    friedman_cl.loc[friedman_cl["r2"].idxmax(), "model"],
 ]
 
-# Misma paleta que clasificación / anomalías: morado = Q, azul = clásico
-QUANTUM_COLOR = "#7B2FBE"
-CLASSICAL_COLOR = "#1976D2"
-
-r2_quantum   = np.array([0.891, 0.712, 0.243])
-r2_classical = np.array([0.287, 0.841, 0.587])
-labels_classical = ["SVR-RBF", "Random Forest", "Random Forest"]
-veredictos = ["VENTAJA Q", "GANA CLÁSICO", "GANA CLÁSICO"]
-
+datasets = [
+    "Dataset\ncuántico-nativo\n(Liu 2021)",
+    "SKG Bogotá\n(datos reales\nmovilidad)",
+    "Friedman #1\n(sintético\nno-cuántico)",
+]
+r2_quantum = resumen_reg["QK-SVR"].to_numpy()
+r2_classical = resumen_reg["Mejor Clásico"].to_numpy()
 gap = r2_quantum - r2_classical
+veredictos = ["VENTAJA Q" if g > 0 else "GANA CLÁSICO" for g in gap]
 gap_colors = [QUANTUM_COLOR if g > 0 else CLASSICAL_COLOR for g in gap]
 
 x = np.arange(len(datasets))
@@ -178,12 +189,11 @@ w = 0.32
 
 fig, axes = plt.subplots(1, 2, figsize=(14, 5.5))
 fig.suptitle(
-    "Regresión Cuántica vs Clásica — ventaja SOLO con estructura alineada\n"
-    "Métrica: $R^2$  |  Modelo cuántico: QK-SVR (ZZFeatureMap)",
-    fontsize=12, fontweight="bold", y=1.02
+    "Regresión cuántica vs clásica: la ventaja solo aparece con estructura alineada\n"
+    "Métrica: $R^2$ (una partición)  |  Modelo cuántico: QK-SVR (ZZFeatureMap)",
+    fontsize=12, fontweight="bold", y=1.02, color=CARBON_UNIR
 )
 
-# ── Panel 1: R² absoluto ──────────────────────────────────────────────────────
 ax0 = axes[0]
 bq = ax0.bar(x - w / 2, r2_quantum, w,
              color=QUANTUM_COLOR, label="QK-SVR (cuántico)", edgecolor="white", linewidth=1.2)
@@ -194,8 +204,10 @@ ax0.axhline(0, color="gray", linewidth=0.8, linestyle="--", alpha=0.5)
 ax0.set_xticks(x)
 ax0.set_xticklabels(datasets, fontsize=9)
 ax0.set_ylabel("$R^2$", fontsize=11)
-ax0.set_ylim(-0.05, 1.22)
-ax0.set_title("$R^2$: QK-SVR vs Mejor Clásico\npor tipo de dataset", fontweight="bold")
+techo = max(r2_quantum.max(), r2_classical.max())
+suelo = min(r2_quantum.min(), r2_classical.min(), 0)
+ax0.set_ylim(suelo - 0.15, techo + 0.3)
+ax0.set_title("$R^2$: QK-SVR vs mejor clásico\npor tipo de dataset", fontweight="bold")
 ax0.legend(fontsize=8, loc="upper right")
 
 for bar, val in zip(list(bq) + list(bc), list(r2_quantum) + list(r2_classical)):
@@ -208,21 +220,18 @@ for i, (lbl, verd) in enumerate(zip(labels_classical, veredictos)):
     color = QUANTUM_COLOR if gap[i] > 0 else CLASSICAL_COLOR
     ax0.text(x[i], top + 0.08, verd, ha="center", va="bottom",
              fontsize=8, fontweight="bold", color=color)
-    ax0.text(x[i] + w / 2, -0.04, lbl, ha="center", va="top",
+    ax0.text(x[i] + w / 2, suelo - 0.04, lbl, ha="center", va="top",
              fontsize=7, color="#555555", style="italic")
 
-# ── Panel 2: Ventaja neta ΔR² (misma paleta Q/C) ─────────────────────────────
 ax1 = axes[1]
-bars_gap = ax1.bar(x, gap, color=gap_colors, edgecolor="white",
-                   linewidth=1.2, width=0.5)
-
+bars_gap = ax1.bar(x, gap, color=gap_colors, edgecolor="white", linewidth=1.2, width=0.5)
 ax1.axhline(0, color="black", linewidth=1.2)
 ax1.set_xticks(x)
 ax1.set_xticklabels(datasets, fontsize=9)
 ax1.set_ylabel("Ventaja cuántica ($\\Delta R^2$)", fontsize=10)
-ax1.set_title("Solo nativo > 0: Friedman/SKG gana el clásico\n(QK-SVR − Mejor Clásico)",
+ax1.set_title(f"Solo el nativo es positivo ({gap[0]:+.3f}, marginal)\n(QK-SVR − mejor clásico)",
               fontweight="bold")
-ax1.set_ylim(-0.85, 0.95)
+ax1.set_ylim(gap.min() - 0.2, gap.max() + 0.3)
 
 for bar, val, verd in zip(bars_gap, gap, veredictos):
     ypos = val + 0.03 if val >= 0 else val - 0.05
@@ -230,13 +239,13 @@ for bar, val, verd in zip(bars_gap, gap, veredictos):
              f"{val:+.3f}", ha="center", va="bottom",
              fontsize=10, fontweight="bold")
     ax1.text(bar.get_x() + bar.get_width() / 2,
-             0.78 if val > 0 else -0.75, verd,
+             gap.max() + 0.15 if val > 0 else gap.min() - 0.1, verd,
              ha="center", va="center", fontsize=8, fontweight="bold",
              color=QUANTUM_COLOR if val > 0 else CLASSICAL_COLOR)
 
 plt.tight_layout()
 out_path = OUT / "03_regresion_3datasets.png"
-plt.savefig(out_path, dpi=150, bbox_inches="tight")
+plt.savefig(out_path, dpi=150, bbox_inches="tight", metadata={"paleta": "unir"})
 plt.close()
 print(f"✅  Guardado: {out_path}")
 

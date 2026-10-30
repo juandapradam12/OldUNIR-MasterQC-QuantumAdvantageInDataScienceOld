@@ -23,6 +23,8 @@ from matplotlib.colors import LinearSegmentedColormap
 from matplotlib.patches import Patch
 from scipy.stats import spearmanr
 
+import sintesis_resultados
+
 warnings.filterwarnings("ignore")
 
 OUT = Path(__file__).resolve().parents[1] / "data" / "output" / "figures"
@@ -60,12 +62,6 @@ def save_fig(name: str, paleta_unir: bool = False) -> Path:
     return path
 
 
-def load_or_fallback(csv_path: Path, fallback: list[dict]) -> pd.DataFrame:
-    if csv_path.exists():
-        return pd.read_csv(csv_path)
-    return pd.DataFrame(fallback)
-
-
 def quantum_advantage(df: pd.DataFrame, metric: str, best_is: str = "max"):
     q = df[df["type"] == "quantum"][metric]
     cl = df[df["type"] == "classical"][metric]
@@ -82,165 +78,70 @@ def quantumness_score(A_Q, A_cl, d_F, H_Q, H_cl, d_F_ref=1.0, w=(0.4, 0.3, 0.3))
     return w1 * delta_A + w2 * d_F_norm + w3 * delta_H
 
 
-# ── Datos embebidos (salidas de notebooks) ───────────────────────────────────
+# ── Datos: salidas ejecutadas de los notebooks ───────────────────────────────
+# Ninguna cifra se escribe aquí a mano; si falta un CSV, la figura no se genera.
 
-DF_01_RESULTS = pd.DataFrame([
-    {"model": "Gradient Boosting", "type": "classical", "accuracy": 0.797729,
-     "precision": 0.786819, "recall": 0.797729, "f1_score": 0.788752, "training_time_s": 1.52},
-    {"model": "Random Forest", "type": "classical", "accuracy": 0.770050,
-     "precision": 0.798829, "recall": 0.770050, "f1_score": 0.778869, "training_time_s": 0.79},
-    {"model": "XGBoost", "type": "classical", "accuracy": 0.757275,
-     "precision": 0.797577, "recall": 0.757275, "f1_score": 0.768326, "training_time_s": 0.33},
-    {"model": "SVM (RBF)", "type": "classical", "accuracy": 0.743790,
-     "precision": 0.794319, "recall": 0.743790, "f1_score": 0.756619, "training_time_s": 0.47},
-    {"model": "Quantum Kernel SVM", "type": "quantum", "accuracy": 0.760000,
-     "precision": 0.577600, "recall": 0.760000, "f1_score": 0.656364, "training_time_s": 20.55},
-    {"model": "VQC", "type": "quantum", "accuracy": 0.620000,
-     "precision": 0.688693, "recall": 0.620000, "f1_score": 0.643628, "training_time_s": 15.71},
-])
+def leer_metrica(nombre: str) -> pd.DataFrame:
+    ruta = OUT_METRICS / nombre
+    if not ruta.exists():
+        raise FileNotFoundError(f"Falta {ruta}: ejecute el notebook que lo produce.")
+    return pd.read_csv(ruta)
 
-CMP_DF = pd.DataFrame([
-    {"dataset": "Cuántico-nativo (Liu 2021)", "acc_qsvm": 0.5333, "acc_svm_rbf": 0.4667,
-     "delta_acc": 0.0667, "winner": "QSVM"},
-    {"dataset": "SKG Incidentes movilidad", "acc_qsvm": 0.4667, "acc_svm_rbf": 0.5250,
-     "delta_acc": -0.0583, "winner": "SVM-RBF"},
-    {"dataset": "Telco Customer Churn", "acc_qsvm": 0.7346, "acc_svm_rbf": 0.7473,
-     "delta_acc": -0.0128, "winner": "SVM-RBF"},
-])
 
-DF_06 = load_or_fallback(OUT_METRICS / "06_quantum_kernel_advantage.csv", [
-    {"model": "Quantum Kernel SVM", "type": "quantum", "accuracy": 0.6667, "f1": 0.6626, "time_s": 18.025},
-    {"model": "SVM Polinomial", "type": "classical", "accuracy": 0.6000, "f1": 0.5361, "time_s": 0.050},
-    {"model": "Random Forest", "type": "classical", "accuracy": 0.5556, "f1": 0.5542, "time_s": 0.146},
-    {"model": "XGBoost", "type": "classical", "accuracy": 0.5556, "f1": 0.5564, "time_s": 0.185},
-    {"model": "SVM RBF", "type": "classical", "accuracy": 0.5333, "f1": 0.5343, "time_s": 0.005},
-    {"model": "Gradient Boost", "type": "classical", "accuracy": 0.4444, "f1": 0.4444, "time_s": 0.053},
-])
+DF_01_RESULTS = leer_metrica("01_clasificacion_resultados.csv")
+CMP_DF = leer_metrica("01_qsvm_vs_svm_directo.csv")
+DF_06 = leer_metrica("06_quantum_kernel_advantage.csv")
+SCALE_DF_06 = leer_metrica("06_quantum_kernel_escalabilidad.csv")
+SUMMARY_06 = leer_metrica("06_qkernel_resumen_3datasets.csv")
+SUMMARY_06["veredicto"] = np.where(SUMMARY_06["Ventaja (pp)"] > 0, "VENTAJA Q", "GANA CLÁSICO")
 
-SCALE_DF_06 = pd.DataFrame([
-    {"n_samples": 50, "acc_classical": 0.733, "acc_quantum": 0.667, "advantage": -0.067},
-    {"n_samples": 80, "acc_classical": 0.625, "acc_quantum": 0.625, "advantage": 0.000},
-    {"n_samples": 100, "acc_classical": 0.500, "acc_quantum": 0.700, "advantage": 0.200},
-    {"n_samples": 120, "acc_classical": 0.417, "acc_quantum": 0.722, "advantage": 0.306},
-    {"n_samples": 150, "acc_classical": 0.444, "acc_quantum": 0.733, "advantage": 0.289},
-])
-
-# Baseline = mejor clásico operativo (GB/RF en datos reales; SVM-poly en Liu).
-# Fuente preferente: metrics/06_qkernel_resumen_3datasets.csv
-_SUMMARY_06_FALLBACK = [
-    {"Dataset": "1. Cuántico-nativo\n(Liu 2021)", "QSVC": 0.733, "Mejor Clásico": 0.600,
-     "veredicto": "VENTAJA Q"},
-    {"Dataset": "2. SKG\n(Incidentes Bogotá)", "QSVC": 0.547, "Mejor Clásico": 0.607,
-     "veredicto": "GANA CLÁSICO"},
-    {"Dataset": "3. Vida real\n(Telco Churn)", "QSVC": 0.760, "Mejor Clásico": 0.798,
-     "veredicto": "GANA CLÁSICO"},
-]
-_summary_path = OUT_METRICS / "06_qkernel_resumen_3datasets.csv"
-if _summary_path.exists():
-    SUMMARY_06 = pd.read_csv(_summary_path)
-    if "Ventaja (pp)" not in SUMMARY_06.columns:
-        SUMMARY_06["Ventaja (pp)"] = (SUMMARY_06["QSVC"] - SUMMARY_06["Mejor Clásico"]) * 100
-else:
-    SUMMARY_06 = pd.DataFrame(_SUMMARY_06_FALLBACK)
-    SUMMARY_06["Ventaja (pp)"] = (SUMMARY_06["QSVC"] - SUMMARY_06["Mejor Clásico"]) * 100
-
-# NB08 indicadores: CSV preferente (transcripción del log del notebook).
-# advantage_pp aquí = Δ vs RBF (NB08). Δ_op vive aparte.
-_RESULTS_08_FALLBACK = [
-    {"dataset": "Cuántico-nativo", "A_Q": 0.0181, "A_cl": 0.0469, "delta_A": -0.0288,
-     "H_Q": 2.2749, "H_cl": 2.2411, "delta_H": 0.0339, "d_F": 0.3532, "g": 1541.657,
-     "Q_score": 0.2858, "advantage_pp_rbf": 0.0, "advantage_pp_op": 13.3},
-    {"dataset": "SKG Incidentes", "A_Q": 0.0396, "A_cl": 0.0499, "delta_A": -0.0103,
-     "H_Q": 2.1545, "H_cl": 1.9666, "delta_H": 0.1880, "d_F": 0.3689, "g": 2080.864,
-     "Q_score": 0.3523, "advantage_pp_rbf": 8.3, "advantage_pp_op": -6.0},
-    {"dataset": "Telco Churn", "A_Q": 0.1899, "A_cl": 0.1698, "delta_A": 0.0201,
-     "H_Q": 2.3332, "H_cl": 3.4646, "delta_H": -1.1313, "d_F": 0.3457, "g": 89.725,
-     "Q_score": -0.0503, "advantage_pp_rbf": 0.0, "advantage_pp_op": -3.8},
-]
-_df08 = load_or_fallback(OUT_METRICS / "08_test_cuanticidad_resultados.csv", _RESULTS_08_FALLBACK)
+# Notebook 08: la ventaja ``advantage_pp_rbf`` es vs. SVM-RBF; ``advantage_pp_op`` (Δ_op)
+# es la ventaja operativa del Notebook 06 (protocolos distintos, no se mezclan).
+_df08 = leer_metrica("08_test_cuanticidad_resultados.csv").rename(columns={
+    "Dataset": "dataset", "A(KQ,Ky)": "A_Q", "A(Krbf,Ky)": "A_cl", "ΔA": "delta_A",
+    "H(KQ)": "H_Q", "H(Krbf)": "H_cl", "ΔH": "delta_H", "Δ_RBF(pp)": "advantage_pp_rbf",
+    "Δ_op(pp)": "advantage_pp_op",
+})
 RESULTS_08 = []
 OPERATIONAL_08 = {}
 for _, row in _df08.iterrows():
-    adv_rbf = float(row.get("advantage_pp_rbf", row.get("advantage_pp", 0.0)))
-    adv_op = float(row["advantage_pp_op"]) if "advantage_pp_op" in row and pd.notna(row["advantage_pp_op"]) else None
     RESULTS_08.append({
         "dataset": row["dataset"],
         "A_Q": float(row["A_Q"]), "A_cl": float(row["A_cl"]), "delta_A": float(row["delta_A"]),
         "H_Q": float(row["H_Q"]), "H_cl": float(row["H_cl"]), "delta_H": float(row["delta_H"]),
         "d_F": float(row["d_F"]), "g": float(row["g"]), "Q_score": float(row["Q_score"]),
-        "advantage_pp": adv_rbf,  # canónico NB08 = vs RBF
+        "advantage_pp": float(row["advantage_pp_rbf"]),
     })
-    if adv_op is not None:
-        OPERATIONAL_08[row["dataset"]] = adv_op
-if not OPERATIONAL_08:
-    OPERATIONAL_08 = {"Cuántico-nativo": 13.3, "SKG Incidentes": -6.0, "Telco Churn": -3.8}
+    OPERATIONAL_08[row["dataset"]] = float(row["advantage_pp_op"])
 
-# Barrido α REAL del Notebook 08 (CSV / log). X fijo ⇒ d_F/H/g constantes.
-# ρ_S(α, ΔA)=+0.833. NO afirmar ρ(Q, ventaja)=0.833.
-DF_SWEEP_08 = load_or_fallback(OUT_METRICS / "08_barrido_sintetico_alpha.csv", [
-    {"alpha": 0.00, "A_Q": 0.0174, "A_cl": 0.3909, "delta_A": -0.3735,
-     "H_Q": 2.3046, "d_F": 0.3591, "g": 2380.246, "advantage_pp": -40.0},
-    {"alpha": 0.10, "A_Q": 0.0179, "A_cl": 0.3317, "delta_A": -0.3138,
-     "H_Q": 2.3046, "d_F": 0.3591, "g": 2380.246, "advantage_pp": -30.0},
-    {"alpha": 0.25, "A_Q": 0.0749, "A_cl": 0.2436, "delta_A": -0.1688,
-     "H_Q": 2.3046, "d_F": 0.3591, "g": 2380.246, "advantage_pp": 0.0},
-    {"alpha": 0.40, "A_Q": 0.1786, "A_cl": 0.2537, "delta_A": -0.0751,
-     "H_Q": 2.3046, "d_F": 0.3591, "g": 2380.246, "advantage_pp": 3.3},
-    {"alpha": 0.50, "A_Q": 0.2707, "A_cl": 0.2701, "delta_A": 0.0006,
-     "H_Q": 2.3046, "d_F": 0.3591, "g": 2380.246, "advantage_pp": 0.0},
-    {"alpha": 0.65, "A_Q": 0.3009, "A_cl": 0.2620, "delta_A": 0.0389,
-     "H_Q": 2.3046, "d_F": 0.3591, "g": 2380.246, "advantage_pp": 13.3},
-    {"alpha": 0.75, "A_Q": 0.4209, "A_cl": 0.3331, "delta_A": 0.0878,
-     "H_Q": 2.3046, "d_F": 0.3591, "g": 2380.246, "advantage_pp": 0.0},
-    {"alpha": 0.90, "A_Q": 0.6911, "A_cl": 0.5300, "delta_A": 0.1611,
-     "H_Q": 2.3046, "d_F": 0.3591, "g": 2380.246, "advantage_pp": 0.0},
-    {"alpha": 1.00, "A_Q": 0.0101, "A_cl": 0.0104, "delta_A": -0.0003,
-     "H_Q": 2.3046, "d_F": 0.3591, "g": 2380.246, "advantage_pp": -3.3},
-])
+# Barrido α del Notebook 08. X fijo ⇒ d_F/H/g constantes.
+# No afirmar ρ(Q, ventaja); lo que se sostiene es ρ_S(α, ΔA).
+DF_SWEEP_08 = leer_metrica("08_barrido_sintetico_alpha.csv")
 
-BASELINE_09 = {
-    "SKG Incidentes": {"Q_score": 0.1629, "advantage_pp": 8.3, "delta_A": -0.0103,
-                       "d_F": 0.3689, "delta_H": 0.1880},
-    "Telco Churn": {"Q_score": -0.2277, "advantage_pp": 0.0, "delta_A": 0.0201,
-                    "d_F": 0.3457, "delta_H": -1.1313},
-}
-
-# NB09 mapeos: CSV preferente (tabla resumen del notebook).
-_df09 = load_or_fallback(OUT_METRICS / "09_mapeos_resultados.csv", [])
-ALL_RESULTS_09: dict[str, list] = {"SKG Incidentes": [], "Telco Churn": []}
-if len(_df09):
-    for ds in ALL_RESULTS_09:
-        sub = _df09[(_df09["dataset"] == ds) & (_df09["strategy"] != "Baseline")]
-        ALL_RESULTS_09[ds] = [
-            {"strategy": r["strategy"], "Q_score": float(r["Q_score"]),
-             "advantage_pp": float(r["advantage_pp"])}
-            for _, r in sub.iterrows()
-        ]
-        base_row = _df09[(_df09["dataset"] == ds) & (_df09["strategy"] == "Baseline")]
-        if len(base_row):
-            BASELINE_09[ds]["Q_score"] = float(base_row.iloc[0]["Q_score"])
-            BASELINE_09[ds]["advantage_pp"] = float(base_row.iloc[0]["advantage_pp"])
-else:
-    ALL_RESULTS_09 = {
-        "SKG Incidentes": [
-            {"strategy": "ZZ-compatible", "Q_score": -0.2033, "advantage_pp": 12.5},
-            {"strategy": "Rotación max-dF", "Q_score": 0.1698, "advantage_pp": 0.0},
-            {"strategy": "Re-uploading reps=3", "Q_score": 0.2118, "advantage_pp": 16.7},
-            {"strategy": "Q-UMAP/MDS", "Q_score": 0.0537, "advantage_pp": -8.3},
-        ],
-        "Telco Churn": [
-            {"strategy": "ZZ-compatible", "Q_score": 0.1360, "advantage_pp": 4.2},
-            {"strategy": "Rotación max-dF", "Q_score": 0.0956, "advantage_pp": 4.2},
-            {"strategy": "Re-uploading reps=3", "Q_score": 0.1674, "advantage_pp": 4.2},
-            {"strategy": "Q-UMAP/MDS", "Q_score": -0.2481, "advantage_pp": 4.2},
-        ],
+# Notebook 09: línea base y estrategias de mapeo por dataset.
+_df09 = leer_metrica("09_mapeos_resultados.csv")
+_indicadores_08 = {r["dataset"]: r for r in RESULTS_08}
+BASELINE_09: dict[str, dict] = {}
+ALL_RESULTS_09: dict[str, list] = {}
+for _ds in ("SKG Incidentes", "Telco Churn"):
+    _base = _df09[(_df09["dataset"] == _ds) & (_df09["strategy"] == "Baseline")].iloc[0]
+    BASELINE_09[_ds] = {
+        "Q_score": float(_base["Q_score"]), "advantage_pp": float(_base["advantage_pp"]),
+        "delta_A": _indicadores_08[_ds]["delta_A"], "d_F": _indicadores_08[_ds]["d_F"],
+        "delta_H": _indicadores_08[_ds]["delta_H"],
     }
+    ALL_RESULTS_09[_ds] = [
+        {"strategy": r["strategy"], "Q_score": float(r["Q_score"]),
+         "advantage_pp": float(r["advantage_pp"])}
+        for _, r in _df09[(_df09["dataset"] == _ds) & (_df09["strategy"] != "Baseline")].iterrows()
+    ]
 
-# Post-QCR Telco: SOLO Q y Adv están en el log NB09.
-# ΔA/d_F/ΔH post NO se imprimieron → NO inventar (antes se mezclaron cifras 4Q).
+# Post-QCR Telco: el log del Notebook 09 solo imprime Q y la ventaja; ΔA, d_F y ΔH
+# posteriores no se midieron y no se reconstruyen.
+_qcr = next(r for r in ALL_RESULTS_09["Telco Churn"] if r["strategy"] == "Re-uploading reps=3")
 QCR_TELCO = {
     "baseline": BASELINE_09["Telco Churn"],
-    "post_qcr": {"Q_score": 0.1674, "advantage_pp": 4.2},  # re-uploading reps=3
+    "post_qcr": {"Q_score": _qcr["Q_score"], "advantage_pp": _qcr["advantage_pp"]},
     "bottleneck": "delta_H",
 }
 
@@ -368,7 +269,7 @@ def fig_07_paralelismo():
     from qiskit.quantum_info import Statevector
 
     fig, axes = plt.subplots(1, 3, figsize=(20, 5))
-    fig.suptitle("Paralelismo Cuántico — Superposición con n qubits (Hadamard)",
+    fig.suptitle("Superposición con n qubits (Hadamard): el estado tiene $2^n$ amplitudes",
                  fontsize=13, fontweight="bold")
     for ax, n_q in zip(axes, [2, 4, 8]):
         qc = QuantumCircuit(n_q)
@@ -386,8 +287,8 @@ def fig_07_paralelismo():
         ax.set_ylim(0, 1.0 / (2 ** n_q) * 2.5)
         ax.axhline(1.0 / (2 ** n_q), color="orange", linestyle="--", linewidth=1.5,
                    label=f"$1/2^{n_q}$ = {1 / 2 ** n_q:.4f}")
-        ax.set_title(f"{n_q} qubits → $2^{{{n_q}}}$ = {2 ** n_q} estados simultáneos\n"
-                     f"Clásico necesitaría {2 ** n_q} evaluaciones", fontweight="bold")
+        ax.set_title(f"{n_q} qubits → $2^{{{n_q}}}$ = {2 ** n_q} amplitudes\n"
+                     "una medición devuelve un solo resultado", fontweight="bold")
         ax.set_ylabel("Probabilidad")
         ax.legend(fontsize=9)
         ax_inset = ax.inset_axes([0.65, 0.55, 0.33, 0.40])
@@ -424,14 +325,14 @@ def fig_07_grover_benchmark():
     bench_df = pd.DataFrame(benchmark_data)
 
     fig, axes = plt.subplots(1, 2, figsize=(16, 6))
-    fig.suptitle("Benchmark: Grover vs Búsqueda Clásica", fontsize=13, fontweight="bold")
+    fig.suptitle("Conteo teórico de operaciones: Grover vs búsqueda clásica (sin ejecución en hardware)", fontsize=13, fontweight="bold")
     ax = axes[0]
     ax.loglog(bench_df["N"], bench_df["classical_ops"], "o-", color=CLASSICAL_COLOR,
               linewidth=2.5, label="Clásico: $O(N)$ comparaciones")
     ax.loglog(bench_df["N"], bench_df["grover_ops"], "s-", color=QUANTUM_COLOR,
               linewidth=2.5, label="Grover: $O(\\sqrt{N})$ iteraciones")
     ax.fill_between(bench_df["N"], bench_df["grover_ops"], bench_df["classical_ops"],
-                    alpha=0.10, color=QUANTUM_COLOR, label="Región de ventaja")
+                    alpha=0.10, color=QUANTUM_COLOR, label="Diferencia teórica")
     for _, row in bench_df.iterrows():
         ax.annotate(f"{row['speedup']:.0f}x", (row["N"], row["grover_ops"]),
                     textcoords="offset points", xytext=(5, -12), fontsize=8, color=QUANTUM_COLOR)
@@ -442,7 +343,7 @@ def fig_07_grover_benchmark():
 
     ax = axes[1]
     ax.semilogx(bench_df["N"], bench_df["speedup"], "D-", color=ADVANTAGE_COLOR,
-                linewidth=2.5, markersize=8, label="Speedup real (N / √N = √N)")
+                linewidth=2.5, markersize=8, label="Speedup teórico (N / iteraciones de Grover)")
     n_ref = np.array(search_sizes)
     ax.semilogx(n_ref, np.sqrt(n_ref), "--", color="gray", linewidth=1.5,
                 label="Teórico: $\\sqrt{N}$")
@@ -450,116 +351,57 @@ def fig_07_grover_benchmark():
         ax.text(row["N"], row["speedup"] + 1, f"{row['speedup']:.0f}×",
                 ha="center", fontsize=9, fontweight="bold", color=ADVANTAGE_COLOR)
     ax.set_xlabel("Tamaño del espacio de búsqueda (N)")
-    ax.set_ylabel("Speedup cuántico (veces más rápido)")
-    ax.set_title("Speedup cuántico de Grover")
+    ax.set_ylabel("Speedup teórico en número de operaciones")
+    ax.set_title("Speedup teórico de Grover")
     ax.legend(fontsize=9)
     ax.set_ylim(0, bench_df["speedup"].max() * 1.2)
     plt.tight_layout()
     save_fig("07_grover_benchmark.png")
 
 
-def fig_07_radar():
-    dimensions = [
-        "Calidad\nde solución", "Ventaja\nrelativa (%)", "Escalabilidad\nteórica",
-        "Robustez\n(consistencia)", "Aplicabilidad\nSKG",
-    ]
-    profiles = {
-        "Clasificación\n(QSVM, dataset cuántico)": {"scores": [9.2, 9.5, 7.0, 9.0, 6.0],
-                                                    "color": "#7B2FBE", "fill": "#DBC8F0"},
-        "Optimización\n(QAOA, asignación SKG)": {"scores": [7.5, 7.8, 8.5, 6.5, 9.5],
-                                                  "color": "#1976D2", "fill": "#BBDEFB"},
-        "Portafolio\n(VQE/QAOA)": {"scores": [7.0, 5.3, 8.0, 7.0, 7.5],
-                                    "color": "#2E7D32", "fill": "#C8E6C9"},
-        "Kernel Advantage\n(Liu 2021, cuántico-nativo)": {"scores": [9.8, 10.0, 9.5, 9.8, 4.5],
-                                                           "color": "#F57F17", "fill": "#FFF9C4"},
-        "Anomalías\n(OCSVM-ZZ, zz_phase)": {"scores": [8.6, 8.5, 6.5, 8.0, 5.5],
-                                             "color": "#C62828", "fill": "#FFCDD2"},
-        "Forecasting\n(QK-SVR, zz_lag)": {"scores": [9.0, 9.2, 6.0, 8.5, 5.0],
-                                           "color": "#00695C", "fill": "#B2DFDB"},
-        "TSP / MDS\n(QAOA, protocolo)": {"scores": [7.0, 3.0, 7.5, 7.0, 8.0],
-                                          "color": "#5D4037", "fill": "#D7CCC8"},
-    }
-    n_dim = len(dimensions)
-    angles = np.linspace(0, 2 * np.pi, n_dim, endpoint=False).tolist()
-    angles += angles[:1]
-
-    def draw_radar(ax, scores, color, fill, alpha_fill=0.2):
-        vals = scores + scores[:1]
-        ax.plot(angles, vals, "o-", color=color, linewidth=2.5, markersize=6, zorder=5)
-        ax.fill(angles, vals, color=fill, alpha=alpha_fill, zorder=4)
-
-    fig, axes_r = plt.subplots(1, 2, figsize=(18, 7), subplot_kw=dict(polar=True))
-    fig.suptitle("Perfil Multidimensional de Ventaja Cuántica\nTFM Computación Cuántica — Juan David Prada | UNIR 2026",
-                 fontsize=14, fontweight="bold", y=1.02)
-    for ax_r in axes_r:
-        for level in [2, 4, 6, 8, 10]:
-            ax_r.plot(angles, [level] * (n_dim + 1), "-", color="#ddd", lw=0.7, zorder=1)
-        ax_r.set_xticks(angles[:-1])
-        ax_r.set_xticklabels(dimensions, fontsize=9.5)
-        ax_r.set_ylim(0, 10)
-        ax_r.set_yticks([2, 4, 6, 8, 10])
-        ax_r.set_yticklabels(["2", "4", "6", "8", "10"], fontsize=7, color="gray")
-        ax_r.spines["polar"].set_visible(False)
-        ax_r.grid(color="#eee", linestyle="-", linewidth=0.5)
-
-    for name_r, prof in profiles.items():
-        draw_radar(axes_r[0], prof["scores"], prof["color"], prof["fill"])
-    axes_r[0].set_title("Comparativa de todos los experimentos", fontweight="bold", pad=18)
-    axes_r[0].legend([p for p in profiles], loc="upper right", bbox_to_anchor=(1.5, 1.15),
-                     fontsize=8.5, framealpha=0.8, title="Experimento", title_fontsize=9)
-
-    for name_r in ["Clasificación\n(QSVM, dataset cuántico)",
-                   "Anomalías\n(OCSVM-ZZ, zz_phase)",
-                   "Forecasting\n(QK-SVR, zz_lag)",
-                   "Optimización\n(QAOA, asignación SKG)"]:
-        prof = profiles[name_r]
-        draw_radar(axes_r[1], prof["scores"], prof["color"], prof["fill"], alpha_fill=0.25)
-    draw_radar(axes_r[1], [5.0] * n_dim, "#999", "#eee", 0.1)
-    axes_r[1].set_title("Perfiles de mayor ventaja cuántica", fontweight="bold", pad=18)
-    axes_r[1].legend(["Referencia clásica (baseline)"], loc="upper right",
-                     bbox_to_anchor=(1.55, 1.15), fontsize=8.5, framealpha=0.8)
-    plt.tight_layout()
-    save_fig("07_radar_ventaja_cuantica.png")
-
-
 def fig_07_heatmap():
-    data_heatmap = {
-        "Dataset\ncuántico-nativo": [
-            38.3, -92.8, -30.3, 5.3, 0.0, 8.9, 73.0, 31.2, 86.5
-        ],
-        "Dataset SKG\n(datos reales)": [
-            -4.5, -56.2, -30.3, 5.3, 0.0, -6.7, 73.0, -25.0, -325.8
-        ],
-        "Dataset de\nreferencia pública": [
-            -3.8, 9.3, None, None, 0.0, 6.7, None, -30.0, -154.6
-        ],
+    """Mapa de calor de la síntesis; lee solo ``07_sintesis_resultados.csv``."""
+    sintesis = sintesis_resultados.cargar()
+    nombres = {
+        1: "CU1: QSVM\n(clasificación)",
+        2: "CU2: QK-SVR\n(regresión)",
+        3: "CU3: QAOA\n(asignación)",
+        4: "CU4: VQE\n(portafolio)",
+        5: "CU5: QAOA\n(TSP)",
+        6: "CU6: QSVM\n(umbral Liu)",
+        7: "CU7: QAOA MDS\n(conj. dominante)",
+        8: "CU8: OCSVM-ZZ\n(anomalías)",
+        9: "CU9: QK-SVR\n(lags)",
     }
-    index_rows = [
-        "CU1: QSVM\n(clasificación)",
-        "CU2: QK-SVR\n(regresión)",
-        "CU3: QAOA\n(asignación)",
-        "CU4: VQE/QAOA\n(portafolio)",
-        "CU5: QAOA TSP\n(protocolo justo)",
-        "CU6: QSVM\n(umbral Liu)",
-        "CU7: QAOA MDS\n(conj. dominante)",
-        "CU8: OCSVM-ZZ\n(anomalías)",
-        "CU9: QK-SVR\n(lags)",
+    columnas = {
+        "nativo": "Dataset\ncuántico-nativo",
+        "skg": "Dataset SKG\n(datos reales)",
+        "referencia": "Dataset de\nreferencia",
+    }
+    # CU7 mide P(óptimo), sin comparador clásico: no es una ventaja y queda fuera.
+    sintesis = sintesis[(sintesis["caso"] != 7) & sintesis["capa"].isin(columnas)]
+    valores = sintesis.pivot(index="caso", columns="capa", values="valor")
+    valores = valores.reindex(index=list(nombres), columns=list(columnas))
+    unidades = sintesis.groupby("caso")["unidad"].first()
+    valores.index = [
+        nombres[c] + (f"\n[{unidades[c]}]" if c in unidades else "") for c in nombres
     ]
-    df_hm = pd.DataFrame(data_heatmap, index=index_rows)
-    mask = df_hm.isnull()
-    fig, ax = plt.subplots(figsize=(12, 9))
-    fig.suptitle("Ventaja Cuántica (Δ pp, Δ% o P(ópt)) por Caso de Uso y Dataset\n"
-                 "Azul = ventaja cuántica | Gris = clásico superior | N/A = no aplica",
+    valores.columns = list(columnas.values())
+    mask = valores.isnull()
+
+    fig, ax = plt.subplots(figsize=(12, 10))
+    fig.suptitle("Ventaja cuántica sobre el mejor clásico por caso de uso y dataset\n"
+                 "Azul = ventaja cuántica | Gris = clásico superior | N/A = no medido",
                  fontsize=12, fontweight="bold")
     cmap_unir = LinearSegmentedColormap.from_list(
         "unir_div", ["#858591", "#E6E6EA", "#F7F7F9", "#9BD0E4", "#219BC3"])
-    sns.heatmap(df_hm.astype(float), ax=ax, cmap=cmap_unir, center=0,
+    sns.heatmap(valores.astype(float), ax=ax, cmap=cmap_unir, center=0,
                 vmin=-80, vmax=80, annot=True, fmt=".1f", linewidths=0.5,
                 linecolor="#eee", mask=mask,
-                cbar_kws={"label": "Ventaja cuántica (pp o Δ%)  [+ = cuántico mejor]"},
+                cbar_kws={"label": "Ventaja cuántica (unidad por fila)  [+ = cuántico mejor]"},
                 annot_kws={"fontsize": 11, "fontweight": "bold"})
-    for r_i in range(df_hm.shape[0]):
-        for c_i in range(df_hm.shape[1]):
+    for r_i in range(valores.shape[0]):
+        for c_i in range(valores.shape[1]):
             if mask.iloc[r_i, c_i]:
                 ax.add_patch(plt.Rectangle((c_i, r_i), 1, 1, fill=True, facecolor="white",
                                            edgecolor="#C0C0C8", hatch="///", linewidth=0.0, zorder=5))
@@ -567,7 +409,7 @@ def fig_07_heatmap():
                         fontsize=10, color="#858591", zorder=6,
                         bbox=dict(facecolor="white", edgecolor="none", pad=1.5))
     ax.set_xlabel("Tipo de dataset", fontsize=11)
-    ax.set_ylabel("Dominio / Algoritmo cuántico", fontsize=11)
+    ax.set_ylabel("Dominio / algoritmo cuántico", fontsize=11)
     plt.tight_layout()
     save_fig("07_heatmap_ventaja_por_dominio.png", paleta_unir=True)
 
@@ -631,13 +473,13 @@ def fig_01_qsvm_vs_svm_directo():
 # ── Notebook 06 ────────────────────────────────────────────────────────────────
 
 def fig_06_learning_curves():
-    n_train_vals = np.array([30, 50, 80, 100, 140, 180])
-    acc_qsvm = np.array([0.889, 0.911, 0.856, 0.856, 0.889, 0.911])
-    acc_svm_rbf = np.array([0.467, 0.422, 0.489, 0.478, 0.444, 0.556])
-    acc_gb = np.array([0.511, 0.489, 0.511, 0.511, 0.500, 0.533])
+    escalabilidad = leer_metrica("01_clasificacion_escalabilidad.csv")
+    n_train_vals = escalabilidad["n_train"].to_numpy()
+    acc_qsvm = escalabilidad["acc_quantum"].to_numpy()
+    acc_svm_rbf = escalabilidad["acc_classical"].to_numpy()
 
     fig, axes = plt.subplots(1, 2, figsize=(16, 5))
-    fig.suptitle("Curvas de Aprendizaje — QSVM vs Clásicos\n"
+    fig.suptitle("Curvas de Aprendizaje — QSVM vs SVM-RBF\n"
                  "Dataset Cuántico-Nativo (Liu 2021, ZZFeatureMap 2 qubits)",
                  fontsize=13, fontweight="bold")
     ax = axes[0]
@@ -645,8 +487,6 @@ def fig_06_learning_curves():
             label=f"Quantum Kernel SVM  (media={acc_qsvm.mean():.1%})", zorder=5)
     ax.plot(n_train_vals, acc_svm_rbf, "s--", color=CLASSICAL_COLOR, linewidth=2, markersize=7,
             label=f"SVM-RBF clásico      (media={acc_svm_rbf.mean():.1%})", zorder=4)
-    ax.plot(n_train_vals, acc_gb, "^-.", color="#F57C00", linewidth=2, markersize=7,
-            label=f"Gradient Boosting    (media={acc_gb.mean():.1%})", zorder=4)
     ax.fill_between(n_train_vals, acc_svm_rbf, acc_qsvm, alpha=0.15,
                     color=QUANTUM_COLOR, label="Región de ventaja cuántica")
     ax.axhline(0.5, color="gray", lw=1, ls=":", alpha=0.6, label="Azar (50%)")
@@ -658,7 +498,7 @@ def fig_06_learning_curves():
     ax.legend(fontsize=9, loc="upper left")
     gap_mean = acc_qsvm.mean() - acc_svm_rbf.mean()
     mid_y = (acc_qsvm.mean() + acc_svm_rbf.mean()) / 2
-    ax.annotate(f"Δ medio = +{gap_mean:.1%}", xy=(100, mid_y), xytext=(70, mid_y + 0.1),
+    ax.annotate(f"Δ medio = {gap_mean:+.1%}", xy=(100, mid_y), xytext=(70, mid_y + 0.1),
                 fontsize=10, color=QUANTUM_COLOR, fontweight="bold",
                 arrowprops=dict(arrowstyle="->", color=QUANTUM_COLOR, lw=1.5))
 
@@ -668,7 +508,7 @@ def fig_06_learning_curves():
     bars = ax2.bar(n_train_vals.astype(str), advantage_pp, color=bar_colors, edgecolor="white", width=0.6)
     ax2.axhline(0, color="black", lw=0.8, ls="--")
     ax2.axhline(advantage_pp.mean(), color=ADVANTAGE_COLOR, lw=1.5, ls="-.",
-                alpha=0.7, label=f"Media = +{advantage_pp.mean():.1f}pp")
+                alpha=0.7, label=f"Media = {advantage_pp.mean():+.1f}pp")
     for bar, val in zip(bars, advantage_pp):
         ypos = bar.get_height() + 0.5 if val >= 0 else bar.get_height() - 2.5
         ax2.text(bar.get_x() + bar.get_width() / 2, ypos, f"{val:+.1f}pp",
@@ -733,9 +573,10 @@ def fig_06_3datasets_comparativa():
                  color=QUANTUM_COLOR if row["Ventaja (pp)"] > 0 else CLASSICAL_COLOR)
     fig.suptitle("Quantum Kernel vs Mejor Clásico — ventaja SOLO en cuántico-nativo (Liu)",
                  fontsize=13, fontweight="bold", y=1.02)
+    telco = summary.iloc[2]
     fig.text(0.5, -0.02,
-             "Telco: QSVM 76.0% vs Gradient Boosting 79.8% (−3.8 pp). "
-             "El antiguo +6.7 pp vs RBF (n=50) era artefacto, no ventaja operativa.",
+             f"Telco: QSVM {telco['QSVC']:.1%} vs mejor clásico {telco['Mejor Clásico']:.1%} "
+             f"({telco['Ventaja (pp)']:+.1f} pp). Una sola partición por dataset.",
              ha="center", fontsize=8, style="italic", color="#444444")
     plt.tight_layout()
     save_fig("06_quantum_kernel_3datasets_comparativa.png")
@@ -748,11 +589,17 @@ def fig_08_anomaly_3datasets_comparativa():
         "2. SKG\n(inyectado)",
         "3. Referencia\n(moons)",
     ]
-    # Medias multi-repeat Table A (BUSINESS/anomaly_v2_results.md)
-    auc_q = np.array([0.864, 0.694, 0.599])
-    auc_c = np.array([0.553, 0.993, 0.890])  # IF / LOF / IF
+    # Medias multi-repeat de la Tabla A (fair_anomaly_*.csv)
+    auc_q, auc_c = [], []
+    for dataset in ("zz_phase", "skg_injected", "moons"):
+        tabla = leer_metrica(f"fair_anomaly_{dataset}.csv")
+        tabla = tabla[tabla["table"].str.startswith("A")]
+        es_zz = tabla["model"] == "OCSVM-ZZ"
+        auc_q.append(tabla.loc[es_zz, "auc_mean"].iloc[0])
+        auc_c.append(tabla.loc[~es_zz, "auc_mean"].max())
+    auc_q, auc_c = np.array(auc_q), np.array(auc_c)
     delta_pp = (auc_q - auc_c) * 100
-    veredictos = ["VENTAJA Q", "GANA CLÁSICO", "GANA CLÁSICO"]
+    veredictos = ["VENTAJA Q" if d > 0 else "GANA CLÁSICO" for d in delta_pp]
 
     fig, axes = plt.subplots(1, 2, figsize=(14, 5.4))
     x = np.arange(len(datasets))
@@ -799,8 +646,8 @@ def fig_08_anomaly_3datasets_comparativa():
     fig.suptitle("Anomalías one-class — ventaja SOLO con novedad alineada al mapa ZZ",
                  fontsize=13, fontweight="bold", y=1.02)
     fig.text(0.5, -0.02,
-             "Medias n=160, 5 repeats (Table A). zz_phase: OCSVM-ZZ 0.864 vs IF 0.553. "
-             "SKG/moons: IsolationForest / LOF dominan.",
+             f"Medias de 5 repeticiones (Tabla A). zz_phase: OCSVM-ZZ {auc_q[0]:.3f} vs {auc_c[0]:.3f} "
+             "del mejor clásico. SKG y moons: dominan IsolationForest, LOF y OCSVM-RBF.",
              ha="center", fontsize=8, style="italic", color="#444444")
     plt.tight_layout()
     save_fig("08_anomaly_3datasets_comparativa.png")
@@ -858,6 +705,7 @@ def fig_06_boundaries():
         from qiskit_machine_learning.kernels import FidelityQuantumKernel
         from sklearn.ensemble import GradientBoostingClassifier
         from sklearn.inspection import DecisionBoundaryDisplay
+        from sklearn.model_selection import train_test_split
         from sklearn.preprocessing import MinMaxScaler
         from sklearn.svm import SVC
 
@@ -872,17 +720,16 @@ def fig_06_boundaries():
             for x in X
         ])
         X = MinMaxScaler((-np.pi, np.pi)).fit_transform(X)
-        acc_map = {
-            "SVM RBF": 0.5333,
-            "Gradient Boosting": 0.4444,
-            "Quantum Kernel SVM": 0.6667,
-        }
+        X_tr, X_te, y_tr, y_te = train_test_split(X, y, test_size=0.3, random_state=42, stratify=y)
         classifiers = {
-            "SVM RBF": SVC(kernel="rbf", C=1.0, random_state=42).fit(X, y),
-            "Gradient Boosting": GradientBoostingClassifier(n_estimators=200, random_state=42).fit(X, y),
+            "SVM RBF": SVC(kernel="rbf", C=1.0, random_state=42).fit(X_tr, y_tr),
+            "Gradient Boosting": GradientBoostingClassifier(
+                n_estimators=200, random_state=42).fit(X_tr, y_tr),
         }
         qk = FidelityQuantumKernel(feature_map=fm)
-        qsvc = SVC(kernel="precomputed", C=1.0).fit(qk.evaluate(x_vec=X), y)
+        qsvc = SVC(kernel="precomputed", C=1.0).fit(qk.evaluate(x_vec=X_tr), y_tr)
+        acc_map = {name: clf.score(X_te, y_te) for name, clf in classifiers.items()}
+        acc_map["Quantum Kernel SVM"] = qsvc.score(qk.evaluate(x_vec=X_te, y_vec=X_tr), y_te)
 
         x_min, x_max = X[:, 0].min() - 0.2, X[:, 0].max() + 0.2
         y_min, y_max = X[:, 1].min() - 0.2, X[:, 1].max() + 0.2
@@ -890,14 +737,14 @@ def fig_06_boundaries():
         grid_coarse = np.c_[xx_c.ravel(), yy_c.ravel()]
 
         t0 = time.time()
-        zz_q = qsvc.predict(qk.evaluate(x_vec=grid_coarse, y_vec=X)).reshape(xx_c.shape)
+        zz_q = qsvc.predict(qk.evaluate(x_vec=grid_coarse, y_vec=X_tr)).reshape(xx_c.shape)
         if time.time() - t0 > 45:
             SKIPPED.append("06_quantum_kernel_boundaries.png (QSVC grid >45s)")
             return
 
         fig, axes = plt.subplots(1, 3, figsize=(18, 5))
         fig.suptitle("Fronteras de decision: Clasicos vs Quantum Kernel SVM\n"
-                     "(Dataset generado por ZZFeatureMap — Liu et al. 2021)", fontsize=13)
+                     "(Dataset generado por ZZFeatureMap — Liu et al. 2021; 15 puntos de test)", fontsize=13)
         models_to_plot = [
             ("SVM RBF", classifiers["SVM RBF"], "#1976D2", "Clasico"),
             ("Gradient Boosting", classifiers["Gradient Boosting"], "#388E3C", "Clasico"),
@@ -911,7 +758,7 @@ def fig_06_boundaries():
                 ax.contourf(xx_c, yy_c, zz_q, alpha=0.3, cmap="RdYlBu", levels=[-0.5, 0.5, 1.5])
                 ax.text(0.02, 0.02, "(aprox. 12×12)", transform=ax.transAxes, fontsize=7, color="gray")
             ax.scatter(X[:, 0], X[:, 1], c=y, cmap="RdYlBu", edgecolors="k", linewidths=0.5, s=40, zorder=3)
-            ax.set_title(f"[{tag}] {name}\nAccuracy: {acc_map.get(name, ''):.3f}",
+            ax.set_title(f"[{tag}] {name}\nAccuracy (test 30%): {acc_map[name]:.3f}",
                          fontsize=11, color=color, fontweight="bold")
             ax.set_xlabel("Feature 1")
             ax.set_ylabel("Feature 2")
@@ -926,6 +773,7 @@ def fig_06_boundaries():
 def fig_08_test_cuanticidad():
     """Mediciones de los factores de Q(D) = w1·ΔA + w2·d̂_F + w3·ΔH en 3 datasets."""
     results = RESULTS_08
+    skg = next(r for r in results if r["dataset"] == "SKG Incidentes")
     names = [r["dataset"] for r in results]
     colors = ["#7B2FBE", "#FF5722", "#1976D2"]
     d_F_ref = max(r["d_F"] for r in results) or 1.0
@@ -941,7 +789,8 @@ def fig_08_test_cuanticidad():
         "\n"
         r"$\mathcal{Q}=w_1\Delta A + w_2\hat{d}_F + w_3\Delta H$"
         r"  ·  $\mathcal{Q}$ alto $\neq$ $\Delta_{\mathrm{op}}>0$"
-        r"  (SKG: $Q{+}0.35$ pero $\Delta_{\mathrm{op}}{=}{-}6$ pp)",
+        + (f"  (SKG: $Q{{{skg['Q_score']:+.2f}}}$ pero "
+           f"$\\Delta_{{\\mathrm{{op}}}}{{=}}{{{OPERATIONAL_08['SKG Incidentes']:+.1f}}}$ pp)"),
         fontsize=12, fontweight="bold", y=1.02,
     )
     x_pos = np.arange(len(names))
@@ -1568,7 +1417,6 @@ def main():
     fig_07_kernel_advantage_detalle()
     fig_07_paralelismo()
     fig_07_grover_benchmark()
-    fig_07_radar()
     fig_07_heatmap()
     fig_01_clasificacion_comparacion()
     fig_01_qsvm_vs_svm_directo()
