@@ -56,6 +56,7 @@ POCs/data/output/metrics/*.json
 !POCs/data/output/metrics/08_test_cuanticidad_resultados.csv
 !POCs/data/output/metrics/08_barrido_sintetico_alpha.csv
 !POCs/data/output/metrics/09_mapeos_resultados.csv
+!POCs/data/output/metrics/estructura_por_caso_uso.csv
 !POCs/data/output/metrics/README_PROCEDENCIA.md
 !POCs/data/**/.gitkeep
 !POCs/data/README.md
