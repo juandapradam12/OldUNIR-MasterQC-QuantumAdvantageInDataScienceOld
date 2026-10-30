@@ -933,7 +933,7 @@ def fig_08_test_cuanticidad():
         "\n"
         r"$\mathcal{Q}=w_1\Delta A + w_2\hat{d}_F + w_3\Delta H$"
         r"  ·  $\mathcal{Q}$ alto $\neq$ $\Delta_{\mathrm{op}}>0$"
-        "  (SKG: $Q{+}0.35$ pero $\Delta_{\mathrm{op}}{=}{-}6$ pp)",
+        r"  (SKG: $Q{+}0.35$ pero $\Delta_{\mathrm{op}}{=}{-}6$ pp)",
         fontsize=12, fontweight="bold", y=1.02,
     )
     x_pos = np.arange(len(names))
