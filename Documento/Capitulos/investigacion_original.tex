@@ -236,7 +236,7 @@ En el Notebook~08 se calculó también $q=w_1\Delta A+w_2\hat{d}_F+w_3\Delta H$ 
 \begin{figure}[ht]
 \centering
 \includegraphics[width=0.95\textwidth]{../POCs/data/output/figures/08_estructura_comparativa_casos_uso.png}
-\caption{Comparativa de estructura cuántica en un solo gráfico: \textbf{un panel por indicador} ---alineación $\Delta A$, entropía espectral $\Delta H$, distancia de Frobenius $d_F$, diferencia geométrica $g$ y compuesto $\mathcal{Q}$, los indicadores de la Tabla de indicadores implementados---; en cada panel el eje X son los \textbf{casos de uso} (clasificación, regresión, anomalías) y las tres barras de cada grupo son los datasets (Nativo / SKG / Referencia). Protocolo unificado (ZZ 2~qubits, $n{=}60$, 3 repeats, RBF Frobenius-best). Solo el nativo tiene $\Delta A>0$ en los tres casos; $\Delta H$, $d_F$ y $g$ quedan casi planos. $\mathcal{Q}=0.4\,\Delta A+0.3\,\hat d_F+0.3\,\Delta H$ (con $\hat d_F=d_F/\max d_F$) lo dominan $\hat d_F$ y $\Delta H$, por lo que oscila en $0.77$--$1.01$ en todos los datasets: se muestra por completitud, no como regla de decisión. CSV: \texttt{estructura\_por\_caso\_uso.csv}.}
+\caption{Comparativa de estructura cuántica en un solo gráfico: \textbf{un panel por indicador} ---alineación $\Delta A$, entropía espectral $\Delta H$, distancia de Frobenius $d_F$, diferencia geométrica $g$ y compuesto $\mathcal{Q}$, los indicadores de la Tabla de indicadores implementados---; en cada panel el eje X son los \textbf{casos de uso} (clasificación, regresión, anomalías y optimización) y las tres barras de cada grupo son los datasets (Nativo / SKG / Referencia; en optimización, asignación / MaxCut / TSP). Protocolo unificado (ZZ 2~qubits, $n{=}60$, 3 repeats, RBF Frobenius-best). En optimización, $X$ son todos los bitstrings del espacio de búsqueda e $y$ la energía del QUBO (paisaje), \emph{no} el rendimiento de QAOA. La banda azul del panel de $\Delta A$ es el control nulo ($y$ permutada, $\pm2\sigma$). Solo los nativos superan el ruido de $\Delta A$; $\Delta H$, $d_F$ y $g$ quedan casi planos, con la excepción de anomalías-SKG, atribuible a que los outliers a $8\sigma$ comprimen el escalado MinMax de los inliers (artefacto de codificación). $\mathcal{Q}=0.4\,\Delta A+0.3\,\hat d_F+0.3\,\Delta H$ (con $\hat d_F=d_F/\max d_F$) lo dominan indicadores planos: se muestra por completitud, no como regla de decisión. CSV: \texttt{estructura\_por\_caso\_uso.csv}; notebook~11.}
 \label{fig:estructura_tres_casos}
 \label{fig:q_vector_vs_nativo}
 \end{figure}
@@ -262,13 +262,20 @@ En el Notebook~08 se calculó también $q=w_1\Delta A+w_2\hat{d}_F+w_3\Delta H$ 
 \label{fig:perfil_anomalias}
 \end{figure}
 
+\begin{figure}[ht]
+\centering
+\includegraphics[width=0.85\textwidth]{../POCs/data/output/figures/08_perfil_optimizacion.png}
+\caption{Detalle \textbf{optimización} (paisaje QUBO de asignación $n{=}3$, MaxCut $n{=}10$ y TSP $n{=}4$). Las mismas tres métricas y escalas que en los demás casos. Con 2~qubits frente a 9--10 variables, PCA(2) retiene $\approx\!1/3$ de la varianza de los bitstrings: es una limitación del diseño, y el resultado no implica nada sobre el rendimiento de QAOA. Auxiliar a la Fig.~\ref{fig:estructura_tres_casos}.}
+\label{fig:perfil_optimizacion}
+\end{figure}
+
 \paragraph{Interpretación frente a la literatura (sin forzar umbrales).}
 \begin{itemize}
-    \item \textbf{$\Delta A$ (Cortes/Huang).} Con el protocolo unificado (RBF Frobenius-best), el control nativo tiene $\Delta A>0$ en clasificación ($+0.20$), regresión ($+0.28$) y anomalías ($+0.09$). Friedman (regresión) es el más negativo ($-0.32$). El barrido $\alpha$ de NB08 sigue mostrando $\rho_S(\alpha,\Delta A)=0.833$.
-    \item \textbf{$d_F$ (Liu).} En el protocolo unificado $d_F\approx 0.01$ en \emph{todos} los datasets de las tres familias: el kernel ZZ es distinto del RBF, pero $d_F$ \textbf{casi no discrimina} nativo vs datos reales.
-    \item \textbf{$\Delta H$ (Thanasilp).} Con baseline Frobenius-best, $\Delta H$ queda positivo y similar ($\sim 1.7$--$2.1$) en las tres familias; no se interpreta un ``mínimo $\Delta H$'' como señal de estructura (ese patrón pertenecía al protocolo NB08 con otro baseline clásico).
+    \item \textbf{$\Delta A$ (Cortes/Huang).} Con el protocolo unificado (RBF Frobenius-best), el control nativo tiene $\Delta A>0$ en clasificación ($+0.20$), regresión ($+0.28$) y anomalías ($+0.09$). Friedman (regresión) es el más negativo ($-0.32$); $\Delta A<0$ significa que el RBF se alinea mejor con $y$, no una ``estructura negativa''. Frente al control nulo ($y$ permutada, $\approx+0.03\pm0.03$) ningún dato real ni paisaje de optimización queda por encima del ruido; en optimización $\Delta A$ vale $-0.08$ (asignación), $+0.04$ (MaxCut, dentro del ruido) y $-0.07$ (TSP). El barrido $\alpha$ de NB08 sigue mostrando $\rho_S(\alpha,\Delta A)=0.833$.
+    \item \textbf{$d_F$ (Liu).} En el protocolo unificado $d_F\approx 0.01$ en \emph{todos} los datasets de las cuatro familias (también $g\approx 3\cdot10^{3}$): el kernel ZZ es distinto del RBF, pero $d_F$ \textbf{casi no discrimina} nativo vs datos reales.
+    \item \textbf{$\Delta H$ (Thanasilp).} Con baseline Frobenius-best, $\Delta H$ queda positivo y similar ($\sim 1.7$--$2.1$) en las cuatro familias, salvo anomalías-SKG ($0.44$), donde los outliers a $8\sigma$ comprimen a los inliers en el MinMax (artefacto de escala, no estructura); no se interpreta un ``mínimo $\Delta H$'' como señal de estructura (ese patrón pertenecía al protocolo NB08 con otro baseline clásico).
 \end{itemize}
-La lectura coherente con \citet{liu2021} es la \textbf{alineación mapa--generador}: $\Delta A>0$ en el control nativo de cada familia. Las figuras de estructura \textbf{no} incluyen accuracy/$R^2$/AUC --- esas son métricas de tarea distintas y se reportan en los capítulos de evaluación.
+La lectura coherente con \citet{liu2021} es la \textbf{alineación mapa--generador}: $\Delta A>0$ en el control nativo de cada familia supervisada. En optimización la medición es sobre el paisaje QUBO con 2~qubits (PCA retiene $\approx1/3$ de la varianza): no hay evidencia de estructura, y la limitación es del diseño. Las figuras de estructura \textbf{no} incluyen accuracy/$R^2$/AUC --- esas son métricas de tarea distintas y se reportan en los capítulos de evaluación.
 % =====================================================================
 \section{Mapeos cuántico-compatibles: revisión de la literatura}
 \label{sec:lit_mapeos}
