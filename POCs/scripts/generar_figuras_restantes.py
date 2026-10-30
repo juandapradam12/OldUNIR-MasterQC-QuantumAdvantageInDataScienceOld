@@ -1361,20 +1361,25 @@ def fig_08_q_vector_vs_nativo():
     ax = axes[1, 1]
     x = np.arange(len(short))
     w = 0.35
-    ax.bar(x - w / 2, d_rbf, w, label=r"$\Delta_{\mathrm{RBF}}$ (NB08)",
+    ax.bar(x - w / 2, d_rbf, w, label=r"$\Delta_{\mathrm{RBF}}$ = QSVM$-$RBF (NB08)",
            color="#BBDEFB", edgecolor="white", alpha=0.95)
-    b2 = ax.bar(x + w / 2, d_op, w, label=r"$\Delta_{\mathrm{op}}$ (Caso 1)",
+    b2 = ax.bar(x + w / 2, d_op, w, label=r"$\Delta_{\mathrm{op}}$ = QSVM$-$mejor clásico",
                 color=colors, edgecolor="white", alpha=0.95)
     ax.axhline(0, color="#37474F", lw=0.9, ls="--")
     ax.set_xticks(x)
     ax.set_xticklabels(short)
     ax.set_ylabel("pp")
-    ax.set_title(r"Ventaja operativa" "\n" r"(no mezclar con $\Delta_{\mathrm{RBF}}$)", fontsize=11)
-    ax.legend(fontsize=8, loc="best")
+    ax.set_title(
+        r"$\Delta_{\mathrm{op}}$ (Caso 1 / NB06)" "\n"
+        r"QSVM $-$ mejor clásico (GB/RF)",
+        fontsize=11,
+    )
+    ax.legend(fontsize=7.5, loc="upper right")
     for b, v in zip(b2, d_op):
         ax.text(b.get_x() + b.get_width() / 2, v + (0.4 if v >= 0 else -0.6),
-                f"{v:+.1f}", ha="center", va="bottom" if v >= 0 else "top",
-                fontsize=10, fontweight="bold")
+                rf"$\Delta_{{\mathrm{{op}}}}$={v:+.1f}",
+                ha="center", va="bottom" if v >= 0 else "top",
+                fontsize=9, fontweight="bold")
 
     plt.tight_layout()
     save_fig("08_q_vector_nativo_vs_reales.png")

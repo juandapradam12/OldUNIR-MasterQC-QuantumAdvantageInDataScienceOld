@@ -609,9 +609,16 @@ como trabajo futuro.}
 \begin{columns}[T]
 \begin{column}{0.58\textwidth}
 \centering
-\includegraphics[width=\linewidth,height=0.82\textheight,keepaspectratio]{08_q_vector_nativo_vs_reales.png}
+\includegraphics[width=\linewidth,height=0.72\textheight,keepaspectratio]{08_q_vector_nativo_vs_reales.png}
 \end{column}
 \begin{column}{0.40\textwidth}
+\begin{block}{Qué es $\Delta_{\mathrm{op}}$}
+{\footnotesize
+$\Delta_{\mathrm{op}}=$ accuracy(QSVM)$-$accuracy(\textbf{mejor clásico}: GB/RF), en pp.
+Fuente: Caso~1 / NB06 --- \textbf{no} es componente de $\mathcal{Q}$.
+Panel inferior-derecho: nativo $+13.3$, SKG $-6.0$, Telco $-3.8$.
+($\Delta_{\mathrm{RBF}}=$ QSVM$-$SVM-RBF en NB08; baseline débil.)}
+\end{block}
 \begin{block}{Qué dicen los datos}
 {\footnotesize
 \begin{itemize}
