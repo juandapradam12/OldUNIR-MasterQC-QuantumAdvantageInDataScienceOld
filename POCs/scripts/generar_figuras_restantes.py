@@ -1208,78 +1208,92 @@ def fig_09_barrido_rotaciones():
 
 
 def fig_09_qcr_framework():
-    """Diagnóstico QCR con SOLO cifras verificadas en el log NB09.
+    """Diagnóstico QCR paralelo SKG | Telco — solo cifras del log NB09.
 
-    Importante: los componentes ΔA/d_F/ΔH *post* re-uploading NO están en el
-    log impreso. Una versión anterior del script mezcló por error cifras del
-    experimento 4Q+SelectKBest — eso se retira. Aquí: baseline (componentes
-    reales) + barras Q/Adv antes/después (únicas post-métricas logueadas).
+    Ambos paneles usan los MISMOS ejes (ΔA, d_F, ΔH) del baseline logueado.
+    Componentes *post* re-uploading no están en el log → no se inventan;
+    el lift Q/Adv de Telco se anota como texto verificado.
     """
     fig, axes = plt.subplots(1, 2, figsize=(13, 6))
     fig.suptitle(
-        "Framework QCR: diagnóstico con cifras del log NB09\n"
-        "Q>0 vs RBF ≠ ventaja operativa vs GB/RF · no se inventan componentes post",
+        "Framework QCR: diagnóstico baseline SKG y Telco (log NB09)\n"
+        r"Mismos componentes $\Delta A$, $d_F$, $\Delta H$ · "
+        "Q>0 vs RBF ≠ ventaja operativa vs GB/RF",
         fontsize=12, fontweight="bold",
     )
 
-    # ── SKG: componentes baseline + aviso ──────────────────────────────────
-    ax = axes[0]
-    skg = BASELINE_09["SKG Incidentes"]
     components = ["ΔA", "d_F", "ΔH"]
-    vals = [skg["delta_A"], skg["d_F"], skg["delta_H"]]
-    colors = ["#C62828" if v < 0 else "#1565C0" for v in vals]
-    ax.bar(components, vals, color=colors, alpha=0.9, edgecolor="white")
-    ax.axhline(0, color="black", linewidth=0.7)
-    ax.set_ylabel("Valor del componente (baseline)")
-    ax.set_title("SKG Incidentes — NO cuántico-nativo")
-    ax.text(
-        0.5, 0.92,
-        "Q≈+0.16 vs RBF, pero GB/RF ganan\n"
-        "QML v2: veredicto classical\n"
-        "(Q>0 ≠ compatibilidad operativa)",
-        transform=ax.transAxes, ha="center", va="top", fontsize=9,
-        bbox=dict(boxstyle="round", facecolor="#FFEBEE", edgecolor="#C62828", alpha=0.95),
-    )
-    ax.text(
-        0.98, 0.02,
-        f"Q baseline: {skg['Q_score']:+.3f}\nAdv vs RBF: {skg['advantage_pp']:+.1f}pp",
-        transform=ax.transAxes, fontsize=9, ha="right", va="bottom",
-        bbox=dict(boxstyle="round", facecolor="white", alpha=0.85),
-    )
+    panels = [
+        (
+            "SKG Incidentes",
+            BASELINE_09["SKG Incidentes"],
+            "NO cuántico-nativo",
+            "Q≈+0.16 vs RBF, pero GB/RF ganan\n"
+            "QML v2: veredicto classical\n"
+            "(Q>0 ≠ compatibilidad operativa)",
+            "#FFEBEE", "#C62828",
+            None,
+        ),
+        (
+            "Telco Churn",
+            QCR_TELCO["baseline"],
+            f"cuello baseline: {QCR_TELCO['bottleneck']}",
+            "Baseline: ΔH muy negativo (concentración)\n"
+            "QML v2: Telco sigue classical\n"
+            "(no nativo pese a lifts vs RBF)",
+            "#FFF8E1", "#F9A825",
+            QCR_TELCO["post_qcr"],
+        ),
+    ]
 
-    # ── Telco: baseline componentes + Q/Adv verificados (sin post-componentes) ─
-    ax = axes[1]
-    qcr_res = QCR_TELCO
-    base = qcr_res["baseline"]
-    post = qcr_res["post_qcr"]
-    # Panel superior conceptual: solo métricas logueadas post (Q, Adv)
-    metrics = ["Q_score", "Adv vs RBF (pp)"]
-    base_m = [base["Q_score"], base["advantage_pp"]]
-    post_m = [post["Q_score"], post["advantage_pp"]]
-    x = np.arange(len(metrics))
-    w = 0.35
-    ax.bar(x - w / 2, base_m, w, label="Baseline (log NB09)", color="#90A4AE", alpha=0.9)
-    ax.bar(x + w / 2, post_m, w, label="Post re-uploading reps=3 (log NB09)",
-           color="#2E7D32", alpha=0.9)
-    ax.axhline(0, color="black", linewidth=0.7)
-    ax.set_xticks(x)
-    ax.set_xticklabels(metrics, fontsize=10)
-    ax.set_ylabel("Valor logueado")
-    ax.set_title(
-        f"Telco Churn — cuello baseline: {qcr_res['bottleneck']}\n"
-        r"(componentes $\Delta A$/$d_F$/$\Delta H$ post: no logueados → no inventados)",
-    )
-    ax.legend(fontsize=8, loc="best")
-    ax.text(
-        0.02, 0.02,
-        f"Baseline componentes (sí logueados):\n"
-        f"$\\Delta A$={base['delta_A']:+.3f}, "
-        f"$d_F$={base['d_F']:.3f}, "
-        f"$\\Delta H$={base['delta_H']:+.3f}\n"
-        "QML v2: Telco sigue classical",
-        transform=ax.transAxes, fontsize=8, ha="left", va="bottom",
-        bbox=dict(boxstyle="round", facecolor="#FFF8E1", edgecolor="#F9A825", alpha=0.95),
-    )
+    for ax, (name, base, subtitle, aviso, box_fc, box_ec, post) in zip(axes, panels):
+        vals = [base["delta_A"], base["d_F"], base["delta_H"]]
+        colors = ["#C62828" if v < 0 else "#1565C0" for v in vals]
+        bars = ax.bar(components, vals, color=colors, alpha=0.9, edgecolor="white")
+        ax.axhline(0, color="black", linewidth=0.7)
+        ax.set_ylabel("Valor del componente (baseline)")
+        ax.set_title(f"{name} — {subtitle}")
+        # Escala primero para colocar etiquetas dentro del eje
+        ymin = min(vals) - 0.25
+        ymax = max(0.55, max(vals) + 0.35)
+        if post is not None:
+            ymin = min(vals) - 0.35  # espacio para ΔH≈−1.13 y footer
+            ymax = max(0.65, max(vals) + 0.45)
+        ax.set_ylim(ymin, ymax)
+        for b, v in zip(bars, vals):
+            # Etiqueta dentro de la barra si es muy negativa; si no, fuera
+            if v < -0.2:
+                ax.text(
+                    b.get_x() + b.get_width() / 2, v / 2, f"{v:+.3f}",
+                    ha="center", va="center", fontsize=9, fontweight="bold",
+                    color="white",
+                )
+            else:
+                ax.text(
+                    b.get_x() + b.get_width() / 2, v + 0.025, f"{v:+.3f}",
+                    ha="center", va="bottom", fontsize=9, fontweight="bold",
+                )
+        ax.text(
+            0.5, 0.98, aviso,
+            transform=ax.transAxes, ha="center", va="top", fontsize=8.5,
+            bbox=dict(boxstyle="round", facecolor=box_fc, edgecolor=box_ec, alpha=0.95),
+        )
+        footer = (
+            f"Q baseline: {base['Q_score']:+.3f}\n"
+            f"Adv vs RBF: {base['advantage_pp']:+.1f}pp"
+        )
+        if post is not None:
+            footer += (
+                f"\n── post re-uploading (logueado) ──\n"
+                f"Q: {base['Q_score']:+.3f} → {post['Q_score']:+.3f}\n"
+                f"Adv: {base['advantage_pp']:+.1f} → {post['advantage_pp']:+.1f}pp\n"
+                "(ΔA/d_F/ΔH post: no logueados)"
+            )
+        ax.text(
+            0.98, 0.02, footer,
+            transform=ax.transAxes, fontsize=8, ha="right", va="bottom",
+            bbox=dict(boxstyle="round", facecolor="white", alpha=0.9),
+        )
 
     plt.tight_layout()
     save_fig("09_qcr_framework_diagnostico.png")
