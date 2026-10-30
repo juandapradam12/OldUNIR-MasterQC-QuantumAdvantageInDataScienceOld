@@ -1208,91 +1208,87 @@ def fig_09_barrido_rotaciones():
 
 
 def fig_09_qcr_framework():
-    """Diagnóstico QCR paralelo SKG | Telco — solo cifras del log NB09.
+    """Diagnóstico 3 datasets (nativo | SKG | Telco) — protocolo NB08.
 
-    Ambos paneles usan los MISMOS ejes (ΔA, d_F, ΔH) del baseline logueado.
-    Componentes *post* re-uploading no están en el log → no se inventan;
-    el lift Q/Adv de Telco se anota como texto verificado.
+    Misma medición para los tres: ΔA, d_F, ΔH + Q + Δ_RBF / Δ_op.
+    El contraste con el nativo es el punto: Q>0 no basta (SKG) y ΔH
+    negativo tumba Telco; solo el nativo tiene Δ_op > 0.
+    Componentes post-QCR no se inventan (NB09 no logueó ΔA/d_F/ΔH post).
     """
-    fig, axes = plt.subplots(1, 2, figsize=(13, 6))
+    fig, axes = plt.subplots(1, 3, figsize=(15, 5.8))
     fig.suptitle(
-        "Framework QCR: diagnóstico baseline SKG y Telco (log NB09)\n"
-        r"Mismos componentes $\Delta A$, $d_F$, $\Delta H$ · "
-        "Q>0 vs RBF ≠ ventaja operativa vs GB/RF",
+        r"Diagnóstico $\mathcal{Q}(\mathcal{D})$: nativo · SKG · Telco (NB08, mismo protocolo)"
+        "\n"
+        r"Componentes $\Delta A$, $d_F$, $\Delta H$ · "
+        r"$\Delta_{\mathrm{op}}$ = vs mejor clásico (Caso 1) · "
+        r"Q>0 vs RBF $\neq$ ventaja operativa",
         fontsize=12, fontweight="bold",
     )
 
-    components = ["ΔA", "d_F", "ΔH"]
-    panels = [
-        (
-            "SKG Incidentes",
-            BASELINE_09["SKG Incidentes"],
-            "NO cuántico-nativo",
-            "Q≈+0.16 vs RBF, pero GB/RF ganan\n"
-            "QML v2: veredicto classical\n"
-            "(Q>0 ≠ compatibilidad operativa)",
-            "#FFEBEE", "#C62828",
-            None,
-        ),
-        (
-            "Telco Churn",
-            QCR_TELCO["baseline"],
-            f"cuello baseline: {QCR_TELCO['bottleneck']}",
-            "Baseline: ΔH muy negativo (concentración)\n"
-            "QML v2: Telco sigue classical\n"
-            "(no nativo pese a lifts vs RBF)",
-            "#FFF8E1", "#F9A825",
-            QCR_TELCO["post_qcr"],
-        ),
-    ]
+    components = [r"$\Delta A$", r"$d_F$", r"$\Delta H$"]
+    # Lecturas honestas por dataset (cifras = RESULTS_08 + OPERATIONAL_08)
+    meta = {
+        "Cuántico-nativo": {
+            "subtitle": "control — alineado al mapa",
+            "aviso": "Único con $\\Delta_{\\mathrm{op}}>0$\n"
+                     "Régimen favorable al cuántico\n"
+                     "(generador = ZZFeatureMap)",
+            "box_fc": "#E8F5E9", "box_ec": "#2E7D32",
+        },
+        "SKG Incidentes": {
+            "subtitle": "NO cuántico-nativo",
+            "aviso": "Q>0 vs RBF, pero GB/RF ganan\n"
+                     "QML v2: classical\n"
+                     "(Q>0 ≠ compatibilidad operativa)",
+            "box_fc": "#FFEBEE", "box_ec": "#C62828",
+        },
+        "Telco Churn": {
+            "subtitle": r"cuello: $\Delta H$ (concentración)",
+            "aviso": r"$\Delta H$ muy negativo tumba $\mathcal{Q}$"
+                     "\nQML v2: classical"
+                     "\n(lifts vs RBF no rescatan)",
+            "box_fc": "#FFF8E1", "box_ec": "#F9A825",
+        },
+    }
 
-    for ax, (name, base, subtitle, aviso, box_fc, box_ec, post) in zip(axes, panels):
-        vals = [base["delta_A"], base["d_F"], base["delta_H"]]
+    for ax, r in zip(axes, RESULTS_08):
+        name = r["dataset"]
+        m = meta[name]
+        vals = [r["delta_A"], r["d_F"], r["delta_H"]]
         colors = ["#C62828" if v < 0 else "#1565C0" for v in vals]
         bars = ax.bar(components, vals, color=colors, alpha=0.9, edgecolor="white")
         ax.axhline(0, color="black", linewidth=0.7)
-        ax.set_ylabel("Valor del componente (baseline)")
-        ax.set_title(f"{name} — {subtitle}")
-        # Escala primero para colocar etiquetas dentro del eje
-        ymin = min(vals) - 0.25
-        ymax = max(0.55, max(vals) + 0.35)
-        if post is not None:
-            ymin = min(vals) - 0.35  # espacio para ΔH≈−1.13 y footer
-            ymax = max(0.65, max(vals) + 0.45)
+        ax.set_ylabel("Valor del componente")
+        ax.set_title(f"{name}\n{m['subtitle']}", fontsize=11)
+        ymin = min(vals) - 0.28
+        ymax = max(0.55, max(vals) + 0.40)
         ax.set_ylim(ymin, ymax)
         for b, v in zip(bars, vals):
-            # Etiqueta dentro de la barra si es muy negativa; si no, fuera
             if v < -0.2:
                 ax.text(
                     b.get_x() + b.get_width() / 2, v / 2, f"{v:+.3f}",
-                    ha="center", va="center", fontsize=9, fontweight="bold",
-                    color="white",
+                    ha="center", va="center", fontsize=9, fontweight="bold", color="white",
                 )
             else:
                 ax.text(
-                    b.get_x() + b.get_width() / 2, v + 0.025, f"{v:+.3f}",
+                    b.get_x() + b.get_width() / 2, v + 0.02, f"{v:+.3f}",
                     ha="center", va="bottom", fontsize=9, fontweight="bold",
                 )
         ax.text(
-            0.5, 0.98, aviso,
-            transform=ax.transAxes, ha="center", va="top", fontsize=8.5,
-            bbox=dict(boxstyle="round", facecolor=box_fc, edgecolor=box_ec, alpha=0.95),
+            0.5, 0.98, m["aviso"],
+            transform=ax.transAxes, ha="center", va="top", fontsize=8,
+            bbox=dict(boxstyle="round", facecolor=m["box_fc"], edgecolor=m["box_ec"], alpha=0.95),
         )
+        d_op = OPERATIONAL_08.get(name, float("nan"))
         footer = (
-            f"Q baseline: {base['Q_score']:+.3f}\n"
-            f"Adv vs RBF: {base['advantage_pp']:+.1f}pp"
+            f"Q={r['Q_score']:+.3f}\n"
+            f"Δ_RBF={r['advantage_pp']:+.1f}pp  (NB08)\n"
+            f"Δ_op={d_op:+.1f}pp  (Caso 1)"
         )
-        if post is not None:
-            footer += (
-                f"\n── post re-uploading (logueado) ──\n"
-                f"Q: {base['Q_score']:+.3f} → {post['Q_score']:+.3f}\n"
-                f"Adv: {base['advantage_pp']:+.1f} → {post['advantage_pp']:+.1f}pp\n"
-                "(ΔA/d_F/ΔH post: no logueados)"
-            )
         ax.text(
             0.98, 0.02, footer,
             transform=ax.transAxes, fontsize=8, ha="right", va="bottom",
-            bbox=dict(boxstyle="round", facecolor="white", alpha=0.9),
+            bbox=dict(boxstyle="round", facecolor="white", alpha=0.92),
         )
 
     plt.tight_layout()

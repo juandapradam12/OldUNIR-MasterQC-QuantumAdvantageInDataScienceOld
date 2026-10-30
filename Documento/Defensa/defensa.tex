@@ -595,6 +595,15 @@ como trabajo futuro.}
 \end{columns}
 \end{frame}
 
+\begin{frame}{Validación P1 --- 3 datasets (nativo / SKG / Telco)}
+\centering
+\includegraphics[width=\textwidth,height=0.72\textheight,keepaspectratio]{08_test_cuanticidad_datasets.png}
+\vspace{0.2em}
+\centering\footnotesize
+Mismo protocolo NB08. Contraste clave: el \textbf{nativo} no es el de mayor $\mathcal{Q}$
+(SKG $+0.35$), pero \textbf{sí} el único con $\Delta_{\mathrm{op}}>0$ ($+13.3$~pp).
+\end{frame}
+
 \begin{frame}{Camino a la Conjetura 2 / QCR (antes de la fórmula)}
 \begin{enumerate}
   \item Si el diagnóstico dice ``clásico'', el default es el stack clásico.
@@ -637,26 +646,46 @@ Este TFM la \textbf{plantea} + evidencia preliminar --- no demostración.
 \end{columns}
 \end{frame}
 
-\begin{frame}{Evidencia P2 --- diagnóstico y mapeos (NB09)}
-\begin{columns}[c]
-\begin{column}{0.48\textwidth}
+\begin{frame}{Evidencia P2 --- diagnóstico nativo / SKG / Telco}
 \centering
-\includegraphics[width=\linewidth,height=0.68\textheight,keepaspectratio]{09_qcr_framework_diagnostico.png}
-\end{column}
-\begin{column}{0.48\textwidth}
-\centering
-\includegraphics[width=\linewidth,height=0.68\textheight,keepaspectratio]{09_mapeos_comparativa.png}
-\end{column}
-\end{columns}
-\vspace{0.2em}
+\includegraphics[width=\textwidth,height=0.72\textheight,keepaspectratio]{09_qcr_framework_diagnostico.png}
+\vspace{0.15em}
 \centering\footnotesize
-SKG/Telco: \textbf{no} cuántico-nativos. Un lift vs.\ un clásico débil
-$\neq$ ventaja frente al mejor \textbf{clásico}; bajo $\mathcal{Q}_{\mathrm{rob}}$ Telco sigue \texttt{classical}.
+Solo el \textbf{nativo} tiene $\Delta_{\mathrm{op}}>0$. SKG: $\mathcal{Q}>0$ vs RBF pero gana GB/RF.
+Telco: cuello $\Delta H$. Misma lectura que en clasificación / regresión / anomalías.
 \end{frame}
 
-\begin{frame}{Evidencia P2 --- barrido de rotaciones}
+\begin{frame}{Evidencia P2 --- mapeos QCR (SKG y Telco)}
+\begin{columns}[c]
+\begin{column}{0.55\textwidth}
 \centering
-\includegraphics[width=\textwidth,height=0.78\textheight,keepaspectratio]{09_barrido_rotaciones.png}
+\includegraphics[width=\linewidth,height=0.72\textheight,keepaspectratio]{09_mapeos_comparativa.png}
+\end{column}
+\begin{column}{0.43\textwidth}
+\begin{block}{Por qué no el nativo}
+{\footnotesize
+El dataset cuántico-nativo \textbf{ya}
+tiene ventaja operativa ($+13.3$~pp).
+QCR se plantea para datos
+\textbf{sin} esa alineación.}
+\end{block}
+\begin{alertblock}{Lectura}
+{\footnotesize
+Lifts vs.\ RBF en SKG/Telco
+$\neq$ rescate operativo.
+Bajo $\mathcal{Q}_{\mathrm{rob}}$ Telco sigue
+\texttt{classical}; SKG no es nativo.}
+\end{alertblock}
+\end{column}
+\end{columns}
+\end{frame}
+
+\begin{frame}{Evidencia P2 --- barrido de rotaciones (SKG / Telco)}
+\centering
+\includegraphics[width=\textwidth,height=0.72\textheight,keepaspectratio]{09_barrido_rotaciones.png}
+\vspace{0.15em}
+\centering\footnotesize
+NB09 solo sobre datasets reales (nativo no requiere rotación). Series del notebook; sin proxy.
 \end{frame}
 
 % =====================================================================
