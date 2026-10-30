@@ -235,30 +235,31 @@ En el Notebook~08 se calculó también $q=w_1\Delta A+w_2\hat{d}_F+w_3\Delta H$ 
 
 \begin{figure}[ht]
 \centering
-\includegraphics[width=0.95\textwidth]{../POCs/data/output/figures/08_perfil_clasificacion.png}
-\caption{\textbf{Clasificación.} Métricas de estructura $(\Delta A,d_F,\Delta H)$ con el protocolo unificado (ZZ 2~qubits, $n{=}60$, 3 repeats, RBF Frobenius-best). Nativo $\Delta A{+}0.20$; SKG $\approx 0$; Telco $-0.09$. $d_F\approx 0.01$ en los tres. CSV: \texttt{estructura\_por\_caso\_uso.csv}.}
+\includegraphics[width=0.95\textwidth]{../POCs/data/output/figures/08_estructura_tres_casos.png}
+\caption{Comparativa de estructura cuántica: \textbf{tres plots} (una métrica cada uno) y \textbf{una barra por caso de uso} (dataset control: Nativo / Nativo / \texttt{zz\_phase}). Protocolo unificado (ZZ 2~qubits, $n{=}60$, 3 repeats, RBF Frobenius-best). $\Delta A>0$ en los tres casos; $d_F\approx 0.01$ casi no discrimina. CSV: \texttt{estructura\_por\_caso\_uso.csv}.}
+\label{fig:estructura_tres_casos}
 \label{fig:q_vector_vs_nativo}
 \end{figure}
 
 \begin{figure}[ht]
 \centering
-\includegraphics[width=0.95\textwidth]{../POCs/data/output/figures/08_perfil_regresion.png}
-\caption{\textbf{Regresión.} Las \textbf{mismas} métricas $(\Delta A,d_F,\Delta H)$, mismo protocolo y mismas escalas. Nativo $\Delta A{+}0.28$; Friedman $-0.32$; SKG $-0.04$. No se mezcla $R^2$ en este perfil.}
+\includegraphics[width=0.85\textwidth]{../POCs/data/output/figures/08_perfil_clasificacion.png}
+\caption{Detalle \textbf{clasificación} (todos los datasets de la familia). Auxiliar a la Fig.~\ref{fig:estructura_tres_casos}.}
+\label{fig:perfil_clasificacion}
+\end{figure}
+
+\begin{figure}[ht]
+\centering
+\includegraphics[width=0.85\textwidth]{../POCs/data/output/figures/08_perfil_regresion.png}
+\caption{Detalle \textbf{regresión}. Auxiliar a la Fig.~\ref{fig:estructura_tres_casos}.}
 \label{fig:perfil_regresion}
 \end{figure}
 
 \begin{figure}[ht]
 \centering
-\includegraphics[width=0.95\textwidth]{../POCs/data/output/figures/08_perfil_anomalias.png}
-\caption{\textbf{Anomalías.} Las \textbf{mismas} métricas $(\Delta A,d_F,\Delta H)$. \texttt{zz\_phase} $\Delta A{+}0.09$; SKG/moons $\approx 0$. No se mezcla AUC en este perfil.}
+\includegraphics[width=0.85\textwidth]{../POCs/data/output/figures/08_perfil_anomalias.png}
+\caption{Detalle \textbf{anomalías}. Auxiliar a la Fig.~\ref{fig:estructura_tres_casos}.}
 \label{fig:perfil_anomalias}
-\end{figure}
-
-\begin{figure}[ht]
-\centering
-\includegraphics[width=0.95\textwidth]{../POCs/data/output/figures/08_estructura_tres_casos.png}
-\caption{Comparativa conjunta: filas = métricas de estructura (comparables); columnas = casos de uso. Protocolo idéntico. El control nativo concentra $\Delta A>0$; $d_F$ casi no discrimina.}
-\label{fig:estructura_tres_casos}
 \end{figure}
 
 \paragraph{Interpretación frente a la literatura (sin forzar umbrales).}

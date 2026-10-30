@@ -1424,41 +1424,54 @@ def fig_08_perfil_anomalias():
 
 
 def fig_08_estructura_tres_casos():
-    """Comparativa lado a lado: mismas 3 métricas × 3 familias."""
+    """Un compuesto de 3 plots (una métrica cada uno); una barra por caso de uso.
+
+    Barra = dataset control de cada familia (Nativo / Nativo / zz_phase),
+    para comparar estructura entre casos con la misma métrica.
+    """
     df = _load_estructura_por_caso()
-    families = [
-        ("clasificacion", "Clasificación"),
-        ("regresion", "Regresión"),
-        ("anomalias", "Anomalías"),
+    # Control alineado al mapa ZZ en cada familia
+    controls = [
+        ("clasificacion", "Nativo", "Clasificación"),
+        ("regresion", "Nativo", "Regresión"),
+        ("anomalias", "zz_phase", "Anomalías"),
     ]
-    metrics = [
-        ("delta_A", r"$\Delta A$", "{:+.3f}", _ESTRUCTURA_YLIMS["delta_A"]),
-        ("d_F", r"$d_F$", "{:.4f}", _ESTRUCTURA_YLIMS["d_F"]),
-        ("delta_H", r"$\Delta H$", "{:+.3f}", _ESTRUCTURA_YLIMS["delta_H"]),
-    ]
-    fig, axes = plt.subplots(3, 3, figsize=(13.5, 10.5))
+    labels = []
+    dA, dF, dH = [], [], []
+    for fam, ds, lab in controls:
+        row = df[(df["family"] == fam) & (df["dataset"] == ds)]
+        if row.empty:
+            SKIPPED.append(f"estructura_tres_casos: falta {fam}/{ds}")
+            return
+        r = row.iloc[0]
+        labels.append(lab)
+        dA.append(float(r["delta_A"]))
+        dF.append(float(r["d_F"]))
+        dH.append(float(r["delta_H"]))
+
+    fig, axes = plt.subplots(1, 3, figsize=(13.2, 4.8))
     fig.suptitle(
-        r"Estructura cuántica $(\Delta A,\ d_F,\ \Delta H)$ en los tres casos de uso"
+        r"Estructura cuántica $(\Delta A,\ d_F,\ \Delta H)$ — un plot por métrica"
         "\n"
-        "Filas = métricas (comparables).  Columnas = casos de uso.  "
-        "Mismo protocolo; sin accuracy/$R^2$/AUC.",
+        "Una barra por caso de uso (dataset control: Nativo / Nativo / zz_phase).  "
+        "Mismo protocolo; sin accuracy / $R^2$ / AUC.",
         fontsize=12, fontweight="bold",
     )
-    for j, (fam, fam_title) in enumerate(families):
-        sub = df[df["family"] == fam]
-        labels = sub["dataset"].tolist()
-        for i, (col, ylab, fmt, ylim) in enumerate(metrics):
-            ax = axes[i, j]
-            vals = sub[col].tolist()
-            title = fam_title if i == 0 else ""
-            _blue_bars(ax, labels, vals, ylab if j == 0 else "", title,
-                       fmt=fmt, ylim=ylim)
+    _blue_bars(axes[0], labels, dA, r"$\Delta A$",
+               r"$\Delta A$ (Huang / Cortes)" "\n" r"$A(K_Q)-A(K_{\mathrm{RBF}})$",
+               fmt="{:+.3f}", ylim=_ESTRUCTURA_YLIMS["delta_A"])
+    _blue_bars(axes[1], labels, dF, r"$d_F$",
+               r"$d_F$ (Liu)" "\n" r"$\|K_Q-K_{\mathrm{RBF}}\|_F/n$",
+               fmt="{:.4f}", ylim=_ESTRUCTURA_YLIMS["d_F"])
+    _blue_bars(axes[2], labels, dH, r"$\Delta H$",
+               r"$\Delta H$ (Thanasilp)" "\n" r"$H(K_Q)-H(K_{\mathrm{RBF}})$",
+               fmt="{:+.3f}", ylim=_ESTRUCTURA_YLIMS["delta_H"])
     plt.tight_layout()
     save_fig("08_estructura_tres_casos.png")
 
 
 def fig_08_q_vector_vs_nativo():
-    """Genera los tres perfiles de estructura + la comparativa conjunta."""
+    """Genera perfiles por familia (detalle) + compuesto 3 paneles (comparativa)."""
     fig_08_perfil_clasificacion()
     fig_08_perfil_regresion()
     fig_08_perfil_anomalias()

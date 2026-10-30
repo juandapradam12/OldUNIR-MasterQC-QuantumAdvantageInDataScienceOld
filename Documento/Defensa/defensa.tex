@@ -627,91 +627,52 @@ Eso era solo un nombre confuso para
 \end{alertblock}
 \end{frame}
 
-\begin{frame}{P1 --- Clasificación: $(\Delta A,\ d_F,\ \Delta H)$}
+\begin{frame}{P1 --- estructura en los tres casos de uso}
 \begin{columns}[T]
 \begin{column}{0.62\textwidth}
 \centering
-\includegraphics[width=\linewidth,height=0.78\textheight,keepaspectratio]{08_perfil_clasificacion.png}
+\includegraphics[width=\linewidth,height=0.78\textheight,keepaspectratio]{08_estructura_tres_casos.png}
 \end{column}
 \begin{column}{0.36\textwidth}
 \begin{block}{Lectura}
 {\footnotesize
+Tres plots = tres métricas.\\
+Una barra = un caso de uso
+(control Nativo / Nativo / \texttt{zz\_phase}).\\[0.3em]
 \begin{itemize}
-  \item Nativo: $\Delta A{+}0.20$
-  \item SKG: $\Delta A{\approx}0$
-  \item Telco: $\Delta A{-}0.09$
-  \item $d_F{\approx}0.01$ en los tres
+  \item $\Delta A>0$ en los tres
+  \item $d_F\approx 0.01$
         (casi no discrimina)
+  \item $\Delta H$ similar
+        ($\sim 2$)
 \end{itemize}}
 \end{block}
-\end{column}
-\end{columns}
-\end{frame}
-
-\begin{frame}{P1 --- Regresión: las \textbf{mismas} métricas}
-\begin{columns}[T]
-\begin{column}{0.62\textwidth}
-\centering
-\includegraphics[width=\linewidth,height=0.78\textheight,keepaspectratio]{08_perfil_regresion.png}
-\end{column}
-\begin{column}{0.36\textwidth}
-\begin{block}{Lectura}
+\begin{block}{Detalle por dataset}
 {\footnotesize
-\begin{itemize}
-  \item Nativo: $\Delta A{+}0.28$
-  \item Friedman: $\Delta A{-}0.32$
-  \item SKG: $\Delta A{-}0.04$
-  \item $d_F$ otra vez $\approx 0.01$
-\end{itemize}
-Misma escala que clasificación.}
+Figuras auxiliares en el documento:
+perfil dentro de cada familia
+(SKG, Telco, Friedman,\ldots).}
 \end{block}
 \end{column}
 \end{columns}
-\end{frame}
-
-\begin{frame}{P1 --- Anomalías: las \textbf{mismas} métricas}
-\begin{columns}[T]
-\begin{column}{0.62\textwidth}
-\centering
-\includegraphics[width=\linewidth,height=0.78\textheight,keepaspectratio]{08_perfil_anomalias.png}
-\end{column}
-\begin{column}{0.36\textwidth}
-\begin{block}{Lectura}
-{\footnotesize
-\begin{itemize}
-  \item \texttt{zz\_phase}: $\Delta A{+}0.09$
-  \item SKG / moons: $\Delta A{\approx}0$
-  \item $d_F$ otra vez $\approx 0.01$
-\end{itemize}
-Misma escala que clasif./reg.}
-\end{block}
-\end{column}
-\end{columns}
-\end{frame}
-
-\begin{frame}{P1 --- las tres familias juntas}
-\centering
-\includegraphics[width=0.95\linewidth,height=0.82\textheight,keepaspectratio]{08_estructura_tres_casos.png}
 \end{frame}
 
 \begin{frame}{P1 --- cómo interpretar}
 \begin{block}{\textquestiondown{}$\Delta A$ negativo + $\Delta H$ mínimo = estructura?}
 {\footnotesize
-\textbf{No.} El control nativo tiene $\Delta A>0$ en las tres familias.
-Friedman (regresión) tiene el $\Delta A$ más negativo ($-0.32$): sin alineación mapa--dato.}
+\textbf{No.} El control de cada caso de uso tiene $\Delta A>0$
+(clasif.\ $+0.20$, reg.\ $+0.28$, anom.\ $+0.09$).}
 \end{block}
 \vspace{0.35em}
-\begin{block}{\textquestiondown{}$d_F$ discrimina entre datasets?}
+\begin{block}{\textquestiondown{}$d_F$ discrimina entre casos de uso?}
 {\footnotesize
-\textbf{Aquí, apenas} ($\approx 0.01$ en todos). El kernel ZZ es distinto del RBF,
-pero $d_F$ no ordena nativo vs SKG/Telco/Friedman.}
+\textbf{Aquí, apenas} ($\approx 0.01$ en los tres).}
 \end{block}
 \vspace{0.35em}
 \begin{alertblock}{Lectura defendible}
 {\footnotesize
-Comparar \textbf{las mismas} métricas entre casos de uso.
-Patrón: $\Delta A>0$ en el control nativo (clasif./reg./anomalías);
-$\Delta A\le 0$ en datos sin estructura ZZ. Alineación mapa--generador \citep{liu2021}.}
+Misma geometría de estructura en clasif.\ / reg.\ / anomalías cuando el
+dato es el control alineado al mapa \citep{liu2021}.}
 \end{alertblock}
 \end{frame}
 
