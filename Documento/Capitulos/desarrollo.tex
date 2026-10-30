@@ -85,13 +85,13 @@ La elección del simulador de vector de estados garantiza exactitud matemática,
 
 \subsection{Descripción del problema}
 
-El primer caso de uso aborda la clasificación binaria supervisada, comparando el QSVM (Quantum Support Vector Machine con kernel cuántico) frente a cuatro clasificadores clásicos de referencia: Gradient Boosting, Random Forest, SVM-RBF y Regresión Logística. La hipótesis central, fundamentada en \cite{liu2021}, establece que cuando las etiquetas de clase se derivan de una función cuántica, el kernel cuántico aprende el problema con precisión cuasi-perfecta mientras que los clasificadores clásicos están limitados por el denominado \textit{quantum hardness} del problema. Esta asimetría tiene su origen en la diferencia entre el \textbf{espacio de representación} clásico ---el espacio euclídeo $\mathbb{R}^d$ donde operan los clasificadores convencionales--- y el espacio de Hilbert $\mathcal{H}$ al que accede el kernel cuántico a través del mapa de características $\phi\colon \mathbb{R}^d \rightarrow \mathcal{H}$; la similitud en $\mathcal{H}$, medida por el kernel de fidelidad $\kappa(x_i, x_j)=|\langle\phi(x_i)|\phi(x_j)\rangle|^2$, es inaccesible para los métodos clásicos sin una simulación de coste exponencial. Esta observación motiva la pregunta central del Capítulo~\ref{cap:investigacion_original}: si un dataset real no tiene estructura cuántica nativa, \textquestiondown{}puede transformarse a un espacio de representación $\mathcal{Z}$ adecuado, resolverse con modelos cuánticos en ese espacio, y mapear el resultado de vuelta al espacio original? Esta hipótesis se formaliza como la Conjetura~\ref{conj:qcr} del espacio de representación cuántico-compatible.
+El primer caso de uso aborda la clasificación binaria supervisada, comparando el QSVM (Quantum Support Vector Machine con kernel cuántico) frente a cuatro clasificadores clásicos de referencia: Gradient Boosting, Random Forest, SVM-RBF y Regresión Logística. La hipótesis central, motivada por \cite{liu2021} y \cite{huang2021}, es que cuando las etiquetas de clase se derivan de una función cuántica alineada con el mapa de características, el kernel cuántico puede aprender el problema con mayor precisión que los clasificadores clásicos. \cite{liu2021} demuestran una separación rigurosa solo para un problema construido sobre el logaritmo discreto, y \cite{huang2021} muestran que la separación exige una diferencia geométrica grande; el dataset de este trabajo es mucho más sencillo (2 qubits, simulable clásicamente) y solo ilustra el mecanismo. Esta asimetría tiene su origen en la diferencia entre el \textbf{espacio de representación} clásico ---el espacio euclídeo $\mathbb{R}^d$ donde operan los clasificadores convencionales--- y el espacio de Hilbert $\mathcal{H}$ al que accede el kernel cuántico a través del mapa de características $\phi\colon \mathbb{R}^d \rightarrow \mathcal{H}$; la similitud en $\mathcal{H}$, medida por el kernel de fidelidad $\kappa(x_i, x_j)=|\langle\phi(x_i)|\phi(x_j)\rangle|^2$, solo puede reproducirse en general mediante una simulación cuyo coste crece exponencialmente con el número de qubits; con los 2 qubits de este trabajo la simulación es trivial. Esta observación motiva la pregunta central del Capítulo~\ref{cap:investigacion_original}: si un dataset real no tiene estructura cuántica nativa, \textquestiondown{}puede transformarse a un espacio de representación $\mathcal{Z}$ adecuado, resolverse con modelos cuánticos en ese espacio, y mapear el resultado de vuelta al espacio original? Esta hipótesis se formaliza como la Conjetura~\ref{conj:qcr} del espacio de representación cuántico-compatible.
 
 % ---
 \subsection{Dataset 1: Cuántico-nativo (Liu 2021)}
 
 \paragraph{Descripción y justificación.}
-Siguiendo el protocolo de \cite{liu2021}, se generó un dataset sintético donde las etiquetas binarias se definen mediante la expectación de un observable cuántico de Pauli:
+Siguiendo una construcción análoga a la del conjunto de datos de \cite{havlicek2019}, y no el problema basado en el logaritmo discreto de \cite{liu2021}, se generó un dataset sintético donde las etiquetas binarias se definen mediante la expectación de un observable cuántico de Pauli:
 \begin{equation}
   y_i = \text{sgn}\!\bigl(\langle\phi(x_i)|\,Z \otimes Z\,|\phi(x_i)\rangle\bigr)
 \end{equation}
@@ -121,7 +121,7 @@ El QSVM alcanzó una exactitud del \textbf{91.7\%}, frente al 53.3\% del mejor c
 \begin{itemize}
   \item El kernel cuántico captura exactamente la estructura del espacio de Hilbert que define las etiquetas, produciendo una ventaja masiva y teóricamente fundada.
   \item La ventaja es robusta e independiente del tamaño de muestra en el rango evaluado, evidenciando una separación de clases cualitativa y no meramente estadística.
-  \item El resultado valida empíricamente el marco teórico de \cite{liu2021} sobre problemas con \textit{quantum advantage} verificable.
+  \item El resultado es coherente con la idea, formalizada por \cite{liu2021} y \cite{huang2021}, de que la ventaja requiere alineación entre kernel y etiquetas; no reproduce la separación rigurosa de \cite{liu2021}, que no es simulable clásicamente.
 \end{itemize}
 
 \paragraph{Limitaciones identificadas.}
@@ -210,7 +210,7 @@ Los resultados de las subsecciones anteriores mezclan dos fuentes de variación:
 \toprule
 \textbf{Dataset} & \textbf{QSVM (Acc)} & \textbf{SVM-RBF (Acc)} & \textbf{$\Delta$ Acc} & \textbf{Ventaja} \\
 \midrule
-Cuántico-nativo (Liu 2021) & 0.533 & 0.467 & $+0.067$ & \textbf{QSVM} \\
+Cuántico-nativo & 0.533 & 0.467 & $+0.067$ & \textbf{QSVM} \\
 SKG Incidentes movilidad   & 0.467 & 0.525 & $-0.058$ & SVM-RBF \\
 Telco Customer Churn       & 0.735 & 0.747 & $-0.013$ & SVM-RBF (marginal) \\
 \bottomrule
@@ -232,14 +232,14 @@ Telco Customer Churn       & 0.735 & 0.747 & $-0.013$ & SVM-RBF (marginal) \\
 \end{figure}
 
 \paragraph{Interpretación.}
-El contraste directo revela un patrón estructuralmente coherente con las predicciones teóricas de \cite{liu2021}:
+El contraste directo revela un patrón coherente con la expectativa de \cite{liu2021} y \cite{huang2021} de que la ventaja depende de la alineación entre kernel y datos:
 
 \begin{itemize}
-  \item \textbf{Dataset cuántico-nativo:} el kernel cuántico ZZFeatureMap supera al RBF en $+0.067$ pp. Ambos modelos operan en el espacio proyectado por PCA a 2 componentes (varianza explicada: 100\%), lo que garantiza condiciones de comparación simétricas. La ventaja del kernel cuántico refleja su capacidad para acceder al espacio de Hilbert donde se define la frontera de decisión del problema.
+  \item \textbf{Dataset cuántico-nativo:} el kernel cuántico ZZFeatureMap supera al RBF en $+6.7$ pp. Ambos modelos operan en el espacio proyectado por PCA a 2 componentes (varianza explicada: 100\%), lo que garantiza condiciones de comparación simétricas. La diferencia equivale a 4 aciertos sobre 60 puntos de test, con ambos modelos cerca del azar tras la proyección a 2 componentes, por lo que no es estadísticamente concluyente; la evidencia robusta de este régimen es la del Caso~1 (10 repeticiones).
 
-  \item \textbf{Dataset SKG (incidentes de movilidad):} el SVM-RBF supera al QSVM en $-0.058$ pp (y GB/RF mantienen la superioridad operativa). Con PCA a 2 componentes y varianza explicada del 63.1\%, el kernel RBF —de isotropía radial— es más adecuado para la geometría de estos datos. Un $\mathcal{Q}(\text{SKG}) = +0.163$ puntual frente a RBF (Capítulo~\ref{cap:investigacion_original}) \textbf{no} implica que SKG sea cuántico-nativo: bajo $\mathcal{Q}_{\mathrm{rob}}$ el veredicto es clásico, y el bajo rendimiento absoluto ($< 55\%$) sugiere además pérdida discriminativa por la proyección a 2D.
+  \item \textbf{Dataset SKG (incidentes de movilidad):} el SVM-RBF supera al QSVM en $5.8$ pp (y GB/RF mantienen la superioridad operativa). Con PCA a 2 componentes y varianza explicada del 63.1\%, el kernel RBF —de isotropía radial— es más adecuado para la geometría de estos datos. Un $\mathcal{Q}(\text{SKG}) = +0.163$ puntual frente a RBF (Capítulo~\ref{cap:investigacion_original}) \textbf{no} implica que SKG sea cuántico-nativo: bajo $\mathcal{Q}_{\mathrm{rob}}$ el veredicto es clásico, y el bajo rendimiento absoluto ($< 55\%$) sugiere además pérdida discriminativa por la proyección a 2D.
 
-  \item \textbf{Telco Churn:} la diferencia es mínima ($-0.013$ pp) y dentro del margen de variabilidad estadística con el tamaño de muestra utilizado ($n_{\text{train}} = 120$). El score $\mathcal{Q}(\text{Telco}) = -0.228$ predice correctamente la ausencia de ventaja cuántica en este dataset.
+  \item \textbf{Telco Churn:} la diferencia es mínima ($-1.3$ pp) y dentro del margen de variabilidad estadística con el tamaño de muestra utilizado ($n_{\text{train}} = 120$). El score $\mathcal{Q}(\text{Telco}) = -0.228$ predice correctamente la ausencia de ventaja cuántica en este dataset.
 \end{itemize}
 
 \paragraph{Conclusión del contraste.}

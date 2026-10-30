@@ -224,7 +224,7 @@ La ventaja es \textbf{real pero condicionada}:
 \begin{column}{0.48\textwidth}
 \textbf{Tres capas de datos}
 \begin{enumerate}
-  \item Sintéticos con estructura cuántica nativa \citep{liu2021}
+  \item Sintéticos con estructura cuántica nativa (diseño propio)
   \item Práctica SKG Tecnología
   \item Referencia pública
 \end{enumerate}
@@ -249,9 +249,9 @@ Dispositivos de escala intermedia \textbf{ruidosos}: qubits limitados, decoheren
 \begin{frame}{Comparaciones cuántico--clásico en la literatura}
 \begin{itemize}
   \item Condiciones teóricas de ventaja de kernel: geometría de datos crítica \citep{huang2021}.
-  \item Datasets donde el kernel cuántico es óptimo por construcción \citep{liu2021}.
+  \item Separación rigurosa para un problema basado en el logaritmo discreto \citep{liu2021}.
   \item Concentración de kernels y límites prácticos \citep{thanasilp2022}.
-  \item Gap empírico: pocos estudios \textbf{justos} sobre datos empresariales reales \citep{fastovets2019}.
+  \item Gap que aborda este TFM: comparaciones \textbf{justas} sobre datos empresariales reales.
 \end{itemize}
 \begin{alertblock}{Posicionamiento de este TFM}
 Evidencia empírica + protocolos justos + diagnóstico $\mathcal{Q}(\mathcal{D})$ + QCR formalmente planteado.
@@ -656,9 +656,9 @@ Barrido structure-aware: trabajo futuro.}
 \begin{block}{Estructura cuántica = vector $(\Delta A,\ \Delta H,\ d_F,\ g,\ \mathcal{Q})$}
 {\footnotesize
 \begin{itemize}
-  \item $\Delta A = A(K_Q,yy^\top)-A(K_{\mathrm{RBF}},yy^\top)$ --- \citep{huang2021}
-  \item $\Delta H = H(K_Q)-H(K_{\mathrm{RBF}})$ --- \citep{thanasilp2022}
-  \item $d_F=\|K_Q-K_{\mathrm{RBF}}\|_F/n$ --- \citep{liu2021}
+  \item $\Delta A = A(K_Q,yy^\top)-A(K_{\mathrm{RBF}},yy^\top)$ --- alineaci\'on de \citep{cortes2012}
+  \item $\Delta H = H(K_Q)-H(K_{\mathrm{RBF}})$ --- proxy de \citep{thanasilp2022}
+  \item $d_F=\|K_Q-K_{\mathrm{RBF}}\|_F/n$ --- proxy propio (cf.\ \citep{liu2021})
   \item $g$ (diferencia geom.) --- \citep{huang2021}; $\mathcal{Q}$ compuesto (este TFM)
 \end{itemize}
 \textbf{Mismo protocolo} en clasificación, regresión, anomalías y optimización
@@ -923,7 +923,7 @@ en ausencia de eso, el clásico domina --- y eso también es un resultado.
 \begin{frame}{Trabajo futuro (II) --- medio/largo plazo}
 \begin{itemize}
   \item Benchmarks con separación formal (Bravyi et al.) para certificar $\mathcal{Q}$
-  \item Certificación estadística de ventaja \citep{huang2021}
+  \item Diferencia geométrica y cotas de ventaja potencial \citep{huang2021}
   \item Demostración o refutación de la conjetura QCR
   \item Q-means / autoencoders / aprendizaje no supervisado cuántico
   \item Análisis de barren plateaus en VQC
@@ -973,7 +973,7 @@ en ausencia de eso, el clásico domina --- y eso también es un resultado.
 Biamonte, J.\ et~al. (2017). \emph{Quantum machine learning}. Nature, 549, 195--202.
 
 \bibitem[Cortes et~al.(2012)]{cortes2012}
-Cortes, C., Mohri, M., \& Rostamizadeh, A. (2012). \emph{Algorithms for learning kernels based on centered alignment}. JMLR.
+Cortes, C., Mohri, M., \& Rostamizadeh, A. (2012). \emph{Algorithms for learning kernels based on centered alignment}. JMLR, 13, 795--828.
 
 \bibitem[Cerezo et~al.(2021)]{cerezo2021}
 Cerezo, M.\ et~al. (2021). \emph{Variational quantum algorithms}. Nat.\ Rev.\ Phys., 3, 625--644.
@@ -982,7 +982,7 @@ Cerezo, M.\ et~al. (2021). \emph{Variational quantum algorithms}. Nat.\ Rev.\ Ph
 Farhi, E., Goldstone, J., \& Gutmann, S. (2014). \emph{A quantum approximate optimization algorithm}. arXiv:1411.4028.
 
 \bibitem[Fastovets et~al.(2019)]{fastovets2019}
-Fastovets, D.\ et~al. (2019). \emph{Machine learning methods in quantum computing theory}. Proc.\ SPIE.
+Fastovets, D.\ V.\ et~al. (2019). \emph{Machine learning methods in quantum computing theory}. arXiv:1906.10175.
 
 \bibitem[Huang et~al.(2021)]{huang2021}
 Huang, H.-Y.\ et~al. (2021). \emph{Power of data in quantum machine learning}. Nat.\ Commun., 12, 2631.
@@ -999,8 +999,8 @@ Preskill, J. (2018). \emph{Quantum computing in the NISQ era and beyond}. Quantu
 \bibitem[Schuld(2021)]{schuld2021}
 Schuld, M. (2021). \emph{Supervised quantum machine learning models are kernel methods}. arXiv:2101.11020.
 
-\bibitem[Thanasilp et~al.(2022)]{thanasilp2022}
-Thanasilp, S.\ et~al. (2022). \emph{Exponential concentration and the limits of quantum ML}. arXiv:2208.11060.
+\bibitem[Thanasilp et~al.(2024)]{thanasilp2022}
+Thanasilp, S., Wang, S., Cerezo, M., \& Holmes, Z. (2024). \emph{Exponential concentration in quantum kernel methods}. Nat.\ Commun., 15, 5200.
 \end{thebibliography}
 \end{frame}
 

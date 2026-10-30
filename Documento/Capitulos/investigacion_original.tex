@@ -31,7 +31,7 @@ El \textit{kernel alignment} \citep{cortes2012} es una medida de la corresponden
 
 donde $\langle \cdot, \cdot \rangle_F$ denota el producto interno de Frobenius. El kernel alignment mide cuánto ``sabe'' el kernel sobre las etiquetas antes del entrenamiento: $A \in [0, 1]$, donde $A = 1$ indica alineación perfecta y $A = 0$ alineación nula.
 
-\citet{huang2021} adaptaron este concepto al contexto cuántico, proponiendo el \textit{geometric difference} $g(K_Q, K_{cl})$ como medida de la separación entre los espacios de características cuántico y clásico. Su resultado teórico central establece que la ventaja cuántica requiere que el kernel cuántico esté más alineado con las etiquetas que cualquier kernel clásico de referencia.
+\citet{huang2021} adaptaron este concepto al contexto cuántico, proponiendo el \textit{geometric difference} $g(K_Q, K_{cl})$ como medida de la separación entre los espacios de características cuántico y clásico. Su resultado teórico central acota el error de predicción de un modelo de kernel mediante su complejidad $s_K(N)$ y establece que, si $g$ es pequeña, un modelo clásico tiene una complejidad, y por tanto un error de predicción, similar o mejor que el cuántico, con independencia de las etiquetas. Una $g$ grande es solo una condición necesaria: garantiza que existe un conjunto de etiquetas con ventaja cuántica, no que el dataset real la tenga.
 
 \begin{figure}[ht]
 \centering
@@ -55,7 +55,7 @@ Un kernel con espectro concentrado en un único valor propio tiene $H(K_Q) \appr
 
 \subsection{Divergencia cuántica-clásica en el espacio de kernels}
 
-\citet{liu2021} demostraron que la ventaja del QSVM requiere que el kernel cuántico no sea eficientemente aproximable por ningún kernel clásico en tiempo polinomial. Un proxy operativo de esta condición es la \textbf{distancia de Frobenius normalizada}:
+\citet{liu2021} demostraron, bajo la conjetura de dificultad del logaritmo discreto, que existe un problema de clasificación que un kernel cuántico aprende de forma eficiente y que ningún algoritmo clásico eficiente puede aprender. De ahí se desprende que una ventaja de este tipo exige un kernel difícil de aproximar clásicamente. Un proxy operativo, definido en este trabajo y no propuesto por esos autores, es la \textbf{distancia de Frobenius normalizada}:
 
 \begin{equation}
     d_F(K_Q, K_{cl}) = \frac{\|K_Q - K_{cl}^*\|_F}{n}
@@ -75,16 +75,18 @@ donde $K_{cl}^* = \arg\min_{K \in \mathcal{K}_{cl}} \|K_Q - K\|_F$ es el mejor k
 
 Un circuito con baja expresividad (alta divergencia de KL) está sesgado hacia un subconjunto pequeño del espacio de Hilbert, lo que limita la capacidad discriminativa del kernel cuántico.
 
-\subsection{Test de ventaja cuántica basado en datos (Huang et al., 2021)}
+\subsection{Cota de ventaja basada en datos (Huang et al., 2021)}
 
-\citet{huang2021} propusieron un test estadístico explícito para determinar si un dataset puede beneficiarse de la computación cuántica. El test se basa en la \textit{prediction difference} entre el kernel cuántico y el mejor kernel clásico sobre el conjunto de entrenamiento. Si $\varepsilon_{cl}$ es el error del mejor clasificador clásico y $\varepsilon_Q$ es el error del QSVM, la ventaja cuántica ocurre cuando:
+\citet{huang2021} propusieron un diagrama de decisión para evaluar la ventaja potencial de un modelo cuántico con un número fijo de datos de entrenamiento. Dado un kernel $K$ y $N$ datos, el error de predicción está acotado por $c\sqrt{s_K(N)/N}$, donde $s_K(N)=\lVert w\rVert^2$ es la complejidad del modelo entrenado. Para dos kernels $K_1$ y $K_2$ con $\mathrm{Tr}\,K_1=\mathrm{Tr}\,K_2=N$ se cumple
 
 \begin{equation}
-    \varepsilon_{cl} - \varepsilon_Q \geq \Omega\left(\frac{g(K_Q, K_{cl})^2}{\sqrt{n}}\right)
+    s_{K_1}(N) \leq g(K_1\Vert K_2)^2\, s_{K_2}(N),
+    \qquad
+    g(K_1\Vert K_2)=\sqrt{\bigl\lVert \sqrt{K_2}\,K_1^{-1}\sqrt{K_2}\bigr\rVert_\infty},
     \label{eq:huang_bound}
 \end{equation}
 
-donde $g(K_Q, K_{cl})$ es la diferencia geométrica entre los kernels. Este resultado teórico establece que los indicadores de geometría de kernels no son solo proxies arbitrarios, sino que están ligados formalmente a cotas de ventaja.
+de modo que, si $g(K_C\Vert K_Q)$ es pequeña, el modelo clásico es competitivo o mejor que el cuántico. Si es grande, existe un conjunto de etiquetas para el que el modelo cuántico predice mejor, pero eso no implica que ocurra en un dataset concreto. Este resultado liga los indicadores de geometría de kernels con cotas de error de predicción, y es la base teórica de la diferencia geométrica $g$ usada en este trabajo; no es un test estadístico de significación.
 
 % =====================================================================
 \section{Resultados prometedores de la literatura}
@@ -98,12 +100,12 @@ La Tabla~\ref{tab:lit_indicadores} resume los indicadores propuestos en la liter
 \small
 \begin{tabular}{p{3.2cm}p{2.8cm}p{2.2cm}p{4.5cm}}
 \hline
-\textbf{Indicador} & \textbf{Referencia} & \textbf{Complejidad} & \textbf{Conexión teórica} \\
+\textbf{Indicador} & \textbf{Base conceptual} & \textbf{Complejidad} & \textbf{Relación con la literatura} \\
 \hline
-Kernel alignment $A(K_Q, K_y)$ & \citet{cortes2012, huang2021} & $O(n^2)$ & Cota PAC-Bayes; condición para ventaja supervisada \\
-Entropía espectral $H(K_Q)$ & \citet{thanasilp2022} & $O(n^3)$ & Indicador inverso de concentración exponencial \\
-Distancia Frobenius $d_F$ & \citet{liu2021} & $O(n^2)$ & Proxy de no-aproximabilidad clásica \\
-Diferencia geométrica $g$ & \citet{huang2021} & $O(n^2)$ & Cota explícita en la desigualdad de ventaja \\
+Kernel alignment $A(K_Q, K_y)$ & \citet{cortes2012, huang2021} & $O(n^2)$ & Mide el ajuste kernel--etiquetas; no es por sí sola condición de ventaja \\
+Entropía espectral $H(K_Q)$ & \citet{thanasilp2022} & $O(n^3)$ & Proxy propio de la concentración del kernel descrita por esos autores \\
+Distancia Frobenius $d_F$ & \citet{liu2021} & $O(n^2)$ & Proxy propio de la dificultad de aproximación clásica \\
+Diferencia geométrica $g$ & \citet{huang2021} & $O(n^2)$ & Aparece en la cota $s_{K_1}\leq g^2 s_{K_2}$ de la Ec.~\ref{eq:huang_bound} \\
 Expressibility & \citet{sim2019} & $O(2^n)$ & Capacidad de exploración del espacio de Hilbert \\
 \hline
 \end{tabular}
@@ -294,7 +296,7 @@ La lectura coherente con \citet{liu2021} es la \textbf{alineación mapa--generad
 
 \subsection{El problema de la representación cuántica de datos clásicos}
 
-El resultado central de \citet{schuld2021kernels} es que la calidad del aprendizaje cuántico está completamente determinada por el mapa de codificación de datos $\phi: \mathcal{X} \rightarrow \mathcal{H}$. Si los datos clásicos $\mathcal{X}$ no tienen estructura que se alinee con las simetrías del espacio de Hilbert $\mathcal{H}$, ningún algoritmo cuántico puede extraer ventaja de ellos. La pregunta es, entonces, si existe una transformación previa $\psi: \mathcal{X} \rightarrow \mathcal{Z}$ tal que los datos transformados $\mathcal{Z}$ sí tengan dicha estructura.
+El resultado central de \citet{schuld2021kernels} es que los modelos cuánticos supervisados son métodos de kernel, cuyo kernel viene determinado por el mapa de codificación de datos $\phi: \mathcal{X} \rightarrow \mathcal{H}$. De ahí se desprende que la elección de la codificación es decisiva; en la hipótesis de este trabajo, si los datos clásicos $\mathcal{X}$ no tienen estructura alineada con ese kernel, es improbable que el modelo cuántico extraiga ventaja de ellos. La pregunta es, entonces, si existe una transformación previa $\psi: \mathcal{X} \rightarrow \mathcal{Z}$ tal que los datos transformados $\mathcal{Z}$ sí tengan dicha estructura.
 
 \subsection{Quantum metric learning (Lloyd et al., 2020)}
 
@@ -304,13 +306,13 @@ La limitación principal es computacional: el entrenamiento del mapa variacional
 
 \subsection{Data re-uploading (Pérez-Salinas et al., 2020)}
 
-\citet{perezSalinas2020} introdujeron la técnica de \textit{data re-uploading}: en lugar de codificar los datos una sola vez al inicio del circuito, se re-codifican en múltiples capas del circuito, intercalando operaciones parametrizadas. Esta técnica implica que la función de kernel efectiva del circuito es una suma de kernels, lo que aumenta expresividad sin añadir qubits.
+\citet{perezSalinas2020} introdujeron la técnica de \textit{data re-uploading}: en lugar de codificar los datos una sola vez al inicio del circuito, se re-codifican en múltiples capas del circuito, intercalando operaciones parametrizadas. Esta técnica aumenta la expresividad del modelo sin añadir qubits.
 
 Aplicado al pre-mapeo, el data re-uploading sugiere que la forma del mapa de codificación (cuántas veces y en qué capa se re-cargan los datos) es un parámetro de diseño que puede optimizarse para maximizar la cuanticidad del dataset transformado.
 
 \subsection{Quantum-aware dimensionality reduction}
 
-Una línea emergente propone incorporar la geometría del espacio de Hilbert cuántico directamente en el proceso de reducción de dimensionalidad. \citet{haug2023} propone usar la distancia inducida por el kernel cuántico como métrica de proximidad para algoritmos de reducción no lineal (UMAP, ISOMAP), creando una representación de menor dimensión que preserva las distancias cuánticas en lugar de las euclídeas.
+Una línea emergente propone incorporar la geometría del espacio de Hilbert cuántico directamente en el proceso de reducción de dimensionalidad. Este trabajo explora esa idea como estrategia propia (Q-UMAP/MDS, sección~\ref{sec:aplicacion_mapeos}): usar la distancia inducida por el kernel cuántico como métrica de proximidad para algoritmos de reducción no lineal, de modo que la representación de menor dimensión preserve las distancias cuánticas en lugar de las euclídeas. No procede de \citet{haug2023}, cuya contribución es la estimación del kernel mediante medidas aleatorizadas.
 
 \subsection{Feature engineering basado en la función de kernel objetivo}
 

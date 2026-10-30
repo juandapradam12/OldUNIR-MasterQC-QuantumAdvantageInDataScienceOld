@@ -9,7 +9,7 @@ Los resultados obtenidos en este trabajo abren múltiples líneas de investigaci
 La limitación más significativa de este trabajo es que todos los experimentos se han realizado en simulación clásica mediante el simulador de vectores de estado de Qiskit. Si bien la simulación exacta garantiza resultados sin ruido y es reproducible, no refleja las condiciones reales del hardware cuántico actual. Las siguientes extensiones son prioritarias:
 
 \begin{itemize}
-    \item \textbf{Ejecución en IBM Quantum (procesadores Eagle/Osprey/Heron):} los notebooks están diseñados para ser ejecutados directamente en hardware real mediante el cambio del backend de simulación a un procesador IBM Quantum. El principal desafío será el ruido de decoherencia, que degradará la calidad del kernel cuántico. Se necesitará implementar técnicas de mitigación de errores (\textit{error mitigation}) como ZNE (\textit{Zero-Noise Extrapolation}) o técnicas de regularización del kernel \citep{haug2023}.
+    \item \textbf{Ejecución en IBM Quantum (procesadores Eagle/Osprey/Heron):} los notebooks están diseñados para ser ejecutados directamente en hardware real mediante el cambio del backend de simulación a un procesador IBM Quantum. El principal desafío será el ruido de decoherencia, que degradará la calidad del kernel cuántico. Se necesitará implementar técnicas de mitigación de errores (\textit{error mitigation}) como ZNE (\textit{Zero-Noise Extrapolation}) o esquemas de mitigación específicos del kernel, como el que proponen \citet{haug2023} sin coste adicional de circuitos.
     \item \textbf{Análisis de la degradación del rendimiento con ruido:} comparar sistemáticamente los resultados obtenidos con el simulador ideal frente al hardware ruidoso para cuantificar la reducción de ventaja cuántica debida al ruido.
     \item \textbf{Acceso a hardware cuántico de SKG:} si la empresa obtiene acceso a servicios de computación cuántica en la nube (IBM Quantum, Azure Quantum, Amazon Braket), sería posible ejecutar los experimentos de optimización QAOA sobre los datos reales de movilidad directamente en hardware.
 \end{itemize}
@@ -19,7 +19,7 @@ La limitación más significativa de este trabajo es que todos los experimentos 
 El coste $O(n^2)$ de la evaluación del kernel cuántico es el principal obstáculo para su aplicación a datasets grandes. Las siguientes líneas permitirían abordar este problema:
 
 \begin{itemize}
-    \item \textbf{Kernels cuánticos aleatorizados (RFF-QK):} aplicar la técnica de características aleatorias de Fourier (\textit{Random Fourier Features}) adaptada al contexto cuántico \citep{haug2023}, que permite aproximar el kernel cuántico en tiempo $O(n)$.
+    \item \textbf{Kernels cuánticos con medidas aleatorizadas:} estimar el kernel cuántico mediante medidas aleatorizadas \citep{haug2023}, de modo que el tiempo de cómputo cuántico crece linealmente con el tamaño del dataset (y cuadráticamente el posprocesado clásico), a costa de un coste exponencial en el número de qubits.
     \item \textbf{Particionado y agregación (\textit{ensemble} cuántico):} entrenar múltiples QSVM sobre subconjuntos del dataset y combinar sus predicciones, reduciendo el tamaño efectivo del problema de kernel.
     \item \textbf{Caché y precómputo de kernels:} para experimentos repetitivos, el almacenamiento de las matrices de kernel evaluadas en disco permitiría reutilizar los cálculos sin necesidad de re-ejecutar las simulaciones cuánticas.
 \end{itemize}
@@ -57,7 +57,7 @@ Esta extensión convertiría el prototipo híbrido descrito en la Sección~\ref{
 Los experimentos con VQC y QAOA utilizaron configuraciones conservadoras ($p=1$, \texttt{reps=2}) para garantizar la ejecución en simulación. Las siguientes mejoras podrían incrementar la ventaja cuántica:
 
 \begin{itemize}
-    \item \textbf{QAOA con mayor profundidad ($p > 1$):} estudios previos \citep{zhou2020} demuestran que la calidad de la solución mejora monotónamente con $p$. Evaluar $p \in \{2, 3, 4\}$ sobre las instancias de optimización de SKG.
+    \item \textbf{QAOA con mayor profundidad ($p > 1$):} \citet{zhou2020} observan numéricamente, en MaxCut sobre grafos regulares, que la calidad de la solución mejora al aumentar $p$. Evaluar $p \in \{2, 3, 4\}$ sobre las instancias de optimización de SKG.
     \item \textbf{Optimizadores avanzados:} sustituir COBYLA por optimizadores cuánticos más eficientes como SPSA (\textit{Simultaneous Perturbation Stochastic Approximation}) o métodos de gradiente analítico (\textit{parameter-shift rule}) para acelerar la convergencia.
     \item \textbf{Ansätze específicos del problema:} diseñar circuitos variacionales adaptados a la estructura del problema de optimización (por ejemplo, ansätze con simetría de permutación para problemas de asignación).
 \end{itemize}
@@ -77,7 +77,7 @@ El prototipo híbrido cuántico-clásico conceptual diseñado en este trabajo re
 Finalmente, desde una perspectiva académica, las siguientes extensiones teóricas complementarían los resultados empíricos:
 
 \begin{itemize}
-    \item \textbf{Certificación de ventaja cuántica:} aplicar los tests estadísticos propuestos por \cite{huang2021} para certificar formalmente si los datasets reales de SKG presentan la propiedad de separación cuántica-clásica necesaria para garantizar ventaja.
+    \item \textbf{Certificación de ventaja cuántica:} calcular la diferencia geométrica y las cotas de complejidad de \cite{huang2021} sobre los datasets reales de SKG, como criterio necesario (no suficiente) de ventaja potencial.
     \item \textbf{Análisis de barren plateaus:} estudiar la presencia de gradientes exponencialmente pequeños en los VQC entrenados, evaluando si las configuraciones utilizadas están afectadas por este fenómeno \citep{cerezo2023}.
 \end{itemize}
 
@@ -89,7 +89,7 @@ El Capítulo~\ref{cap:investigacion_original} propone el score compuesto $\mathc
     \item \textbf{Validación sobre benchmarks con ventaja garantizada:} evaluar $\mathcal{Q}(\mathcal{D})$ sobre datasets de Bravyi et al. (2020) donde existe separación cuántico-clásica demostrada formalmente, verificando que $\mathcal{Q} > 0$ en todos ellos.
     \item \textbf{Optimización de los pesos $(w_1, w_2, w_3, w_4)$:} los pesos actuales $(0.4, 0.2, 0.2, 0.2)$ son una convención heurística. Una regresión supervisada sobre un corpus de datasets anotados con su ventaja QSVM real permitiría calibrarlos de forma óptima.
     \item \textbf{Extensión a más feature maps:} el módulo \texttt{feature\_map\_alignment} ya contrastó ZZ vs Pauli-Y en sintéticos. Queda escalar a \texttt{IQP Encoding}, \texttt{TwoLocal} y datasets reales, recalibrando $\mathcal{Q}$ por familia de circuito.
-    \item \textbf{Certificación estadística de ventaja:} aplicar los tests estadísticos de \cite{huang2021} para certificar formalmente si los datasets reales de SKG presentan la propiedad de separación cuántica-clásica necesaria para garantizar ventaja, más allá de la estimación empírica del score.
+    \item \textbf{Certificación estadística de ventaja:} calcular la diferencia geométrica y las cotas de complejidad de \cite{huang2021} sobre los datasets reales de SKG como criterio necesario (no suficiente) de ventaja potencial, más allá de la estimación empírica del score.
     \item \textbf{Análisis de barren plateaus:} estudiar la presencia de gradientes exponencialmente pequeños en los VQC entrenados, evaluando si las configuraciones utilizadas están afectadas por este fenómeno \citep{cerezo2023}.
 \end{itemize}
 
@@ -123,7 +123,7 @@ El Caso de uso~8 (Capítulos~\ref{cap:metodologia} y~\ref{sec:eval_anomaly}) ya 
 Las implementaciones NISQ de algoritmos cuánticos no supervisados son más experimentales que las supervisadas: Q-means requiere acceso eficiente a la memoria RAM cuántica (qRAM), cuya implementación física sigue siendo un problema abierto \citep{biamonte2017}; Quantum PCA basado en estimación de fase requiere circuitos profundos incompatibles con los dispositivos NISQ actuales. Por ello, en el corto plazo la línea más viable es la comparativa de \textbf{clustering cuántico variacional} (VQE aplicado a la minimización de la función de coste de $k$-means) frente al $k$-means clásico, siguiendo el mismo protocolo de tres datasets (cuántico-nativo, SKG real, dataset público de referencia) establecido en este TFM.
 
 \paragraph{Ventaja teórica en complejidad.}
-Uno de los argumentos más sólidos a favor del aprendizaje no supervisado cuántico es la reducción de complejidad computacional que ofrecen los algoritmos más maduros. Q-means \citep{kerenidis2019qmeans} tiene complejidad $O(\text{poly}(\log N, k, d, 1/\varepsilon))$, exponencialmente mejor que el $O(Nkd)$ del $k$-means clásico en función del número de muestras $N$, número de clusters $k$ y dimensionalidad $d$. Quantum PCA \citep{lloyd2014} calcula los vectores propios dominantes del operador de densidad en tiempo $O(\log N)$, frente al $O(N d^2)$ de la PCA clásica. Esta reducción exponencial de complejidad es particularmente relevante para los datasets de movilidad de SKG Tecnología, donde $N > 80.000$ registros y la PCA clásica ya constituye un cuello de botella en pipelines de tiempo real. Con hardware cuántico tolerante a fallos, estos algoritmos podrían transformar radicalmente la viabilidad del aprendizaje no supervisado a escala operativa.
+Uno de los argumentos más sólidos a favor del aprendizaje no supervisado cuántico es la reducción de complejidad computacional que ofrecen los algoritmos más maduros. Q-means \citep{kerenidis2019qmeans} tiene un tiempo por iteración polilogarítmico en el número de muestras $N$ (y polinómico en $k$, $d$ y la precisión), frente al $O(Nkd)$ del $k$-means clásico, bajo la hipótesis de que los datos estén almacenados en una qRAM. Quantum PCA \citep{lloyd2014} permite extraer los vectores propios dominantes de una matriz de densidad en tiempo polilogarítmico en la dimensión, también bajo supuestos de acceso a los datos y de que la matriz sea aproximadamente de bajo rango. Esta reducción de complejidad, condicionada a esos supuestos, sería particularmente relevante para los datasets de movilidad de SKG Tecnología, donde $N > 80.000$ registros y la PCA clásica ya constituye un cuello de botella en pipelines de tiempo real. Conviene matizarlo: \citet{tang2021} muestra que, si los algoritmos clásicos disponen de un modelo de acceso a los datos análogo a la preparación de estados que asumen los cuánticos, la aceleración exponencial del PCA cuántico desaparece. Con hardware tolerante a fallos y esos supuestos, estos algoritmos podrían mejorar la escala del aprendizaje no supervisado, pero la ventaja respecto a los mejores métodos clásicos sigue sin estar demostrada en datos reales.
 
 \section{Extensión del Framework QCR}
 
