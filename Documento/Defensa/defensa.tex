@@ -484,10 +484,11 @@ Ventaja si el mapa que estructura el dato
 Si no: gana el \textbf{clásico}.
 \end{block}
 \vspace{0.5em}
-\begin{block}{Idea del score}
-Tres preguntas (cuántico vs clásico)
-$\rightarrow$ un número $\mathcal{Q}(\mathcal{D})$
-\emph{antes} de entrenar.
+\begin{block}{Idea (y su fallo)}
+Se probó juntar tres preguntas
+en un escalar $\mathcal{Q}$ \emph{a priori}.
+En datos reales \textbf{no} ordena
+la ventaja operativa.
 \end{block}
 \end{column}
 \end{columns}
@@ -534,34 +535,22 @@ Lenguaje geométrico vs.\ RBF ---
 \end{columns}
 \end{frame}
 
-\begin{frame}{Conjetura 1 --- score $\mathcal{Q}(\mathcal{D})$}
+\begin{frame}{Conjetura 1 --- el score $\mathcal{Q}$ \textbf{no} funciona}
 \begin{equation}
-  \mathcal{Q}(\mathcal{D})=w_1\Delta A + w_2\hat{d}_F + w_3\Delta H,
-  \qquad \sum_i w_i=1,\; w_i\ge 0
+  \mathcal{Q}(\mathcal{D})=w_1\Delta A + w_2\hat{d}_F + w_3\Delta H
   \label{eq:Q}
 \end{equation}
 {\footnotesize
-$\Delta A$: alineación cuántica vs clásica;\quad
-$\hat{d}_F$: separación geométrica cuántica--clásica;\quad
-$\Delta H$: diversidad espectral del kernel cuántico.}
+Problema de diseño: $\hat{d}_F\!\approx\!1$ siempre empuja $\mathcal{Q}>0$ aunque $\Delta A<0$;
+$\Delta H$ puede dominar la escala; pesos $(0.4,0.3,0.3)$ fijos, no calibrados a $\Delta_{\mathrm{op}}$.}
 
-\vspace{0.4em}
-\begin{columns}[T]
-\begin{column}{0.48\textwidth}
-\begin{block}{Qué sí (débil)}
-Vocabulario para \emph{hablar} de
-geometría cuántico vs clásico
-($\Delta A$, $d_F$, $\Delta H$).
-\end{block}
-\end{column}
-\begin{column}{0.48\textwidth}
-\begin{alertblock}{Qué no}
-No hay pista en $\mathcal{Q}$ sola para
-activar el módulo cuántico.
-La decisión operativa es otra slide.
+\vspace{0.5em}
+\begin{alertblock}{Veredicto del TFM}
+El escalar $\mathcal{Q}$ \textbf{no tiene sentido operativo}: ordena mal frente a
+$\Delta_{\mathrm{op}}$ (SKG $Q{=}{+}0.35$ y $\Delta_{\mathrm{op}}{=}{-}6$~pp).
+Lo útil son los componentes por separado y, sobre todo, la alineación mapa--generador
++ ganar al mejor clásico --- no un número compuesto vs.\ RBF.
 \end{alertblock}
-\end{column}
-\end{columns}
 \end{frame}
 
 \begin{frame}{Validación P1 --- barrido sintético ($\alpha$)}
@@ -596,7 +585,7 @@ como trabajo futuro.}
 \end{columns}
 \end{frame}
 
-\begin{frame}{P1 en datos reales --- no hay pista operativa en $\mathcal{Q}$}
+\begin{frame}{P1 en datos reales --- $\mathcal{Q}$ ordena mal}
 \centering
 {\small
 \renewcommand{\arraystretch}{1.35}
@@ -605,7 +594,7 @@ como trabajo futuro.}
 \textbf{Dataset} & $\mathcal{Q}$ (vs RBF) & $\Delta_{\mathrm{op}}$ (mejor C) & \textbf{\textquestiondown{}Tomar cuántico?} \\
 \midrule
 Cuántico-nativo & $+0.29$ & $\mathbf{+13.3}$~pp & \textbf{Sí} (mapa alineado) \\
-SKG Incidentes & $+0.35$ & $-6.0$~pp & \textbf{No} (gana GB/RF) \\
+SKG Incidentes & $\mathbf{+0.35}$ (máx.) & $-6.0$~pp & \textbf{No} (gana GB/RF) \\
 Telco Churn & $-0.05$ & $-3.8$~pp & \textbf{No} (gana GB) \\
 \bottomrule
 \end{tabular}}
@@ -613,33 +602,27 @@ Telco Churn & $-0.05$ & $-3.8$~pp & \textbf{No} (gana GB) \\
 \vspace{0.8em}
 \begin{columns}[T]
 \begin{column}{0.48\textwidth}
-\begin{alertblock}{Lo que esta tabla dice}
+\begin{alertblock}{Por qué $\mathcal{Q}$ no tiene sentido}
 {\footnotesize
-SKG tiene el $\mathcal{Q}$ \emph{más alto}
-y aun así \textbf{no} se toma el módulo
-cuántico. Por tanto $\Delta A$, $d_F$,
-$\Delta H$ y $\mathcal{Q}$ \textbf{no}
-son pista de despliegue.}
+El ranking de $\mathcal{Q}$ $\neq$ ranking de
+$\Delta_{\mathrm{op}}$. Si el score
+``de cuanticidad'' señala a SKG y en SKG
+gana el clásico, el score \textbf{no}
+sirve para decidir.}
 \end{alertblock}
 \end{column}
 \begin{column}{0.48\textwidth}
 \begin{block}{Qué sí se puede tomar}
 {\footnotesize
 \begin{enumerate}
-  \item Alineación mapa--generador
-        (nativo / \texttt{zz\_phase}).
-  \item Ganar al \textbf{mejor clásico}
-        ($\Delta_{\mathrm{op}}>0$), no solo a RBF.
-  \item $\mathcal{Q}_{\mathrm{rob}}$ / veredicto
-        \texttt{classical} en QML~v2.
+  \item Alineación mapa--generador.
+  \item $\Delta_{\mathrm{op}}>0$ vs.\ mejor clásico.
+  \item Componentes sueltos como
+        \emph{descripción}, no como score.
 \end{enumerate}}
 \end{block}
 \end{column}
 \end{columns}
-\vspace{0.4em}
-\centering\footnotesize
-Los 6 paneles de factores quedan en el documento como medición geométrica;
-en defensa no se presentan como criterio de adopción.
 \end{frame}
 
 \begin{frame}{Camino a la Conjetura 2 / QCR (antes de la fórmula)}
@@ -757,9 +740,9 @@ NB09 solo sobre datasets reales (nativo no requiere rotación). Series del noteb
 \begin{frame}{Conclusiones (III) --- conjeturas y adopción}
 \begin{enumerate}
   \setcounter{enumi}{10}
-  \item $\mathcal{Q}(\mathcal{D})$: en barrido NB08, $\rho_S(\alpha,\Delta A){=}0.833$; no confundir con predicción de ventaja;
-        en reales, $n$ pequeño y matizado por $\mathcal{Q}_{\mathrm{rob}}$.
-  \item QCR: \textbf{planteado formalmente}; evidencia preliminar; no demostración ni rescate operativo.
+  \item $\mathcal{Q}(\mathcal{D})$ compuesto: \textbf{no} sostenido como criterio
+        (ordena mal vs.\ $\Delta_{\mathrm{op}}$); sí $\rho_S(\alpha,\Delta A){=}0.833$.
+  \item QCR: \textbf{planteado}; evidencia preliminar vs.\ RBF; no rescate operativo.
   \item Adopción recomendada: \textbf{selectiva e híbrida} --- módulo cuántico como
         herramienta adicional, no sustituto del stack clásico (SKG).
 \end{enumerate}

@@ -224,13 +224,14 @@ donde:
     \item $\Delta A = A(K_Q, K_y) - A(K_{RBF}, K_y)$: diferencia de alineación cuántica vs. clásica
     \item $\hat{d}_F = d_F / d_{F,\max}$: distancia de Frobenius normalizada por el máximo teórico
     \item $\Delta H = H(K_Q) - H(K_{RBF})$: diferencia de entropía espectral
-    \item $w_1, w_2, w_3 \geq 0$: pesos con $\sum w_i = 1$, estimados por regresión sobre los resultados experimentales
+    \item $w_1, w_2, w_3 \geq 0$: pesos con $\sum w_i = 1$ (en este TFM se usó $(0.4,0.3,0.3)$; \textbf{no} se estimaron por regresión sobre ventaja operativa)
 \end{itemize}
 
-Un $\mathcal{Q}(\mathcal{D}) > 0$ indica que el kernel cuántico tiene ventaja estructural sobre el clásico en las tres dimensiones; un $\mathcal{Q}(\mathcal{D}) < 0$ predice que el QSVM no superará al SVM clásico. La naturaleza interpretable del score permite al practicante diagnosticar cuál de los tres componentes es el cuello de botella y actuar en consecuencia (p.ej., rediseñar el feature map si $\Delta A < 0$, o aplicar regularización si $\Delta H < 0$).
+\paragraph{Veredicto empírico: el score compuesto no funciona como se conjeturó.}
+La fórmula mezcla magnitudes incompatibles: $\hat{d}_F$ es casi siempre $\approx 0.9$--$1$ (empuja $\mathcal{Q}$ hacia positivo aunque $\Delta A<0$), y $\Delta H$ puede dominar en escala (Telco: $-1.131$). En los tres datasets del TFM, $\mathcal{Q}$ ordena SKG $>$ nativo $>$ Telco, pero $\Delta_{\mathrm{op}}$ ordena nativo $>$ Telco $>$ SKG ($\rho_S(\mathcal{Q},\Delta_{\mathrm{op}})=-0.5$, $n=3$). Contraejemplo decisivo: SKG con $\mathcal{Q}=+0.35$ y $\Delta_{\mathrm{op}}=-6.0$~pp. Por tanto \textbf{no} se afirma que $\mathcal{Q}>0$ indique ventaja estructural usable ni que $\mathcal{Q}<0$ prediga fallo del QSVM frente al mejor clásico. Los componentes $\Delta A$, $d_F$, $\Delta H$ siguen siendo vocabulario geométrico útil por separado; el escalar $\mathcal{Q}$ como oráculo de adopción \textbf{no tiene sentido operativo} en esta evidencia.
 
 \paragraph{Relación con la cota de Huang et al.}
-Este score es coherente con la cota teórica de \citet{huang2021}: si $\Delta A > 0$ y $\hat{d}_F > 0$, la diferencia geométrica $g(K_Q, K_{cl})$ es positiva, activando la cota inferior de ventaja en la Ecuación~\ref{eq:huang_bound}. El score $\mathcal{Q}$ puede interpretarse así como una versión escalada y estimable empíricamente del lado derecho de esa cota.
+La cota de \citet{huang2021} involucra alineación y geometría; reunirlas en un único escalar con pesos fijos frente a un baseline RBF débil \textbf{no} reproduce aquí la ventaja frente al mejor clásico. La lectura honesta es que la cota motiva mirar $\Delta A$ y $d_F$, no que $\mathcal{Q}$ sea un predictor calibrado de $\Delta_{\mathrm{op}}$.
 
 % =====================================================================
 \section{Mapeos cuántico-compatibles: revisión de la literatura}

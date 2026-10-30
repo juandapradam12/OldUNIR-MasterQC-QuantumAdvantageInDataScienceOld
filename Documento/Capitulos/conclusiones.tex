@@ -19,8 +19,8 @@ Con profundidad $p=1$, el QAOA reduce el coste de asignación de recursos en un 
 \item \textbf{VQE es competitivo para optimización de portafolio a pequeña escala.}
 VQE converge al óptimo en instancias de hasta 6 activos, con una complejidad de circuito polinómica frente a la búsqueda exhaustiva exponencial \citep{peruzzo2014}. Para instancias mayores, la optimización cuadrática clásica sigue siendo superior en hardware simulado NISQ.
 
-\item \textbf{El score de cuanticidad $\mathcal{Q}(D)$ es un diagnóstico útil, no un oráculo de despliegue.} \label{conc:c1}
-La Conjetura~1 queda validada de forma parcial: en el barrido NB08 ($n=9$, $X$ fijo) $\rho_S(\alpha,\Delta A)=0.833$ ($p=0.005$) es el hallazgo robusto; \textbf{no} se interpreta como $\rho(\mathcal{Q},\mathrm{ventaja})$. $\rho_S=0.866$ sobre tres datasets vs.\ RBF ($n=3$) es orientativa y \textbf{no} implica que SKG sea cuántico-nativo. Regla operativa: $\mathcal{Q}>0$ vs.\ RBF debe cruzarse siempre con GB/RF y, cuando exista, con $\mathcal{Q}_{\mathrm{rob}}$.
+\item \textbf{El score compuesto $\mathcal{Q}(D)$ no tiene sentido operativo en esta evidencia.} \label{conc:c1}
+Se propuso $\mathcal{Q}=w_1\Delta A+w_2\hat{d}_F+w_3\Delta H$ como diagnóstico a priori. Los datos lo desmienten como regla de adopción: SKG tiene el $\mathcal{Q}$ más alto ($+0.35$) y $\Delta_{\mathrm{op}}=-6.0$~pp; solo el nativo tiene $\Delta_{\mathrm{op}}>0$. Lo que sí se sostiene del barrido NB08 es $\rho_S(\alpha,\Delta A)=0.833$ ($p=0.005$) ---alineación, no el escalar $\mathcal{Q}$. Regla operativa del TFM: alineación mapa--generador y ganar al mejor clásico; no $\mathcal{Q}>0$ vs.\ RBF.
 
 \item \textbf{El Framework QCR se plantea formalmente, con evidencia preliminar condicionada.} \label{conc:c2}
 La Conjetura~2 se define como contribución abierta. Notebook~09 reportó lifts \emph{vs.\ RBF} (re-uploading en Telco). Bajo $\mathcal{Q}_{\mathrm{rob}}$ (Sección~\ref{sec:qml_v2_revision}) Telco permanece \texttt{classical}; en SKG la rotación solo cambia geometría a \texttt{try-ZZ} sin lift de accuracy. QCR queda \textbf{planteado y delimitado} como filtro de geometría ---no como rescate operativo de SKG/Telco---; demostración fuerte = post-TFM (Capítulo~\ref{cap:futuro}).
@@ -35,7 +35,7 @@ Los datasets reales de movilidad urbana (incidentes y tiempos de viaje en Bogot�
 Los Casos~3, 4, 5 y~7 demuestran que los algoritmos variacionales (QAOA, VQE) se integran de forma natural con optimizadores clásicos a través de una interfaz mínima: el módulo cuántico aporta la exploración del espacio de soluciones y el módulo clásico orquesta los parámetros, pre-procesa los datos y toma la decisión final. Esta separación de responsabilidades hace que la arquitectura híbrida sea \textbf{dependiente del caso de uso y de los datos}: es apropiada cuando el problema es formulable como QUBO y la escala es compatible con el hardware disponible; en caso contrario, el pipeline clásico estándar es la opción correcta. Para una empresa como SKG Tecnología, el módulo cuántico debería incorporarse como \textbf{herramienta adicional y selectiva} dentro del stack tecnológico existente —no como sustituto—, activándose específicamente para los subproblemas de optimización combinatoria donde ya ofrece ventaja verificable.
 
 \item \textbf{La detección de anomalías cuántica es útil solo cuando la novedad está alineada con el feature map.}
-El Caso~8 (OCSVM con kernel ZZ vs IsolationForest / LOF / OCSVM-RBF) muestra ventaja en \texttt{zz\_phase} (AUC $0.864$ vs $0.553$) ---novedad = otra fase accesible por ese mapa--- y desventaja clara cuando la anomalía es densidad/distancia (moons, blobs, spikes inyectados). No es fraude: entrenamiento one-class. Regla operativa: diagnosticar alineación ($\mathcal{Q}$) antes de activar un kernel cuántico (ZZ u otro); si la anomalía es geométrica clásica, IsolationForest basta.
+El Caso~8 (OCSVM con kernel ZZ vs IsolationForest / LOF / OCSVM-RBF) muestra ventaja en \texttt{zz\_phase} (AUC $0.864$ vs $0.553$) ---novedad = otra fase accesible por ese mapa--- y desventaja clara cuando la anomalía es densidad/distancia (moons, blobs, spikes inyectados). No es fraude: entrenamiento one-class. Regla operativa: comprobar alineación mapa--novedad y $\Delta_{\mathrm{op}}$; no activar por un $\mathcal{Q}>0$ vs.\ RBF. Si la anomalía es geométrica clásica, IsolationForest basta.
 
 \item \textbf{TSP justo: QAOA iguala al óptimo; el clásico fuerte también.}
 El Caso~5 (TSP cerrado, no VRP) con protocolo QML~v2 muestra QAOA-$p$1 = NN+2-opt = exacto (1867.6~km en Colombia $n=4$). El aporte es de modelado QUBO y decodificación factible, no de ventaja temporal frente a 2-opt.
@@ -58,7 +58,7 @@ La conclusión práctica para entornos empresariales como SKG Tecnología es: \t
 
 \subsection*{Conjetura 1 (C1): Indicadores de cuanticidad}
 
-En el barrido NB08 ($n=9$), $\Delta A$ crece con $\alpha$ ($\rho_S=0.833$, $p=0.005$); $d_F$/$H$ quedan planos porque $X$ es fijo. Eso \textbf{no} demuestra que $\mathcal{Q}$ prediga ventaja con ese $\rho$. La correlación $\rho_S\approx 0.87$ sobre tres datasets vs.\ RBF ($n=3$) es orientativa y \textbf{no} implica que SKG sea cuántico-nativo. $\mathcal{Q}>0$ debe cruzarse siempre con GB/RF y $\mathcal{Q}_{\mathrm{rob}}$.
+La Conjetura~1, en la forma ``$\mathcal{Q}(\mathcal{D})$ diagnostica a priori la ventaja'', \textbf{no se sostiene} con los tres datasets del TFM. El barrido NB08 sí muestra que $\Delta A$ crece con $\alpha$ ($\rho_S=0.833$, $p=0.005$); eso no salva el escalar compuesto. Hallazgo negativo explícito: un score que ordena mal frente a $\Delta_{\mathrm{op}}$ no debe usarse para activar el módulo cuántico.
 
 \subsection*{Conjetura 2 (C2): Framework QCR}
 
@@ -106,7 +106,7 @@ Este trabajo contribuye a la literatura con:
 \begin{enumerate}
     \item \textbf{Evidencia empírica} sobre condiciones reales de ventaja cuántica usando datos empresariales propietarios (SKG Tecnología, Bogotá), evaluada en nueve casos de uso con tres tipos de dataset cada uno cuando aplica.
     \item \textbf{Metodología de evaluación comparativa reproducible} sobre tres familias de problemas (clasificación, regresión y optimización combinatoria), con código abierto en Qiskit~2.3.0.
-    \item \textbf{El indicador $\mathcal{Q}(D)$}: score compuesto de cuanticidad ($\Delta A$, $d_F$, $\Delta H$), con evidencia parcial en barrido NB08: $\rho_S(\alpha,\Delta A)=0.833$ ($p=0.005$); sin reclamar aún $\rho(\mathcal{Q},\mathrm{ventaja})$ equivalente.
+    \item \textbf{Hallazgo negativo sobre $\mathcal{Q}(D)$}: el score compuesto propuesto no predice $\Delta_{\mathrm{op}}$ (contraejemplo SKG). Aporte: delimitar que $\Delta A$/$d_F$/$\Delta H$ por separado y el emparejamiento mapa--generador son el lenguaje útil; el escalar $\mathcal{Q}$ no lo es.
     \item \textbf{El Framework QCR}: planteado formalmente (protocolo de cuatro pasos + Conjetura~\ref{conj:qcr}); Notebook~09 reportó $+4.2$~pp en Telco, matizado por $\mathcal{Q}_{\mathrm{rob}}$ (Sección~\ref{sec:qml_v2_revision}). Demostración fuerte = post-TFM.
     \item \textbf{El prototipo de arquitectura híbrida cuántico-clásica}: patrón de integración QAOA-COBYLA con criterios explícitos de activación según el tipo de problema, demostrado sobre el conjunto dominante mínimo (NP-difícil) y generalizable a cualquier problema formulable como QUBO en entornos empresariales.
     \item \textbf{Caracterización de la brecha} entre madurez metodológica y madurez de hardware en el estado actual de la computación cuántica aplicada a ciencia de datos.
