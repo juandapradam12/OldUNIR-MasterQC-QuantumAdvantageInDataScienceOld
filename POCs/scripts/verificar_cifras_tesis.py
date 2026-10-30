@@ -133,6 +133,17 @@ def _comprobaciones_mds() -> list[Comprobacion]:
     return resultado
 
 
+def _comprobaciones_nb02() -> list[Comprobacion]:
+    semillas = _csv("02_optimizacion_qaoa_semillas.csv")
+    comparacion = _csv("02_optimizacion_ventaja_cuantica.csv")
+    coste_greedy = float(comparacion.loc[comparacion["metodo"].str.startswith("Greedy"), "coste"].iloc[0])
+    exceso = 100 * (semillas["coste"].mean() - coste_greedy) / coste_greedy
+    return [
+        Comprobacion("NB02: ejecuciones óptimas", EVALUACION, f"{int(semillas['es_optimo'].sum())} de {len(semillas)}"),
+        Comprobacion("NB02: exceso de coste frente a Greedy", EVALUACION, f"{exceso:.1f}\\%"),
+    ]
+
+
 def todas() -> list[Comprobacion]:
     return (
         _comprobaciones_sintesis()
@@ -141,6 +152,7 @@ def todas() -> list[Comprobacion]:
         + _comprobaciones_clasificacion_justa()
         + _comprobaciones_escalabilidad()
         + _comprobaciones_mds()
+        + _comprobaciones_nb02()
     )
 
 

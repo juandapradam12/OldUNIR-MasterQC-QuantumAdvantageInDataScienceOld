@@ -1,0 +1,2 @@
+model,type,objective_cost,focos_cubiertos,n_focos,n_agentes,time_s,status
+"FLP exacto (PuLP/CBC), problema completo",classical,258.0112896258408,10,10,19,0.04192487400723621,Optimal

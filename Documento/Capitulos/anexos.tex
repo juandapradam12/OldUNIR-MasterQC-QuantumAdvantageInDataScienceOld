@@ -22,7 +22,7 @@ La Tabla~\ref{tab:notebooks} describe los diez notebooks Jupyter que implementan
 \textbf{Nb.} & \textbf{Archivo} & \textbf{Descripción} & \textbf{Datasets} \\
 \midrule
 01 & \nolinkurl{01_clasificacion_quantum_vs_clasico} & QSVM vs Gradient Boosting, RF, SVM-RBF, Regresión Logística & Cuántico-nativo, SKG Incidentes, Telco Churn \\[3pt]
-02 & \nolinkurl{02_optimizacion_QAOA_vs_clasico} & QAOA ($p=1$) vs Greedy, búsqueda local en asignación de agentes & \texttt{agents.csv} (SKG) \\[3pt]
+02 & \nolinkurl{02_optimizacion_QAOA_vs_clasico} & Localización-asignación exacta (PuLP) y subproblema de 10 focos: fuerza bruta, Greedy y QAOA ($p=1,2$, 5 semillas) & \texttt{incidents\_movility.csv}, \texttt{agents.csv} (SKG) \\[3pt]
 03 & \nolinkurl{03_regresion_VQC_vs_clasico} & QK-SVR vs XGBoost, RF, SVR-RBF, Ridge & Cuántico-nativo, SKG Corredores, Friedman~\#1 \\[3pt]
 04 & \nolinkurl{04_portafolio_VQE_QAOA_vs_clasico} & VQE/QAOA vs QP clásico en optimización de portafolio & Sintético ($n \leq 6$ activos) \\[3pt]
 05 & \nolinkurl{05_tsp_QUBO_vs_clasico} & SA-QUBO vs Nearest Neighbor, 2-opt en TSP & Sintético ($n \leq 15$ ciudades) \\[3pt]
@@ -98,7 +98,7 @@ El archivo \texttt{POCs/requirements.txt} fija las versiones mínimas (no exacta
 Cuántico-nativo & 150--200 & Sintético & Casos 1, 2, 6, 8, 9 (benchmark de ventaja cuántica; $n=200$ en los Notebooks 01 y 03, $n=150$ en el 06) \\[3pt]
 SKG — Incidentes NUSE Bogotá & 27.326 & SKG Tecnología & Casos 1, 6, 8, 9 (clasificación de gravedad) \\[3pt]
 SKG — Tiempos de viaje & 81.121 & SKG Tecnología & Caso 2 (regresión de velocidad media) \\[3pt]
-SKG — Agentes en campo & $\sim$200 & SKG Tecnología & Caso 3 (asignación QAOA) \\[3pt]
+SKG — Agentes en campo & 58.245 lecturas (753 dispositivos) & SKG Tecnología & Notebook 02 (bases por localidad); el Caso 3 usa matrices de coste sintéticas \\[3pt]
 Telco Customer Churn & 7.043 & IBM / Kaggle & Casos 1, 6, 8, 9 (benchmark clasificación) \\[3pt]
 Friedman~\#1 & 300 & Sintético & Caso 2 (benchmark regresión no lineal) \\[3pt]
 Red social (MDS) & 6 nodos & Sintético & Caso 7 (paradigma híbrido) \\[3pt]

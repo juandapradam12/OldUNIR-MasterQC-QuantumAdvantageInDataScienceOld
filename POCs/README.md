@@ -252,11 +252,12 @@ Comparación de:
 ### 2. Optimización Combinatoria
 **Notebook:** `notebooks/02_optimizacion_QAOA_vs_clasico.ipynb`
 
-Comparación de:
-- **Cuántico:** QAOA (diferentes profundidades p=1,2,3)
-- **Clásico:** Algoritmos genéticos, Simulated Annealing, Gurobi (óptimo)
+Datos de SKG (`Datos/incidents_movility.csv`, `Datos/agents.csv`): focos con DBSCAN haversine y bases por localidad.
 
-**Métricas:** Valor de función objetivo, razón de aproximación, tiempo de convergencia
+- **Problema completo:** localización-asignación exacta con PuLP/CBC (solo clásico).
+- **Subproblema comparable (10 focos, un agente, cubrir al menos 5):** fuerza bruta (óptimo), Greedy y QAOA con p=1 y p=2 sobre cinco semillas.
+
+**Métricas:** coste, factibilidad, proporción de ejecuciones que alcanzan el óptimo
 
 ---
 
