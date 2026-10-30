@@ -1,8 +1,8 @@
 """
 Genera las 3 figuras de Categoría C para el TFM.
 
-  10_mds_grafo_solucion.png      — grafo social MDS + solución QAOA (C3)
-  10_qaoa_convergencia.png       — curvas de convergencia QAOA p=1,2,3  (C1)
+  10_mds_grafo_solucion.png      — grafo social MDS + solución óptima (C3)
+  10_qaoa_convergencia.png       — convergencia QAOA p=1,2,3 con datos reales de qml_v2.mds_qaoa (C1)
   03_regresion_3datasets.png     — comparativa regresión Q vs C en 3 datasets (C2)
 """
 
@@ -24,18 +24,12 @@ plt.rcParams.update({
 # ──────────────────────────────────────────────────────────────────────────────
 # C3 — Grafo social MDS con solución óptima D*={Ana, Enrique}
 # ──────────────────────────────────────────────────────────────────────────────
-nodes = ["Mario", "Sarah", "Raúl", "Ana", "Enrique", "Saúl"]
-edges = [
-    ("Mario",   "Sarah"),
-    ("Mario",   "Raúl"),
-    ("Mario",   "Ana"),
-    ("Enrique", "Sarah"),
-    ("Enrique", "Raúl"),
-    ("Saúl",    "Ana"),
-    ("Ana",     "Enrique"),   # arista adicional entre los influencers
-]
-
-solution = {"Ana", "Enrique"}
+import json
+METRICS = OUT.parent / "metrics"
+_info = json.loads((METRICS / "10_mds_qaoa_resumen.json").read_text())
+nodes = _info["nodes"]
+edges = [tuple(e) for e in _info["edges"]]
+solution = set(_info["optimo_conjunto"])
 
 G = nx.Graph()
 G.add_nodes_from(nodes)
@@ -108,79 +102,48 @@ print(f"✅  Guardado: {out_path}")
 
 
 # ──────────────────────────────────────────────────────────────────────────────
-# C1 — Curvas de convergencia QAOA p=1, p=2, p=3
-# Se simula el comportamiento realista de COBYLA sobre el MDS de 6 nodos.
-# La energía mínima teórica del Hamiltoniano de Ising equivale a ≈ –4.5 (para
-# el QUBO con A=1, B=2 convertido a Pauli-Z con constante de shift).
+# C1 — Convergencia QAOA p=1, p=2, p=3 (datos reales de qml_v2.mds_qaoa)
 # ──────────────────────────────────────────────────────────────────────────────
-rng = np.random.default_rng(42)
+import pandas as pd
 
-N_RESTARTS   = 20
-MAX_ITER_EST = 80   # iteraciones COBYLA aproximadas por reinicio (≈ n_params * 25)
-
-# Energías finales realistas por profundidad (media ± dispersión)
-# Basado en los resultados del notebook de ejemplo (best_energy ≈ −4 para p=3)
-config = {
-    1: dict(mean=-2.5, std=0.8,  color="#4A90D9", marker="o", label="p = 1  (2 parámetros)"),
-    2: dict(mean=-3.6, std=0.6,  color="#F5A623", marker="s", label="p = 2  (4 parámetros)"),
-    3: dict(mean=-4.3, std=0.35, color="#D0021B", marker="^", label="p = 3  (6 parámetros)"),
-}
+reinicios = pd.read_csv(METRICS / "10_mds_qaoa_reinicios.csv")
+trayectorias = pd.read_csv(METRICS / "10_mds_qaoa_trayectorias.csv")
+e_opt = float(_info["optimo_coste"])
+estilo = {1: dict(color="#219BC3", marker="o", label="p = 1  (2 parámetros)"),
+          2: dict(color="#858591", marker="s", label="p = 2  (4 parámetros)"),
+          3: dict(color="#0E4A75", marker="^", label="p = 3  (6 parámetros)")}
 
 fig, axes = plt.subplots(1, 2, figsize=(14, 5))
 fig.suptitle(
-    "Convergencia del loop híbrido QAOA–COBYLA — MDS (6 nodos, A=1, B=2)\n"
-    "Energía esperada $\\langle H_C \\rangle$ vs. número de reinicio",
-    fontsize=12, fontweight="bold"
-)
+    f"Convergencia del loop híbrido QAOA–COBYLA — MDS (6 nodos, A=1, B=2)\n"
+    f"Coste QUBO esperado $\\langle C \\rangle$ — {int(reinicios['restart'].nunique())} reinicios por profundidad, "
+    f"COBYLA maxiter={_info['maxiter']}",
+    fontsize=12, fontweight="bold")
+ax_sort, ax_conv = axes
 
-ax_sort = axes[0]   # energía final por reinicio (ordenada)
-ax_conv = axes[1]   # trayectoria de un reinicio representativo
+for p, cfg in estilo.items():
+    r = reinicios[reinicios["p"] == p].sort_values("energy_final")
+    ax_sort.plot(range(1, len(r) + 1), r["energy_final"].to_numpy(), color=cfg["color"],
+                 marker=cfg["marker"], linewidth=2, markersize=6, label=cfg["label"])
+    mejor = int(r.iloc[0]["restart"])
+    t = trayectorias[(trayectorias["p"] == p) & (trayectorias["restart"] == mejor)]
+    ax_conv.plot(t["iteration"], t["energy"], color=cfg["color"], linewidth=1.6, alpha=0.9, label=cfg["label"])
 
-for p, cfg in config.items():
-    # Simular energías finales de N_RESTARTS reinicios
-    finals = rng.normal(cfg["mean"], cfg["std"], N_RESTARTS)
-    finals = np.clip(finals, cfg["mean"] - 2*cfg["std"], -0.5)
-    sorted_finals = np.sort(finals)
-
-    ax_sort.plot(range(1, N_RESTARTS+1), sorted_finals,
-                 color=cfg["color"], marker=cfg["marker"],
-                 linewidth=2, markersize=6, label=cfg["label"])
-
-    # Trayectoria de convergencia de un reinicio (el mejor)
-    n_iters = MAX_ITER_EST * p
-    # Curva sigmoide descendente + ruido
-    x_iter  = np.arange(n_iters)
-    e_start = -0.5 + rng.uniform(-0.3, 0.3)
-    e_end   = cfg["mean"] - 0.2
-    decay   = 4.5 / n_iters
-    traj    = e_start + (e_end - e_start) * (1 - np.exp(-decay * x_iter))
-    noise   = rng.normal(0, abs(e_end - e_start) * 0.06, n_iters) * np.exp(-decay * x_iter * 2)
-    traj   += noise
-
-    ax_conv.plot(x_iter, traj, color=cfg["color"], linewidth=2,
-                 alpha=0.9, label=cfg["label"])
-
-# Línea de energía óptima (solución exacta D*={Ana,Enrique})
-e_opt = -4.5
 for ax in axes:
-    ax.axhline(e_opt, color="black", linestyle="--", linewidth=1.4,
-               alpha=0.65, label="Energía óptima $E^*$ (fuerza bruta)")
-
-ax_sort.set_xlabel("Reinicio (ordenado por energía final)", fontsize=10)
-ax_sort.set_ylabel("$\\langle H_C \\rangle_{\\theta^*}$", fontsize=11)
-ax_sort.set_title("Energía final por reinicio\n(20 reinicios COBYLA)", fontsize=10)
+    ax.axhline(e_opt, color="black", linestyle="--", linewidth=1.4, alpha=0.65,
+               label=f"Coste óptimo $C^*={e_opt:.0f}$ (fuerza bruta)")
+ax_sort.set_xlabel("Reinicio (ordenado por coste final)", fontsize=10)
+ax_sort.set_ylabel("$\\langle C \\rangle$ final", fontsize=11)
+ax_sort.set_title("Coste esperado final por reinicio", fontsize=10)
 ax_sort.legend(fontsize=9)
-ax_sort.set_ylim(-6.5, 1.0)
-
-ax_conv.set_xlabel("Iteración COBYLA", fontsize=10)
-ax_conv.set_ylabel("$\\langle H_C \\rangle_\\theta$", fontsize=11)
-ax_conv.set_title("Trayectoria de convergencia\n(mejor reinicio por profundidad)", fontsize=10)
+ax_conv.set_xlabel("Evaluación de la función objetivo (COBYLA)", fontsize=10)
+ax_conv.set_ylabel("$\\langle C \\rangle_\\theta$", fontsize=11)
+ax_conv.set_title("Trayectoria del mejor reinicio por profundidad", fontsize=10)
 ax_conv.legend(fontsize=9)
-ax_conv.set_ylim(-6.5, 1.0)
 
 plt.tight_layout()
 out_path = OUT / "10_qaoa_convergencia.png"
-plt.savefig(out_path, dpi=150, bbox_inches="tight")
+plt.savefig(out_path, dpi=150, bbox_inches="tight", metadata={"paleta": "unir"})
 plt.close()
 print(f"✅  Guardado: {out_path}")
 

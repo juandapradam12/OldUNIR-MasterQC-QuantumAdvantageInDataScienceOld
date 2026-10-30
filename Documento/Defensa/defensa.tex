@@ -443,7 +443,7 @@ Asignación QUBO &
 Greedy \\
 SKG-like &
 MDS (cobertura) &
-\textbf{óptimo; $P\!\approx\!73\%$} &
+\textbf{óptimo por selección; $P{=}68.8\%$ (mejor reinicio)} &
 fuerza bruta / Greedy \\
 Referencia &
 TSP $n{=}4$ &
@@ -455,7 +455,7 @@ NN+2-opt (gap $0$) \\
 \begin{block}{Q vs C (misma pregunta)}
 \begin{itemize}
   \item \textbf{Asignación:} gana Q en coste a escala moderada.
-  \item \textbf{MDS:} Q recupera el óptimo (patrón híbrido viable).
+  \item \textbf{MDS:} Q recupera el óptimo por muestreo y selección; $P(\mathrm{opt})$ media $5.7\%$ ($p{=}3$, 20 reinicios).
   \item \textbf{TSP:} empate en calidad; \textbf{no} hay speedup --- modelado QUBO.
 \end{itemize}
 \end{block}
@@ -843,7 +843,7 @@ Prototipos (NB~09): sin ventaja frente al cl\'asico fuerte. Sin demostraci\'on.}
   \item QAOA reduce coste de asignación $\approx 30\%$ vs.\ Greedy a escala moderada.
   \item VQE competitivo en portafolio pequeño; TSP $n{=}4$: empate óptimo
         (valor de \emph{modelado}, no speedup).
-  \item MDS: patrón híbrido viable ($P(\mathrm{opt})\approx 73\%$).
+  \item MDS: óptimo recuperado por selección; $P(\mathrm{opt})$ del mejor reinicio $68.8\%$, media $5.7\%$.
   \item Coste de simulación del kernel $O(n^2)$: obstáculo práctico actual.
   \item Metodologías maduras vs.\ hardware inmaduro: resultados mixtos son esperables en NISQ.
 \end{enumerate}

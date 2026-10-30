@@ -486,13 +486,13 @@ Sea $G=(V, E)$ el grafo de relaciones con $|V|=n$ y $N[v]=\{v\}\cup N(v)$ el vec
   \label{eq:mds_qubo}
 \end{equation}
 
-donde $A=1$ pondera el costo de contratar y $B=2$ penaliza cada vértice no cubierto por su vecindario cerrado. El mínimo global es alcanzado por el conjunto dominante mínimo. Este es NP-difícil en el caso general \citep{garey1979}. Sustituyendo $x_i = (1 - Z_i)/2$, la expresión~\eqref{eq:mds_qubo} se traduce exactamente a un Hamiltoniano de Ising con términos $Z_i$ y $Z_iZ_j$, implementables con puertas $R_Z$ y $R_{ZZ}$ del circuito QAOA:
+donde $A=1$ pondera el costo de contratar y $B=2$ penaliza cada vértice no cubierto por su vecindario cerrado. En esta instancia el mínimo global es alcanzado por el conjunto dominante mínimo. Este es NP-difícil en el caso general \citep{garey1979}. Conviene precisar que la penalización cuadrática $(1-\sum_{u\in N[v]}x_u)^2$ también castiga cubrir un vértice más de una vez, de modo que el QUBO codifica en rigor un \emph{dominante perfecto}; coincide con el MDS usual cuando existe un dominante perfecto de tamaño mínimo (como aquí, verificado por fuerza bruta), pero no en general (véase la Tabla~\ref{tab:escala_mds}). Sustituyendo $x_i = (1 - Z_i)/2$, la expresión~\eqref{eq:mds_qubo} se traduce exactamente a un Hamiltoniano de Ising con términos $Z_i$ y $Z_iZ_j$, implementables con puertas $R_Z$ y $R_{ZZ}$ del circuito QAOA:
 
 \begin{equation}
   H_C = \sum_i h_i Z_i + \sum_{i<j} J_{ij} Z_i Z_j
 \end{equation}
 
-Para la instancia de seis nodos (Mario, Sarah, Raúl, Ana, Enrique, Saúl) y los parámetros $A=1, B=2$, el óptimo exacto es $D^* = \{\text{Ana, Enrique}\}$ con coste $C=2$, verificado por fuerza bruta $O(2^6 = 64)$ evaluaciones.
+Para la instancia de seis nodos (Mario, Sarah, Raúl, Ana, Enrique, Saúl; aristas Mario--Sarah, Mario--Raúl, Mario--Ana, Enrique--Sarah, Enrique--Raúl y Saúl--Ana) y los parámetros $A=1, B=2$, el óptimo exacto es $D^* = \{\text{Ana, Enrique}\}$ con coste $C=2$, verificado por fuerza bruta $O(2^6 = 64)$ evaluaciones.
 
 \begin{figure}[!htbp]
 \centering
@@ -597,32 +597,32 @@ Esta pequeñísima interfaz implica que QAOA es \textit{directamente integrable}
 \begin{enumerate}
   \item \textbf{Referencia exacta}: Fuerza bruta exhaustiva ($2^n = 64$ evaluaciones) y programación lineal entera (ILP con PuLP/CBC), que verifican $D^* = \{\text{Ana, Enrique}\}$.
   \item \textbf{Heurística clásica}: Algoritmo greedy por cobertura incremental —en cada paso se añade el nodo cuyo vecindario cerrado cubre el mayor número de vértices aún no cubiertos— como línea base de tiempo de ejecución.
-  \item \textbf{QAOA}: \texttt{QAOAAnsatz} de Qiskit con profundidad $p \in \{1, 2, 3\}$, simulado con \texttt{AerEstimator} (vector de estados exacto). Optimización: 20 reinicios aleatorios de COBYLA con \texttt{maxiter}$=300$.
+  \item \textbf{QAOA}: \texttt{QAOAAnsatz} de Qiskit con profundidad $p \in \{1, 2, 3\}$, simulado con el vector de estados exacto (implementación propia en NumPy, verificada contra \texttt{QAOAAnsatz} + \texttt{Statevector} de Qiskit con diferencia máxima de probabilidades de $8\times10^{-16}$). Optimización: 20 reinicios aleatorios de COBYLA con \texttt{maxiter}$=300$ y 6\,000 shots simulados a partir del estado final. Todo el experimento es reproducible con \texttt{python -m qml\_v2.mds\_qaoa} (semilla 42) y escribe sus resultados en \texttt{POCs/data/output/metrics/10\_mds\_qaoa\_*}.
   \item \textbf{Escalabilidad}: Grafos de Erdős-Rényi con $n \in \{6, 8, 10, 12, 15\}$ nodos y densidad 0.45. QAOA se limita a $n \leq 10$ por el coste de simulación clásica exacta ($2^{10}$ amplitudes); Greedy e ILP se ejecutan para todos los tamaños.
 \end{enumerate}
 
 \paragraph{Resultados preliminares.}
-Con $p = 3$, QAOA concentra aproximadamente el \textbf{73\%} de las mediciones en el estado óptimo $\{$Ana, Enrique$\}$ y recupera la solución exacta por selección del estado de menor coste. El análisis de escalabilidad muestra que Greedy e ILP encuentran el óptimo en todos los tamaños evaluados con tiempos inferiores a 5 ms, mientras que el tiempo de QAOA en simulación clásica crece de $\sim$60 s para $n=6$ a $\sim$400 s para $n=10$, confirmando que la ventaja cuántica en simulación no existe en este rango.
+Resultados medidos (20 reinicios por profundidad). La probabilidad exacta de medir el óptimo $\{$Ana, Enrique$\}$ es, en media sobre los reinicios, del $2.6\%$ para $p=1$ (máximo $6.1\%$), $3.6\%$ para $p=2$ (máximo $13.0\%$) y $5.7\%$ para $p=3$; solo un reinicio de $p=3$ converge a un buen mínimo local, con $\langle C\rangle=3.78$ y probabilidad $68.8\%$ de medir el óptimo ($68.3\%$ de los 6\,000 shots). La mayoría de reinicios se estanca en $\langle C\rangle\approx 6$ (el coste esperado óptimo es $2$), de modo que, con COBYLA y 300 evaluaciones, QAOA es muy sensible a la inicialización. Aun así, con 6\,000 shots el óptimo se observa con probabilidad $>99\%$ en 12 de 20 reinicios ($p=3$) y, combinando reinicios, el mejor estado muestreado es el óptimo, por lo que se recupera la solución exacta por \emph{selección del estado de menor coste} (no porque el circuito concentre la probabilidad en él). En grafos de Erdős--Rényi con densidad 0.45 ($n\in\{6,8,10,12,15\}$), Greedy e ILP (HiGHS) encuentran el óptimo del MDS en menos de 25 ms en todos los tamaños, mientras que la simulación exacta de QAOA ($p=3$, 20 reinicios) tarda entre 4.7 s ($n=6$) y 28.8 s ($n=15$) con nuestro simulador; QAOA alcanza el óptimo del \emph{QUBO}, que para $n\ge 8$ no coincide con el tamaño del MDS (por la penalización cuadrática), y su probabilidad de medir el óptimo cae a $\sim 0.1\%$ para $n=15$. No existe ventaja cuántica en simulación clásica en este rango.
 
 \begin{figure}[!htbp]
 \centering
 \includegraphics[width=0.97\textwidth]{../POCs/data/output/figures/10_qaoa_histograma_medicion.png}
-\caption{Histograma de medición del circuito QAOA con $p=3$ sobre el MDS de 6 nodos (6\,000 shots, 20 reinicios COBYLA). El estado azul oscuro \texttt{011000} corresponde al conjunto dominante mínimo óptimo $D^*=\{\text{Ana, Enrique}\}$ (coste QUBO $=2$, verificado por fuerza bruta), y concentra el 73\% de las mediciones. Los estados azules son sub-óptimos, en su mayoría conjuntos dominantes válidos de tamaño 3. Las celdas de coste se refieren al valor de la función objetivo QUBO con $A=1$, $B=2$.}
+\caption{Histograma de medición (6\,000 shots) del mejor de 20 reinicios de QAOA con $p=3$ sobre el MDS de 6 nodos; se muestran los 8 estados más frecuentes. El estado azul oscuro \texttt{011000} corresponde al conjunto dominante mínimo óptimo $D^*=\{\text{Ana, Enrique}\}$ (coste QUBO $=2$, verificado por fuerza bruta) y aparece en el 68.3\% de los shots (probabilidad exacta $68.8\%$). El resto son estados sub-óptimos, factibles o no. Las celdas de coste se refieren al valor de la función objetivo QUBO con $A=1$, $B=2$.}
 \label{fig:qaoa_histograma}
 \end{figure}
 
 \paragraph{Ventajas identificadas.}
 \begin{itemize}
   \item El caso ilustra el patrón QAOA-COBYLA en su forma más pura y pedagógicamente transparente, con una cadena completa y verificable: problema de negocio $\rightarrow$ QUBO $\rightarrow$ Hamiltoniano de Ising $\rightarrow$ circuito cuántico $\rightarrow$ loop híbrido $\rightarrow$ medición.
-  \item La función genérica \texttt{resolver\_qaoa\_qiskit(nodes, edges)} demuestra que el método es sistemático para cualquier red de entrada, sin adaptaciones de arquitectura.
+  \item El módulo \texttt{qml\_v2.mds\_qaoa} recibe cualquier lista de nodos y aristas, sin adaptaciones de arquitectura.
   \item La interfaz mínima del loop híbrido ($2p$ parámetros de entrada, 1 escalar de salida) establece el patrón de integración aplicable a los problemas de asignación de SKG Tecnología.
-  \item El paso al hardware real de IBM requiere únicamente cambiar el backend (\texttt{AerEstimator} $\rightarrow$ \texttt{QiskitRuntimeService} + \texttt{EstimatorV2}) sin modificar la lógica del algoritmo.
+  \item El paso a hardware real de IBM requeriría cambiar el backend de simulación por \texttt{QiskitRuntimeService} + \texttt{EstimatorV2}; no se ha ejecutado en hardware real en este TFM.
 \end{itemize}
 
 \paragraph{Limitaciones identificadas.}
 \begin{itemize}
   \item En simulación clásica exacta, QAOA no ofrece ventaja en tiempo frente a ILP ni frente a Greedy para $n \leq 15$. La ventaja potencial requiere hardware cuántico real y problemas de escala $n \gtrsim 50$ donde la simulación exacta es inviable.
-  \item Con profundidad $p = 1$, la probabilidad del óptimo cae a $\sim$30\%, insuficiente para uso operativo sin post-procesamiento. Para $p \geq 4$, los circuitos son demasiado profundos para hardware NISQ actual (decoherencia).
+  \item Con profundidad $p = 1$, la probabilidad media de medir el óptimo es del $2.6\%$ (máximo $6.1\%$ sobre 20 reinicios), insuficiente para uso operativo sin post-procesamiento (selección del menor coste entre las muestras). Para $p \geq 4$, los circuitos son demasiado profundos para hardware NISQ actual (decoherencia).
   \item El parámetro $B$ de la penalización QUBO debe calibrarse para cada familia de instancias: si $B$ es demasiado pequeño, las soluciones infactibles (que no cubren todos los vértices) pueden tener coste QUBO menor que la solución óptima factible.
   \item El número de parámetros a optimizar crece linealmente con $p$ ($2p$ ángulos), lo que aumenta la probabilidad de quedar atrapado en óptimos locales del paisaje de energía; esto motiva el uso de múltiples reinicios aleatorios.
 \end{itemize}
@@ -630,7 +630,7 @@ Con $p = 3$, QAOA concentra aproximadamente el \textbf{73\%} de las mediciones e
 \begin{figure}[!htbp]
 \centering
 \includegraphics[width=0.72\textwidth]{../POCs/data/output/figures/10_mds_grafo_solucion.png}
-\caption{Red social de 6 nodos del Caso de uso~7. Los nodos azul oscuro ($D^* = \{\text{Ana, Enrique}\}$) forman el conjunto dominante mínimo de coste 2: contratar a estos dos influencers garantiza que el producto llega a todos los miembros de la red. Las flechas grises indican la relación de cobertura (cada nodo azul tiene al menos un vecino en $D^*$). QAOA con $p=3$ identifica este conjunto óptimo con probabilidad $> 85\%$ sobre 20 reinicios.}
+\caption{Red social de 6 nodos del Caso de uso~7. Los nodos azul oscuro ($D^* = \{\text{Ana, Enrique}\}$) forman el conjunto dominante mínimo de coste 2: contratar a estos dos influencers garantiza que el producto llega a todos los miembros de la red. Las flechas grises indican la relación de cobertura (cada nodo azul tiene al menos un vecino en $D^*$). En QAOA con $p=3$, el mejor reinicio mide este conjunto con probabilidad $68.8\%$ (media sobre 20 reinicios: $5.7\%$).}
 \label{fig:mds_grafo_solucion}
 \end{figure}
 

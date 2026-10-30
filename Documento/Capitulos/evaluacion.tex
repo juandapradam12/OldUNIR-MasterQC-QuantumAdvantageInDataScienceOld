@@ -202,7 +202,7 @@ El Caso de uso~7 tiene una naturaleza fundamentalmente diferente a los anteriore
 
 La principal aportación del Caso~7 es de \textbf{modelamiento}: cualquier problema formulable como QUBO —cobertura de conjuntos, asignación, rutas, scheduling— puede ser resuelto directamente con el mismo loop híbrido QAOA-COBYLA, sin cambiar la arquitectura del algoritmo. Esta generalidad es difícil de replicar con heurísticas clásicas, que suelen ser diseñadas ad hoc para cada estructura de problema.
 
-Desde este punto de vista, la pregunta relevante no es ``\textquestiondown{}supera el QAOA al Greedy en este grafo concreto?'' —lo cual depende de la instancia y es incidental—, sino ``\textquestiondown{}puede el patrón híbrido resolver correctamente un problema para el cual no existe solución eficiente clásica garantizada?''. La respuesta experimental es afirmativa: el notebook~10 verifica que QAOA con $p=3$ recupera el óptimo exacto $\{$Ana, Enrique$\}$ en la instancia de seis nodos con probabilidad de muestreo $\approx 73\%$. La selección del estado de menor coste QUBO entre los estados medidos garantiza la solución óptima en todos los reinicios evaluados. El algoritmo no solo aproxima, sino que \textit{concentra la masa de probabilidad en el óptimo global}, lo que es la garantía de calidad característica del QAOA en el régimen de pocos qubits y baja profundidad.
+Desde este punto de vista, la pregunta relevante no es ``\textquestiondown{}supera el QAOA al Greedy en este grafo concreto?'' —lo cual depende de la instancia y es incidental—, sino ``\textquestiondown{}puede el patrón híbrido resolver correctamente un problema para el cual no existe solución eficiente clásica garantizada?''. La respuesta experimental es afirmativa pero matizada (\texttt{qml\_v2.mds\_qaoa}, notebook~10): con $p=3$ y 20 reinicios de COBYLA, el estado de menor coste QUBO entre los medidos es el óptimo exacto $\{$Ana, Enrique$\}$ de la instancia de seis nodos. Sin embargo, el circuito \emph{no} concentra de forma fiable la probabilidad en el óptimo: la probabilidad exacta de medirlo es del $5.7\%$ en media sobre los reinicios y solo el mejor alcanza el $68.8\%$; con $p=1$ la media es del $2.6\%$. La recuperación del óptimo descansa en el muestreo y la selección del menor coste, no en una concentración sistemática de la masa de probabilidad.
 
 \subsection{Complejidad computacional y análisis de escalabilidad}
 
@@ -216,19 +216,37 @@ Aunque la evaluación es cualitativa, el análisis de tiempos aporta una perspec
 \textbf{Método} & \textbf{Complejidad tiempo} & \textbf{Garantía solución} & \textbf{Limitante principal} \\
 \hline
 Fuerza bruta       & $O(2^n)$         & Óptima global    & Inviable para $n > 30$ \\
-ILP exacto (PuLP)  & $O(2^n)$ peor caso & Óptima global  & Práctico hasta $n \sim 100$ con CBC \\
-Greedy cobertura   & $O(n^2)$         & Aproximada ($\ln n + 1$) & No garantiza óptimo \\
+ILP exacto (CBC/HiGHS) & $O(2^n)$ peor caso & Óptima global & Dependiente de la instancia ($<25$~ms en las instancias de este TFM) \\
+Greedy cobertura   & $O(n^2)$         & Aproximada ($H(\Delta{+}1)$, $\Delta$ grado máximo) & No garantiza óptimo \\
 QAOA (simulación)  & $O(2^n)$ en sim. & Probabilística   & Simulación clásica inviable $n > 30$ \\
-QAOA (hardware)    & $O(\text{poly})$ & Probabilística   & Hardware NISQ: $n \lesssim 60$ qubits \\
+QAOA (hardware)    & Circuito de profundidad $O(p\,|E|)$ & Probabilística, sin garantía de calidad general & Ruido NISQ, \emph{barren plateaus}, optimización clásica del bucle \\
 \hline
 \end{tabularx}
-\caption{Complejidad de los métodos evaluados para el MDS. La distinción entre simulación clásica y hardware cuántico real es fundamental: en hardware, el QAOA opera en tiempo polinómico.}
+\caption{Complejidad de los métodos evaluados para el MDS. En hardware, el \emph{coste del circuito} QAOA es polinómico en el número de qubits, pero esto no implica ventaja: no se conoce garantía de calidad ni número de iteraciones/shots que escale polinómicamente.}
 \label{tab:complejidad_mds}
 \end{table}
 
-La diferencia conceptual más importante es que \textbf{la complejidad del QAOA en hardware cuántico real es polinómica en el número de qubits}, mientras que la fuerza bruta y el ILP son exponenciales. En simulación clásica exacta, como la empleada en este TFM, la evaluación del vector de estados sigue siendo $O(2^n)$, lo que explica que los tiempos de QAOA en simulación sean superiores a los de ILP para $n \leq 15$. Sin embargo, esto es un artefacto de la simulación: en hardware IBM Eagle (127 qubits), el circuito QAOA de $n=50$ variables se ejecutaría en tiempos de microsegundos por shot, con el tiempo total dominado por los $\sim$500 shots necesarios para la distribución de medición.
+La diferencia conceptual es que el \emph{coste por evaluación del circuito} QAOA en hardware es polinómico en el número de qubits y la profundidad, mientras que la fuerza bruta es exponencial. Esto \textbf{no} equivale a una ventaja: la calidad de la solución no está garantizada, el bucle clásico (COBYLA) puede quedar atrapado (en nuestros 60 reinicios solo uno alcanzó un coste esperado cercano al óptimo), el número de shots necesario para observar el óptimo no se conoce a priori, y el ruido de los dispositivos NISQ degrada el resultado \citep{preskill2018, cerezo2021}. En simulación clásica exacta, como la empleada en este TFM, la evaluación del vector de estados es $O(2^n)$.
 
-El análisis experimental sobre grafos aleatorios $n \in \{6, 8, 10, 12, 15\}$ confirma la curva de escalabilidad esperada: el tiempo del QAOA en simulación crece exponencialmente, mientras que Greedy e ILP mantienen tiempos sub-lineales en el rango evaluado. Esta evidencia delimita con precisión el régimen donde el QAOA cuántico aporta valor: problemas de escala $n \gtrsim 50$ donde ILP y fuerza bruta son inviables pero el hardware de 127 qubits puede operar.
+La Tabla~\ref{tab:escala_mds} recoge el experimento real sobre grafos de Erdős--Rényi (densidad 0.45, semilla 42, $p=3$, 20 reinicios de COBYLA, 6\,000 shots; \texttt{python -m qml\_v2.mds\_qaoa}). Greedy e ILP encuentran el MDS en todos los tamaños en menos de 25 ms; el tiempo de simulación de QAOA crece de 4.7 s ($n=6$) a 28.8 s ($n=15$) en nuestro simulador de vector de estados. El mejor estado muestreado por QAOA coincide con el óptimo del \emph{QUBO}, que para $n\ge 8$ no es el MDS (la penalización cuadrática favorece dominantes perfectos), y la probabilidad de medir ese óptimo cae de $14\%$ ($n=6$) a $0.1\%$ ($n=15$) en el mejor reinicio. La evidencia delimita lo que se ha medido: en este rango la simulación de QAOA no aporta ventaja de tiempo ni de calidad frente a Greedy/ILP; no se ha evaluado hardware real ni instancias con $n\gtrsim 50$, por lo que no puede afirmarse ni descartarse ventaja en ese régimen.
+
+\begin{table}[ht]
+\centering
+\small
+\begin{tabular}{rrrrrrr}
+\hline
+$n$ & Aristas & MDS (ILP) & MDS (Greedy) & Óptimo QUBO & $P_{\max}(\text{opt})$ & $t_{\text{QAOA}}$ (s) \\
+\hline
+6  & 6  & 2 & 2 & 2 & 0.144 & 4.7 \\
+8  & 11 & 2 & 2 & 4 & 0.036 & 5.5 \\
+10 & 21 & 2 & 2 & 5 & 0.049 & 6.3 \\
+12 & 33 & 2 & 2 & 6 & 0.0045 & 8.8 \\
+15 & 50 & 3 & 3 & 8 & 0.0010 & 28.8 \\
+\hline
+\end{tabular}
+\caption{Escalabilidad real del Caso~7 (ER, densidad 0.45). $P_{\max}(\text{opt})$: mayor probabilidad exacta de medir el óptimo del QUBO entre 20 reinicios de QAOA con $p=3$; $t_{\text{QAOA}}$: tiempo de los 20 reinicios (simulación NumPy). Fuente: \texttt{10\_mds\_qaoa\_escalabilidad.csv}.}
+\label{tab:escala_mds}
+\end{table}
 
 % =====================================================================
 \section{Caso de uso 8: Detección de anomalías one-class}
@@ -300,7 +318,7 @@ La Tabla~\ref{tab:sintesis} sintetiza los resultados principales del estudio com
 4 & VQE/QAOA & \multicolumn{2}{c}{Óptimo ($n \leq 6$)} & --- \\
 5 & QAOA TSP & \multicolumn{2}{c}{empate óptimo vs NN+2-opt ($n=4$)} & Euclidean gap~$0$ \\
 6 & QSVM (umbral) & \textbf{+8.9 pp} ($n=150$) & $-6.7$ pp (clásico) & $-3.8$ pp vs GB (clásico) \\
-7 & QAOA MDS ($p=3$) & \multicolumn{2}{c}{\textbf{Óptimo; $P(\text{opt})\approx 73\%$; patrón híbrido}} & NP-hard \\
+7 & QAOA MDS ($p=3$) & \multicolumn{2}{c}{\textbf{Óptimo recuperado por selección; $P(\text{opt})=68.8\%$ (mejor reinicio; media $5.7\%$)}} & NP-hard \\
 8 & OCSVM-ZZ & \textbf{+31.2 pp AUC} (\texttt{zz\_phase}) & clásico (inyectado) & clásico (moons/blobs) \\
 9 & QK-SVR lags & \textbf{$\Delta$MAE $-0.36$} (\texttt{zz\_lag}) & clásico (\texttt{skg\_speed}) & clásico (\texttt{sine}) \\
 \hline

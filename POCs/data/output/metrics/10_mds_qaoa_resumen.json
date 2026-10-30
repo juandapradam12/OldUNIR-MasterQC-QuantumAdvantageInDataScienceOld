@@ -1,0 +1,107 @@
+{
+  "nodes": [
+    "Mario",
+    "Sarah",
+    "Raúl",
+    "Ana",
+    "Enrique",
+    "Saúl"
+  ],
+  "edges": [
+    [
+      "Mario",
+      "Sarah"
+    ],
+    [
+      "Mario",
+      "Raúl"
+    ],
+    [
+      "Mario",
+      "Ana"
+    ],
+    [
+      "Enrique",
+      "Sarah"
+    ],
+    [
+      "Enrique",
+      "Raúl"
+    ],
+    [
+      "Saúl",
+      "Ana"
+    ]
+  ],
+  "A": 1.0,
+  "B": 2.0,
+  "n_qubits": 6,
+  "optimo_bitstring": "011000",
+  "optimo_conjunto": [
+    "Ana",
+    "Enrique"
+  ],
+  "optimo_coste": 2.0,
+  "n_optimos": 1,
+  "top5_fuerza_bruta": [
+    [
+      "011000",
+      2.0
+    ],
+    [
+      "100010",
+      4.0
+    ],
+    [
+      "100100",
+      4.0
+    ],
+    [
+      "110000",
+      4.0
+    ],
+    [
+      "000001",
+      5.0
+    ]
+  ],
+  "shots": 6000,
+  "n_restarts": 20,
+  "maxiter": 300,
+  "seed": 42,
+  "simulacion": "vector de estados exacto (numpy), verificado contra QAOAAnsatz + qiskit.quantum_info.Statevector",
+  "ising_offset": 16.0,
+  "max_dif_vs_QAOAAnsatz": 8.326672684688674e-16,
+  "resumen_por_p": {
+    "1": {
+      "energia_media": 10.459161,
+      "energia_std": 3.521695,
+      "energia_min": 6.000009,
+      "p_opt_media": 0.026044,
+      "p_opt_max": 0.061313,
+      "p_visto_shots_media": 0.8,
+      "evals_media": 81.9,
+      "tiempo_medio_s": 0.049619
+    },
+    "2": {
+      "energia_media": 8.91088,
+      "energia_std": 3.022019,
+      "energia_min": 6.000041,
+      "p_opt_media": 0.035867,
+      "p_opt_max": 0.130438,
+      "p_visto_shots_media": 0.700003,
+      "evals_media": 239.75,
+      "tiempo_medio_s": 0.167664
+    },
+    "3": {
+      "energia_media": 8.28057,
+      "energia_std": 2.916218,
+      "energia_min": 3.778669,
+      "p_opt_media": 0.056716,
+      "p_opt_max": 0.687703,
+      "p_visto_shots_media": 0.603561,
+      "evals_media": 296.2,
+      "tiempo_medio_s": 0.236665
+    }
+  }
+}
