@@ -19,6 +19,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import seaborn as sns
+from matplotlib.colors import LinearSegmentedColormap
 from matplotlib.patches import Patch
 from scipy.stats import spearmanr
 
@@ -48,9 +49,12 @@ WRITTEN: list[Path] = []
 SKIPPED: list[str] = []
 
 
-def save_fig(name: str) -> Path:
+def save_fig(name: str, paleta_unir: bool = False) -> Path:
+    """Guarda la figura. ``paleta_unir=True`` marca el PNG como ya coloreado con la
+    paleta UNIR; el resto se recolorea al final de ``main`` (recolorear_figuras_unir)."""
     path = OUT / name
-    plt.savefig(path, dpi=150, bbox_inches="tight")
+    meta = {"paleta": "unir"} if paleta_unir else None
+    plt.savefig(path, dpi=150, bbox_inches="tight", metadata=meta)
     plt.close()
     WRITTEN.append(path)
     return path
@@ -545,9 +549,11 @@ def fig_07_heatmap():
     mask = df_hm.isnull()
     fig, ax = plt.subplots(figsize=(12, 9))
     fig.suptitle("Ventaja Cuántica (Δ pp, Δ% o P(ópt)) por Caso de Uso y Dataset\n"
-                 "Verde = ventaja cuántica | Rojo = clásico superior | Gris = no aplica",
+                 "Azul = ventaja cuántica | Gris = clásico superior | N/A = no aplica",
                  fontsize=12, fontweight="bold")
-    sns.heatmap(df_hm.astype(float), ax=ax, cmap=plt.cm.RdYlGn, center=0,
+    cmap_unir = LinearSegmentedColormap.from_list(
+        "unir_div", ["#858591", "#E6E6EA", "#F7F7F9", "#9BD0E4", "#219BC3"])
+    sns.heatmap(df_hm.astype(float), ax=ax, cmap=cmap_unir, center=0,
                 vmin=-80, vmax=80, annot=True, fmt=".1f", linewidths=0.5,
                 linecolor="#eee", mask=mask,
                 cbar_kws={"label": "Ventaja cuántica (pp o Δ%)  [+ = cuántico mejor]"},
@@ -555,13 +561,15 @@ def fig_07_heatmap():
     for r_i in range(df_hm.shape[0]):
         for c_i in range(df_hm.shape[1]):
             if mask.iloc[r_i, c_i]:
-                ax.add_patch(plt.Rectangle((c_i, r_i), 1, 1, fill=True, color="#E0E0E0", zorder=5))
+                ax.add_patch(plt.Rectangle((c_i, r_i), 1, 1, fill=True, facecolor="white",
+                                           edgecolor="#C0C0C8", hatch="///", linewidth=0.0, zorder=5))
                 ax.text(c_i + 0.5, r_i + 0.5, "N/A", ha="center", va="center",
-                        fontsize=10, color="#999", zorder=6)
+                        fontsize=10, color="#858591", zorder=6,
+                        bbox=dict(facecolor="white", edgecolor="none", pad=1.5))
     ax.set_xlabel("Tipo de dataset", fontsize=11)
     ax.set_ylabel("Dominio / Algoritmo cuántico", fontsize=11)
     plt.tight_layout()
-    save_fig("07_heatmap_ventaja_por_dominio.png")
+    save_fig("07_heatmap_ventaja_por_dominio.png", paleta_unir=True)
 
 
 # ── Notebook 01 ────────────────────────────────────────────────────────────────
@@ -1172,8 +1180,8 @@ def fig_09_mapeos_comparativa():
         q_vals = [baseline["Q_score"]] + [r["Q_score"] for r in strategies_data]
         adv_vals = [baseline["advantage_pp"]] + [r["advantage_pp"] for r in strategies_data]
         x = np.arange(len(strategy_names))
-        colors_q = ["#90A4AE"] + ["#2E7D32" if v > baseline["Q_score"] else "#C62828" for v in q_vals[1:]]
-        colors_adv = ["#90A4AE"] + ["#1565C0" if v > baseline["advantage_pp"] else "#E65100"
+        colors_q = ["#C0C0C8"] + ["#0E4A75" if v > baseline["Q_score"] else "#858591" for v in q_vals[1:]]
+        colors_adv = ["#C0C0C8"] + ["#219BC3" if v > baseline["advantage_pp"] else "#858591"
                                     for v in adv_vals[1:]]
         ax = axes[ax_row, 0]
         bars = ax.bar(x, q_vals, color=colors_q, alpha=0.85, edgecolor="white", width=0.6)
@@ -1182,7 +1190,7 @@ def fig_09_mapeos_comparativa():
         ax.set_xticks(x)
         ax.set_xticklabels(strategy_names, rotation=20, ha="right", fontsize=9)
         ax.set_ylabel("Score Q(D)")
-        ax.set_title(f"{ds_name} — Score Q(D)\n(verde = mejora sobre baseline)")
+        ax.set_title(f"{ds_name} — Score Q(D)\n(azul oscuro = mejora, gris = empeora)")
         for b, v in zip(bars, q_vals):
             ax.text(b.get_x() + b.get_width() / 2, v + 0.001 if v >= 0 else v - 0.002,
                     f"{v:+.3f}", ha="center", va="bottom" if v >= 0 else "top", fontsize=8)
@@ -1193,12 +1201,12 @@ def fig_09_mapeos_comparativa():
         ax.set_xticks(x)
         ax.set_xticklabels(strategy_names, rotation=20, ha="right", fontsize=9)
         ax.set_ylabel("Ventaja QSVM (pp)")
-        ax.set_title(f"{ds_name} — Ventaja QSVM\n(azul = mejora sobre baseline)")
+        ax.set_title(f"{ds_name} — Ventaja QSVM\n(azul = mejora, gris = empeora)")
         for b, v in zip(bars, adv_vals):
             ax.text(b.get_x() + b.get_width() / 2, v + 0.3 if v >= 0 else v - 0.5,
                     f"{v:+.1f}", ha="center", va="bottom" if v >= 0 else "top", fontsize=8)
     plt.tight_layout()
-    save_fig("09_mapeos_comparativa.png")
+    save_fig("09_mapeos_comparativa.png", paleta_unir=True)
 
 
 def fig_09_barrido_rotaciones():
@@ -1578,6 +1586,10 @@ def main():
     fig_09_mapeos_comparativa()
     fig_09_barrido_rotaciones()
     fig_09_qcr_framework()
+
+    from recolorear_figuras_unir import procesar as _recolorear
+    for path in WRITTEN:
+        _recolorear(path)
 
     print("\n── Archivos escritos ──")
     for path in sorted(WRITTEN):

@@ -55,10 +55,10 @@ node_colors = []
 node_sizes  = []
 for n_ in G.nodes():
     if n_ in solution:
-        node_colors.append("#FF6B35")    # naranja fuerte → influencer
+        node_colors.append("#0E4A75")    # azul oscuro → influencer
         node_sizes.append(1600)
     else:
-        node_colors.append("#4A90D9")    # azul → no contratado
+        node_colors.append("#219BC3")    # azul → no contratado
         node_sizes.append(1100)
 
 fig, ax = plt.subplots(figsize=(8, 7))
@@ -76,8 +76,8 @@ nx.draw_networkx_labels(G, pos, ax=ax,
                         font_size=10, font_weight="bold", font_color="white")
 
 # Leyenda
-patch_inf = mpatches.Patch(color="#FF6B35", label=r"$D^*$ = {Ana, Enrique}  (influencers contratados, coste = 2)")
-patch_std = mpatches.Patch(color="#4A90D9", label="Nodo cubierto (≥ 1 vecino en $D^*$)")
+patch_inf = mpatches.Patch(color="#0E4A75", label=r"$D^*$ = {Ana, Enrique}  (influencers contratados, coste = 2)")
+patch_std = mpatches.Patch(color="#219BC3", label="Nodo cubierto (≥ 1 vecino en $D^*$)")
 ax.legend(handles=[patch_inf, patch_std], loc="lower center",
           bbox_to_anchor=(0.5, -0.14), ncol=1, fontsize=9,
           framealpha=0.9, edgecolor="#cccccc")
@@ -90,7 +90,7 @@ for node in G.nodes():
         if nbrs_in_sol:
             ax.annotate("",
                 xy=pos[nbrs_in_sol[0]], xytext=pos[node],
-                arrowprops=dict(arrowstyle="->", color="#2ecc71",
+                arrowprops=dict(arrowstyle="->", color="#858591",
                                 lw=1.5, connectionstyle="arc3,rad=0.12"))
 
 ax.set_title(
@@ -102,7 +102,7 @@ ax.axis("off")
 plt.tight_layout()
 plt.subplots_adjust(bottom=0.15)
 out_path = OUT / "10_mds_grafo_solucion.png"
-plt.savefig(out_path, dpi=150, bbox_inches="tight")
+plt.savefig(out_path, dpi=150, bbox_inches="tight", metadata={"paleta": "unir"})
 plt.close()
 print(f"✅  Guardado: {out_path}")
 

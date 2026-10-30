@@ -69,7 +69,7 @@ for bs, c in items:
     decoded.append(sel)
 
 opt_bs = "011000"
-colors = ["#FF6B35" if lb == opt_bs else "#4A90D9" for lb in labels]
+colors = ["#0E4A75" if lb == opt_bs else "#219BC3" for lb in labels]
 
 fig, ax = plt.subplots(figsize=(11, 6.5))
 
@@ -83,7 +83,7 @@ for i, (bar, p, c, sel) in enumerate(zip(bars, probs, costs, decoded)):
             f"{p:.2f}\n(C={c})",
             ha="center", va="bottom", fontsize=8,
             fontweight="bold" if labels[i] == opt_bs else "normal",
-            color="#CC3300" if labels[i] == opt_bs else "#333333")
+            color="#0E4A75" if labels[i] == opt_bs else "#333333")
 
 # Nombres de personas bajo el eje
 ax.set_xticks(range(len(labels)))
@@ -100,7 +100,7 @@ ax.set_ylabel("Probabilidad de medición", fontsize=11)
 ax.set_ylim(0, 0.88)
 ax.set_title(
     "Histograma de medición QAOA — MDS red social (p=3, 6 000 shots, 20 reinicios)\n"
-    "El estado naranja es la solución óptima $D^*=\\{\\text{Ana, Enrique}\\}$ (coste = 2)",
+    "El estado azul oscuro es la solución óptima $D^*=\\{\\text{Ana, Enrique}\\}$ (coste = 2)",
     fontsize=11, fontweight="bold", pad=10
 )
 
@@ -121,6 +121,6 @@ ax.legend(handles=[patch_opt, patch_sub], fontsize=9, loc="upper right")
 
 plt.tight_layout()
 out_path = OUT / "10_qaoa_histograma_medicion.png"
-plt.savefig(out_path, dpi=150, bbox_inches="tight")
+plt.savefig(out_path, dpi=150, bbox_inches="tight", metadata={"paleta": "unir"})
 plt.close()
 print(f"Guardado: {out_path}")
