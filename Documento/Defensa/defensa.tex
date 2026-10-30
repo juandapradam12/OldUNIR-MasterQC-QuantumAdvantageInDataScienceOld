@@ -528,7 +528,8 @@ $\rho(\mathcal{Q},\mathrm{ventaja})$.}
 \begin{block}{Propuesta (vector)}
 $\mathcal{Q}(\mathcal{D})=(\Delta A,\hat{d}_F,\Delta H)$.\\[0.3em]
 Perfil geométrico vs.\ RBF ---
-la decisión usa además $\Delta_{\mathrm{op}}$.
+la decisión mira la ventaja vs.\ mejor clásico
+\textbf{por familia} (clasif./reg./anomalías).
 \end{block}
 \end{column}
 \end{columns}
@@ -564,9 +565,9 @@ operativo --- por eso no se usa para decidir.}
 \begin{alertblock}{Límite}
 {\footnotesize
 El vector describe geometría vs.\ RBF.
-La adopción exige además
-$\Delta_{\mathrm{op}}>0$
-(mejor clásico) y alineación
+La adopción exige ventaja vs.\
+mejor clásico \textbf{en la familia}
+(clasif./reg./anomalías) y alineación
 mapa--generador.}
 \end{alertblock}
 \end{column}
@@ -605,77 +606,102 @@ como trabajo futuro.}
 \end{columns}
 \end{frame}
 
-\begin{frame}{P1 --- vector vs nativo: datos y literatura}
+\begin{frame}{P1 --- Clasificación: geometría $\mathcal{Q}$ + resultado}
 \begin{columns}[T]
-\begin{column}{0.58\textwidth}
+\begin{column}{0.60\textwidth}
 \centering
-\includegraphics[width=\linewidth,height=0.72\textheight,keepaspectratio]{08_q_vector_nativo_vs_reales.png}
+\includegraphics[width=\linewidth,height=0.78\textheight,keepaspectratio]{08_perfil_clasificacion.png}
 \end{column}
-\begin{column}{0.40\textwidth}
-\begin{block}{Qué es $\Delta_{\mathrm{op}}$}
+\begin{column}{0.38\textwidth}
+\begin{block}{Panel inferior-derecho}
 {\footnotesize
-$\Delta_{\mathrm{op}}=$ accuracy(QSVM)$-$accuracy(\textbf{mejor clásico}: GB/RF), en pp.
-Fuente: Caso~1 / NB06 --- \textbf{no} es componente de $\mathcal{Q}$.
-Panel inferior-derecho: nativo $+13.3$, SKG $-6.0$, Telco $-3.8$.
-($\Delta_{\mathrm{RBF}}=$ QSVM$-$SVM-RBF en NB08; baseline débil.)}
+\textbf{No} es una métrica geométrica.\\
+Es simplemente:\\[0.2em]
+accuracy(QSVM) $-$ accuracy(mejor clásico),
+en puntos porcentuales.\\[0.3em]
+Nativo $+13.3$, SKG $-6.0$, Telco $-3.8$.}
 \end{block}
-\begin{block}{Qué dicen los datos}
+\begin{block}{Geometría (NB08)}
 {\footnotesize
-\begin{itemize}
-  \item Solo \textbf{nativo}: $\Delta_{\mathrm{op}}>0$.
-  \item $\Delta A$: nativo $-0.029$
-        (no $\Delta A>0$).
-  \item $\Delta H$: nativo $+0.034$
-        (\textbf{no} el mínimo;
-        Telco $-1.131$ es el peor).
-  \item $\hat{d}_F$: $0.94$--$1.00$
-        en los tres $\Rightarrow$
-        \textbf{casi no discrimina}.
-\end{itemize}}
+$\Delta A$: nativo $-0.029$ (no $>0$).\\
+$\Delta H$: nativo $+0.034$ (no el mín.; Telco $-1.131$).\\
+$\hat{d}_F$: $0.94$--$1.00$ $\Rightarrow$ casi no discrimina.}
 \end{block}
 \begin{block}{vs literatura}
 {\footnotesize
-\begin{itemize}
-  \item \textbf{Huang}: esperaría
-        $\Delta A>0$; aquí el ganador
-        operativo no lo cumple
-        (baseline RBF $\neq$ GB).
-  \item \textbf{Liu}: $d_F$ alto en
-        los tres; no separa
-        nativo de SKG/Telco.
-  \item \textbf{Thanasilp}:
-        $\Delta H\ll 0$ (Telco) =
-        concentración --- coincide
-        con fallo operativo.
-\end{itemize}}
+Huang esperaría $\Delta A>0$; Liu: $d_F$ no separa; Thanasilp: $\Delta H\ll 0$ = concentración.}
 \end{block}
 \end{column}
 \end{columns}
 \end{frame}
 
-\begin{frame}{P1 --- cómo interpretar $\mathcal{Q}(\mathcal{D})$}
+\begin{frame}{P1 --- Regresión: mismo criterio, otra métrica}
+\begin{columns}[T]
+\begin{column}{0.62\textwidth}
+\centering
+\includegraphics[width=\linewidth,height=0.78\textheight,keepaspectratio]{08_perfil_regresion.png}
+\end{column}
+\begin{column}{0.36\textwidth}
+\begin{block}{Qué se mide}
+{\footnotesize
+$R^2$(QK-SVR) $-$ $R^2$(mejor clásico).\\
+NB08 \textbf{no} midió $\mathcal{Q}$ aquí --- no se inventa.}
+\end{block}
+\begin{block}{Resultado}
+{\footnotesize
+\begin{itemize}
+  \item Nativo: $\Delta R^2{=}{+}0.60$
+  \item Friedman: $-0.13$
+  \item SKG: $-0.34$
+\end{itemize}
+Misma lectura: solo gana con estructura alineada.}
+\end{block}
+\end{column}
+\end{columns}
+\end{frame}
+
+\begin{frame}{P1 --- Anomalías: mismo criterio, otra métrica}
+\begin{columns}[T]
+\begin{column}{0.62\textwidth}
+\centering
+\includegraphics[width=\linewidth,height=0.78\textheight,keepaspectratio]{08_perfil_anomalias.png}
+\end{column}
+\begin{column}{0.36\textwidth}
+\begin{block}{Qué se mide}
+{\footnotesize
+AUC(OCSVM-ZZ) $-$ AUC(mejor clásico), en pp.\\
+Sin geometría $\mathcal{Q}$ inventada.}
+\end{block}
+\begin{block}{Resultado}
+{\footnotesize
+\begin{itemize}
+  \item \texttt{zz\_phase}: $+31.1$\,pp
+  \item SKG: $-29.9$\,pp
+  \item moons: $-29.1$\,pp
+\end{itemize}
+Solo gana con novedad alineada al mapa.}
+\end{block}
+\end{column}
+\end{columns}
+\end{frame}
+
+\begin{frame}{P1 --- cómo interpretar}
 \begin{block}{\textquestiondown{}Estructura cuántica $=$ $\Delta A$ negativo y $\Delta H$ mínimo?}
 {\footnotesize
-\textbf{No.} El nativo (único con ventaja operativa) tiene $\Delta A<0$, pero $\Delta H=+0.034$,
-no el mínimo. El mínimo $\Delta H$ es Telco ($-1.131$) y es el perfil de
-\textbf{concentración} \citep{thanasilp2022}, no de ventaja.}
+\textbf{No.} En clasificación el nativo gana ($+13.3$\,pp de accuracy) con $\Delta A<0$ y $\Delta H=+0.034$.
+El mínimo $\Delta H$ es Telco ($-1.131$): concentración \citep{thanasilp2022}, no ventaja.}
 \end{block}
-\vspace{0.4em}
-\begin{block}{\textquestiondown{}$d_F$ discrimina estructura?}
+\vspace{0.35em}
+\begin{block}{\textquestiondown{}$d_F$ discrimina?}
 {\footnotesize
-\textbf{Aquí, apenas.} $\hat{d}_F$ está en $0.94$--$1.00$ para nativo, SKG y Telco.
-Cumple la idea de \citet{liu2021} de ``kernel no trivial vs RBF'', pero
-\textbf{no} ordena quién gana al mejor clásico.}
+\textbf{Aquí, apenas} ($0.94$--$1.00$). Cumple ``kernel no trivial'' \citep{liu2021}, no ordena quién gana.}
 \end{block}
-\vspace{0.4em}
+\vspace{0.35em}
 \begin{alertblock}{Lectura defendible}
 {\footnotesize
-$\mathcal{Q}(\mathcal{D})$ es un \textbf{perfil}:
-Telco $\rightarrow$ cuello $\Delta H$ (Thanasilp);
-SKG $\rightarrow$ geometría alta sin $\Delta_{\mathrm{op}}>0$;
-nativo $\rightarrow$ control por \textbf{alineación mapa--generador} \citep{liu2021},
-no por un patrón ``$\Delta A<0$ y $\Delta H$ mín.''.
-Adopción: $\Delta_{\mathrm{op}}>0$ + mapa alineado.}
+Un plot \textbf{por caso de uso}. Geometría $\mathcal{Q}$ solo en clasificación (lo medido).
+Adopción = ventaja vs mejor clásico en la métrica de la familia (accuracy / $R^2$ / AUC)
++ alineación mapa--generador \citep{liu2021}.}
 \end{alertblock}
 \end{frame}
 
@@ -726,8 +752,8 @@ Este TFM la \textbf{plantea} + evidencia preliminar --- no demostración.
 \includegraphics[width=\textwidth,height=0.72\textheight,keepaspectratio]{09_qcr_framework_diagnostico.png}
 \vspace{0.15em}
 \centering\footnotesize
-Solo el \textbf{nativo} tiene $\Delta_{\mathrm{op}}>0$. SKG: $\mathcal{Q}>0$ vs RBF pero gana GB/RF.
-Telco: cuello $\Delta H$. Misma lectura que en clasificación / regresión / anomalías.
+Solo el \textbf{nativo} gana vs mejor clásico (clasificación $+13.3$\,pp). SKG: $\mathcal{Q}>0$ vs RBF pero gana GB/RF.
+Telco: cuello $\Delta H$. Misma lectura en regresión / anomalías.
 \end{frame}
 
 \begin{frame}{Evidencia P2 --- mapeos QCR (SKG y Telco)}
@@ -814,8 +840,8 @@ en ausencia de eso, el clásico domina --- y eso también es un resultado.
   \item \textbf{Muestra} $n{\approx}80$ en indicadores; correlación en 3 datasets reales es orientativa.
   \item \textbf{Baseline}: $\mathcal{Q}>0$ vs.\ un clásico débil $\neq$ ventaja
         vs.\ el mejor clásico (caso SKG).
-  \item \textbf{Protocolos distintos}: $\Delta_{\mathrm{RBF}}$ (NB08) $\neq$ $\Delta_{\mathrm{op}}$ (Caso~1/NB06);
-        no se mezclan en una sola $\rho$.
+  \item \textbf{Protocolos distintos}: $\Delta_{\mathrm{RBF}}$ (NB08) $\neq$ ventaja vs mejor clásico (clasificación / NB06);
+        no se mezclan en una sola $\rho$ ni en la misma leyenda.
 \end{itemize}
 \end{frame}
 
@@ -838,7 +864,7 @@ resultados negativos, potencia baja ($n{=}3$), protocolos distintos.
 \end{block}
 \begin{alertblock}{Qué no se hace}
 Alterar datos, embellecer series, mezclar $\Delta_{\mathrm{RBF}}$ con
-$\Delta_{\mathrm{op}}$, ni fabricar artefactos ausentes.
+la ventaja operativa de clasificación, ni fabricar artefactos ausentes.
 Si falta la medición, se omite o se declara el límite.
 \end{alertblock}
 \end{frame}

@@ -1014,7 +1014,7 @@ def fig_08_test_cuanticidad():
         ax.text(b.get_x() + b.get_width() / 2, q + (0.02 if q >= 0 else -0.03),
                 f"{q:+.3f}", ha="center", va="bottom" if q >= 0 else "top",
                 fontsize=10, fontweight="bold")
-        # Δ_op del Caso 1 — otra fuente; no se mezcla en Q
+        # Δ clasificación (NB06) — otra fuente; no se mezcla en Q
         y_note = min(q_scores) - 0.12
         ax.text(b.get_x() + b.get_width() / 2, y_note,
                 f"$\\Delta_{{\\mathrm{{op}}}}={d_op:+.1f}$",
@@ -1022,7 +1022,7 @@ def fig_08_test_cuanticidad():
     ax.set_ylim(min(q_scores) - 0.22, max(q_scores) + 0.12)
     ax.text(
         0.5, -0.28,
-        r"$\Delta_{\mathrm{op}}$ = vs mejor clásico (Caso 1); no entra en $\mathcal{Q}$",
+        r"$\Delta_{\mathrm{acc}}$ = vs mejor clásico (clasificación); no entra en $\mathcal{Q}$",
         transform=ax.transAxes, ha="center", fontsize=8, color="#616161",
     )
 
@@ -1233,7 +1233,7 @@ def fig_09_qcr_framework():
         r"Diagnóstico $\mathcal{Q}(\mathcal{D})$: nativo · SKG · Telco (NB08, mismo protocolo)"
         "\n"
         r"Componentes $\Delta A$, $d_F$, $\Delta H$ · "
-        r"$\Delta_{\mathrm{op}}$ = vs mejor clásico (Caso 1) · "
+        r"$\Delta_{\mathrm{acc}}$ = vs mejor clásico (clasificación) · "
         r"Q>0 vs RBF $\neq$ ventaja operativa",
         fontsize=12, fontweight="bold",
     )
@@ -1296,7 +1296,7 @@ def fig_09_qcr_framework():
         footer = (
             f"Q={r['Q_score']:+.3f}\n"
             f"Δ_RBF={r['advantage_pp']:+.1f}pp  (NB08)\n"
-            f"Δ_op={d_op:+.1f}pp  (Caso 1)"
+            f"Δ_acc={d_op:+.1f}pp  (clasificación)"
         )
         ax.text(
             0.98, 0.02, footer,
@@ -1308,81 +1308,150 @@ def fig_09_qcr_framework():
     save_fig("09_qcr_framework_diagnostico.png")
 
 
-def fig_08_q_vector_vs_nativo():
-    """Comparar el vector Q=(ΔA, d̂_F, ΔH) nativo vs SKG vs Telco (solo NB08).
+def _blue_bars(ax, labels, vals, ylab, title, fmt="{:+.3f}", highlight0=True):
+    """Barras azules compartidas por los perfiles por caso de uso."""
+    colors = ["#0D47A1", "#1976D2", "#90CAF9"]
+    bars = ax.bar(labels, vals, color=colors[: len(labels)], edgecolor="white",
+                  alpha=0.95, width=0.65)
+    ax.axhline(0, color="#37474F", lw=0.9, ls="--")
+    if highlight0 and bars:
+        bars[0].set_linewidth(2.2)
+        bars[0].set_edgecolor("#01579B")
+    ax.set_ylabel(ylab, fontsize=10)
+    ax.set_title(title, fontsize=10.5)
+    ymax = max(vals) if vals else 0.0
+    ymin = min(vals) if vals else 0.0
+    pad = max(0.08 * (ymax - ymin + 1e-9), 0.04)
+    for b, v in zip(bars, vals):
+        inside = v < -0.2 * max(abs(ymin), abs(ymax), 1e-9) and abs(v) > 0.15
+        if inside:
+            ax.text(b.get_x() + b.get_width() / 2, v / 2, fmt.format(v),
+                    ha="center", va="center", fontsize=9, fontweight="bold", color="white")
+        else:
+            ax.text(b.get_x() + b.get_width() / 2,
+                    v + pad if v >= 0 else v - pad,
+                    fmt.format(v), ha="center",
+                    va="bottom" if v >= 0 else "top",
+                    fontsize=9, fontweight="bold")
+    ax.tick_params(axis="x", labelsize=9)
 
-    Paleta de azules. Sin nota amarilla. Cifras = RESULTS_08 / OPERATIONAL_08.
+
+def fig_08_perfil_clasificacion():
+    """Clasificación: geometría Q (NB08) + ventaja vs mejor clásico (pp accuracy).
+
+    Sin símbolo Δ_op. Sin Δ_RBF. Sin mezclar otras familias.
     """
     results = RESULTS_08
     d_F_ref = max(r["d_F"] for r in results) or 1.0
-    short = ["Nativo", "SKG", "Telco"]
-    # Paleta solo azules (nativo más oscuro = control)
-    colors = ["#0D47A1", "#1976D2", "#90CAF9"]
-
+    labels = ["Nativo", "SKG", "Telco"]
     delta_A = [r["delta_A"] for r in results]
     d_f_hat = [r["d_F"] / d_F_ref for r in results]
     delta_H = [r["delta_H"] for r in results]
-    d_op = [OPERATIONAL_08[r["dataset"]] for r in results]
-    d_rbf = [r["advantage_pp"] for r in results]
+    # accuracy(QSVM) − accuracy(mejor clásico), en pp — Notebook 06 / clasificación
+    vent_acc = [OPERATIONAL_08[r["dataset"]] for r in results]
 
-    fig, axes = plt.subplots(2, 2, figsize=(12, 8.2))
+    fig, axes = plt.subplots(2, 2, figsize=(12, 8.0))
     fig.suptitle(
-        r"Perfil $\mathcal{Q}(\mathcal{D})=(\Delta A,\hat{d}_F,\Delta H)$:"
-        " nativo (control) vs SKG / Telco"
+        "Clasificación — perfil geométrico "
+        r"$\mathcal{Q}=(\Delta A,\hat{d}_F,\Delta H)$"
+        " + resultado vs mejor clásico"
         "\n"
-        r"NB08 mismo protocolo · $\Delta_{\mathrm{op}}$ = Caso 1 (panel aparte)",
-        fontsize=12, fontweight="bold",
+        "Geometría: NB08 (mismo protocolo).  "
+        "Panel inferior-derecho: accuracy(QSVM) − accuracy(GB/RF), en pp.",
+        fontsize=11.5, fontweight="bold",
     )
-
-    panels = [
-        (axes[0, 0], delta_A, r"$\Delta A$",
-         r"$\Delta A$ (Huang / Cortes)" "\n" r"$A(K_Q)-A(K_{cl})$"),
-        (axes[0, 1], d_f_hat, r"$\hat{d}_F$",
-         r"$\hat{d}_F$ (Liu)" "\n" r"$\|K_Q-K_{cl}\|_F$ norm."),
-        (axes[1, 0], delta_H, r"$\Delta H$",
-         r"$\Delta H$ (Thanasilp)" "\n" r"$H(K_Q)-H(K_{cl})$"),
-    ]
-    for ax, vals, ylab, title in panels:
-        bars = ax.bar(short, vals, color=colors, edgecolor="white", alpha=0.95, width=0.65)
-        ax.axhline(0, color="#37474F", lw=0.9, ls="--")
-        bars[0].set_linewidth(2.2)
-        bars[0].set_edgecolor("#01579B")
-        ax.set_ylabel(ylab)
-        ax.set_title(title, fontsize=11)
-        for b, v in zip(bars, vals):
-            if v < -0.15:
-                ax.text(b.get_x() + b.get_width() / 2, v / 2, f"{v:+.3f}",
-                        ha="center", va="center", fontsize=10, fontweight="bold", color="white")
-            else:
-                ax.text(b.get_x() + b.get_width() / 2, v + (0.02 if v >= 0 else -0.03),
-                        f"{v:+.3f}", ha="center",
-                        va="bottom" if v >= 0 else "top", fontsize=10, fontweight="bold")
-
-    ax = axes[1, 1]
-    x = np.arange(len(short))
-    w = 0.35
-    ax.bar(x - w / 2, d_rbf, w, label=r"$\Delta_{\mathrm{RBF}}$ = QSVM$-$RBF (NB08)",
-           color="#BBDEFB", edgecolor="white", alpha=0.95)
-    b2 = ax.bar(x + w / 2, d_op, w, label=r"$\Delta_{\mathrm{op}}$ = QSVM$-$mejor clásico",
-                color=colors, edgecolor="white", alpha=0.95)
-    ax.axhline(0, color="#37474F", lw=0.9, ls="--")
-    ax.set_xticks(x)
-    ax.set_xticklabels(short)
-    ax.set_ylabel("pp")
-    ax.set_title(
-        r"$\Delta_{\mathrm{op}}$ (Caso 1 / NB06)" "\n"
-        r"QSVM $-$ mejor clásico (GB/RF)",
-        fontsize=11,
-    )
-    ax.legend(fontsize=7.5, loc="upper right")
-    for b, v in zip(b2, d_op):
-        ax.text(b.get_x() + b.get_width() / 2, v + (0.4 if v >= 0 else -0.6),
-                rf"$\Delta_{{\mathrm{{op}}}}$={v:+.1f}",
-                ha="center", va="bottom" if v >= 0 else "top",
-                fontsize=9, fontweight="bold")
-
+    _blue_bars(axes[0, 0], labels, delta_A, r"$\Delta A$",
+               r"$\Delta A$ (Huang / Cortes)" "\n" r"$A(K_Q)-A(K_{cl})$")
+    _blue_bars(axes[0, 1], labels, d_f_hat, r"$\hat{d}_F$",
+               r"$\hat{d}_F$ (Liu)" "\n" r"$\|K_Q-K_{cl}\|_F$ norm.")
+    _blue_bars(axes[1, 0], labels, delta_H, r"$\Delta H$",
+               r"$\Delta H$ (Thanasilp)" "\n" r"$H(K_Q)-H(K_{cl})$")
+    _blue_bars(axes[1, 1], labels, vent_acc, "pp de accuracy",
+               "Resultado operativo (clasificación)" "\n"
+               "QSVM − mejor clásico (GB/RF)",
+               fmt="{:+.1f}")
     plt.tight_layout()
-    save_fig("08_q_vector_nativo_vs_reales.png")
+    path = OUT / "08_perfil_clasificacion.png"
+    plt.savefig(path, dpi=150, bbox_inches="tight")
+    WRITTEN.append(path)
+    # Alias histórico para refs antiguas en tesis
+    alias = OUT / "08_q_vector_nativo_vs_reales.png"
+    plt.savefig(alias, dpi=150, bbox_inches="tight")
+    WRITTEN.append(alias)
+    plt.close()
+
+
+def fig_08_perfil_regresion():
+    """Regresión: R² cuántico / clásico / diferencia. Sin inventar geometría Q."""
+    labels = ["Nativo", "Friedman", "SKG"]
+    r2_q = [0.891, 0.712, 0.243]
+    r2_c = [0.287, 0.841, 0.587]
+    delta = [q - c for q, c in zip(r2_q, r2_c)]
+
+    fig, axes = plt.subplots(1, 3, figsize=(13.5, 4.8))
+    fig.suptitle(
+        "Regresión — perfil operativo (sin geometría "
+        r"$\mathcal{Q}$"
+        ": NB08 solo midió clasificación)"
+        "\n"
+        r"Métrica: $R^2$.  Modelo Q: QK-SVR (ZZ).  "
+        "Diferencia = $R^2$(QK-SVR) − $R^2$(mejor clásico).",
+        fontsize=11.5, fontweight="bold",
+    )
+    _blue_bars(axes[0], labels, r2_q, r"$R^2$",
+               "QK-SVR (cuántico)" "\n" r"$R^2$",
+               fmt="{:.3f}", highlight0=True)
+    axes[0].set_ylim(-0.05, 1.15)
+    _blue_bars(axes[1], labels, r2_c, r"$R^2$",
+               "Mejor clásico" "\n" "SVR-RBF / RF / RF",
+               fmt="{:.3f}", highlight0=False)
+    axes[1].set_ylim(-0.05, 1.15)
+    _blue_bars(axes[2], labels, delta, r"$\Delta R^2$",
+               "Resultado operativo (regresión)" "\n"
+               r"$R^2$(Q) − $R^2$(mejor clásico)",
+               fmt="{:+.2f}")
+    plt.tight_layout()
+    save_fig("08_perfil_regresion.png")
+
+
+def fig_08_perfil_anomalias():
+    """Anomalías: AUC cuántico / clásico / diferencia. Sin inventar geometría Q."""
+    labels = ["zz_phase", "SKG", "moons"]
+    auc_q = [0.864, 0.694, 0.599]
+    auc_c = [0.553, 0.993, 0.890]
+    delta_pp = [(q - c) * 100 for q, c in zip(auc_q, auc_c)]
+
+    fig, axes = plt.subplots(1, 3, figsize=(13.5, 4.8))
+    fig.suptitle(
+        "Anomalías — perfil operativo (sin geometría "
+        r"$\mathcal{Q}$"
+        ": NB08 solo midió clasificación)"
+        "\n"
+        "Métrica: ROC-AUC.  Modelo Q: OCSVM-ZZ.  "
+        "Diferencia = AUC(Q) − AUC(mejor clásico), en pp.",
+        fontsize=11.5, fontweight="bold",
+    )
+    _blue_bars(axes[0], labels, auc_q, "ROC-AUC",
+               "OCSVM-ZZ (cuántico)" "\n" "AUC",
+               fmt="{:.3f}")
+    axes[0].set_ylim(0.4, 1.12)
+    _blue_bars(axes[1], labels, auc_c, "ROC-AUC",
+               "Mejor clásico" "\n" "IF / LOF / IF",
+               fmt="{:.3f}", highlight0=False)
+    axes[1].set_ylim(0.4, 1.12)
+    _blue_bars(axes[2], labels, delta_pp, "pp de AUC",
+               "Resultado operativo (anomalías)" "\n"
+               "AUC(Q) − AUC(mejor clásico)",
+               fmt="{:+.1f}")
+    plt.tight_layout()
+    save_fig("08_perfil_anomalias.png")
+
+
+def fig_08_q_vector_vs_nativo():
+    """Compat: genera el perfil de clasificación (nombre histórico)."""
+    fig_08_perfil_clasificacion()
+    fig_08_perfil_regresion()
+    fig_08_perfil_anomalias()
 
 
 def main():

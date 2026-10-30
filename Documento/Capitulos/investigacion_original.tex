@@ -127,7 +127,7 @@ SKG Incidentes   & 0.040 & 0.050 & 2.155 & 1.967 & 0.369 & $+8.3^\dagger$ & $\ma
 Telco Churn      & 0.190 & 0.170 & 2.333 & 3.465 & 0.346 & $+$0.0 & $\mathbf{-3.8}$ \\
 \hline
 \end{tabular}
-\caption{Indicadores de cuanticidad (Notebook~08, ZZFeatureMap 2~qubits, PCA~2D, $n=80$). Geometría vs.\ kernel clásico de referencia; $\Delta_{\mathrm{RBF}}$ = QSVM$-$SVM-RBF en el split NB08 (baseline débil). $\Delta_{\mathrm{op}}$ = ventaja operativa frente al \textbf{mejor clásico} (Caso~1 / Notebook~06): nativo $+13.3$~pp, SKG $-6.0$~pp, Telco $-3.8$~pp vs Gradient Boosting. $^\dagger$SKG $+8.3$~pp vs RBF es artefacto ---bajo $\mathcal{Q}_{\mathrm{rob}}$ y frente al stack clásico SKG es \texttt{classical}.}
+\caption{Indicadores de cuanticidad (Notebook~08, ZZFeatureMap 2~qubits, PCA~2D, $n=80$). Geometría vs.\ kernel clásico de referencia; $\Delta_{\mathrm{RBF}}$ = QSVM$-$SVM-RBF en el split NB08 (baseline débil). Columna $\Delta_{\mathrm{op}}$ = accuracy(QSVM)$-$accuracy(\textbf{mejor clásico}) en \textbf{clasificación} (Notebook~06): nativo $+13.3$~pp, SKG $-6.0$~pp, Telco $-3.8$~pp vs Gradient Boosting --- no es una métrica geométrica. $^\dagger$SKG $+8.3$~pp vs RBF es artefacto ---bajo $\mathcal{Q}_{\mathrm{rob}}$ y frente al stack clásico SKG es \texttt{classical}.}
 \label{tab:indicadores_resultados}
 \end{table}
 
@@ -235,18 +235,32 @@ En el Notebook~08 se calculó también $q=w_1\Delta A+w_2\hat{d}_F+w_3\Delta H$ 
 
 \begin{figure}[ht]
 \centering
-\includegraphics[width=0.95\textwidth]{../POCs/data/output/figures/08_q_vector_nativo_vs_reales.png}
-\caption{Comparación del vector $\mathcal{Q}(\mathcal{D})=(\Delta A,\hat{d}_F,\Delta H)$: nativo (control, único con $\Delta_{\mathrm{op}}>0$) vs SKG y Telco. Componentes = Notebook~08; $\Delta_{\mathrm{op}}$ = Caso~1 (panel aparte). Contraste con la literatura: \citet{huang2021} asociarían ventaja a $\Delta A>0$, pero el nativo tiene $\Delta A=-0.029$; \citet{liu2021} exigen $d_F$ no trivial ---aquí $\hat{d}_F\in[0.94,1]$ en los tres y \textbf{casi no discrimina}; \citet{thanasilp2022} predicen fallo bajo concentración ---Telco con $\Delta H=-1.131$ encaja. No se interpreta ``ventaja $=$ $\Delta A$ negativo y $\Delta H$ mínimo'' (el mínimo $\Delta H$ es Telco, no el nativo).}
+\includegraphics[width=0.95\textwidth]{../POCs/data/output/figures/08_perfil_clasificacion.png}
+\caption{\textbf{Clasificación.} Vector $\mathcal{Q}=(\Delta A,\hat{d}_F,\Delta H)$ (Notebook~08) y resultado operativo = accuracy(QSVM)$-$accuracy(mejor clásico), en pp (Notebook~06). No se usa el símbolo $\Delta_{\mathrm{op}}$: es esa resta de accuracies. Contraste con la literatura: \citet{huang2021} asociarían ventaja a $\Delta A>0$, pero el nativo tiene $\Delta A=-0.029$ y aun así $+13.3$\,pp; \citet{liu2021}: $\hat{d}_F\in[0.94,1]$ casi no discrimina; \citet{thanasilp2022}: Telco $\Delta H=-1.131$ = concentración. No se interpreta ``ventaja $=$ $\Delta A$ negativo y $\Delta H$ mínimo''.}
 \label{fig:q_vector_vs_nativo}
+\end{figure}
+
+\begin{figure}[ht]
+\centering
+\includegraphics[width=0.95\textwidth]{../POCs/data/output/figures/08_perfil_regresion.png}
+\caption{\textbf{Regresión.} Mismo criterio operativo, otra métrica: $R^2$(QK-SVR)$-$ $R^2$(mejor clásico). NB08 no midió $\mathcal{Q}$ en esta familia (no se inventa geometría). Solo el nativo gana ($\Delta R^2{+}0.60$).}
+\label{fig:perfil_regresion}
+\end{figure}
+
+\begin{figure}[ht]
+\centering
+\includegraphics[width=0.95\textwidth]{../POCs/data/output/figures/08_perfil_anomalias.png}
+\caption{\textbf{Anomalías.} AUC(OCSVM-ZZ)$-$AUC(mejor clásico), en pp. Sin geometría $\mathcal{Q}$ inventada. Solo \texttt{zz\_phase} gana ($+31.1$\,pp).}
+\label{fig:perfil_anomalias}
 \end{figure}
 
 \paragraph{Interpretación frente a la literatura (sin forzar umbrales).}
 \begin{itemize}
-    \item \textbf{$\Delta A$ (Cortes/Huang).} La literatura espera $A(K_Q)>A(K_{cl})$ para ventaja supervisada frente a ese clásico. En NB08 el nativo tiene $\Delta A<0$ y aun así $\Delta_{\mathrm{op}}=+13.3$~pp vs el mejor clásico: el indicador, medido vs RBF tras PCA a 2D, \textbf{no} reproduce el ranking operativo. El barrido $\alpha$ sí muestra que $\Delta A$ crece con la fracción de etiquetas cuánticas ($\rho_S=0.833$).
-    \item \textbf{$\hat{d}_F$ (Liu).} Proxy de no-aproximabilidad clásica. Los tres datasets están casi empatados ($0.94$--$1.00$): el kernel cuántico es distinto del RBF en todos, pero $d_F$ \textbf{no separa} quién tiene estructura usable frente a GB/RF.
+    \item \textbf{$\Delta A$ (Cortes/Huang).} La literatura espera $A(K_Q)>A(K_{cl})$ para ventaja supervisada frente a ese clásico. En NB08 el nativo tiene $\Delta A<0$ y aun así gana en clasificación ($+13.3$~pp), regresión ($\Delta R^2{+}0.60$) y anomalías ($+31.2$~pp AUC) frente al mejor clásico: el indicador geométrico, medido vs RBF tras PCA a 2D, \textbf{no} reproduce el ranking operativo. El barrido $\alpha$ sí muestra que $\Delta A$ crece con la fracción de etiquetas cuánticas ($\rho_S=0.833$).
+    \item \textbf{$\hat{d}_F$ (Liu).} Proxy de no-aproximabilidad clásica. Los tres datasets están casi empatados ($0.94$--$1.00$): el kernel cuántico es distinto del RBF en todos, pero $d_F$ \textbf{no separa} quién tiene estructura usable frente al mejor clásico.
     \item \textbf{$\Delta H$ (Thanasilp).} $\Delta H\ll 0$ señala concentración relativa del kernel cuántico. Telco ($\Delta H=-1.131$) es el caso claro de fallo por concentración; el nativo tiene $\Delta H$ leve positivo ($+0.034$), \textbf{no} el mínimo. Por tanto no se afirma que la estructura cuántica operativa sea ``$\Delta H$ mínimo''.
 \end{itemize}
-La lectura coherente con \citet{liu2021} es que la ventaja del nativo viene de la \textbf{alineación mapa--generador}, no de un patrón geométrico simple $(\Delta A<0,\ \Delta H=\min)$ frente a RBF.
+La lectura coherente con \citet{liu2021} es que la ventaja del nativo viene de la \textbf{alineación mapa--generador}, no de un patrón geométrico simple $(\Delta A<0,\ \Delta H=\min)$ frente a RBF. La adopción no se reduce a un $\Delta_{\mathrm{op}}$ de clasificación: se mira la métrica de la familia (accuracy / $R^2$ / AUC).
 % =====================================================================
 \section{Mapeos cuántico-compatibles: revisión de la literatura}
 \label{sec:lit_mapeos}
