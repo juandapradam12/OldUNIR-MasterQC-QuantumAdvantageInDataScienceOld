@@ -120,6 +120,8 @@ def _structure_one(
         "d_F_std": float(df["d_F"].std(ddof=0)),
         "delta_H": float(df["delta_H"].mean()),
         "delta_H_std": float(df["delta_H"].std(ddof=0)),
+        "g": float(df["g"].mean()),
+        "g_std": float(df["g"].std(ddof=0)),
         "H_Q": float(df["H_Q"].mean()),
         "H_cl": float(df["H_cl"].mean()),
         "A_Q": float(df["A_Q"].mean()),

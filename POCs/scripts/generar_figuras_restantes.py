@@ -1431,6 +1431,10 @@ def fig_08_estructura_tres_casos():
     Misma métrica y misma escala para poder comparar los casos de uso.
     """
     df = _load_estructura_por_caso()
+    # Compuesto del TFM con los MISMOS componentes medidos (pesos 0.4/0.3/0.3);
+    # d̂_F = d_F / max(d_F) sobre las 9 filas. Solo informativo.
+    df["d_F_hat"] = df["d_F"] / df["d_F"].max()
+    df["Q_comp"] = 0.4 * df["delta_A"] + 0.3 * df["d_F_hat"] + 0.3 * df["delta_H"]
     cases = [
         ("clasificacion", "Clasificación", ["Nativo", "SKG", "Telco"]),
         ("regresion", "Regresión", ["Nativo", "SKG", "Friedman"]),
@@ -1439,12 +1443,16 @@ def fig_08_estructura_tres_casos():
     roles = ["Nativo", "SKG", "Referencia"]
     role_colors = ["#0D47A1", "#1976D2", "#90CAF9"]
     metrics = [
-        ("delta_A", r"$\Delta A$", r"$\Delta A$ (Huang / Cortes)" "\n"
+        ("delta_A", r"$\Delta A$", r"Alineación $\Delta A$ (Cortes / Huang)" "\n"
          r"$A(K_Q)-A(K_{\mathrm{RBF}})$", "{:+.2f}"),
-        ("d_F", r"$d_F$", r"$d_F$ (Liu)" "\n"
-         r"$\|K_Q-K_{\mathrm{RBF}}\|_F/n$", "{:.4f}"),
-        ("delta_H", r"$\Delta H$", r"$\Delta H$ (Thanasilp)" "\n"
+        ("delta_H", r"$\Delta H$", r"Entropía espectral $\Delta H$ (Thanasilp)" "\n"
          r"$H(K_Q)-H(K_{\mathrm{RBF}})$", "{:+.2f}"),
+        ("d_F", r"$d_F$", r"Distancia Frobenius $d_F$ (Liu)" "\n"
+         r"$\|K_Q-K_{\mathrm{RBF}}\|_F/n$", "{:.4f}"),
+        ("g", r"$g$", r"Diferencia geométrica $g$ (Huang)" "\n"
+         r"$\sqrt{\|K_Q^{1/2}K_{\mathrm{RBF}}^{-1}K_Q^{1/2}\|_F}$", "{:.0f}"),
+        ("Q_comp", r"$\mathcal{Q}$", r"Compuesto $\mathcal{Q}$ (este TFM)" "\n"
+         r"$0.4\,\Delta A+0.3\,\hat d_F+0.3\,\Delta H$", "{:+.2f}"),
     ]
 
     data: dict[tuple[str, int], dict[str, float]] = {}
@@ -1459,13 +1467,14 @@ def fig_08_estructura_tres_casos():
             data[(fam, k)] = {c: float(r[c]) for c, *_ in metrics}
             ds_names[(fam, k)] = ds
 
-    fig, axes = plt.subplots(1, 3, figsize=(15.5, 5.6))
+    fig, axes_grid = plt.subplots(2, 3, figsize=(16.0, 10.2))
+    axes = axes_grid.ravel()
     fig.suptitle(
-        r"Estructura cuántica $(\Delta A,\ d_F,\ \Delta H)$: una métrica por panel, "
+        "Indicadores de estructura cuántica: un panel por indicador, "
         "comparando los casos de uso\n"
         "Mismo protocolo (ZZ 2q, n=60, 3 repeats, RBF Frobenius-best); "
         "sin accuracy / $R^2$ / AUC",
-        fontsize=12, fontweight="bold",
+        fontsize=12.5, fontweight="bold",
     )
     width = 0.26
     x = np.arange(len(cases))
@@ -1481,7 +1490,7 @@ def fig_08_estructura_tres_casos():
                           label=role if col == "delta_A" else None)
             ybot = ax.get_ylim()[0]
             for b, v, (fam, _, _) in zip(bars, vals, cases):
-                rot = 90 if col == "d_F" else 0
+                rot = 90 if col in ("d_F", "g") else 0
                 ax.text(b.get_x() + b.get_width() / 2,
                         v + (0.02 * span if v >= 0 else -0.02 * span),
                         fmt.format(v), ha="center",
@@ -1497,10 +1506,25 @@ def fig_08_estructura_tres_casos():
         ax.set_xticklabels([c[1] for c in cases], fontsize=10)
         ax.set_ylabel(ylab, fontsize=11)
         ax.set_title(title, fontsize=11)
+    ax_note = axes[len(metrics)]
+    ax_note.axis("off")
     handles = [mpatches.Patch(color=c, label=r) for r, c in zip(roles, role_colors)]
-    fig.legend(handles=handles, loc="lower center", ncol=3, fontsize=10,
-               title="Rol del dataset dentro de cada caso de uso", frameon=False)
-    plt.tight_layout(rect=(0, 0.09, 1, 0.93))
+    ax_note.legend(handles=handles, loc="upper left", fontsize=10.5, frameon=False,
+                   title="Rol del dataset dentro de cada caso de uso",
+                   title_fontsize=10.5)
+    ax_note.text(
+        0.0, 0.52,
+        "Cómo leerlo\n"
+        r"$\Delta A$ y $\Delta H$ ya son las diferencias de $A(K)$ y $H(K)$" "\n"
+        "entre kernel cuántico y RBF.\n"
+        r"Solo $\Delta A$ separa al nativo; $\Delta H$, $d_F$ y $g$" "\n"
+        "quedan casi planos entre datasets.\n"
+        r"$\mathcal{Q}$ lo dominan $\hat d_F$ y $\Delta H$ (planos):" "\n"
+        "queda en ~0.8-1.0 para todos; informativo,\n"
+        "no es regla de decisión.",
+        transform=ax_note.transAxes, fontsize=10, va="top", color="#263238",
+    )
+    plt.tight_layout(rect=(0, 0, 1, 0.94))
     save_fig("08_estructura_comparativa_casos_uso.png")
 
 

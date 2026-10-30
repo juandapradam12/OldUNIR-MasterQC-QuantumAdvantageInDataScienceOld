@@ -236,7 +236,7 @@ En el Notebook~08 se calculó también $q=w_1\Delta A+w_2\hat{d}_F+w_3\Delta H$ 
 \begin{figure}[ht]
 \centering
 \includegraphics[width=0.95\textwidth]{../POCs/data/output/figures/08_estructura_comparativa_casos_uso.png}
-\caption{Comparativa de estructura cuántica en un solo gráfico: \textbf{un panel por métrica} $(\Delta A, d_F, \Delta H)$; en cada panel el eje X son los \textbf{casos de uso} (clasificación, regresión, anomalías) y las tres barras de cada grupo son los datasets (Nativo / SKG / Referencia). Protocolo unificado (ZZ 2~qubits, $n{=}60$, 3 repeats, RBF Frobenius-best). Solo el nativo tiene $\Delta A>0$ en los tres casos; $d_F\approx 0.01$ y $\Delta H\approx 2$ casi no discriminan. CSV: \texttt{estructura\_por\_caso\_uso.csv}.}
+\caption{Comparativa de estructura cuántica en un solo gráfico: \textbf{un panel por indicador} ---alineación $\Delta A$, entropía espectral $\Delta H$, distancia de Frobenius $d_F$, diferencia geométrica $g$ y compuesto $\mathcal{Q}$, los indicadores de la Tabla de indicadores implementados---; en cada panel el eje X son los \textbf{casos de uso} (clasificación, regresión, anomalías) y las tres barras de cada grupo son los datasets (Nativo / SKG / Referencia). Protocolo unificado (ZZ 2~qubits, $n{=}60$, 3 repeats, RBF Frobenius-best). Solo el nativo tiene $\Delta A>0$ en los tres casos; $\Delta H$, $d_F$ y $g$ quedan casi planos. $\mathcal{Q}=0.4\,\Delta A+0.3\,\hat d_F+0.3\,\Delta H$ (con $\hat d_F=d_F/\max d_F$) lo dominan $\hat d_F$ y $\Delta H$, por lo que oscila en $0.77$--$1.01$ en todos los datasets: se muestra por completitud, no como regla de decisión. CSV: \texttt{estructura\_por\_caso\_uso.csv}.}
 \label{fig:estructura_tres_casos}
 \label{fig:q_vector_vs_nativo}
 \end{figure}

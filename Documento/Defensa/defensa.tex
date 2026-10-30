@@ -627,24 +627,23 @@ Eso era solo un nombre confuso para
 \end{alertblock}
 \end{frame}
 
-\begin{frame}{P1 --- estructura en los tres casos de uso}
+\begin{frame}{P1 --- los cinco indicadores en los tres casos de uso}
 \begin{columns}[T]
-\begin{column}{0.62\textwidth}
+\begin{column}{0.66\textwidth}
 \centering
-\includegraphics[width=\linewidth,height=0.78\textheight,keepaspectratio]{08_estructura_comparativa_casos_uso.png}
+\includegraphics[width=\linewidth,height=0.80\textheight,keepaspectratio]{08_estructura_comparativa_casos_uso.png}
 \end{column}
-\begin{column}{0.36\textwidth}
+\begin{column}{0.32\textwidth}
 \begin{block}{Cómo leerlo}
 {\footnotesize
-Un plot por métrica.\\
-En cada plot: eje X = caso de uso;
+Un panel por indicador; eje X = caso de uso;
 3 barras = Nativo / SKG / Referencia.\\[0.3em]
 \begin{itemize}
-  \item $\Delta A$: solo el nativo $>0$
-        en los tres casos
-  \item $d_F\approx 0.01$ en todos
-        (casi no discrimina)
-  \item $\Delta H\approx 2$ en todos
+  \item $\Delta A$ (Cortes/Huang): solo el nativo $>0$
+  \item $\Delta H$ (Thanasilp), $d_F$ (Liu), $g$ (Huang):
+        casi planos entre datasets
+  \item $\mathcal{Q}$: lo dominan $\hat d_F$ y $\Delta H$;
+        $\approx 0.8$--$1.0$ en todos
 \end{itemize}}
 \end{block}
 \end{column}
