@@ -1326,7 +1326,7 @@ def _blue_bars(ax, labels, vals, ylab, title, fmt="{:+.3f}", highlight0=True,
     else:
         ymax = max(vals) if vals else 0.0
         ymin = min(vals) if vals else 0.0
-    pad = max(0.06 * (ymax - ymin + 1e-9), 0.01)
+    pad = 0.04 * (ymax - ymin + 1e-9)
     for b, v in zip(bars, vals):
         inside = v < ymin + 0.35 * (ymax - ymin) and v < -0.05 * max(abs(ymin), abs(ymax), 1e-9)
         if inside and abs(v) > 0.05:
@@ -1376,7 +1376,7 @@ def _fig_estructura_familia(family: str, title_es: str, out_name: str,
         f"{title_es} — métricas de estructura cuántica "
         r"$(\Delta A,\ d_F,\ \Delta H)$"
         "\n"
-        "Mismo protocolo en las tres familias: ZZ 2q, n=60, 3 repeats, "
+        "Mismo protocolo en las cuatro familias: ZZ 2q, n=60, 3 repeats, "
         r"baseline = RBF Frobenius-best.  "
         "No se mezclan accuracy / $R^2$ / AUC.",
         fontsize=11.5, fontweight="bold",
@@ -1423,22 +1423,31 @@ def fig_08_perfil_anomalias():
     )
 
 
-def fig_08_estructura_tres_casos():
-    """UN gráfico grande con 3 paneles: uno por métrica (ΔA, d_F, ΔH).
+def fig_08_perfil_optimizacion():
+    """Optimización (paisaje QUBO): mismas métricas ΔA, d_F, ΔH."""
+    _fig_estructura_familia(
+        "optimizacion", "Optimización (paisaje QUBO)", "08_perfil_optimizacion.png",
+    )
 
-    En cada panel: eje X = caso de uso (clasificación / regresión / anomalías);
+
+def fig_08_estructura_tres_casos():
+    """UN gráfico grande: un panel por indicador (ΔA, ΔH, d_F, g, Q).
+
+    En cada panel: eje X = caso de uso (clasificación / regresión / anomalías /
+    optimización); 
     dentro de cada caso, una barra por rol de dataset (Nativo / SKG / Referencia).
     Misma métrica y misma escala para poder comparar los casos de uso.
     """
     df = _load_estructura_por_caso()
     # Compuesto del TFM con los MISMOS componentes medidos (pesos 0.4/0.3/0.3);
-    # d̂_F = d_F / max(d_F) sobre las 9 filas. Solo informativo.
+    # d̂_F = d_F / max(d_F) sobre todas las filas. Solo informativo.
     df["d_F_hat"] = df["d_F"] / df["d_F"].max()
     df["Q_comp"] = 0.4 * df["delta_A"] + 0.3 * df["d_F_hat"] + 0.3 * df["delta_H"]
     cases = [
         ("clasificacion", "Clasificación", ["Nativo", "SKG", "Telco"]),
         ("regresion", "Regresión", ["Nativo", "SKG", "Friedman"]),
         ("anomalias", "Anomalías", ["zz_phase", "SKG", "moons"]),
+        ("optimizacion", "Optimización\n(paisaje QUBO)", ["Asignación", "MaxCut", "TSP"]),
     ]
     roles = ["Nativo", "SKG", "Referencia"]
     role_colors = ["#0D47A1", "#1976D2", "#90CAF9"]
@@ -1467,7 +1476,7 @@ def fig_08_estructura_tres_casos():
             data[(fam, k)] = {c: float(r[c]) for c, *_ in metrics}
             ds_names[(fam, k)] = ds
 
-    fig, axes_grid = plt.subplots(2, 3, figsize=(16.0, 10.2))
+    fig, axes_grid = plt.subplots(2, 3, figsize=(17.0, 10.4))
     axes = axes_grid.ravel()
     fig.suptitle(
         "Indicadores de estructura cuántica: un panel por indicador, "
@@ -1482,7 +1491,7 @@ def fig_08_estructura_tres_casos():
         allv = [data[(fam, k)][col] for fam, _, _ in cases for k in range(3)]
         lo, hi = min(allv + [0.0]), max(allv + [0.0])
         span = (hi - lo) or 1.0
-        ax.set_ylim(lo - 0.18 * span if lo < 0 else 0.0, hi + 0.22 * span)
+        ax.set_ylim(lo - 0.30 * span if lo < 0 else 0.0, hi + 0.22 * span)
         for k, (role, color) in enumerate(zip(roles, role_colors)):
             vals = [data[(fam, k)][col] for fam, _, _ in cases]
             xs = x + (k - 1) * width
@@ -1502,6 +1511,12 @@ def fig_08_estructura_tres_casos():
                         fontsize=7, rotation=90,
                         color="white" if covered else "#37474F")
         ax.axhline(0, color="#37474F", lw=0.9, ls="--")
+        if col == "delta_A" and "delta_A_null" in df.columns:
+            nm = float(df["delta_A_null"].mean())
+            ns = float(df["delta_A_null_std"].mean())
+            ax.axhspan(nm - 2 * ns, nm + 2 * ns, color="#BBDEFB", alpha=0.45, zorder=0,
+                       label="ruido: $y$ permutada (±2σ)")
+            ax.legend(loc="upper right", fontsize=7.5, frameon=False)
         ax.set_xticks(x)
         ax.set_xticklabels([c[1] for c in cases], fontsize=10)
         ax.set_ylabel(ylab, fontsize=11)
@@ -1513,15 +1528,15 @@ def fig_08_estructura_tres_casos():
                    title="Rol del dataset dentro de cada caso de uso",
                    title_fontsize=10.5)
     ax_note.text(
-        0.0, 0.52,
+        0.0, 0.50,
         "Cómo leerlo\n"
-        r"$\Delta A$ y $\Delta H$ ya son las diferencias de $A(K)$ y $H(K)$" "\n"
-        "entre kernel cuántico y RBF.\n"
-        r"Solo $\Delta A$ separa al nativo; $\Delta H$, $d_F$ y $g$" "\n"
-        "quedan casi planos entre datasets.\n"
-        r"$\mathcal{Q}$ lo dominan $\hat d_F$ y $\Delta H$ (planos):" "\n"
-        "queda en ~0.8-1.0 para todos; informativo,\n"
-        "no es regla de decisión.",
+        r"Solo $\Delta A$ usa las etiquetas; $\Delta H$, $d_F$ y $g$" "\n"
+        r"solo ven $X$. Solo los nativos superan el ruido de $\Delta A$" "\n"
+        "(banda azul); el resto, dentro del ruido o por debajo (RBF alinea mejor).\n"
+        r"$\Delta H$, $d_F$, $g$ casi planos; excepción: anomalías-SKG" "\n"
+        "(outliers 8σ comprimen el MinMax; artefacto de escala).\n"
+        r"Optimización = paisaje QUBO (bitstrings→energía), no QAOA." "\n"
+        r"$\mathcal{Q}$: informativo, no es regla de decisión.",
         transform=ax_note.transAxes, fontsize=10, va="top", color="#263238",
     )
     plt.tight_layout(rect=(0, 0, 1, 0.94))
@@ -1533,6 +1548,7 @@ def fig_08_q_vector_vs_nativo():
     fig_08_perfil_clasificacion()
     fig_08_perfil_regresion()
     fig_08_perfil_anomalias()
+    fig_08_perfil_optimizacion()
     fig_08_estructura_tres_casos()
 
 
