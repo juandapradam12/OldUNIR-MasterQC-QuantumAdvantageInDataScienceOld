@@ -1311,16 +1311,13 @@ def fig_09_qcr_framework():
 def fig_08_q_vector_vs_nativo():
     """Comparar el vector Q=(ΔA, d̂_F, ΔH) nativo vs SKG vs Telco (solo NB08).
 
-    Sin inventar: cifras = RESULTS_08. Δ_op = OPERATIONAL_08 (Caso 1), panel aparte.
-    Sirve para argumentar cómo interpretar el perfil usando el nativo como control
-    del único caso con Δ_op>0.
+    Paleta de azules. Sin nota amarilla. Cifras = RESULTS_08 / OPERATIONAL_08.
     """
     results = RESULTS_08
     d_F_ref = max(r["d_F"] for r in results) or 1.0
-    names = [r["dataset"].replace("Cuántico-", "C.") for r in results]
-    # short labels for tick clarity
     short = ["Nativo", "SKG", "Telco"]
-    colors = ["#2E7D32", "#E65100", "#1565C0"]
+    # Paleta solo azules (nativo más oscuro = control)
+    colors = ["#0D47A1", "#1976D2", "#90CAF9"]
 
     delta_A = [r["delta_A"] for r in results]
     d_f_hat = [r["d_F"] / d_F_ref for r in results]
@@ -1328,30 +1325,28 @@ def fig_08_q_vector_vs_nativo():
     d_op = [OPERATIONAL_08[r["dataset"]] for r in results]
     d_rbf = [r["advantage_pp"] for r in results]
 
-    fig, axes = plt.subplots(2, 2, figsize=(12, 8.5))
+    fig, axes = plt.subplots(2, 2, figsize=(12, 8.2))
     fig.suptitle(
-        r"Interpretar $\mathcal{Q}(\mathcal{D})=(\Delta A,\hat{d}_F,\Delta H)$:"
-        " nativo como control vs SKG / Telco"
+        r"Perfil $\mathcal{Q}(\mathcal{D})=(\Delta A,\hat{d}_F,\Delta H)$:"
+        " nativo (control) vs SKG / Telco"
         "\n"
-        r"Componentes = NB08 (mismo protocolo). "
-        r"$\Delta_{\mathrm{op}}$ = Caso 1 / mejor clásico (fuente distinta, etiquetada).",
+        r"NB08 mismo protocolo · $\Delta_{\mathrm{op}}$ = Caso 1 (panel aparte)",
         fontsize=12, fontweight="bold",
     )
 
     panels = [
         (axes[0, 0], delta_A, r"$\Delta A$",
-         r"Alineación $A(K_Q)-A(K_{cl})$" "\n" "(NB08 vs RBF)"),
+         r"$\Delta A$ (Huang / Cortes)" "\n" r"$A(K_Q)-A(K_{cl})$"),
         (axes[0, 1], d_f_hat, r"$\hat{d}_F$",
-         r"Geometría $\|K_Q-K_{cl}\|_F$ norm." "\n" "(NB08)"),
+         r"$\hat{d}_F$ (Liu)" "\n" r"$\|K_Q-K_{cl}\|_F$ norm."),
         (axes[1, 0], delta_H, r"$\Delta H$",
-         r"Entropía $H(K_Q)-H(K_{cl})$" "\n" "(NB08)"),
+         r"$\Delta H$ (Thanasilp)" "\n" r"$H(K_Q)-H(K_{cl})$"),
     ]
     for ax, vals, ylab, title in panels:
-        bars = ax.bar(short, vals, color=colors, edgecolor="white", alpha=0.9)
-        ax.axhline(0, color="black", lw=0.8, ls="--")
-        # marcar nativo como control
-        bars[0].set_linewidth(2.5)
-        bars[0].set_edgecolor("#1B5E20")
+        bars = ax.bar(short, vals, color=colors, edgecolor="white", alpha=0.95, width=0.65)
+        ax.axhline(0, color="#37474F", lw=0.9, ls="--")
+        bars[0].set_linewidth(2.2)
+        bars[0].set_edgecolor("#01579B")
         ax.set_ylabel(ylab)
         ax.set_title(title, fontsize=11)
         for b, v in zip(bars, vals):
@@ -1363,36 +1358,25 @@ def fig_08_q_vector_vs_nativo():
                         f"{v:+.3f}", ha="center",
                         va="bottom" if v >= 0 else "top", fontsize=10, fontweight="bold")
 
-    # Panel decisión: Δ_op (y Δ_RBF como referencia débil)
     ax = axes[1, 1]
     x = np.arange(len(short))
     w = 0.35
-    b1 = ax.bar(x - w / 2, d_rbf, w, label=r"$\Delta_{\mathrm{RBF}}$ (NB08)", color="#90A4AE", alpha=0.9)
-    b2 = ax.bar(x + w / 2, d_op, w, label=r"$\Delta_{\mathrm{op}}$ (Caso 1)", color=colors, alpha=0.9,
-                edgecolor="white")
-    ax.axhline(0, color="black", lw=0.8, ls="--")
+    ax.bar(x - w / 2, d_rbf, w, label=r"$\Delta_{\mathrm{RBF}}$ (NB08)",
+           color="#BBDEFB", edgecolor="white", alpha=0.95)
+    b2 = ax.bar(x + w / 2, d_op, w, label=r"$\Delta_{\mathrm{op}}$ (Caso 1)",
+                color=colors, edgecolor="white", alpha=0.95)
+    ax.axhline(0, color="#37474F", lw=0.9, ls="--")
     ax.set_xticks(x)
     ax.set_xticklabels(short)
     ax.set_ylabel("pp")
-    ax.set_title(r"Ventaja: no mezclar protocolos" "\n" r"($\Delta_{\mathrm{op}}$ decide adopción)", fontsize=11)
+    ax.set_title(r"Ventaja operativa" "\n" r"(no mezclar con $\Delta_{\mathrm{RBF}}$)", fontsize=11)
     ax.legend(fontsize=8, loc="best")
     for b, v in zip(b2, d_op):
         ax.text(b.get_x() + b.get_width() / 2, v + (0.4 if v >= 0 else -0.6),
                 f"{v:+.1f}", ha="center", va="bottom" if v >= 0 else "top",
                 fontsize=10, fontweight="bold")
 
-    # Pie de interpretación (solo hechos de la figura)
-    fig.text(
-        0.5, 0.01,
-        "Lectura sin inventar: solo Nativo tiene Δ_op>0. "
-        "Nativo tiene ΔA<0 ⇒ ΔA>0 no es necesario bajo este protocolo. "
-        "SKG maximiza d̂_F y ΔH pero Δ_op<0. "
-        "Telco: ΔA>0 y ΔH≪0 con Δ_op<0. "
-        "⇒ mirar el vector completo + Δ_op; no un escalar.",
-        ha="center", va="bottom", fontsize=8.5,
-        bbox=dict(boxstyle="round", facecolor="#FFFDE7", edgecolor="#F9A825", alpha=0.95),
-    )
-    plt.tight_layout(rect=[0, 0.06, 1, 1])
+    plt.tight_layout()
     save_fig("08_q_vector_nativo_vs_reales.png")
 
 

@@ -605,38 +605,71 @@ como trabajo futuro.}
 \end{columns}
 \end{frame}
 
-\begin{frame}{P1 --- comparar el vector: nativo vs SKG / Telco}
+\begin{frame}{P1 --- vector vs nativo: datos y literatura}
 \begin{columns}[T]
-\begin{column}{0.62\textwidth}
+\begin{column}{0.58\textwidth}
 \centering
-\includegraphics[width=\linewidth,height=0.78\textheight,keepaspectratio]{08_q_vector_nativo_vs_reales.png}
+\includegraphics[width=\linewidth,height=0.82\textheight,keepaspectratio]{08_q_vector_nativo_vs_reales.png}
 \end{column}
-\begin{column}{0.36\textwidth}
-\begin{block}{Cómo interpretar (hechos)}
+\begin{column}{0.40\textwidth}
+\begin{block}{Qué dicen los datos}
 {\footnotesize
 \begin{itemize}
-  \item \textbf{Nativo} = único con
-        $\Delta_{\mathrm{op}}>0$ (control).
-  \item Nativo tiene $\Delta A<0$:
-        $\Delta A>0$ \textbf{no} es
-        necesario en este protocolo.
-  \item \textbf{SKG}: $\hat{d}_F$/$\Delta H$
-        altos, $\Delta_{\mathrm{op}}<0$
-        $\Rightarrow$ no adoptar.
-  \item \textbf{Telco}: $\Delta A>0$ pero
-        $\Delta H\ll 0$ y
-        $\Delta_{\mathrm{op}}<0$.
+  \item Solo \textbf{nativo}: $\Delta_{\mathrm{op}}>0$.
+  \item $\Delta A$: nativo $-0.029$
+        (no $\Delta A>0$).
+  \item $\Delta H$: nativo $+0.034$
+        (\textbf{no} el mínimo;
+        Telco $-1.131$ es el peor).
+  \item $\hat{d}_F$: $0.94$--$1.00$
+        en los tres $\Rightarrow$
+        \textbf{casi no discrimina}.
 \end{itemize}}
 \end{block}
-\begin{alertblock}{Regla}
+\begin{block}{vs literatura}
 {\footnotesize
-Leer las tres entradas del vector
-\textbf{y} $\Delta_{\mathrm{op}}$.
-No colapsar a un escalar
-(SKG quedaría primero).}
-\end{alertblock}
+\begin{itemize}
+  \item \textbf{Huang}: esperaría
+        $\Delta A>0$; aquí el ganador
+        operativo no lo cumple
+        (baseline RBF $\neq$ GB).
+  \item \textbf{Liu}: $d_F$ alto en
+        los tres; no separa
+        nativo de SKG/Telco.
+  \item \textbf{Thanasilp}:
+        $\Delta H\ll 0$ (Telco) =
+        concentración --- coincide
+        con fallo operativo.
+\end{itemize}}
+\end{block}
 \end{column}
 \end{columns}
+\end{frame}
+
+\begin{frame}{P1 --- cómo interpretar $\mathcal{Q}(\mathcal{D})$}
+\begin{block}{\textquestiondown{}Estructura cuántica $=$ $\Delta A$ negativo y $\Delta H$ mínimo?}
+{\footnotesize
+\textbf{No.} El nativo (único con ventaja operativa) tiene $\Delta A<0$, pero $\Delta H=+0.034$,
+no el mínimo. El mínimo $\Delta H$ es Telco ($-1.131$) y es el perfil de
+\textbf{concentración} \citep{thanasilp2022}, no de ventaja.}
+\end{block}
+\vspace{0.4em}
+\begin{block}{\textquestiondown{}$d_F$ discrimina estructura?}
+{\footnotesize
+\textbf{Aquí, apenas.} $\hat{d}_F$ está en $0.94$--$1.00$ para nativo, SKG y Telco.
+Cumple la idea de \citet{liu2021} de ``kernel no trivial vs RBF'', pero
+\textbf{no} ordena quién gana al mejor clásico.}
+\end{block}
+\vspace{0.4em}
+\begin{alertblock}{Lectura defendible}
+{\footnotesize
+$\mathcal{Q}(\mathcal{D})$ es un \textbf{perfil}:
+Telco $\rightarrow$ cuello $\Delta H$ (Thanasilp);
+SKG $\rightarrow$ geometría alta sin $\Delta_{\mathrm{op}}>0$;
+nativo $\rightarrow$ control por \textbf{alineación mapa--generador} \citep{liu2021},
+no por un patrón ``$\Delta A<0$ y $\Delta H$ mín.''.
+Adopción: $\Delta_{\mathrm{op}}>0$ + mapa alineado.}
+\end{alertblock}
 \end{frame}
 
 \begin{frame}{Camino a la Conjetura 2 / QCR (antes de la fórmula)}
