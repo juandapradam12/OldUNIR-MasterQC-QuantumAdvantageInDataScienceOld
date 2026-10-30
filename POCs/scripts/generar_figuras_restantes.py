@@ -929,11 +929,12 @@ def fig_08_test_cuanticidad():
 
     fig, axes = plt.subplots(2, 3, figsize=(15, 9))
     fig.suptitle(
-        r"Factores de $\mathcal{Q}(\mathcal{D})$ en los 3 datasets del TFM"
+        r"Factores de $\mathcal{Q}(\mathcal{D})$ en 3 datasets (NB08) — geometría vs RBF"
         "\n"
         r"$\mathcal{Q}=w_1\Delta A + w_2\hat{d}_F + w_3\Delta H$"
-        "  ·  cuántico vs clásico (Huang / Liu / Thanasilp)",
-        fontsize=13, fontweight="bold", y=1.02,
+        r"  ·  $\mathcal{Q}$ alto $\neq$ $\Delta_{\mathrm{op}}>0$"
+        "  (SKG: $Q{+}0.35$ pero $\Delta_{\mathrm{op}}{=}{-}6$ pp)",
+        fontsize=12, fontweight="bold", y=1.02,
     )
     x_pos = np.arange(len(names))
     w = 0.35
@@ -1006,12 +1007,24 @@ def fig_08_test_cuanticidad():
                   alpha=0.85, edgecolor="white")
     ax.axhline(0, color="black", linewidth=0.8, linestyle="--")
     ax.set_ylabel(r"Score $\mathcal{Q}(\mathcal{D})$")
-    ax.set_title(r"Score compuesto $\mathcal{Q}(\mathcal{D})$" "\n" "síntesis de los 3 factores")
+    ax.set_title(r"Score $\mathcal{Q}$ (geometría)" "\n" r"anotar $\Delta_{\mathrm{op}}$ debajo")
     ax.set_xticklabels(names, rotation=12, ha="right")
-    for b, q in zip(bars, q_scores):
-        ax.text(b.get_x() + b.get_width() / 2, q + (0.015 if q >= 0 else -0.025),
+    for b, q, r in zip(bars, q_scores, results):
+        d_op = OPERATIONAL_08.get(r["dataset"], float("nan"))
+        ax.text(b.get_x() + b.get_width() / 2, q + (0.02 if q >= 0 else -0.03),
                 f"{q:+.3f}", ha="center", va="bottom" if q >= 0 else "top",
                 fontsize=10, fontweight="bold")
+        # Δ_op del Caso 1 — otra fuente; no se mezcla en Q
+        y_note = min(q_scores) - 0.12
+        ax.text(b.get_x() + b.get_width() / 2, y_note,
+                f"$\\Delta_{{\\mathrm{{op}}}}={d_op:+.1f}$",
+                ha="center", va="top", fontsize=8, color="#424242")
+    ax.set_ylim(min(q_scores) - 0.22, max(q_scores) + 0.12)
+    ax.text(
+        0.5, -0.28,
+        r"$\Delta_{\mathrm{op}}$ = vs mejor clásico (Caso 1); no entra en $\mathcal{Q}$",
+        transform=ax.transAxes, ha="center", fontsize=8, color="#616161",
+    )
 
     plt.tight_layout()
     save_fig("08_test_cuanticidad_datasets.png")

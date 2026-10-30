@@ -595,13 +595,39 @@ como trabajo futuro.}
 \end{columns}
 \end{frame}
 
-\begin{frame}{Validación P1 --- 3 datasets (nativo / SKG / Telco)}
+\begin{frame}{Límite de P1 --- 3 datasets: $\mathcal{Q}$ $\neq$ $\Delta_{\mathrm{op}}$}
+\begin{columns}[T]
+\begin{column}{0.62\textwidth}
 \centering
-\includegraphics[width=\textwidth,height=0.72\textheight,keepaspectratio]{08_test_cuanticidad_datasets.png}
-\vspace{0.2em}
-\centering\footnotesize
-Mismo protocolo NB08. Contraste clave: el \textbf{nativo} no es el de mayor $\mathcal{Q}$
-(SKG $+0.35$), pero \textbf{sí} el único con $\Delta_{\mathrm{op}}>0$ ($+13.3$~pp).
+\includegraphics[width=\linewidth,height=0.78\textheight,keepaspectratio]{08_test_cuanticidad_datasets.png}
+\end{column}
+\begin{column}{0.36\textwidth}
+\begin{block}{Cifras reales (NB08)}
+{\footnotesize
+\begin{tabular}{@{}lrr@{}}
+ & $\mathcal{Q}$ & $\Delta_{\mathrm{op}}$ \\
+Nativo & $+0.29$ & $\mathbf{+13.3}$ \\
+SKG & $+0.35$ & $-6.0$ \\
+Telco & $-0.05$ & $-3.8$ \\
+\end{tabular}}
+\end{block}
+\begin{alertblock}{Cómo defenderlo}
+{\footnotesize
+No es un fallo de datos: es el
+\textbf{resultado}. $\mathcal{Q}$ mide
+geometría vs.\ RBF; $\Delta_{\mathrm{op}}$
+mira al mejor clásico.
+SKG es el contraejemplo:
+$\mathcal{Q}$ alto, gana GB/RF.
+Solo el nativo tiene
+$\Delta_{\mathrm{op}}>0$.}
+\end{alertblock}
+{\footnotesize $n{=}3$: orientativo.
+P1 se apoya en el barrido $\alpha$
+($\rho(\alpha,\Delta A){=}0.833$),
+no en predicción operativa.}
+\end{column}
+\end{columns}
 \end{frame}
 
 \begin{frame}{Camino a la Conjetura 2 / QCR (antes de la fórmula)}
