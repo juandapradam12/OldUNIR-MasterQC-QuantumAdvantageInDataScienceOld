@@ -6,7 +6,7 @@ caso,capa,etiqueta,valor,unidad,fuente
 2,skg,QK-SVR,-56.2,ΔR²×100,NB03 §13.5
 2,referencia,QK-SVR,-92.8,ΔR²×100,NB03 §13.5
 3,referencia,QAOA p=1,0.0,% coste,qml_v2.optimization
-4,referencia,VQE (5 reinicios),-34.0,% brecha,NB04 §11
+4,referencia,QAOA (P=10),-40.0,pp semillas óptimas,qml_v2.portfolio
 5,referencia,QAOA p=1,0.0,pp brecha,qml_v2.tsp_optimization
 6,nativo,QSVC,8.9,pp,NB06 §5
 6,skg,QSVC,-4.0,pp,NB06 §5

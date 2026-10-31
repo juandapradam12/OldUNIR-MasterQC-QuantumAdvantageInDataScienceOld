@@ -447,8 +447,8 @@ MDS (cobertura) &
 ILP / Greedy: 5/5 \\
 Referencia &
 Portafolio (3 de 6) &
-VQE no alcanza el óptimo (brecha $+34.0\%$) &
-fuerza bruta \\
+Óptimo: QAOA 6/10, VQE 3/10 &
+Greedy: óptimo \\
 Referencia &
 TSP $n{=}4$ &
 empate óptimo &
@@ -457,7 +457,7 @@ NN+2-opt (gap $0$) \\
 \end{tabular}}
 \begin{block}{Q vs C (misma pregunta)}
 \begin{itemize}
-  \item \textbf{Asignación y portafolio:} sin ventaja; el QAOA iguala al exacto y el VQE no lo alcanza.
+  \item \textbf{Asignación y portafolio:} sin ventaja; óptimo en 6/10 (QAOA) y 3/10 (VQE) semillas.
   \item \textbf{MDS:} empate en la red de 6 nodos ($P(\mathrm{opt})$ media $5.7\%$); en grafos ER gana C ($-60$\,pp de instancias con MDS óptimo).
   \item \textbf{TSP:} empate en calidad; \textbf{no} hay speedup --- modelado QUBO.
 \end{itemize}
@@ -477,7 +477,7 @@ NN+2-opt (gap $0$) \\
 Clasificación & \textbf{gana Q} & gana C & gana C \\
 Regresión & \textbf{gana Q} & gana C & gana C \\
 Anomalías & \textbf{gana Q} & gana C & gana C \\
-Optimización & \multicolumn{3}{c}{sin ventaja: QAOA empata con el exacto; VQE no lo alcanza} \\
+Optimización & \multicolumn{3}{c}{sin ventaja: QAOA empata en asignación y TSP; portafolio, 6/10 semillas} \\
 \bottomrule
 \end{tabular}}
 \vspace{0.8em}
@@ -843,7 +843,7 @@ Prototipos (NB~09): sin ventaja frente al cl\'asico fuerte. Sin demostraci\'on.}
 \begin{enumerate}
   \setcounter{enumi}{5}
   \item Optimización: QAOA iguala al óptimo exacto en asignación (5/5) y empata en TSP $n{=}4$
-        (valor de \emph{modelado}, no speedup); VQE no alcanza el óptimo del portafolio.
+        (valor de \emph{modelado}, no speedup); en portafolio, QAOA acierta el óptimo en 6 de 10 semillas y VQE en 3 de 10.
   \item MDS: empate en 6 nodos; en grafos ER ($n{=}6$--$15$) QAOA obtiene el MDS óptimo en 2/5 instancias (ILP y Greedy, 5/5).
   \item Coste de simulación del kernel $O(n^2)$: obstáculo práctico actual.
   \item Metodologías maduras vs.\ hardware inmaduro: resultados mixtos son esperables en NISQ.
@@ -869,7 +869,7 @@ en ausencia de eso, el clásico domina --- y eso también es un resultado.
 \begin{frame}{Limitaciones (I)}
 \begin{itemize}
   \item \textbf{Simulación statevector}: sin ruido NISQ de hardware; ideales $\neq$ shots reales.
-  \item \textbf{PCA a $n_q{=}2$}: $\sim$68\% de varianza descartada; $\mathcal{Q}$ mide el subespacio proyectado.
+  \item \textbf{PCA a $n_q{=}2$}: $\sim$68--69\% de varianza descartada en SKG y Telco (NB08); $\mathcal{Q}$ mide el subespacio proyectado.
   \item \textbf{Muestra} $n{\approx}80$ en indicadores; correlación en 3 datasets reales es orientativa.
   \item \textbf{Baseline}: $\mathcal{Q}>0$ vs.\ un clásico débil $\neq$ ventaja
         vs.\ el mejor clásico (caso SKG).

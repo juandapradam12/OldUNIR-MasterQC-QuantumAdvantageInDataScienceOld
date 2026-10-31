@@ -131,7 +131,7 @@ El dataset cuántico-nativo de regresión se genera con $y(\mathbf{x})=\langle Z
 
 \paragraph{Limitaciones.}
 \begin{itemize}
-  \item Los hiperparámetros no se optimizaron para este rango de objetivo. En el Notebook~03 el QK-SVR usa $C=10$, $\varepsilon=0.1$ y los SVR clásicos sus valores por defecto ($C=1$); en el protocolo justo todos los SVR usan $C=10$, $\varepsilon=0.1$. Una búsqueda sobre $C$ y $\varepsilon$ podría modificar el $R^2$ de los clásicos.
+  \item Los hiperparámetros no se ajustan de forma homogénea entre datasets en el Notebook~03. En el dataset nativo, el QK-SVR usa $C=10$, $\varepsilon=0.1$ y los SVR clásicos sus valores por defecto ($C=1$). En Friedman~\#1, $C$ y $\varepsilon$ del QK-SVR se eligen en una malla de 9 combinaciones ($C\in\{10,50,100\}$, $\varepsilon\in\{0.5,1,2\}$) maximizando el $R^2$ \emph{sobre el propio conjunto de test}, lo que favorece al modelo cuántico (y aun así pierde); los clásicos usan sus valores por defecto. En SKG, el QK-SVR usa $C=10$, $\varepsilon=0.05$ con el objetivo reescalado a $[0,1]$ y el SVR-RBF clásico $C=10$, $\varepsilon=0.5$. En el protocolo justo todos los SVR usan $C=10$, $\varepsilon=0.1$, por lo que una búsqueda más amplia sobre $C$ y $\varepsilon$ podría modificar el $R^2$ de los clásicos.
   \item El Notebook~03 usa una única partición (140 entrenamientos, 60 de test) y no ofrece intervalo de confianza; la repetición del protocolo justo sí lo hace (desviación $0.002$ del QK-SVR).
 \end{itemize}
 
@@ -141,17 +141,17 @@ El QK-SVR obtuvo $R^2 = 0.098$ (RMSE = 11.04 km/h) frente al $R^2 = 0.660$ del G
 
 \begin{enumerate}
   \item \textbf{Pérdida de información por PCA}: La varianza explicada por 2 componentes es del 68.6\%, lo que significa que el 31.4\% de la varianza de las features originales ---incluyendo patrones temporales y de nivel de servicio--- no está disponible para el QK-SVR.
-  \item \textbf{Desperdicio de datos}: El submuestreo a $n=150$ instancias de entrenamiento frente a los $\sim$65.000 disponibles para los clásicos equivale a un aprovechamiento del 0.18\% del dataset. Esta asimetría hace la comparación inherentemente desigual.
+  \item \textbf{Desperdicio de datos}: El QK-SVR se entrena con 150 observaciones frente a las 64\,896 (80\% de 81\,121) de los clásicos, es decir, el 0.23\% de sus datos de entrenamiento. Esta asimetría hace la comparación inherentemente desigual.
   \item \textbf{Estructura del problema}: La correlación entre \texttt{levelofservice} y \texttt{speed} es cuasi-determinista en los datos de SKG (verde $\approx$ rápido, rojo $\approx$ lento), una relación que los árboles de decisión capturan con una sola partición, sin necesidad de un kernel cuántico.
 \end{enumerate}
 
 \subsection{Dataset Friedman \#1: ventaja clásica}
 
-Sobre el benchmark sintético Friedman~\#1 \citep{friedman1991}, con $y=10\sin(\pi x_1x_2)+20(x_3-0.5)^2+10x_4+5x_5+\varepsilon$, el QK-SVR obtuvo $R^2=-0.151$ frente a $R^2=0.777$ de XGBoost (también superan al kernel cuántico la regresión lineal, $0.641$, y Random Forest, $0.704$): $\Delta R^2=-0.928$. Aunque el término $\sin(\pi x_1x_2)$ recuerda a la interacción $x_ix_j$ codificada por las puertas $ZZ$, el kernel cuántico con dos o cinco componentes no lo aprovecha. Friedman~\#1 no es un problema de ventaja cuántica: es una referencia clásica en la que los métodos de árboles dominan.
+Sobre el benchmark sintético Friedman~\#1 \citep{friedman1991}, con $y=10\sin(\pi x_1x_2)+20(x_3-0.5)^2+10x_4+5x_5+\varepsilon$, el QK-SVR obtuvo $R^2=-0.151$ frente a $R^2=0.777$ de XGBoost (también superan al kernel cuántico la regresión lineal, $0.641$, y Random Forest, $0.704$): $\Delta R^2=-0.928$. Aunque el término $\sin(\pi x_1x_2)$ recuerda a la interacción $x_ix_j$ codificada por las puertas $ZZ$, el kernel cuántico, con 5 qubits (uno por variable) en el Notebook~03 y con 2 componentes PCA en el protocolo justo, no lo aprovecha. Friedman~\#1 no es un problema de ventaja cuántica: es una referencia clásica en la que los métodos de árboles dominan.
 
 \subsection{Protocolo justo de regresión}
 
-Como en el Caso~1, las comparaciones SKG y Friedman del Notebook~03 son asimétricas (el QK-SVR usa 150 ejemplos y 2 componentes PCA; los clásicos, todo el conjunto y todas las variables). El protocolo \texttt{qml\_v2.regression} las homogeneiza (Tabla~\ref{tab:regresion_justa}): mismas particiones (140/60), 10 repeticiones y, en la tabla~A, las mismas variables para todos los modelos. El patrón se mantiene y se acentúa: el QK-SVR gana solo en el dataset nativo ($\Delta R^2=+1.002$) y pierde en SKG ($-0.150$ frente a Ridge con las mismas 2 variables; $-0.227$ frente a SVR-RBF con las 3 originales) y en Friedman~\#1 ($-0.657$ con 2 componentes; $-1.069$ con las 5 variables y 5 qubits). En SKG ningún modelo supera $R^2=0.11$ con estos 140 ejemplos, por lo que la brecha es pequeña en términos absolutos; los valores del Notebook~03 en SKG ($0.098$ frente a $0.660$) reflejan sobre todo la diferencia de datos de entrenamiento, no una limitación del kernel por sí sola.
+Como en el Caso~1, las comparaciones del Notebook~03 no son homogéneas, aunque la asimetría es distinta en cada dataset. En \textbf{Friedman~\#1} (300 muestras: 210 de entrenamiento y 90 de test) el QK-SVR usa las 5 variables (5 qubits) pero solo 150 de las 210 muestras de entrenamiento y las primeras 60 de test; los clásicos se entrenan con las 210, aunque en la tabla se evalúan sobre esas mismas 60 muestras de test. La ventaja clásica no se explica por falta de variables, solo en parte por los 60 ejemplos de entrenamiento adicionales. En \textbf{SKG} la asimetría es mucho mayor: el QK-SVR usa 2 componentes PCA de 4 variables (68.6\% de la varianza), 150 muestras de entrenamiento y 80 de test, mientras que los clásicos usan las 4 variables, 64\,896 muestras de entrenamiento y 16\,225 de test, de modo que sus $R^2$ no están medidos sobre los mismos puntos. El protocolo \texttt{qml\_v2.regression} las homogeneiza (Tabla~\ref{tab:regresion_justa}): mismas particiones (140/60), 10 repeticiones y, en la tabla~A, las mismas variables para todos los modelos. El patrón se mantiene y se acentúa: el QK-SVR gana solo en el dataset nativo ($\Delta R^2=+1.002$) y pierde en SKG ($-0.150$ frente a Ridge con las mismas 2 variables; $-0.227$ frente a SVR-RBF con las 3 originales) y en Friedman~\#1 ($-0.657$ con 2 componentes; $-1.069$ con las 5 variables y 5 qubits). En SKG ningún modelo supera $R^2=0.11$ con estos 140 ejemplos, por lo que la brecha es pequeña en términos absolutos; los valores del Notebook~03 en SKG ($0.098$ frente a $0.660$) reflejan sobre todo la diferencia de datos de entrenamiento, no una limitación del kernel por sí sola.
 
 \begin{table}[ht]
 \centering
@@ -215,26 +215,29 @@ Con $n=3$ solo hay seis asignaciones factibles; cinco instancias no permiten est
 \section{Caso de uso 4: Optimización de portafolio (VQE/QAOA)}
 % =====================================================================
 
-El Notebook~04 selecciona 3 de 6 activos (EC, CIB, AAPL, MSFT, GOOGL y AMZN; precios de cierre ajustados 2022--2023, 501 sesiones) minimizando $q\,x^\top\Sigma x-\mu^\top x$ con aversión al riesgo $q=0.5$ y presupuesto fijo de tres activos. Hay $\binom{6}{3}=20$ carteras factibles, de modo que la fuerza bruta es trivial y fija el óptimo exacto: \{EC, CIB, MSFT\} con coste $0.0437$.
+El Notebook~04 selecciona 3 de 6 activos (EC, CIB, AAPL, MSFT, GOOGL y AMZN; cierres ajustados de Yahoo Finance, 2022--2023, 501 sesiones) minimizando $q\,x^\top\Sigma x-\mu^\top x$ con aversión al riesgo $q=0.5$ y presupuesto fijo de tres activos. Hay $\binom{6}{3}=20$ carteras factibles, de modo que la fuerza bruta es trivial y fija el óptimo exacto: \{EC, CIB, MSFT\} con coste $0.0437$. La selección voraz hacia delante (Greedy) encuentra esa misma cartera. Como VQE y QAOA dependen de la inicialización, el protocolo \texttt{qml\_v2.portfolio} los repite con 10 semillas independientes; cada ejecución se decodifica con la cadena más probable de 4\,096 disparos y solo cuenta como solución si es factible, evaluada en el problema original y no en la energía penalizada.
 
 \begin{table}[ht]
 \centering
-\small
-\begin{tabular}{llcc}
+\footnotesize
+\setlength{\tabcolsep}{4pt}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{llcccccc}
 \hline
-\textbf{Método} & \textbf{Cartera obtenida} & \textbf{Coste} & \textbf{Factible} \\
+\textbf{Método} & \textbf{Penalización} & \textbf{Factibles} & \textbf{Óptimo} & \textbf{Brecha med.} & \textbf{Brecha mediana} & \textbf{Brecha máx.} & \textbf{Coste medio} \\
 \hline
-Fuerza bruta (referencia)                 & EC, CIB, MSFT  & 0.0437 & Sí \\
-VQE (TwoLocal, $p_{\text{pen}}=0.01$)     & EC, MSFT       & ---    & No (2 activos) \\
-QAOA ($p=3$, $p_{\text{pen}}=0.01$)       & ninguno        & ---    & No \\
-VQE, penalización 10, 5 reinicios (mejor) & EC, AAPL, MSFT & 0.0586 & Sí (gap $+34.0\%$) \\
+Fuerza bruta / Greedy & --- & --- & --- & $0\%$ & $0\%$ & $0\%$ & 0.0437 \\
+VQE (TwoLocal, 5 reinicios) & 10   & 10/10 & 3/10 & $+83.5\%$  & $+63.7\%$ & $+253.0\%$ & 0.0802 \\
+QAOA ($p=3$, 5 reinicios)   & 10   & 10/10 & 6/10 & $+111.5\%$ & $0\%$     & $+724.4\%$ & 0.0925 \\
+VQE (1 inicio)              & 0.01 & 0/10  & 0/10 & --- & --- & --- & --- \\
+QAOA ($p=3$, 1 inicio)      & 0.01 & 0/10  & 0/10 & --- & --- & --- & --- \\
 \hline
-\end{tabular}
-\caption{Caso~4: resultados reproducidos al reejecutar el Notebook~04 (semilla fija). Con penalización baja, ni VQE ni QAOA devuelven una cartera factible. Con penalización alta, los cinco reinicios de VQE devuelven carteras factibles de coste entre 0.0586 y 0.3434; ninguno alcanza el óptimo.}
+\end{tabular}}
+\caption{Caso~4: 10 semillas por método y configuración (\texttt{qml\_v2.portfolio}). Brecha $=100\,(\text{coste}-\text{óptimo})/|\text{óptimo}|$, promediada solo sobre las semillas factibles; el óptimo es pequeño ($0.0437$), de modo que brechas porcentuales grandes corresponden a diferencias absolutas modestas (la peor, $0.3604$ frente a $0.0437$). Con penalización $0.01$ ninguna semilla devuelve una cartera factible.}
 \label{tab:portafolio}
 \end{table}
 
-La conclusión es negativa y debe leerse con ese alcance. VQE no convergió al óptimo en ninguno de los cinco reinicios: su mejor cartera es la segunda mejor de las veinte posibles. QAOA, con la configuración del notebook, no produjo una cartera válida. No hay ventaja cuántica en este caso, ni siquiera en tiempo: la fuerza bruta resuelve la instancia en $0.03$~s frente a $10$~s de VQE en simulación.
+La penalización determina si el problema variacional es siquiera válido. Con $0.01$ el Hamiltoniano casi ignora la restricción de presupuesto y ninguna de las 20 ejecuciones (10 de VQE y 10 de QAOA) devuelve tres activos. Con $10$, el estado fundamental del Hamiltoniano de Ising es exactamente la cartera óptima (comprobado por diagonalización exacta), por lo que cualquier brecha proviene del optimizador variacional y no de la formulación. Aun así, VQE alcanza el óptimo en 3 de 10 semillas y QAOA en 6 de 10, frente al 5\% esperado por azar (1 de 20 carteras); QAOA es más variable (mediana de brecha $0\%$ pero una semilla con $+724.4\%$) y mucho más lento en simulación (en el Notebook~04, 300 evaluaciones de energía tardan 43.4~s con QAOA frente a 1.2~s con VQE). No hay ventaja cuántica en este caso: la fuerza bruta y el Greedy encuentran siempre el óptimo en milisegundos, y la frecuencia de acierto del mejor método cuántico (60\%) es $40$ pp inferior.
 
 Para $n$ grande, los solvers clásicos de programación cuadrática entera siguen siendo la referencia. Cualquier ventaja futura dependería de hardware con muchos más qubits lógicos y no se puede inferir de esta instancia de seis activos.
 
@@ -396,7 +399,7 @@ La Tabla~\ref{tab:sintesis} sintetiza los resultados principales del estudio com
 1 & QSVM & \textbf{+38.3 pp} & $-$4.5 pp & $-$3.8 pp \\
 2 & QK-SVR & \textbf{$+0.965\,\Delta R^2$} & $-0.562\,\Delta R^2$ & $-0.928\,\Delta R^2$ \\
 3 & QAOA ($p=1$) & \multicolumn{3}{>{\centering\arraybackslash}p{8.0cm}}{Iguala al óptimo exacto en 5/5 instancias; sin ventaja (coste idéntico)} \\
-4 & VQE/QAOA & \multicolumn{3}{>{\centering\arraybackslash}p{8.0cm}}{VQE no alcanza el óptimo (brecha $+34.0\%$ en coste); QAOA infactible} \\
+4 & VQE/QAOA & \multicolumn{3}{>{\centering\arraybackslash}p{8.0cm}}{Óptimo en 6/10 semillas (QAOA) y 3/10 (VQE) con penalización 10; Greedy y fuerza bruta, siempre ($-40$ pp)} \\
 5 & QAOA TSP & \multicolumn{2}{c}{empate óptimo vs NN+2-opt ($n=4$)} & Euclidean gap~$0$ \\
 6 & QSVM (umbral) & $+8.9$ pp ($n=150$, una partición) & $-4.0$ pp (clásico) & $-3.8$ pp vs GB (clásico) \\
 7 & QAOA MDS ($p=3$) & \multicolumn{3}{>{\centering\arraybackslash}p{8.0cm}}{Red de 6 nodos: empate con ILP ($0$ pp); ER $n=6$--$15$: $-60$ pp de instancias con MDS óptimo (2/5 frente a 5/5)} \\
@@ -545,7 +548,7 @@ Los resultados evidencian tres patrones transversales que son coherentes con el 
 
 \subsection{Implicaciones para la adopción empresarial}
 
-Desde la perspectiva de SKG Tecnología, los resultados sugieren que la integración de algoritmos cuánticos en los sistemas de gestión de movilidad urbana requiere dos condiciones previas: (i) hardware cuántico con mayor número de qubits lógicos y menor tasa de error \citep{preskill2018, cerezo2023}, para operar sobre más features sin reducción dimensional, y (ii) ingeniería de features específica que alinee la representación de los datos con las estructuras geométricas accesibles por los kernels cuánticos \citep{huang2021}. En el corto plazo (horizonte 2--5 años), el valor más realista de la computación cuántica para SKG reside en los algoritmos de optimización combinatoria (QAOA, VQE) para problemas de asignación de recursos, donde la ventaja ya es demostrable a escala moderada con el hardware actual \citep{farhi2014}.
+Desde la perspectiva de SKG Tecnología, los resultados sugieren que la integración de algoritmos cuánticos en los sistemas de gestión de movilidad urbana requiere dos condiciones previas: (i) hardware cuántico con mayor número de qubits lógicos y menor tasa de error \citep{preskill2018, cerezo2023}, para operar sobre más features sin reducción dimensional, y (ii) ingeniería de features específica que alinee la representación de los datos con las estructuras geométricas accesibles por los kernels cuánticos \citep{huang2021}. En el corto plazo (horizonte 2--5 años), el valor más realista de la computación cuántica para SKG reside en los algoritmos de optimización combinatoria (QAOA, VQE) para problemas de asignación de recursos, aunque en los casos medidos aquí (3, 4, 5 y 7) ningún solver cuántico ha superado a los exactos \citep{farhi2014}.
 
 El hilo conductor de los nueve casos de uso es precisamente la demostración de que los algoritmos cuánticos no necesitan reemplazar a los clásicos para ser útiles: basta con que resuelvan de forma más eficaz la parte del problema que es intratable para la computación clásica \citep{biamonte2017}. El Caso~7 lo ilustra de forma paradigmática: aplicar QAOA al conjunto dominante mínimo ---un problema NP-difícil--- y conectarlo con un optimizador clásico COBYLA a través de una interfaz mínima es exactamente el patrón con el que la computación cuántica puede integrarse en entornos productivos reales \citep{farhi2014}. El prototipo de arquitectura híbrida desarrollado en la Sección~\ref{sec:prototipo_hibrido} del Capítulo~\ref{cap:metodologia} formaliza este patrón y define los criterios de activación del módulo cuántico según el tipo de problema.
 

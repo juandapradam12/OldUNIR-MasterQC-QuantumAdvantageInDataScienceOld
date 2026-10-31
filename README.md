@@ -52,7 +52,7 @@ Building on these observations, the thesis advances two research proposals. Firs
 | 1 | Classification | Quantum kernel SVM | Large gains under map-aligned data; classical superior otherwise |
 | 2 | Regression | Quantum-kernel SVR | Edge only on the native dataset, by construction (ΔR² = +0.965; +1.002 in the fair 10-repeat protocol); classical methods win on SKG and Friedman #1 |
 | 3 | Combinatorial optimization (assignment) | Hybrid QAOA | Matches the exact optimum on 5/5 instances (same cost as Hungarian and ILP); no advantage |
-| 4 | Combinatorial optimization (portfolio) | Hybrid VQE | Does not reach the exact optimum on 3 of 6 assets (+34.0% cost gap); no advantage |
+| 4 | Combinatorial optimization (portfolio) | Hybrid VQE / QAOA | 3 of 6 assets, 10 seeds, penalty 10: QAOA reaches the exact optimum in 6/10 seeds and VQE in 3/10 (Greedy and brute force always do); with penalty 0.01 no run is feasible; no advantage |
 | 5 | Combinatorial optimization (TSP) | Hybrid QAOA | Optimal parity with NN+2-opt — modeling value, not asymptotic speedup |
 | 6 | Classification (threshold setting) | Quantum kernel SVM | Advantage contingent on native structure |
 | 7 | Combinatorial optimization (dominating set) | Hybrid QAOA | Ties exact ILP on the 6-node network (mean P(opt) 5.7%, p = 3); on Erdős–Rényi graphs (n = 6–15) QAOA reaches a minimum dominating set in 2 of 5 instances vs 5 of 5 for ILP and Greedy (−60 pp) |

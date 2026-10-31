@@ -80,12 +80,20 @@ def caso3_asignacion() -> list[dict]:
 
 
 def caso4_portafolio() -> list[dict]:
-    """Notebook 04: brecha de energía de VQE respecto al óptimo exacto (%, de la salida impresa)."""
-    texto = _texto_salidas("04_portafolio_VQE_QAOA_vs_clasico.ipynb")
-    brecha = re.search(r"Gap vs óptimo\s*:\s*[\d.]+ \(([\d.]+)%\)", texto)
-    if brecha is None:
-        raise ValueError("El Notebook 04 no imprime la brecha frente al óptimo exacto.")
-    return [_fila(4, "referencia", "VQE (5 reinicios)", -float(brecha.group(1)), "% brecha", "NB04 §11")]
+    """Protocolo QML v2 de portafolio: semillas que alcanzan el óptimo frente a la referencia clásica.
+
+    La fuerza bruta y el Greedy encuentran siempre el óptimo (100 % de aciertos); el valor es la
+    diferencia, en puntos porcentuales, del mejor método cuántico con penalización alta.
+    """
+    resumen = pd.read_csv(METRICS / "qml_v2_portfolio_summary.csv")
+    alta = resumen[resumen["configuracion"] == "penalizacion_alta"].copy()
+    alta["acierto_pct"] = 100 * alta["optimo_encontrado"] / alta["semillas"]
+    mejor = alta.sort_values(["acierto_pct", "brecha_media_pct"], ascending=[False, True]).iloc[0]
+    referencia = json.loads((METRICS / "qml_v2_portfolio_reference.json").read_text(encoding="utf-8"))
+    if not np.isclose(referencia["coste_voraz"], referencia["optimo_exacto"]):
+        raise ValueError("El Greedy ya no alcanza el óptimo: revisar la referencia clásica del Caso 4.")
+    return [_fila(4, "referencia", f"{mejor['metodo']} (P=10)", mejor["acierto_pct"] - 100, "pp semillas óptimas",
+                  "qml_v2.portfolio")]
 
 
 def caso5_tsp() -> list[dict]:
