@@ -1,0 +1,36 @@
+dataset,repeat,model,table,ari,nmi,n_samples,n_features,pca_var_explained
+blobs,0,KMeans,A_matched_features,1.0,1.0,120,2,0.9685989414633129
+blobs,0,Spectral-RBF,A_matched_features,1.0,1.0,120,2,0.9685989414633129
+blobs,0,Agglomerative,A_matched_features,1.0,1.0,120,2,0.9685989414633129
+blobs,0,Spectral-ZZ,A_matched_features,-0.005761613251710479,0.0018608970247537507,120,2,0.9685989414633129
+blobs,0,KMeans [full features],B_matched_n_full_features,1.0,1.0,120,4,
+blobs,0,Spectral-RBF [full features],B_matched_n_full_features,1.0,1.0,120,4,
+blobs,0,Agglomerative [full features],B_matched_n_full_features,1.0,1.0,120,4,
+blobs,1,KMeans,A_matched_features,1.0,1.0,120,2,0.9618245481613104
+blobs,1,Spectral-RBF,A_matched_features,1.0,1.0,120,2,0.9618245481613104
+blobs,1,Agglomerative,A_matched_features,1.0,1.0,120,2,0.9618245481613104
+blobs,1,Spectral-ZZ,A_matched_features,0.026853146853146853,0.031770646268235364,120,2,0.9618245481613104
+blobs,1,KMeans [full features],B_matched_n_full_features,1.0,1.0,120,4,
+blobs,1,Spectral-RBF [full features],B_matched_n_full_features,1.0,1.0,120,4,
+blobs,1,Agglomerative [full features],B_matched_n_full_features,1.0,1.0,120,4,
+blobs,2,KMeans,A_matched_features,1.0,1.0,120,2,0.9652258218846024
+blobs,2,Spectral-RBF,A_matched_features,1.0,1.0,120,2,0.9652258218846024
+blobs,2,Agglomerative,A_matched_features,1.0,1.0,120,2,0.9652258218846024
+blobs,2,Spectral-ZZ,A_matched_features,0.004011046817464493,0.01137235933524363,120,2,0.9652258218846024
+blobs,2,KMeans [full features],B_matched_n_full_features,1.0,1.0,120,4,
+blobs,2,Spectral-RBF [full features],B_matched_n_full_features,1.0,1.0,120,4,
+blobs,2,Agglomerative [full features],B_matched_n_full_features,1.0,1.0,120,4,
+blobs,3,KMeans,A_matched_features,1.0,1.0,120,2,0.9694450263619624
+blobs,3,Spectral-RBF,A_matched_features,1.0,1.0,120,2,0.9694450263619624
+blobs,3,Agglomerative,A_matched_features,1.0,1.0,120,2,0.9694450263619624
+blobs,3,Spectral-ZZ,A_matched_features,0.00024440167415146793,0.006816013447803876,120,2,0.9694450263619624
+blobs,3,KMeans [full features],B_matched_n_full_features,1.0,1.0,120,4,
+blobs,3,Spectral-RBF [full features],B_matched_n_full_features,1.0,1.0,120,4,
+blobs,3,Agglomerative [full features],B_matched_n_full_features,1.0,1.0,120,4,
+blobs,4,KMeans,A_matched_features,1.0,1.0,120,2,0.9628207798598245
+blobs,4,Spectral-RBF,A_matched_features,1.0,1.0,120,2,0.9628207798598245
+blobs,4,Agglomerative,A_matched_features,1.0,1.0,120,2,0.9628207798598245
+blobs,4,Spectral-ZZ,A_matched_features,-0.007344563610512142,0.0008028600775006888,120,2,0.9628207798598245
+blobs,4,KMeans [full features],B_matched_n_full_features,1.0,1.0,120,4,
+blobs,4,Spectral-RBF [full features],B_matched_n_full_features,1.0,1.0,120,4,
+blobs,4,Agglomerative [full features],B_matched_n_full_features,1.0,1.0,120,4,
