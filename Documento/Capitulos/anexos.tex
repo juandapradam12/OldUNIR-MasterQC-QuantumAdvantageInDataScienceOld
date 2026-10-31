@@ -21,25 +21,25 @@ La Tabla~\ref{tab:notebooks} describe los notebooks Jupyter que implementan las 
 \toprule
 \textbf{Nb.} & \textbf{Archivo} & \textbf{Descripción} & \textbf{Datasets} \\
 \midrule
-01 & \nolinkurl{01_clasificacion_quantum_vs_clasico} & QSVM vs Gradient Boosting, RF, SVM-RBF, Regresión Logística & Cuántico-nativo, SKG Incidentes, Telco Churn \\[1pt]
+01 & \nolinkurl{01_clasificacion_quantum_vs_clasico} & QSVM vs Gradient Boosting, RF, SVM-RBF, Regresión Logística & SKG Incidentes, Telco Churn$^\dagger$ \\[1pt]
 02 & \nolinkurl{02_optimizacion_QAOA_vs_clasico} & Localización-asignación exacta (PuLP) y subproblema de 10 focos: fuerza bruta, Greedy y QAOA ($p=1,2$, 5 semillas) & \texttt{incidents\_\allowbreak movility.csv}, \texttt{agents.csv} (SKG) \\[1pt]
-03 & \nolinkurl{03_regresion_VQC_vs_clasico} & QK-SVR vs XGBoost, RF, SVR-RBF, Ridge & Cuántico-nativo, SKG Corredores, Friedman~\#1 \\[1pt]
+03 & \nolinkurl{03_regresion_VQC_vs_clasico} & QK-SVR vs XGBoost, RF, SVR-RBF, Ridge & SKG Corredores, Friedman~\#1$^\dagger$ \\[1pt]
 04 & \nolinkurl{04_portafolio_VQE_QAOA_vs_clasico} & VQE/QAOA (10 semillas, vía \texttt{qml\_v2.portfolio}) vs fuerza bruta y Greedy en selección de portafolio & Precios reales de cierre ajustado (Yahoo Finance, 6 acciones, 2022--2023, 501 sesiones) \\[1pt]
 05 & \nolinkurl{05_tsp_QUBO_vs_clasico} & Fuerza bruta, Nearest Neighbor, NN+2-opt, SA-QUBO y QAOA ($p=1$, 9 qubits) en TSP cerrado & 12 capitales colombianas (distancias haversine); el subproblema cuántico usa las 4 primeras \\[1pt]
-06 & \nolinkurl{06_quantum_kernel_advantage} & Análisis del umbral de ventaja del kernel cuántico & Cuántico-nativo, SKG, Telco ($n \in \{50,\dots,150\}$) \\[1pt]
+06 & \nolinkurl{06_quantum_kernel_advantage} & Análisis del umbral de ventaja del kernel cuántico & SKG, Telco$^\dagger$ \\[1pt]
 07 & \nolinkurl{07_resumen_ventaja_cuantica} & Síntesis visual de resultados comparativos & Todos \\[1pt]
-08 & \nolinkurl{08_test_cuanticidad_datasets} & Score $\mathcal{Q}(D)$: kernel alignment, Frobenius, entropía espectral & Cuántico-nativo, SKG, Telco \\[1pt]
-09 & \nolinkurl{09_mapeo_cuantico_compatible} & Framework QCR: cuatro estrategias de pre-mapeo & Cuántico-nativo, SKG, Telco \\[1pt]
+08 & \nolinkurl{08_test_cuanticidad_datasets} & Score $\mathcal{Q}(D)$: kernel alignment, Frobenius, entropía espectral & SKG, Telco$^\dagger$ \\[1pt]
+09 & \nolinkurl{09_mapeo_cuantico_compatible} & Framework QCR: cuatro estrategias de pre-mapeo & SKG, Telco$^\dagger$ \\[1pt]
 10 & \nolinkurl{10_dominante_minimo_QAOA_vs_clasico} & Paradigma híbrido QAOA-COBYLA en MDS (Caso~7) & Red social sintética, grafos Erdős-Rényi \\[1pt]
-11 & \nolinkurl{11_estructura_cuantica_por_caso_uso} & Indicadores de estructura $\mathcal{Q}(D)$ en cuatro familias con el mismo protocolo & Cuántico-nativo, SKG, Telco, paisajes QUBO \\[1pt]
-12 & \nolinkurl{12_series_temporales_forecasting} & Series temporales por lags (Caso~9): QK-SVR vs Ridge, SVR-RBF y GB & \texttt{zz\_lag}, \texttt{sine}, corredores SKG \\
+11 & \nolinkurl{11_estructura_cuantica_por_caso_uso} & Indicadores de estructura $\mathcal{Q}(D)$ en cuatro familias con el mismo protocolo & SKG, Telco, Friedman, \texttt{moons}, paisajes QUBO$^\dagger$ \\[1pt]
+12 & \nolinkurl{12_series_temporales_forecasting} & Series temporales por lags (Caso~9): QK-SVR vs Ridge, SVR-RBF y GB & \texttt{sine}, corredores SKG$^\dagger$ \\
 \bottomrule
 \end{tabularx}
-\caption{Catálogo de notebooks de pruebas de concepto. Todos ejecutables con las dependencias del Anexo~\ref{anx:entorno}.}
+\caption{Catálogo de notebooks de pruebas de concepto. Todos ejecutables con las dependencias del Anexo~\ref{anx:entorno}. $^\dagger$Los notebooks 01, 03, 06, 08, 09, 11 y 12 conservan además un dataset sintético etiquetado con el propio feature map (exploratorio); sus resultados \textbf{no} se usan en la evaluación (Sección~\ref{sec:sin_datos_a_medida}).}
 \label{tab:notebooks}
 \end{table}
 
-Además, el paquete reproducible \texttt{POCs/qml\_v2/} concentra los protocolos justos QML~v2 en módulos \texttt{.py}: \texttt{classification}, \texttt{regression}, \texttt{optimization}, \texttt{maxcutm\_optimization}, \texttt{tsp\_optimization} (Caso~5), \texttt{quantumness}, \texttt{qcr}, \texttt{clustering}, \texttt{anomaly} (Caso~8), \texttt{timeseries} (Caso~9) y \texttt{feature\_map\_alignment} (ZZ vs Pauli-Y). La revisión numérica frente a los notebooks está en la Sección~\ref{sec:qml_v2_revision}.
+Además, el paquete reproducible \texttt{POCs/qml\_v2/} concentra los protocolos justos QML~v2 en módulos \texttt{.py}: \texttt{classification}, \texttt{regression}, \texttt{optimization}, \texttt{maxcutm\_optimization}, \texttt{tsp\_optimization} (Caso~5), \texttt{quantumness}, \texttt{qcr}, \texttt{clustering}, \texttt{anomaly} (Caso~8), \texttt{timeseries} (Caso~9). La revisión numérica frente a los notebooks está en la Sección~\ref{sec:qml_v2_revision}.
 
 % =====================================================================
 \section{Entorno de software y dependencias}
@@ -98,17 +98,16 @@ El archivo \texttt{POCs/requirements.txt} fija las versiones mínimas (no exacta
 \toprule
 \textbf{Dataset} & \textbf{Registros} & \textbf{Origen} & \textbf{Uso en el TFM} \\
 \midrule
-Cuántico-nativo & 150--200 & Sintético & Casos 1, 2, 6, 8, 9 (benchmark de ventaja cuántica; $n=200$ en los Notebooks 01 y 03, $n=150$ en el 06) \\[3pt]
 SKG — Incidentes NUSE Bogotá & 27.326 & SKG Tecnología & Casos 1, 6, 8, 9 (clasificación de gravedad) \\[3pt]
 SKG — Tiempos de viaje & 81.121 & SKG Tecnología & Caso 2 (regresión de velocidad media) \\[3pt]
 SKG — Agentes en campo & 58.245 lecturas (753 dispositivos) & SKG Tecnología & Notebook 02 (bases por localidad); el Caso 3 usa matrices de coste sintéticas \\[3pt]
 Telco Customer Churn & 7.043 & IBM / Kaggle & Casos 1, 6, 8, 9 (benchmark clasificación) \\[3pt]
 Friedman~\#1 & 300 & Sintético & Caso 2 (benchmark regresión no lineal) \\[3pt]
 Red social (MDS) & 6 nodos & Sintético & Caso 7 (paradigma híbrido) \\[3pt]
-\texttt{zz\_phase} / moons / blobs & $n=160$ & Sintético QML~v2 & Caso 8 (anomalías one-class) \\[3pt]
+moons / blobs & $n=160$ & Sintético QML~v2 & Caso 8 (anomalías one-class) \\[3pt]
 Telco / SKG inyectados & subsample & Práctica + spikes & Caso 8 (no usan churn/gravedad) \\[3pt]
 Colombia capitals (TSP) & $n\leq 12$ & Geo QML~v2 & \texttt{tsp\_optimization} \\[3pt]
-SKG speed series / sine / zz\_lag & lags & Práctica / sintético & \texttt{timeseries} \\
+SKG speed series / sine & lags & Práctica / sintético & \texttt{timeseries} \\
 \bottomrule
 \end{tabularx}
 \caption{Datasets empleados en el TFM. Los datos de SKG Tecnología son confidenciales y han sido anonimizados; en anomalías y series se usan como práctica (outliers inyectados / un corredor).}
@@ -140,32 +139,11 @@ La estructura principal del repositorio es la siguiente:
 Para reproducir cualquier experimento: clonar el repositorio, crear un entorno virtual con \texttt{pip install -r POCs/requirements.txt} y ejecutar el notebook correspondiente desde \texttt{POCs/notebooks/}.
 
 % =====================================================================
-\section{Figuras complementarias: Notebook~06 — Ventaja del kernel cuántico}
-\label{anx:figuras_nb06}
-% =====================================================================
-
-Las figuras del circuito ZZFeatureMap (Figura~\ref{fig:zzfeaturemap_circuit}) y de las fronteras de decisión (Figura~\ref{fig:kernel_boundaries}) se encuentran en el cuerpo del documento (Capítulos~\ref{cap:metodologia} y~5). Las siguientes figuras complementan esos resultados con la comparativa multi-dataset y la escalabilidad del cómputo del kernel.
-
-\begin{figure}[htbp]
-\centering
-\includegraphics[width=0.95\textwidth]{../POCs/data/output/figures/06_quantum_kernel_3datasets_comparativa.png}
-\caption{Comparativa de exactitud del QSVC frente al mejor clasificador clásico en los tres datasets del Notebook~06 (una única partición por dataset). La ventaja de $+8.9$~pp sobre el dataset cuántico-nativo ($n=150$, 45 puntos de test) contrasta con la desventaja de $-4.0$~pp sobre SKG Incidentes y $-3.8$~pp sobre Telco Churn.}
-\label{fig:quantum_kernel_3ds}
-\end{figure}
-
-\begin{figure}[htbp]
-\centering
-\includegraphics[width=0.90\textwidth]{../POCs/data/output/figures/06_quantum_kernel_escalabilidad.png}
-\caption{Exactitud del QSVM y del mejor clásico (Gradient Boosting) en el dataset cuántico-nativo según el número total de muestras ($n=50$ a $150$, 30\% de test) y diferencia entre ambos (Notebook~06). Cada barra procede de una única partición con 15 a 45 puntos de test (un acierto equivale a 2--7~pp): el QSVM queda por debajo de Gradient Boosting para $n=50$ y $80$ y por encima para $n\ge 100$. La repetición con 10 semillas (Tabla~\ref{tab:escala_clasificacion}) da una ventaja positiva en todos los tamaños, de modo que esta figura debe leerse como una realización ruidosa y no como un umbral de ventaja.}
-\label{fig:kernel_escalabilidad}
-\end{figure}
-
-% =====================================================================
 \section{Figuras complementarias: Notebook~07 — Síntesis visual de resultados}
 \label{anx:figuras_nb07}
 % =====================================================================
 
-El dashboard comparativo (Figura~\ref{fig:dashboard_sintesis}) y el mapa de calor (Figura~\ref{fig:heatmap_ventaja_body}) se encuentran en el cuerpo del documento (Capítulo~5 y Capítulo~7). La siguiente figura complementa ese análisis con la comparativa de complejidad computacional teórica.
+El mapa de errores (Figura~\ref{fig:mapa_errores}) se encuentra en el cuerpo del documento (Capítulo~5). La siguiente figura complementa ese análisis con la comparativa de complejidad computacional teórica.
 
 \begin{figure}[htbp]
 \centering
@@ -179,7 +157,7 @@ El dashboard comparativo (Figura~\ref{fig:dashboard_sintesis}) y el mapa de calo
 \label{anx:figuras_nb0809}
 % =====================================================================
 
-El barrido sintético de cuanticidad (Figura~\ref{fig:barrido_sintetico_alpha}) y la correlación de indicadores (Figura~\ref{fig:correlacion_indicadores_body}) se encuentran en el Capítulo~\ref{cap:investigacion_original}. La siguiente figura complementa el análisis de la Estrategia~2 del Framework QCR.
+El barrido sintético de cuanticidad (Figura~\ref{fig:barrido_sintetico_alpha}) se encuentra en el Capítulo~\ref{cap:investigacion_original}. La siguiente figura complementa el análisis de la Estrategia~2 del Framework QCR.
 
 \begin{figure}[htbp]
 \centering

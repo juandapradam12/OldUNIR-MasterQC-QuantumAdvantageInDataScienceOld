@@ -1,75 +1,28 @@
 % !TEX root = ../main.tex
 \chapter{Resultados y análisis}\label{cap:evaluacion}
 
-Este capítulo presenta el análisis cuantitativo y cualitativo de los resultados obtenidos en cada caso de uso, discute las diferencias de rendimiento entre algoritmos cuánticos y clásicos a la luz del estado del arte, y evalúa las implicaciones prácticas para su aplicación en el contexto operativo de SKG Tecnología. Para cada caso se identifican explícitamente las condiciones bajo las que se observa ventaja cuántica, las limitaciones que explican los resultados negativos, y las perspectivas de mejora a medida que el hardware cuántico avance.
+Este capítulo presenta el análisis cuantitativo y cualitativo de los resultados obtenidos en cada caso de uso, discute las diferencias de rendimiento entre algoritmos cuánticos y clásicos a la luz del estado del arte, y evalúa las implicaciones prácticas para su aplicación en el contexto operativo de SKG Tecnología. Para cada caso se contrasta el resultado con el mejor método clásico, se identifican las limitaciones que explican los resultados negativos y se señalan las perspectivas de mejora a medida que el hardware cuántico avance. Todas las comparaciones se hacen sobre datos reales de SKG o conjuntos de referencia públicos, o sobre instancias estándar de optimización; no se generan datos etiquetados con el propio feature map (Sección~\ref{sec:sin_datos_a_medida}).
 
 % =====================================================================
 \section{Caso de uso 1: Clasificación supervisada}
 % =====================================================================
 
-\subsection{Dataset cuántico-nativo: ventaja por construcción}
-
-Los resultados sobre el dataset con estructura cuántica explícita constituyen la evidencia empírica más clara del estudio, aunque obtenida sobre datos alineados con el kernel por construcción. El QSVM alcanzó una exactitud del \textbf{91.7\%}, frente al 53.3\% del mejor clasificador clásico (SVM polinomial de grado 3; SVM-RBF: 46.7\%, Gradient Boosting: 51.7\%, SVM lineal: 45.0\%), lo que supone una \textbf{ventaja de +38.3 puntos porcentuales (pp)}. Este resultado es el esperado por construcción, y coherente con la idea de \cite{liu2021} y \cite{huang2021} de que la ventaja exige un kernel alineado con las etiquetas: cuando estas se definen mediante una función cuántica, el kernel cuántico las aprende con alta precisión mientras que los clasificadores clásicos probados (RBF, polinomial, lineal y Gradient Boosting) quedan cerca del azar.
-
-El análisis de escalabilidad (Tabla~\ref{tab:escala_clasificacion}) repite el experimento 10 veces por tamaño (\texttt{python -m qml\_v2.scalability}): en cada repetición se regenera el dataset con una semilla distinta, se reserva el 30\% como test y se entrena con los primeros $n$ ejemplos. La ventaja del QSVM sobre el mejor clásico (SVM-RBF o Gradient Boosting) es positiva en las 10 repeticiones de los seis tamaños $n \in [30, 180]$, con una media de \textbf{+33.2 pp} (de $+27.1$~pp para $n=30$ a $+37.6$~pp para $n=180$) y un intervalo de confianza del 95\% que no incluye el cero en ningún tamaño (límite inferior mínimo: $+22.1$~pp). La exactitud del QSVM crece con $n$ ($79.6\%$ a $92.6\%$), mientras que los clásicos permanecen cerca del azar. La partición única del Notebook~01 (media $+40.9$~pp, máximo $+48.9$~pp para $n=50$) cae por encima de este rango y debe leerse como una realización optimista.
-
-\begin{table}[ht]
-\centering
-\small
-\resizebox{\textwidth}{!}{%
-\begin{tabular}{rccccc}
-\hline
-$n$ & QSVM (\%) & SVM-RBF (\%) & Grad.\ Boosting (\%) & $\Delta$ vs.\ mejor clásico (pp) [IC 95\%] & Rep.\ con ventaja \\
-\hline
-30 & $79.6\pm5.9$ & $51.0\pm4.9$ & $49.0\pm5.2$ & $+27.1$ [$+22.1$, $+32.2$] & 10/10 \\
-50 & $87.1\pm5.1$ & $49.9\pm4.2$ & $53.1\pm5.6$ & $+32.9$ [$+27.7$, $+38.1$] & 10/10 \\
-80 & $88.4\pm2.5$ & $48.6\pm5.8$ & $55.0\pm6.2$ & $+32.9$ [$+27.9$, $+37.9$] & 10/10 \\
-100 & $89.6\pm4.2$ & $48.7\pm4.8$ & $55.8\pm7.5$ & $+33.8$ [$+27.3$, $+40.2$] & 10/10 \\
-140 & $90.0\pm3.1$ & $50.9\pm3.9$ & $54.7\pm4.3$ & $+35.1$ [$+32.2$, $+38.0$] & 10/10 \\
-180 & $92.6\pm2.6$ & $49.0\pm3.6$ & $55.0\pm6.2$ & $+37.6$ [$+33.4$, $+41.7$] & 10/10 \\
-\hline
-\end{tabular}}
-\caption{Escalabilidad de la ventaja cuántica en clasificación (dataset cuántico-nativo, ZZFeatureMap de 2 qubits): media $\pm$ desviación sobre 10 repeticiones y 90 ejemplos de test por repetición. El $\Delta$ se calcula en cada repetición frente al mejor de los dos clásicos; el IC es de 95\% (t de Student). Fuente: \texttt{fair\_scalability\_native.csv}.}
-\label{tab:escala_clasificacion}
-\end{table}
-
-\begin{figure}[ht]
-\centering
-\includegraphics[width=0.92\textwidth]{../POCs/data/output/figures/01_escalabilidad_ventaja_clasificacion.png}
-\caption{Escalabilidad de la ventaja cuántica en el dataset cuántico-nativo según el tamaño del conjunto de entrenamiento ($n \in [30, 180]$; 10 repeticiones por tamaño). Izquierda: exactitud media $\pm$ desviación de QSVM, SVM-RBF y Gradient Boosting. Derecha: ventaja del QSVM sobre el mejor clásico con su intervalo de confianza del 95\%; entre paréntesis, repeticiones con ventaja. Los datasets reales (SKG, Telco) no se evaluaron en esta curva. Fuente: \texttt{fair\_scalability\_native.csv}.}
-\label{fig:escala_clasificacion}
-\end{figure}
-
-El mecanismo que explica esta ventaja es la \textbf{alineación} entre el feature map y el generador de etiquetas: en este experimento ambas son el mismo \texttt{ZZFeatureMap} (mapa empíricamente validado en el TFM), de modo que el kernel minimiza el riesgo empírico en el \textbf{espacio de representación} correcto ---el espacio de Hilbert $\mathcal{H}$ inducido por $\phi\colon\mathbb{R}^2\rightarrow\mathcal{H}$---. La lección no es ``ZZ gana'', sino ``el mapa alineado gana''. Los clasificadores clásicos operan en $\mathbb{R}^2$ y no acceden a ese espacio de Hilbert sin coste exponencial.
-
-\paragraph{Limitaciones que condicionan la interpretación.}
-\begin{itemize}
-  \item El dataset es artificial: está diseñado a medida para el kernel cuántico. La ventaja observada es una cota superior del rendimiento cuántico en condiciones ideales.
-  \item La simulación exacta sin ruido es optimista respecto al hardware NISQ real; la decoherencia reduciría la fidelidad del kernel y, por tanto, la ventaja.
-  \item El kernel exige $O(n^2)$ evaluaciones de fidelidad; con 2 qubits la simulación exacta es inmediata, pero en hardware, con la fidelidad estimada por muestreo y más qubits, ese coste limita la escala.
-\end{itemize}
-
-\begin{figure}[ht]
-\centering
-\includegraphics[width=0.95\textwidth]{../POCs/data/output/figures/06_quantum_kernel_boundaries.png}
-\caption{Fronteras de decisión de SVM-RBF (izquierda), Gradient Boosting (centro) y QSVM (derecha) sobre el dataset cuántico-nativo en 2D. El QSVM genera una frontera curvada y más compleja (exactitud 93.3\%); el SVM-RBF, una frontera más suave (53.3\%), y el Gradient Boosting, una frontera por rectángulos (73.3\%). El test tiene solo 15 puntos (cada acierto equivale a 6.7~pp) y la frontera del QSVM se estima sobre una malla de $12\times12$, por lo que la figura es ilustrativa y no una medida de rendimiento; la evidencia cuantitativa es la del Caso~1.}
-\label{fig:kernel_boundaries}
-\end{figure}
+El Caso~1 compara el QSVM con los clasificadores clásicos sobre dos conjuntos que no fueron construidos para el kernel cuántico: los incidentes de movilidad de SKG y el benchmark público Telco Churn. En ninguno de los dos el QSVM supera al mejor clásico, ni con la partición única del Notebook~01 ni con el protocolo justo de \texttt{qml\_v2} (Tabla~\ref{tab:clasif_justa}). La diferencia por dataset se detalla a continuación.
 
 \subsection{Dataset SKG Tecnología: resultado esperado en era NISQ}
 
-Sobre el dataset real de incidentes de movilidad de Bogotá, el QSVM obtuvo exactitud del \textbf{55.0\%}, inferior al \textbf{59.5\%} del mejor clasificador clásico (SVM-RBF): \textbf{desventaja de $-$4.5 pp}. Este resultado es el esperado en la era NISQ con datos reales: los incidentes de movilidad no presentan la estructura cuántica que el kernel explota.
+Sobre el dataset real de incidentes de movilidad de Bogotá, el QSVM obtuvo exactitud del \textbf{55.0\%}, inferior al \textbf{59.5\%} del mejor clasificador clásico (SVM-RBF): \textbf{desventaja de $-$4.5 pp}. Este resultado es coherente con lo esperable en la era NISQ con datos reales: no hay evidencia de que los incidentes de movilidad presenten una estructura que el kernel cuántico de 2 qubits pueda explotar mejor que un kernel clásico.
 
 Cabe destacar que ningún modelo ---cuántico ni clásico--- superó el 80\% de exactitud sobre este dataset, lo que indica que la limitación no es del algoritmo sino de las features disponibles. La reducción a 2 dimensiones mediante PCA (varianza explicada: 84.6\%) implica una pérdida del 15.4\% de la información discriminativa. Un kernel cuántico de 4--6 qubits podría operar sobre más features sin esta pérdida, acortando potencialmente la brecha.
 
 \paragraph{Implicaciones para SKG.}
 La pequeña brecha de rendimiento ($-$4.5 pp) sugiere que el QSVM no es inferior en un orden de magnitud a los clásicos en este dominio, lo que lo convierte en un candidato técnicamente viable para evaluación en hardware cuántico real de generaciones futuras con mayor número de qubits lógicos.
 
-\subsection{Dataset Telco Churn: caso control validado}
+\subsection{Dataset Telco Churn: referencia pública}
 
 Sobre el dataset de referencia, el QSVM obtuvo un \textbf{76.0\%} de exactitud frente al \textbf{79.8\%} del Gradient Boosting: \textbf{desventaja de $-$3.8 pp}. Esta comparación del Notebook~01 es \textbf{asimétrica}, y conviene leerla como una cota optimista para el QSVM: los clasificadores clásicos usan las 21 variables, 5\,634 ejemplos de entrenamiento y los 1\,409 de test, mientras que el QSVM usa 4 componentes PCA (48.5\% de la varianza), 100 ejemplos de entrenamiento y solo 50 de test, de modo que cada acierto equivale a 2 pp. Por eso la cifra de $-3.8$~pp no es una medida homogénea de la brecha.
 
-El protocolo justo de \texttt{qml\_v2} (Tabla~\ref{tab:clasif_justa}) corrige esa asimetría: mismas particiones, mismo número de ejemplos y, en la tabla~A, las mismas variables para todos los modelos, con 10 repeticiones. En Telco el QSVM queda en $53.3\pm9.3\%$ frente al $77.2\pm4.3\%$ de la regresión logística ($-23.8$~pp), y a $26.2$~pp del Gradient Boosting con todas las variables. Esto confirma, con mayor margen, que en ausencia de estructura cuántica los clasificadores clásicos son superiores: el QSVM no gana por defecto, sino solo cuando existe la alineación entre mapa y datos que la teoría sugiere.
+El protocolo justo de \texttt{qml\_v2} (Tabla~\ref{tab:clasif_justa}) corrige esa asimetría: mismas particiones, mismo número de ejemplos y, en la tabla~A, las mismas variables para todos los modelos, con 10 repeticiones. En Telco el QSVM queda en $53.3\pm9.3\%$ frente al $77.2\pm4.3\%$ de la regresión logística ($-23.8$~pp), y a $26.2$~pp del Gradient Boosting con todas las variables. Esto confirma, con mayor margen, que sobre datos tabulares de referencia los clasificadores clásicos son superiores: el QSVM no gana por defecto, y la teoría \citep{huang2021} condiciona cualquier ventaja a una diferencia geométrica entre kernels que este trabajo no ha podido establecer sobre datos reales.
 
 \begin{table}[ht]
 \centering
@@ -80,7 +33,6 @@ El protocolo justo de \texttt{qml\_v2} (Tabla~\ref{tab:clasif_justa}) corrige es
 \toprule
 \textbf{Dataset} & \textbf{QSVM-ZZ} & \textbf{Mejor clásico (A)} & \textbf{$\Delta$ (A)} & \textbf{Mejor clásico (B)} & \textbf{$\Delta$ (B)} \\
 \midrule
-Cuántico-nativo & $88.8\pm5.8$ & GB $52.3\pm6.0$ & $+36.5$ & --- & --- \\
 SKG Incidentes & $49.5\pm7.0$ & GB $52.7\pm5.7$ & $-3.2$ & SVM lineal (7 var.) $56.2\pm5.3$ & $-6.7$ \\
 Telco Churn & $53.3\pm9.3$ & Reg. logística $77.2\pm4.3$ & $-23.8$ & GB (19 var.) $79.5\pm2.9$ & $-26.2$ \\
 \bottomrule
@@ -96,18 +48,11 @@ Telco Churn & $53.3\pm9.3$ & Reg. logística $77.2\pm4.3$ & $-23.8$ & GB (19 var
 \label{fig:clasificacion_comparacion}
 \end{figure}
 
-\begin{figure}[!htbp]
-\centering
-\includegraphics[width=\textwidth]{../POCs/data/output/figures/06_learning_curves_quantum_advantage.png}
-\caption{Curvas de aprendizaje del QSVM y del SVM-RBF en función del tamaño de entrenamiento $n \in [30, 180]$, sobre el dataset cuántico-nativo del Caso~1 (media de 10 repeticiones; la banda es $\pm$ una desviación típica; derecha: ventaja media sobre el SVM-RBF en puntos porcentuales). La brecha es positiva en todo el rango evaluado y no se cierra al aumentar $n$. Fuente: \texttt{fair\_scalability\_native.csv}.}
-\label{fig:learning_curves}
-\end{figure}
-
 % =====================================================================
 \section{Caso de uso 2: Regresión con kernel cuántico}
 % =====================================================================
 
-Los resultados de regresión son mayoritariamente negativos para el kernel cuántico: solo el dataset construido con el propio mapa de características muestra una diferencia a su favor, que es por construcción. La Tabla~\ref{tab:regresion_3ds} resume los resultados del Notebook~03 (una partición) y la Tabla~\ref{tab:regresion_justa}, los del protocolo justo de \texttt{qml\_v2} (10 repeticiones, mismas particiones y variables).
+Los resultados de regresión son negativos para el kernel cuántico en los dos conjuntos evaluados. La Tabla~\ref{tab:regresion_3ds} resume los resultados del Notebook~03 (una partición) y la Tabla~\ref{tab:regresion_justa}, los del protocolo justo de \texttt{qml\_v2} (10 repeticiones, mismas particiones y variables).
 
 \begin{table}[ht]
 \centering
@@ -116,23 +61,18 @@ Los resultados de regresión son mayoritariamente negativos para el kernel cuán
 \hline
 \textbf{Dataset} & \textbf{QK-SVR ($R^2$)} & \textbf{Mejor clásico ($R^2$)} & \textbf{$\Delta R^2$} & \textbf{Resultado} \\
 \hline
-Cuántico-nativo  & $+0.985$  & $+0.020$ (SVR-Poly)  & $\mathbf{+0.965}$ & \textbf{Ventaja (por construcción)} \\
 SKG Corredores   & $+0.098$  & $+0.660$ (GradBoost) & $-0.562$ & Desventaja \\
 Friedman \#1     & $-0.151$  & $+0.777$ (XGBoost)   & $-0.928$ & Desventaja \\
 \hline
 \end{tabular}}
-\caption{Comparativa de regresión cuántica vs clásica en los tres datasets. El mejor clásico incluye XGBoost, Random Forest, SVR-RBF y Ridge.}
+\caption{Comparativa de regresión cuántica vs clásica en SKG y Friedman~\#1. El mejor clásico incluye XGBoost, Random Forest, SVR-RBF y Ridge.}
 \label{tab:regresion_3ds}
 \end{table}
 
-\subsection{Dataset cuántico-nativo: ventaja por construcción}
-
-El dataset cuántico-nativo de regresión se genera con $y(\mathbf{x})=\langle ZZ\rangle$ evaluado sobre el estado preparado por el propio \texttt{ZZFeatureMap} (2 qubits, 200 muestras, $\mathbf{x}\in[-\pi,\pi]^2$). El QK-SVR obtuvo $R^2=0.985$ frente a $R^2=0.020$ del mejor clásico (SVR-Poly), una diferencia de $\Delta R^2=+0.965$: el kernel cuántico reproduce casi exactamente la función objetivo porque esta es lineal en su espacio de características, mientras que ninguno de los modelos clásicos supera el nivel de una predicción constante ($R^2\approx0$). El protocolo justo confirma el resultado con 10 repeticiones ($R^2=0.986\pm0.002$ frente a $-0.016\pm0.139$ de Random Forest; $\Delta R^2=+1.002$). Como en clasificación, esta ventaja es \textbf{por construcción}: el objetivo se genera con el mismo mapa que usa el kernel, y no demuestra ventaja sobre datos reales.
-
-\paragraph{Limitaciones.}
+\paragraph{Limitaciones del Notebook~03.}
 \begin{itemize}
-  \item Los hiperparámetros no se ajustan de forma homogénea entre datasets en el Notebook~03. En el dataset nativo, el QK-SVR usa $C=10$, $\varepsilon=0.1$ y los SVR clásicos sus valores por defecto ($C=1$). En Friedman~\#1, $C$ y $\varepsilon$ del QK-SVR se eligen en una malla de 9 combinaciones ($C\in\{10,50,100\}$, $\varepsilon\in\{0.5,1,2\}$) maximizando el $R^2$ \emph{sobre el propio conjunto de test}, lo que favorece al modelo cuántico (y aun así pierde); los clásicos usan sus valores por defecto. En SKG, el QK-SVR usa $C=10$, $\varepsilon=0.05$ con el objetivo reescalado a $[0,1]$ y el SVR-RBF clásico $C=10$, $\varepsilon=0.5$. En el protocolo justo todos los SVR usan $C=10$, $\varepsilon=0.1$, por lo que una búsqueda más amplia sobre $C$ y $\varepsilon$ podría modificar el $R^2$ de los clásicos.
-  \item El Notebook~03 usa una única partición (140 entrenamientos, 60 de test) y no ofrece intervalo de confianza; la repetición del protocolo justo sí lo hace (desviación $0.002$ del QK-SVR).
+  \item Los hiperparámetros no se ajustan de forma homogénea entre datasets en el Notebook~03. En Friedman~\#1, $C$ y $\varepsilon$ del QK-SVR se eligen en una malla de 9 combinaciones ($C\in\{10,50,100\}$, $\varepsilon\in\{0.5,1,2\}$) maximizando el $R^2$ \emph{sobre el propio conjunto de test}, lo que favorece al modelo cuántico (y aun así pierde); los clásicos usan sus valores por defecto. En SKG, el QK-SVR usa $C=10$, $\varepsilon=0.05$ con el objetivo reescalado a $[0,1]$ y el SVR-RBF clásico $C=10$, $\varepsilon=0.5$. En el protocolo justo todos los SVR usan $C=10$, $\varepsilon=0.1$, por lo que una búsqueda más amplia sobre $C$ y $\varepsilon$ podría modificar el $R^2$ de los clásicos.
+  \item El Notebook~03 usa una única partición (140 entrenamientos, 60 de test) y no ofrece intervalo de confianza; la repetición del protocolo justo sí lo hace.
 \end{itemize}
 
 \subsection{Dataset SKG Tecnología: limitaciones estructurales}
@@ -151,7 +91,7 @@ Sobre el benchmark sintético Friedman~\#1 \citep{friedman1991}, con $y=10\sin(\
 
 \subsection{Protocolo justo de regresión}
 
-Como en el Caso~1, las comparaciones del Notebook~03 no son homogéneas, aunque la asimetría es distinta en cada dataset. En \textbf{Friedman~\#1} (300 muestras: 210 de entrenamiento y 90 de test) el QK-SVR usa las 5 variables (5 qubits) pero solo 150 de las 210 muestras de entrenamiento y las primeras 60 de test; los clásicos se entrenan con las 210, aunque en la tabla se evalúan sobre esas mismas 60 muestras de test. La ventaja clásica no se explica por falta de variables, solo en parte por los 60 ejemplos de entrenamiento adicionales. En \textbf{SKG} la asimetría es mucho mayor: el QK-SVR usa 2 componentes PCA de 4 variables (68.6\% de la varianza), 150 muestras de entrenamiento y 80 de test, mientras que los clásicos usan las 4 variables, 64\,896 muestras de entrenamiento y 16\,225 de test, de modo que sus $R^2$ no están medidos sobre los mismos puntos. El protocolo \texttt{qml\_v2.regression} las homogeneiza (Tabla~\ref{tab:regresion_justa}): mismas particiones (140/60), 10 repeticiones y, en la tabla~A, las mismas variables para todos los modelos. El patrón se mantiene y se acentúa: el QK-SVR gana solo en el dataset nativo ($\Delta R^2=+1.002$) y pierde en SKG ($-0.150$ frente a Ridge con las mismas 2 variables; $-0.227$ frente a SVR-RBF con las 3 originales) y en Friedman~\#1 ($-0.657$ con 2 componentes; $-1.069$ con las 5 variables y 5 qubits). En SKG ningún modelo supera $R^2=0.11$ con estos 140 ejemplos, por lo que la brecha es pequeña en términos absolutos; los valores del Notebook~03 en SKG ($0.098$ frente a $0.660$) reflejan sobre todo la diferencia de datos de entrenamiento, no una limitación del kernel por sí sola.
+Como en el Caso~1, las comparaciones del Notebook~03 no son homogéneas, aunque la asimetría es distinta en cada dataset. En \textbf{Friedman~\#1} (300 muestras: 210 de entrenamiento y 90 de test) el QK-SVR usa las 5 variables (5 qubits) pero solo 150 de las 210 muestras de entrenamiento y las primeras 60 de test; los clásicos se entrenan con las 210, aunque en la tabla se evalúan sobre esas mismas 60 muestras de test. La ventaja clásica no se explica por falta de variables, solo en parte por los 60 ejemplos de entrenamiento adicionales. En \textbf{SKG} la asimetría es mucho mayor: el QK-SVR usa 2 componentes PCA de 4 variables (68.6\% de la varianza), 150 muestras de entrenamiento y 80 de test, mientras que los clásicos usan las 4 variables, 64\,896 muestras de entrenamiento y 16\,225 de test, de modo que sus $R^2$ no están medidos sobre los mismos puntos. El protocolo \texttt{qml\_v2.regression} las homogeneiza (Tabla~\ref{tab:regresion_justa}): mismas particiones (140/60), 10 repeticiones y, en la tabla~A, las mismas variables para todos los modelos. El patrón se mantiene y se acentúa: el QK-SVR pierde en SKG ($-0.150$ frente a Ridge con las mismas 2 variables; $-0.227$ frente a SVR-RBF con las 3 originales) y en Friedman~\#1 ($-0.657$ con 2 componentes; $-1.069$ con las 5 variables y 5 qubits). En SKG ningún modelo supera $R^2=0.11$ con estos 140 ejemplos, por lo que la brecha es pequeña en términos absolutos; los valores del Notebook~03 en SKG ($0.098$ frente a $0.660$) reflejan sobre todo la diferencia de datos de entrenamiento, no una limitación del kernel por sí sola.
 
 \begin{table}[ht]
 \centering
@@ -162,7 +102,6 @@ Como en el Caso~1, las comparaciones del Notebook~03 no son homogéneas, aunque 
 \toprule
 \textbf{Dataset} & \textbf{QK-SVR} & \textbf{Mejor clásico (A)} & \textbf{$\Delta R^2$ (A)} & \textbf{Mejor clásico (B)} & \textbf{$\Delta R^2$ (B)} \\
 \midrule
-Cuántico-nativo & $0.986\pm0.002$ & RF $-0.016\pm0.139$ & $+1.002$ & --- & --- \\
 SKG Corredores & $-0.118\pm0.081$ & Ridge $0.032\pm0.079$ & $-0.150$ & SVR-RBF $0.109\pm0.120$ & $-0.227$ \\
 Friedman \#1 (2 comp.) & $-0.098\pm0.096$ & Ridge $0.559\pm0.122$ & $-0.657$ & SVR-RBF $0.903\pm0.009$ & $-1.001$ \\
 Friedman \#1 (5 qubits) & $-0.181\pm0.111$ & SVR-RBF $0.889\pm0.013$ & $-1.069$ & SVR-RBF $0.890\pm0.012$ & $-1.071$ \\
@@ -171,13 +110,6 @@ Friedman \#1 (5 qubits) & $-0.181\pm0.111$ & SVR-RBF $0.889\pm0.013$ & $-1.069$ 
 \caption{Protocolo justo de regresión (\texttt{qml\_v2.regression}); $R^2$ en test (media $\pm$ desviación sobre 10 repeticiones; 140 ejemplos de entrenamiento y 60 de test; $C=10$, $\varepsilon=0.1$ en todos los SVR). A: todos los modelos con las mismas variables que el QK-SVR. B: clásicos con todas las variables originales (3 en SKG, 5 en Friedman). RF = Random Forest. Fuente: \texttt{qml\_v2\_regression\_all.csv}.}
 \label{tab:regresion_justa}
 \end{table}
-
-\begin{figure}[!htbp]
-\centering
-\includegraphics[width=0.96\textwidth]{../POCs/data/output/figures/03_regresion_3datasets.png}
-\caption{Comparativa de regresión cuántica (QK-SVR) vs.\ clásica en los tres datasets del TFM. Panel izquierdo: $R^2$ absoluto por modelo. Panel derecho: ventaja neta $\Delta R^2$. El kernel cuántico solo supera al mejor clásico en el dataset nativo alineado al mapa, donde $f(\mathbf{x})=\langle ZZ\rangle$ coincide con el generador del \texttt{ZZFeatureMap} ---mapa validado empíricamente aquí---; en datasets reales sin esa alineación ganan Random Forest y Gradient Boosting.}
-\label{fig:regresion_3datasets}
-\end{figure}
 
 % =====================================================================
 \section{Caso de uso 3: Optimización combinatoria (QAOA)}
@@ -255,14 +187,7 @@ A esta escala no hay ventaja de tiempo: NN+2-opt es óptimo en milisegundos. El 
 \section{Caso de uso 6: Análisis del umbral de ventaja del kernel}
 % =====================================================================
 
-El análisis del umbral de ventaja del kernel (Notebook~06) complementa el caso~1 con una partición adicional por tamaño (Figura~\ref{fig:kernel_escalabilidad}, Anexo). En el dataset \textbf{cuántico-nativo} ($n=150$, 45 puntos de test) el QSVC obtuvo 68.9\% frente al 60.0\% del mejor clásico (SVM polinomial): \textbf{+8.9 pp}, equivalente a cuatro aciertos más sobre una única partición. La dirección es la esperada cuando generador y feature map coinciden, pero el tamaño de la muestra impide darle valor estadístico por sí sola; la evidencia sólida de este régimen es la del Caso~1. Sobre \textbf{SKG} (Incidentes Bogotá) el clásico fue superior: QSVC 56.7\% frente a 60.7\% ($-4.0$~pp). Sobre \textbf{Telco} el veredicto operativo es el mismo: QSVM 76.0\% frente a Gradient Boosting 79.8\% (\textbf{$-3.8$~pp}); bajo $\mathcal{Q}_{\mathrm{rob}}$ Telco permanece \texttt{classical}. SKG y Telco \textbf{no} son cuántico-nativos. Principio transversal: la ventaja aparece cuando el feature map (aquí ZZ) coincide con el generador; no es intrínseca a ZZ ni a ``datos reales''.
-
-\begin{figure}[!htbp]
-\centering
-\includegraphics[width=0.92\textwidth]{../POCs/data/output/figures/07_kernel_advantage_detalle.png}
-\caption{Detalle del Notebook~06 sobre el dataset cuántico-nativo ($n=150$, 45 puntos de test, una única partición). Izquierda: exactitud de cada modelo (QSVM 68.9\%, mejor clásico: SVM polinomial, 60.0\%). Derecha: exactitud, F1 y velocidad relativa ($1-t/t_{\max}$) del QSVM frente al mejor clásico; el QSVM es más lento. Un acierto equivale a 2.2~pp, por lo que la figura es ilustrativa; la evidencia cuantitativa es la del Caso~1.}
-\label{fig:kernel_advantage_detalle}
-\end{figure}
+El análisis del umbral de ventaja del kernel (Notebook~06) complementa el Caso~1 con una partición adicional por tamaño de muestra y busca el tamaño a partir del cual el kernel cuántico superaría a los clásicos. En los datasets reales no se encuentra ese umbral en el rango evaluado. Sobre \textbf{SKG} (Incidentes Bogotá) el clásico fue superior: QSVC 56.7\% frente a 60.7\% ($-4.0$~pp). Sobre \textbf{Telco} el veredicto es el mismo: QSVM 76.0\% frente a Gradient Boosting 79.8\% (\textbf{$-3.8$~pp}); bajo $\mathcal{Q}_{\mathrm{rob}}$ Telco permanece \texttt{classical}. Ambas se miden en una única partición (150 puntos de test en SKG), de modo que el resultado es una cota de lo medido y no una estimación estadística; la evidencia con repeticiones es la del protocolo justo del Caso~1. El coste computacional acompaña al resultado: el QSVC tarda 229~s en SKG con 450 ejemplos de entrenamiento, por el coste $O(n^2)$ de la matriz de Gram, mientras que los clásicos entrenan en milisegundos.
 
 % =====================================================================
 \section{Caso de uso 7: Conjunto dominante mínimo (paradigma híbrido)}
@@ -336,7 +261,7 @@ $n$ & Aristas & ILP & Greedy & Óptimo QUBO & Mejor muestra QAOA ($|S|$, ¿domin
 \label{sec:eval_anomaly}
 % =====================================================================
 
-Los resultados del módulo \texttt{qml\_v2.anomaly} ($n=160$, 5 repeticiones, contaminación $10\%$) confirman las hipótesis H8a/H8b del Capítulo~\ref{cap:metodologia} y \textbf{rechazan} la lectura de que el detector cuántico sea superior ``en general''.
+Los resultados del módulo \texttt{qml\_v2.anomaly} ($n=160$, 5 repeticiones, contaminación $10\%$) confirman la hipótesis H8 del Capítulo~\ref{cap:metodologia} y \textbf{rechazan} la lectura de que el detector cuántico sea superior ``en general''.
 
 \begin{table}[ht]
 \centering
@@ -345,49 +270,33 @@ Los resultados del módulo \texttt{qml\_v2.anomaly} ($n=160$, 5 repeticiones, co
 \hline
 \textbf{Dataset} & \textbf{Mejor Table~A} & \textbf{AUC Table~A} & \textbf{Lectura} \\
 \hline
-\texttt{zz\_phase} & \textbf{OCSVM-ZZ} & \textbf{0.864} vs IF 0.553 & Misma nube; mapa alineado \\
 \texttt{moons} & IsolationForest & 0.890 vs ZZ 0.599 & Distancia/densidad \\
 \texttt{blobs} & LOF / IF & $\approx 1.0$ vs ZZ 0.490 & Outliers lejanos \\
 \texttt{telco\_injected} & IsolationForest & 0.884 (B$\approx 1.0$) & Spikes sintéticos \\
 \texttt{skg\_injected} & LOF & 0.993 (B$\approx 1.0$) & Práctica, no fraude \\
 \hline
 \end{tabular}
-\caption{Resumen Caso~8. Una sola celda (\texttt{zz\_phase}) favorece OCSVM-ZZ; el resto favorece detectores clásicos. Telco/SKG usan outliers inyectados y descartan etiquetas de negocio.}
+\caption{Resumen Caso~8. En ninguna celda el OCSVM-ZZ supera al mejor detector clásico. Telco/SKG usan outliers inyectados y descartan etiquetas de negocio.}
 \label{tab:anomaly_results}
 \end{table}
 
-\begin{figure}[!htbp]
-\centering
-\includegraphics[width=0.98\textwidth]{Imagenes/zz_phase_scores_if_vs_zz.png}
-\caption{Mismos puntos de test en \texttt{zz\_phase}: color = score de anomalía. IsolationForest obtiene AUC~$\approx 0.53$ (casi azar) y marca bordes de la nube; OCSVM-ZZ obtiene AUC~$\approx 0.74$ en este split ilustrativo (media multi-repeat $0.864$).}
-\label{fig:anomaly_scores}
-\end{figure}
-
 \paragraph{Interpretación.}
-La ventaja en anomalías aparece cuando lo ``raro'' \emph{no} es estar lejos, sino pertenecer a otra estructura accesible por el \textbf{feature map alineado} con el generador (aquí, fase del mapa ZZ validado empíricamente). Un mapa distinto (Pauli, IQP, \ldots) definiría otra familia de novedades beneficiadas. En tablas de práctica con spikes lejanos, IsolationForest es suficiente y más barato. El Caso~8 refuerza el mensaje transversal: el módulo cuántico es una \textbf{herramienta selectiva}, activada tras diagnóstico de alineación ($\mathcal{Q}_{\mathrm{rob}}$ / tipo de anomalía), no un sustituto por defecto de IsolationForest ni un atajo hacia ``detección de fraude cuántica''.
+Cuando lo ``raro'' es estar lejos del soporte de los inliers ---picos inyectados en Telco y SKG, \texttt{blobs}, \texttt{moons}---, IsolationForest, LOF u OCSVM-RBF superan al OCSVM-ZZ por entre 29 y 51~pp de AUC y son más baratos. El Caso~8 refuerza el mensaje transversal: el módulo cuántico es una \textbf{herramienta selectiva} que, en los datos medidos, no sustituye a IsolationForest ni ofrece un atajo hacia la ``detección de fraude cuántica''. Qué tipo de anomalía podría beneficiarse de un kernel cuántico ---novedades definidas por una estructura que un feature map concreto separe mejor que un kernel clásico--- es una pregunta abierta que este TFM no responde con datos reales.
 
 % =====================================================================
 \section{Caso de uso 9: Forecasting one-step por lags}
 \label{sec:eval_timeseries}
 % =====================================================================
 
-Los resultados de \texttt{qml\_v2.timeseries} (5 repeticiones, división temporal 70/30; Figura~\ref{fig:ts_mae}) confirman el patrón de alineación en el dominio secuencial (Tabla~\ref{tab:timeseries_dev}).
-
-\begin{figure}[ht]
-\centering
-\includegraphics[width=\textwidth]{../POCs/data/output/figures/12_series_mae.png}
-\caption{MAE en test (media $\pm$ desviación sobre 5 repeticiones) del Caso~9. Azul: QK-SVR-ZZ; gris oscuro: clásicos con los mismos lags (Tabla~A); gris claro: clásicos con variables adicionales (Tabla~B, marcados con *). Líneas horizontales: media del entrenamiento (discontinua) y persistencia (punteada). Fuente: \texttt{fair\_timeseries\_*.csv}, Notebook~12.}
-\label{fig:ts_mae}
-\end{figure}
+Los resultados de \texttt{qml\_v2.timeseries} (5 repeticiones, división temporal 70/30; Tabla~A: mismos lags para todos los modelos) muestran que el QK-SVR-ZZ no mejora a los clásicos en ninguna de las dos series:
 
 \begin{itemize}
-  \item \texttt{zz\_lag}: QK-SVR-ZZ MAE $0.056\pm0.007$ ($R^2=0.98$) frente a Ridge $0.414$, SVR-RBF $0.435$ y Gradient Boosting $0.465$; la media del entrenamiento da $0.404$, de modo que los clásicos no mejoran el predictor trivial. Ventaja por construcción: el target es $\langle ZZ\rangle$ de la ventana.
   \item \texttt{sine}: SVR-RBF $0.260$ y Ridge $0.266$ frente a QK-SVR $0.662$, que coincide con la media del entrenamiento ($0.658$). Con las variables de la Tabla~B los clásicos mejoran ligeramente ($0.244$).
   \item \texttt{skg\_speed}: Ridge $2.80\pm0.63$ frente a QK-SVR $13.59\pm5.68$ (media del entrenamiento: $13.61$). Ridge queda al nivel de la persistencia ($2.75$); con las variables de la Tabla~B el mejor clásico es Gradient Boosting ($3.24$), peor que Ridge con solo 2 lags.
 \end{itemize}
 
 \paragraph{Interpretación.}
-La ventaja no es ``usar un kernel cuántico en series temporales'', sino alinear el generador del target con el feature map. Fuera del régimen nativo, el kernel ZZ con 2 qubits y $\varepsilon=0.1$ obtiene el mismo MAE que un predictor de la media del entrenamiento, es decir, no extrae señal de los lags. En la serie SKG, con solo 138 ventanas por corredor, ni siquiera los clásicos superan de forma clara a la persistencia, por lo que el valor operativo reside en el modelo lineal sobre lags y no en kernels más expresivos. ZZ es el mapa del corpus; un mapa distinto beneficiaría otra familia de series.
+El kernel ZZ con 2 qubits y $\varepsilon=0.1$ obtiene el mismo MAE que un predictor de la media del entrenamiento, es decir, no extrae señal de los lags. En la serie SKG, con solo 138 ventanas por corredor, ni siquiera los clásicos superan de forma clara a la persistencia, por lo que el valor operativo reside en el modelo lineal sobre lags y no en kernels más expresivos. ZZ es el único mapa evaluado; otro mapa o más qubits podrían cambiar el resultado, y esa comparación queda como trabajo futuro.
 
 % =====================================================================
 \section{Síntesis comparativa y discusión general}
@@ -399,22 +308,22 @@ La Tabla~\ref{tab:sintesis} sintetiza los resultados principales del estudio com
 \centering
 \small
 \setlength{\tabcolsep}{4pt}
-\begin{tabular}{>{\centering\arraybackslash}p{0.7cm}>{\raggedright\arraybackslash}p{2.4cm}>{\centering\arraybackslash}p{2.5cm}>{\centering\arraybackslash}p{2.5cm}>{\centering\arraybackslash}p{2.5cm}}
+\begin{tabular}{>{\centering\arraybackslash}p{0.7cm}>{\raggedright\arraybackslash}p{2.6cm}>{\centering\arraybackslash}p{4.2cm}>{\centering\arraybackslash}p{4.2cm}}
 \hline
-\textbf{CU} & \textbf{Algoritmo cuántico} & \textbf{Cuántico-nativo} & \textbf{SKG} & \textbf{Referencia} \\
+\textbf{CU} & \textbf{Algoritmo cuántico} & \textbf{SKG} & \textbf{Referencia} \\
 \hline
-1 & QSVM & \textbf{+38.3 pp} & $-$4.5 pp & $-$3.8 pp \\
-2 & QK-SVR & \textbf{$+0.965\,\Delta R^2$} & $-0.562\,\Delta R^2$ & $-0.928\,\Delta R^2$ \\
-3 & QAOA ($p=1$) & \multicolumn{3}{>{\centering\arraybackslash}p{8.0cm}}{Iguala al óptimo exacto en 5/5 instancias; sin ventaja (coste idéntico)} \\
-4 & VQE/QAOA & \multicolumn{3}{>{\centering\arraybackslash}p{8.0cm}}{Óptimo en 6/10 semillas (QAOA) y 3/10 (VQE) con penalización 10; Greedy y fuerza bruta, siempre ($-40$ pp)} \\
-5 & QAOA TSP & \multicolumn{2}{c}{empate óptimo vs NN+2-opt ($n=4$)} & Euclidean gap~$0$ \\
-6 & QSVM (umbral) & $+8.9$ pp ($n=150$, una partición) & $-4.0$ pp (clásico) & $-3.8$ pp vs GB (clásico) \\
-7 & QAOA MDS ($p=3$) & \multicolumn{3}{>{\centering\arraybackslash}p{8.0cm}}{Red de 6 nodos: empate con ILP ($0$ pp); ER $n=6$--$15$: $-60$ pp de instancias con MDS óptimo (2/5 frente a 5/5)} \\
-8 & OCSVM-ZZ & \textbf{+31.2 pp AUC} (\texttt{zz\_phase}) & $-29.9$ pp (inyectado) & $-29.1$ pp (moons), $-50.8$ pp (blobs) \\
-9 & QK-SVR lags & \textbf{+86.6\% MAE} (\texttt{zz\_lag}) & $-385.6\%$ (\texttt{skg\_speed}) & $-154.9\%$ (\texttt{sine}) \\
+1 & QSVM & $-$4.5 pp & $-$3.8 pp (Telco) \\
+2 & QK-SVR & $-0.562\,\Delta R^2$ & $-0.928\,\Delta R^2$ (Friedman \#1) \\
+3 & QAOA ($p=1$) & \multicolumn{2}{>{\centering\arraybackslash}p{8.68cm}}{Iguala al óptimo exacto en 5/5 instancias; sin ventaja (coste idéntico)} \\
+4 & VQE/QAOA & \multicolumn{2}{>{\centering\arraybackslash}p{8.68cm}}{Óptimo en 6/10 semillas (QAOA) y 3/10 (VQE) con penalización 10; Greedy y fuerza bruta, siempre ($-40$ pp)} \\
+5 & QAOA TSP & \multicolumn{2}{>{\centering\arraybackslash}p{8.68cm}}{Empate óptimo vs NN+2-opt ($n=4$); Euclidean: brecha media~$0$} \\
+6 & QSVM (umbral) & $-4.0$ pp (clásico) & $-3.8$ pp vs GB (Telco) \\
+7 & QAOA MDS ($p=3$) & \multicolumn{2}{>{\centering\arraybackslash}p{8.68cm}}{Red de 6 nodos: empate con ILP ($0$ pp); ER $n=6$--$15$: $-60$ pp de instancias con MDS óptimo (2/5 frente a 5/5)} \\
+8 & OCSVM-ZZ & $-29.9$ pp AUC (inyectado) & $-29.1$ pp (moons), $-50.8$ pp (blobs) \\
+9 & QK-SVR lags & $-385.6\%$ MAE (\texttt{skg\_speed}) & $-154.9\%$ MAE (\texttt{sine}) \\
 \hline
 \end{tabular}
-\caption{Síntesis cuántico vs clásico, generada por \texttt{scripts/sintesis\_resultados.py} a partir de las salidas ejecutadas. Positivo = favorece al método cuántico; unidades: pp de exactitud (CU1, CU6), $\Delta R^2$ (CU2), pp de AUC (CU8) y mejora relativa del MAE (CU9). Negrita = ventaja sobre el mejor clásico. En kernels, la ventaja aparece \textbf{solo} en el régimen cuántico-nativo (datos generados por el propio mapa); en SKG y Telco gana GB/RF (Telco $-3.8$~pp frente a Gradient Boosting). Los Casos~1, 2 y~6 usan una sola partición con 45--60 puntos de test (granularidad de $\pm2.2$~pp).}
+\caption{Síntesis cuántico vs clásico, generada por \texttt{scripts/sintesis\_resultados.py} a partir de las salidas ejecutadas. Positivo = favorece al método cuántico; unidades: pp de exactitud (CU1, CU6), $\Delta R^2$ (CU2), pp de AUC (CU8) y mejora relativa del MAE (CU9). Ninguna celda favorece al método cuántico: en los casos de kernels gana el mejor clásico en SKG, Telco y Friedman \#1 (Telco $-3.8$~pp frente a Gradient Boosting), y en optimización el QAOA, a lo sumo, empata con los solvers exactos. Los Casos~1 y~6 usan una sola partición con 45--120 puntos de test (granularidad de $\pm2.2$~pp o mayor).}
 \label{tab:sintesis}
 \end{table}
 
@@ -439,7 +348,7 @@ La Tabla~\ref{tab:sintesis} sintetiza los resultados principales del estudio com
   % Fila 1 – CU1
   \node[font=\footnotesize] at (0,    -1.0) {1};
   \node[font=\footnotesize, align=left] at (2.4, -1.0) {QSVM};
-  \node[verde]    at (5.6,  -1.0) {\scriptsize Ventaja};
+  \node[rojo]     at (5.6,  -1.0) {\scriptsize Desventaja};
   \node[amarillo] at (8.3,  -1.0) {\scriptsize Moderada};
   \node[amarillo] at (11.0, -1.0) {\scriptsize Moderado};
 
@@ -474,7 +383,7 @@ La Tabla~\ref{tab:sintesis} sintetiza los resultados principales del estudio com
   % Fila 6 – CU6
   \node[font=\footnotesize] at (0,    -5.5) {6};
   \node[font=\footnotesize, align=left] at (2.4, -5.5) {QSVM (umbral)};
-  \node[amarillo] at (5.6,  -5.5) {\scriptsize Condicional};
+  \node[rojo]     at (5.6,  -5.5) {\scriptsize Desventaja};
   \node[amarillo] at (8.3,  -5.5) {\scriptsize Moderada};
   \node[amarillo] at (11.0, -5.5) {\scriptsize Moderado};
 
@@ -488,14 +397,14 @@ La Tabla~\ref{tab:sintesis} sintetiza los resultados principales del estudio com
   % Fila 8 – CU8
   \node[font=\footnotesize] at (0,    -7.3) {8};
   \node[font=\footnotesize, align=left] at (2.4, -7.3) {OCSVM-ZZ};
-  \node[amarillo] at (5.6,  -7.3) {\scriptsize Condicional};
+  \node[rojo]     at (5.6,  -7.3) {\scriptsize Desventaja};
   \node[amarillo] at (8.3,  -7.3) {\scriptsize Moderada};
   \node[amarillo] at (11.0, -7.3) {\scriptsize Selectivo};
 
   % Fila 9 – CU9
   \node[font=\footnotesize] at (0,    -8.2) {9};
   \node[font=\footnotesize, align=left] at (2.4, -8.2) {QK-SVR lags};
-  \node[amarillo] at (5.6,  -8.2) {\scriptsize Condicional};
+  \node[rojo]     at (5.6,  -8.2) {\scriptsize Desventaja};
   \node[amarillo] at (8.3,  -8.2) {\scriptsize Moderada};
   \node[amarillo] at (11.0, -8.2) {\scriptsize Selectivo};
 
@@ -508,23 +417,16 @@ La Tabla~\ref{tab:sintesis} sintetiza los resultados principales del estudio com
   \node[right=4pt, font=\scriptsize] at (lr.east) {Desfavorable};
 
 \end{tikzpicture}
-\caption{Semáforo de resultados por caso de uso. Azul = favorable; gris claro = moderado, empate o condicional; gris = desfavorable. La columna ``Resultado'' se deriva de la Tabla~\ref{tab:sintesis}; ``Escalabilidad NISQ'' y ``Valor para SKG'' son valoraciones cualitativas del autor, no mediciones. Los Casos~8 y~9 son condicionales: hay ventaja cuando novedad o target están alineados con el feature map (aquí ZZ). Caso~7: empate en la red de 6 nodos y $-60$~pp de instancias con MDS óptimo en los grafos ER.}
+\caption{Semáforo de resultados por caso de uso. Azul = favorable; gris claro = moderado, empate o condicional; gris = desfavorable. La columna ``Resultado'' se deriva de la Tabla~\ref{tab:sintesis}; ``Escalabilidad NISQ'' y ``Valor para SKG'' son valoraciones cualitativas del autor, no mediciones. Ningún caso es favorable al método cuántico. Caso~7: empate en la red de 6 nodos y $-60$~pp de instancias con MDS óptimo en los grafos ER.}
 \label{fig:semaforo_resultados}
 \end{figure}
 
 \clearpage
 \begin{figure}[!htbp]
 \centering
-\includegraphics[width=0.97\textwidth]{../POCs/data/output/figures/07_dashboard_ventaja_cuantica.png}
-\caption{Dashboard de los nueve casos de uso, generado a partir de \texttt{07\_sintesis\_resultados.csv}. Cada panel usa la unidad de su caso (pp de exactitud, $\Delta R^2\times100$, \% de coste, pp de AUC, \% de MAE o pp de instancias con MDS óptimo); positivo favorece al método cuántico. Azul = ventaja cuántica; gris = clásico superior; gris claro = empate. Coherente con la Tabla~\ref{tab:sintesis}.}
-\label{fig:dashboard_sintesis}
-\end{figure}
-
-\begin{figure}[!htbp]
-\centering
-\includegraphics[width=0.90\textwidth]{../POCs/data/output/figures/07_heatmap_ventaja_por_dominio.png}
-\caption{Mapa de calor de la ventaja cuántica sobre el mejor clásico por caso de uso y tipo de dataset, con la unidad indicada en cada fila; el color se satura en $\pm80$ y la anotación conserva el valor real. Las celdas azules aparecen solo con alineación feature map--generador (Casos~1, 2, 6, 8 y~9 en datos nativos). Las celdas grises reflejan dominio clásico. Los Casos~3, 4 y~5 no distinguen tipo de dataset y se sitúan en la columna de referencia; el Caso~7 se mide en pp de instancias con MDS óptimo frente a ILP/Greedy y se sitúa en la columna de referencia.}
-\label{fig:heatmap_ventaja_body}
+\includegraphics[width=0.97\textwidth]{../POCs/data/output/figures/13_mapa_errores_q_vs_c.png}
+\caption{Mapa de errores cuántico vs clásico por caso de uso (protocolo justo, Tabla~A: mismas variables de entrada para todos los modelos). Filas: conjuntos de datos; columnas: modelos; color: error de 0 (claro) a 1 (oscuro), con la cifra real impresa ($1-$exactitud, $1-R^2$, $1-$AUC o $1-P(\text{óptimo})$); borde negro: mejor modelo de la fila; etiquetas azules: modelos cuánticos; gris: no aplica. En ninguna fila el modelo cuántico tiene menor error que el mejor clásico; solo empata con el método exacto en asignación y TSP ($n$ pequeño). Fuente: CSV del protocolo \texttt{qml\_v2} (\texttt{scripts/figura\_mapa\_errores.py}).}
+\label{fig:mapa_errores}
 \end{figure}
 
 \begin{figure}[!htbp]
@@ -546,11 +448,11 @@ La Tabla~\ref{tab:sintesis} sintetiza los resultados principales del estudio com
 Los resultados evidencian tres patrones transversales que son coherentes con el estado actual de la teoría y la tecnología cuántica:
 
 \begin{enumerate}
-  \item \textbf{La ventaja cuántica requiere alineación dato--feature map}: La ventaja observada en datos nativos es coherente con \cite{huang2021}: el feature map (ZZ u otro) debe estar alineado con el generador; ZZ es el mapa validado empíricamente en este TFM, no un monopolio. En datos reales sin esa alineación, Gradient Boosting y Random Forest mantienen su superioridad.
+  \item \textbf{Sin ventaja sobre datos reales y de referencia}: En ninguno de los conjuntos reales (SKG) ni de referencia (Telco, Friedman~\#1, \texttt{moons}, \texttt{sine}) el método cuántico supera al mejor clásico. Es coherente con \cite{huang2021}: la ventaja de un kernel cuántico exige que su geometría sea difícil de reproducir clásicamente y esté alineada con los datos, algo que este TFM no ha podido establecer sobre datos reales con 2 qubits. Este resultado no refuta la posibilidad de ventaja con más qubits u otros mapas; delimita lo que se observa hoy.
 
   \item \textbf{El cuello de botella es la escala}: En todos los casos, la principal limitación práctica del enfoque cuántico no es la calidad del algoritmo sino el coste cuadrático del kernel ($O(n^2)$) y el número de qubits disponibles \citep{haug2023, cerezo2021}. Esta limitación es una función del hardware actual, no del algoritmo en sí.
 
-  \item \textbf{Los resultados negativos son informativos}: Los casos donde el QSVM o el QK-SVR son inferiores a los clásicos en datos reales no son fracasos experimentales, sino resultados metodológicamente valiosos que delimitan el dominio de aplicabilidad. El Caso~8 añade el mismo matiz en one-class: OCSVM-ZZ no sustituye IsolationForest salvo cuando la novedad está alineada con el mapa (aquí \texttt{zz\_phase}), no cuando es geométrica clásica.
+  \item \textbf{Los resultados negativos son informativos}: Los casos donde el QSVM o el QK-SVR son inferiores a los clásicos en datos reales no son fracasos experimentales, sino resultados metodológicamente valiosos que delimitan el dominio de aplicabilidad. El Caso~8 añade el mismo matiz en one-class: OCSVM-ZZ no sustituye a IsolationForest ni a LOF en ninguno de los conjuntos medidos.
 \end{enumerate}
 
 \subsection{Implicaciones para la adopción empresarial}
@@ -561,5 +463,5 @@ El hilo conductor de los nueve casos de uso es precisamente la demostración de 
 
 \subsection{Resultados adicionales y visualización}
 
-El análisis de escalabilidad del caso~1 se sintetiza en la Figura~\ref{fig:escala_clasificacion}: ventaja positiva en $n \in [30, 180]$ (10 repeticiones por tamaño) \textbf{solo} en el régimen cuántico-nativo. La geometría de kernel se reporta vía los indicadores tabulares del Capítulo~\ref{cap:investigacion_original} ($\Delta A$, $d_F$, $\Delta H$); no se usan heatmaps regenerados a posteriori (las matrices $K$ no se exportaron a artefactos). $\mathcal{Q}>0$ vs.\ un baseline débil no basta como veredicto operativo.
+La geometría de kernel se reporta vía los indicadores tabulares del Capítulo~\ref{cap:investigacion_original} ($\Delta A$, $d_F$, $\Delta H$); no se usan heatmaps regenerados a posteriori (las matrices $K$ no se exportaron a artefactos). $\mathcal{Q}>0$ vs.\ un baseline débil no basta como veredicto operativo.
 

@@ -1,23 +1,23 @@
 % !TEX root = ../main.tex
 \chapter{Conclusiones}
 
-Este trabajo ha abordado una pregunta central en el estado actual de la computación cuántica aplicada: \textit{\textquestiondown{}En qué condiciones los algoritmos cuánticos disponibles en la era NISQ ofrecen una ventaja real y medible frente a los algoritmos clásicos en problemas de ciencia de datos?} Los experimentos realizados sobre nueve casos de uso ---incluyendo anomalías one-class, TSP justo y forecasting por lags---, evaluados sobre tres tipos de datasets cada uno cuando aplica, y la investigación original sobre indicadores de cuanticidad y mapeos cuántico-compatibles, permiten extraer conclusiones concretas y matizadas.
+Este trabajo ha abordado una pregunta central en el estado actual de la computación cuántica aplicada: \textit{\textquestiondown{}En qué condiciones los algoritmos cuánticos disponibles en la era NISQ ofrecen una ventaja real y medible frente a los algoritmos clásicos en problemas de ciencia de datos?} Los experimentos realizados sobre nueve casos de uso ---incluyendo anomalías one-class, TSP justo y forecasting por lags---, evaluados sobre datos reales de SKG Tecnología y conjuntos de referencia públicos, y la investigación original sobre indicadores de cuanticidad y mapeos cuántico-compatibles, permiten extraer conclusiones concretas y matizadas.
 
 \section{Conclusiones principales}
 
 \begin{enumerate}
 
-\item \textbf{La ventaja cuántica en clasificación se observa en datos sintéticos alineados y está condicionada a la alineación dato--feature map.}
-El QSVM con kernel cuántico (\texttt{ZZFeatureMap}, 2 qubits ---mapa validado empíricamente en este TFM, no el único posible) superó al mejor clasificador clásico en +38.3 puntos porcentuales sobre un dataset \emph{generado} con el mismo mapa, de modo que kernel y etiquetas están alineados por construcción, lo que ilustra el mecanismo descrito por \citet{huang2021} y \citet{liu2021}. Esta ventaja se mantiene en todos los tamaños evaluados, $n=30$--$180$ (de +27.1 a +37.6~pp con 10 repeticiones por tamaño, IC 95\% sin incluir el cero), y bajo el protocolo justo (+36.5~pp). En datos reales sin esa alineación, los clasificadores clásicos igualan o superan al QSVM: $-3.2$~pp en SKG y $-23.8$~pp en Telco con el protocolo justo (en el Notebook~01, asimétrico, $-4.5$ y $-3.8$~pp). La lección no es ``ZZ gana'', sino ``el feature map alineado gana; ZZ es el que medimos aquí''.
+\item \textbf{En clasificación, el kernel cuántico no supera al mejor clasificador clásico.}
+El QSVM con kernel cuántico (\texttt{ZZFeatureMap}, 2 qubits) queda por debajo del mejor clasificador clásico en los dos conjuntos evaluados: $-4.5$~pp en SKG y $-3.8$~pp en Telco en el Notebook~01, y $-3.2$~pp y $-23.8$~pp con el protocolo justo, con las mismas variables y particiones. La literatura \citep{huang2021, liu2021} indica que una ventaja de kernel exige que el kernel esté alineado con la estructura de los datos; en este TFM no se ha medido esa alineación en ningún conjunto real o de referencia. No se han generado datos etiquetados con el propio kernel cuántico: la ventaja sería circular y no informaría sobre problemas de ciencia de datos (Sección~\ref{sec:sin_datos_a_medida}).
 
-\item \textbf{La ventaja cuántica en regresión es limitada y depende de la alineación entre el mapa y el generador.}
-El QK-SVR solo superó al mejor clásico en el dataset cuántico-nativo ($\Delta R^2=+0.965$, con $R^2$ de $0.985$ frente a $0.020$; $+1.002$ en el protocolo justo con 10 repeticiones), es decir, cuando el generador coincide con el mapa de características, lo que es una ventaja por construcción. Con las mismas variables y particiones, el kernel cuántico también queda por debajo en SKG ($-0.150$) y en Friedman~\#1 ($-0.657$). En Friedman~\#1 ($R^2=-0.151$ frente a $0.777$ de XGBoost) y en datos reales de velocidad en corredores viales de Bogotá (Gradient Boosting, $R^2=0.660$, frente a $0.098$ del QK-SVR) ganan los métodos clásicos.
+\item \textbf{En regresión, el QK-SVR queda muy por debajo de los métodos clásicos.}
+Con las mismas variables y particiones, el kernel cuántico queda por debajo en SKG ($-0.150$ en $\Delta R^2$ en el protocolo justo) y en Friedman~\#1 ($-0.657$). En Friedman~\#1 ($R^2=-0.151$ frente a $0.777$ de XGBoost) y en datos reales de velocidad en corredores viales de Bogotá (Gradient Boosting, $R^2=0.660$, frente a $0.098$ del QK-SVR) ganan los métodos clásicos.
 
 \item \textbf{En optimización combinatoria de escala pequeña el QAOA es un solver válido, pero no aporta ventaja.}
 En la asignación de agentes a focos (Caso~3, cinco instancias de nueve qubits) el QAOA con $p=1$ recupera el óptimo en las cinco, igual que el algoritmo húngaro y la programación entera, y mejora a Greedy en la única instancia en la que este falla. El problema es polinómico y los exactos lo resuelven en microsegundos, de modo que el resultado valida el pipeline QUBO--QAOA y no una ventaja \citep{farhi2014}. En el portafolio (Caso~4, 3 de 6 activos) con 10 semillas y penalización 10 el QAOA alcanzó el óptimo en 6 y el VQE en 3, mientras que Greedy y la fuerza bruta lo encuentran siempre; con penalización $0.01$ ninguna ejecución devolvió una cartera factible \citep{peruzzo2014}. La cifra de $30.3\%$ de ahorro frente a Greedy que figuraba en versiones previas de este documento no procedía de ninguna ejecución y se ha retirado.
 
 \item \textbf{$\mathcal{Q}(\mathcal{D})$ se adopta como vector $(\Delta A,\hat{d}_F,\Delta H,\hat{g})$, no como escalar.} \label{conc:c1}
-Colapsar el perfil a $w^\top\mathcal{Q}$ con pesos fijos falla como ranking operativo (SKG maximiza el escalar y pierde en $\Delta_{\mathrm{op}}$). El vector sí permite leer cuellos (p.~ej.\ Telco en $\Delta H$). Del barrido NB08 se sostiene $\rho_S(\alpha,\Delta A)=0.833$ ($p=0.005$). Con el protocolo unificado en cuatro casos de uso (clasificación, regresión, anomalías y paisajes QUBO de optimización) y un control nulo ($y$ permutada), solo los nativos superan el ruido de $\Delta A$; $\Delta H$, $d_F$ y $g$ (definición de \citet{huang2021}) quedan casi planos y, salvo $\Delta A$, no usan las etiquetas. Regla de adopción: alineación mapa--generador y $\Delta_{\mathrm{op}}>0$; el perfil geométrico informa, no decide solo.
+Colapsar el perfil a $w^\top\mathcal{Q}$ con pesos fijos falla como ranking operativo (SKG maximiza el escalar y pierde en $\Delta_{\mathrm{op}}$). El vector sí permite leer cuellos (p.~ej.\ Telco en $\Delta H$). Del barrido NB08 se sostiene $\rho_S(\alpha,\Delta A)=0.833$ ($p=0.005$), que es una calibración del instrumento y no una validación sobre datos reales. Con el protocolo unificado en cuatro casos de uso (clasificación, regresión, anomalías y paisajes QUBO de optimización) y un control nulo ($y$ permutada, $\approx+0.03\pm0.02$), $\Delta A\le0$ en todos los conjuntos reales y de referencia salvo en el paisaje MaxCut; $\Delta H$, $d_F$ y $g$ (definición de \citet{huang2021}) quedan casi planos y, salvo $\Delta A$, no usan las etiquetas. Con $n=2$ conjuntos con medida comparable no puede afirmarse que el perfil prediga la ventaja: se propone como diagnóstico a priori, no como predictor validado.
 
 \item \textbf{El Framework QCR se plantea formalmente, con evidencia preliminar condicionada.} \label{conc:c2}
 La Conjetura~2 se define como contribución abierta. Notebook~09 reportó lifts \emph{vs.\ RBF} (re-uploading en Telco). Bajo $\mathcal{Q}_{\mathrm{rob}}$ (Sección~\ref{sec:qml_v2_revision}) Telco permanece \texttt{classical}; en SKG la rotación solo cambia geometría a \texttt{try-ZZ} sin lift de accuracy. QCR queda \textbf{planteado y delimitado} como filtro de geometría ---no como rescate operativo de SKG/Telco---; demostración fuerte = post-TFM (Capítulo~\ref{cap:futuro}).
@@ -26,22 +26,19 @@ La Conjetura~2 se define como contribución abierta. Notebook~09 reportó lifts 
 La evaluación del kernel cuántico escala como $O(n^2)$ en número de evaluaciones de circuito \citep{haug2023}. En los cuadernos ejecutados, el QSVM del Notebook~01 (4 qubits, 100 ejemplos de entrenamiento) tardó 32.6~s frente a 0.1--1.6~s de los clasificadores clásicos entrenados con el conjunto completo, y el del Notebook~06 (2 qubits, $n=150$) tardó 13.9~s frente a entre 0.003 y 0.20~s. Este coste procede de simular el circuito en hardware clásico; no se midió ningún kernel en hardware cuántico real, de modo que no puede afirmarse cómo escalaría allí.
 
 \item \textbf{Los datos de SKG Tecnología confirman el comportamiento esperado en era NISQ.}
-Los datasets reales de movilidad urbana (incidentes y tiempos de viaje en Bogotá) no presentan la estructura cuántica necesaria para que el kernel cuántico muestre ventaja. Los mejores resultados los obtienen Gradient Boosting y Random Forest, que capturan eficazmente los patrones temporales y geoespaciales. Esto no invalida la utilidad futura de los algoritmos cuánticos, sino que sitúa correctamente el estado de madurez actual.
+Los datasets reales de movilidad urbana (incidentes y tiempos de viaje en Bogotá) no muestran en las medidas realizadas evidencia de la alineación kernel--datos que haría falta para que el kernel cuántico muestre ventaja. Los mejores resultados los obtienen Gradient Boosting y Random Forest, que capturan eficazmente los patrones temporales y geoespaciales. Esto no invalida la utilidad futura de los algoritmos cuánticos, sino que sitúa correctamente el estado de madurez actual.
 
 \item \textbf{El paradigma híbrido cuántico-clásico es el marco de integración más viable para entornos empresariales en la era NISQ.}
 Los Casos~3, 4, 5 y~7 muestran que los algoritmos variacionales (QAOA, VQE) se integran de forma natural con optimizadores clásicos a través de una interfaz mínima: el módulo cuántico aporta la exploración del espacio de soluciones y el módulo clásico orquesta los parámetros, pre-procesa los datos y toma la decisión final. Esta separación de responsabilidades hace que la arquitectura híbrida sea \textbf{dependiente del caso de uso y de los datos}: es apropiada cuando el problema es formulable como QUBO y la escala es compatible con el hardware disponible; en caso contrario, el pipeline clásico estándar es la opción correcta. Para una empresa como SKG Tecnología, el módulo cuántico debería incorporarse como \textbf{herramienta adicional y selectiva} dentro del stack tecnológico existente —no como sustituto—, activándose solo cuando un subproblema de optimización combinatoria pase una comparación justa con los solvers clásicos; en los casos medidos aquí ninguno lo ha hecho.
 
-\item \textbf{La detección de anomalías cuántica es útil solo cuando la novedad está alineada con el feature map.}
-El Caso~8 (OCSVM con kernel ZZ vs IsolationForest / LOF / OCSVM-RBF) muestra ventaja en \texttt{zz\_phase} (AUC $0.864$ vs $0.553$) ---novedad = otra fase accesible por ese mapa--- y desventaja clara cuando la anomalía es densidad/distancia (moons, blobs, spikes inyectados). No es fraude: entrenamiento one-class. Regla operativa: comprobar alineación mapa--novedad y $\Delta_{\mathrm{op}}$; no activar por un $\mathcal{Q}>0$ vs.\ RBF. Si la anomalía es geométrica clásica, IsolationForest basta.
+\item \textbf{La detección de anomalías con kernel cuántico no supera a los métodos clásicos.}
+El Caso~8 (OCSVM con kernel ZZ vs IsolationForest / LOF / OCSVM-RBF) muestra desventaja en todos los conjuntos evaluados: $-32.0$, $-29.9$, $-29.1$ y $-50.8$ puntos de AUC$\times100$ frente al mejor clásico en Telco, SKG, moons y blobs. No es fraude: entrenamiento one-class. Si la anomalía es geométrica clásica, IsolationForest basta.
 
 \item \textbf{TSP justo: QAOA iguala al óptimo; el clásico fuerte también.}
 El Caso~5 (TSP cerrado, no VRP) con protocolo QML~v2 muestra QAOA-$p$1 = NN+2-opt = exacto (1867.6~km en Colombia $n=4$). El aporte es de modelado QUBO y decodificación factible, no de ventaja temporal frente a 2-opt.
 
-\item \textbf{Forecasting por lags sigue el mismo principio de alineación.}
-El Caso~9: QK-SVR-ZZ gana en \texttt{zz\_lag} (MAE $0.056$ vs Ridge $0.414$); en \texttt{sine} y en la velocidad de corredores SKG gana el clásico (MAE $2.80$ de Ridge frente a $13.59$ del QK-SVR, igual al de predecir la media del entrenamiento). No es ``series cuánticas'', sino target alineado al mapa.
-
-\item \textbf{Un segundo mapa (Pauli-Y) confirma que la ventaja sigue al emparejamiento.}
-Tabla cruzada ($n=120$, 5 repeats): generador ZZ $\Rightarrow$ QSVM-ZZ $0.828$ (RBF $0.478$); generador Pauli-Y $\Rightarrow$ QSVM-PauliY $0.550$ (RBF $0.517$), y el kernel ZZ desalineado cae a $0.406$. ZZ es el mapa del corpus principal; no es el único admisible.
+\item \textbf{El forecasting por lags tampoco muestra ventaja del kernel cuántico.}
+En el Caso~9, en \texttt{sine} y en la velocidad de corredores SKG gana el clásico (MAE $2.80$ de Ridge frente a $13.59$ del QK-SVR en SKG, igual al de predecir la media del entrenamiento).
 
 \end{enumerate}
 
@@ -56,14 +53,14 @@ La Tabla~\ref{tab:trazabilidad} indica qué conclusión principal responde a cad
 \toprule
 \textbf{Objetivo específico} & \textbf{Conclusiones principales} \\
 \midrule
-1. Conjuntos de datos empresariales & 1, 2, 8 \\
-2. Implementación de algoritmos cuánticos & 1, 2, 3, 4, 11 \\
-3. Implementación de referencias clásicas & 1, 2, 3, 8, 11 \\
-4. Diseño de los experimentos comparativos (nueve casos) & 1, 2, 3, 10, 11, 12, 13 \\
-5. Evaluación del rendimiento comparativo & 1, 2, 3, 4, 7 \\
-6. Condiciones de ventaja cuántica & 1, 5, 10, 12, 13 \\
-7. Prototipo de arquitectura híbrida & 9 \\
-8. Perfil de estructura $\mathcal{Q}(\mathcal{D})$ y framework QCR & 5, 6 \\
+1. Conjuntos de datos empresariales y de referencia & 1, 2, 7 \\
+2. Implementación de algoritmos cuánticos & 1, 2, 3, 6, 9 \\
+3. Implementación de referencias clásicas & 1, 2, 3, 7, 9 \\
+4. Diseño de los experimentos comparativos (nueve casos) & 1, 2, 3, 9, 10, 11 \\
+5. Evaluación del rendimiento comparativo & 1, 2, 3, 9, 10, 11 \\
+6. Condiciones de ventaja cuántica & 1, 2, 6 \\
+7. Prototipo de arquitectura híbrida & 8 \\
+8. Perfil de estructura $\mathcal{Q}(\mathcal{D})$ y framework QCR & 4, 5 \\
 \bottomrule
 \end{tabular}
 \caption{Trazabilidad objetivos específicos $\rightarrow$ conclusiones principales (numeración de la lista anterior).}
@@ -74,13 +71,13 @@ La Tabla~\ref{tab:trazabilidad} indica qué conclusión principal responde a cad
 
 \subsection*{Pregunta principal}
 
-La ventaja cuántica en ciencia de datos, tal como se puede demostrar hoy con hardware NISQ simulado, es \textbf{real pero condicionada}. En kernels, aparece cuando el \textbf{feature map} (en este TFM, ZZ) está alineado con el generador del dato \citep{huang2021}; no es una propiedad intrínseca de ``lo cuántico'' ni monopolio de ZZ. En optimización combinatoria de escala pequeña el QAOA recupera el óptimo pero empata con los métodos exactos, de modo que no hay ventaja medible; en regresión, el QK-SVR solo supera al mejor clásico por un margen marginal en el dataset nativo y queda muy por debajo en Friedman~\#1 y en SKG. En datos empresariales reales sin alineación al mapa, los algoritmos clásicos mantienen su superioridad en el horizonte actual.
+En los casos evaluados con datos reales de SKG Tecnología y con conjuntos de referencia públicos, \textbf{los algoritmos cuánticos disponibles en la era NISQ no ofrecen ventaja medible frente a los clásicos}. En clasificación, regresión, anomalías y forecasting el método cuántico queda por debajo del mejor clásico; en optimización combinatoria de escala pequeña el QAOA recupera el óptimo en la asignación y empata con los métodos exactos en el TSP, pero no mejora a Greedy ni a 2-opt, y en el portafolio y en el conjunto dominante mínimo es peor que las referencias clásicas. La literatura \citep{huang2021} indica que una ventaja de kernel requiere estructura que el kernel capture y el clásico no; este TFM no ha encontrado esa estructura en los conjuntos estudiados, y no la ha fabricado con datos a medida del kernel, porque eso solo reproduciría la definición del problema (Sección~\ref{sec:sin_datos_a_medida}).
 
-La conclusión práctica para entornos empresariales como SKG Tecnología es: \textbf{los algoritmos cuánticos son hoy complementarios, no sustitutos, de los clásicos}. Su adopción estratégica tiene sentido en problemas de optimización combinatoria donde las heurísticas clásicas tienen un rendimiento limitado, y como herramienta de preparación para el momento en que el hardware cuántico tolerante a fallos esté disponible.
+La conclusión práctica para entornos empresariales como SKG Tecnología es: \textbf{los algoritmos cuánticos son hoy una línea de exploración, no un sustituto ni una mejora medible de los clásicos}. Su adopción tiene sentido como preparación para el momento en que el hardware tolerante a fallos esté disponible y se identifiquen problemas con estructura favorable.
 
 \subsection*{Conjetura 1 (C1): Indicadores de cuanticidad}
 
-La Conjetura~1 se reformula: $\mathcal{Q}(\mathcal{D})$ es un \textbf{perfil vectorial} de métricas, no un oráculo escalar. La versión $w^\top\mathcal{Q}$ queda como experimento negativo (ordena mal vs.\ $\Delta_{\mathrm{op}}$). El barrido NB08 sostiene $\rho_S(\alpha,\Delta A)=0.833$ ($p=0.005$). Activar el módulo cuántico exige $\Delta_{\mathrm{op}}>0$ y alineación mapa--generador.
+La Conjetura~1 se reformula: $\mathcal{Q}(\mathcal{D})$ es un \textbf{perfil vectorial} de métricas, no un oráculo escalar. La versión $w^\top\mathcal{Q}$ queda como experimento negativo (ordena mal vs.\ $\Delta_{\mathrm{op}}$). El barrido NB08 sostiene $\rho_S(\alpha,\Delta A)=0.833$ ($p=0.005$). Activar el módulo cuántico exige $\Delta_{\mathrm{op}}>0$ frente al mejor clásico; los indicadores informan, no deciden solos.
 
 \subsection*{Conjetura 2 (C2): Framework QCR}
 
@@ -91,15 +88,15 @@ T^* = \arg\max_{T \in \mathcal{T}}\, \mathcal{Q}(T(D)),\\
 \mathcal{T} = \{\text{ZZ-compatible},\; \text{Rotación max-}d_F,\; \text{Re-uploading},\; \text{Q-UMAP}\}.
 \end{gathered}
 \]
-En el protocolo Notebook~09, $T^* = \text{re-uploading } reps=3$ elevaba $\mathcal{Q}(\text{Telco})$ y $+4.2$~pp \emph{vs.\ RBF}. Bajo $\mathcal{Q}_{\mathrm{rob}}$ (Sección~\ref{sec:qml_v2_revision}) Telco permanece \texttt{classical}; en SKG la rotación solo cambia el veredicto geométrico a \texttt{try-ZZ}, \textbf{sin} lift de accuracy frente a GB/RF. SKG/Telco \textbf{no} son cuántico-nativos. El alcance de este TFM es \textbf{plantear formalmente} QCR y documentar evidencia preliminar; la demostración de la Conjetura~\ref{conj:qcr} es post-TFM.
+En el protocolo Notebook~09, $T^* = \text{re-uploading } reps=3$ elevaba $\mathcal{Q}(\text{Telco})$ y $+4.2$~pp \emph{vs.\ RBF}. Bajo $\mathcal{Q}_{\mathrm{rob}}$ (Sección~\ref{sec:qml_v2_revision}) Telco permanece \texttt{classical}; en SKG la rotación solo cambia el veredicto geométrico a \texttt{try-ZZ}, \textbf{sin} lift de accuracy frente a GB/RF. No se ha observado estructura cuántica en SKG ni en Telco. El alcance de este TFM es \textbf{plantear formalmente} QCR y documentar evidencia preliminar; la demostración de la Conjetura~\ref{conj:qcr} es post-TFM.
 
 \section{Reflexiones sobre el estado actual de la computación cuántica}
 
 Una distinción conceptual fundamental que emerge de este trabajo es la separación entre \textbf{metodologías cuánticas} y \textbf{hardware cuántico}. Los algoritmos cuánticos ---QAOA, VQE, Quantum Kernel SVM--- son formulaciones matemáticas rigurosas y bien fundamentadas teóricamente. Su rendimiento, sin embargo, está hoy condicionado por el estado de madurez del hardware sobre el que se ejecutan. En la era NISQ \citep{preskill2018}, los procesadores cuánticos disponibles tienen tasas de error elevadas, coherencia limitada y un número de qubits insuficiente para la corrección cuántica de errores. Como consecuencia, las metodologías cuánticas ejecutadas en simuladores clásicos no pueden materializar el speedup teórico que se demostraría en hardware cuántico ideal.
 
-Esta disociación ---metodologías maduras, hardware en desarrollo--- es la causa raíz de los resultados mixtos observados en este trabajo. La comparación actual entre algoritmos cuánticos y algoritmos clásicos altamente optimizados (Gradient Boosting, XGBoost) es, en cierta medida, asimétrica: se enfrentan décadas de ingeniería y optimización clásica contra paradigmas completamente nuevos que aún no tienen hardware nativo adecuado \citep{biamonte2017, cerezo2021}.
+Esta disociación ---metodologías maduras, hardware en desarrollo--- es una de las causas de los resultados negativos observados en este trabajo. La comparación actual entre algoritmos cuánticos y algoritmos clásicos altamente optimizados (Gradient Boosting, XGBoost) es, en cierta medida, asimétrica: se enfrentan décadas de ingeniería y optimización clásica contra paradigmas completamente nuevos que aún no tienen hardware nativo adecuado \citep{biamonte2017, cerezo2021}.
 
-\textbf{Los resultados obtenidos en este TFM son, en ese contexto, informativos y matizados}. Hay ventaja medible cuando el feature map coincide con el generador (y en QUBO híbrido a escala moderada); en datos reales SKG/Telco el stack clásico domina. El framework QCR se \textbf{plantea} con evidencia preliminar ---no como rescate operativo de datasets empresariales---, lo que aporta un programa de investigación claro más que una demostración cerrada.
+\textbf{Los resultados obtenidos en este TFM son, en ese contexto, informativos y matizados}. No hay ventaja medible en ningún caso; en datos reales SKG/Telco y en los benchmarks de referencia el stack clásico domina. El framework QCR se \textbf{plantea} con evidencia preliminar ---no como rescate operativo de datasets empresariales---, lo que aporta un programa de investigación claro más que una demostración cerrada.
 
 \section{Criterio de integridad de resultados}
 
@@ -111,21 +108,22 @@ La contribución de este TFM no es ``forzar'' una narrativa de ventaja cuántica
     \item \textbf{Tamaño de muestra reducido} ($n=80$): los indicadores de cuanticidad se evalúan con muestras fijas sin validación cruzada; repetir con $k$-fold estratificado reduciría la varianza de las métricas.
     \item \textbf{Restricción de dimensionalidad}: el ZZFeatureMap con $n_q = 2$ obliga a comprimir los datasets a 2 componentes principales: en los indicadores del Notebook~08 se descarta el 68--69\% de la varianza en SKG y Telco, y en el resto de cuadernos y en el protocolo \texttt{qml\_v2} entre el 15\% y el 63\%. Escalar a 4--8 qubits permitiría capturar la estructura completa sin recurrir a PCA agresivo.
     \item \textbf{Q-UMAP no implementado con métrica cuántica real}: la Estrategia~4 utiliza MDS como alternativa por ausencia de \texttt{umap-learn}; la implementación con distancia cuántica genuina queda como trabajo futuro.
-    \item \textbf{Correlación C1 sobre $n=3$ datasets reales}: estadísticamente orientativa. La validación sobre conjuntos de datos con ventaja teórica demostrada (e.g., benchmarks de Bravyi et al., 2020) es necesaria para generalizar el indicador.
+    \item \textbf{Indicadores $\mathcal{Q}$ sin validación externa}: con $n=2$ conjuntos con medida comparable no puede estimarse si predicen la ventaja. Validarlos exigiría problemas con ventaja cuántica demostrada de origen natural (p.~ej.\ los de \citealp{liu2021}), no datos etiquetados con el propio kernel.
+    \item \textbf{Sin datos a medida}: se decidió no generar conjuntos etiquetados con el observable del feature map, porque la ventaja sería circular (Sección~\ref{sec:sin_datos_a_medida}). El coste es que el trabajo no contiene ningún caso con ventaja cuántica que contrastar; la existencia de problemas naturales con ventaja queda como pregunta abierta.
     \item \textbf{Simulación clásica}: todos los experimentos se realizan en simulador estacionario; el ruido NISQ real podría alterar los resultados cuantitativos.
     \item \textbf{Protocolos no intercambiables}: $\Delta_{\mathrm{RBF}}$ (Notebook~08) y $\Delta_{\mathrm{op}}$ (Caso~1 / Notebook~06) miden cosas distintas; no se fuerzan en una sola $\rho$. El $+8.3$~pp de SKG vs.\ RBF es artefacto de baseline débil.
     \item \textbf{Barrido $\alpha$ con $X$ fijo}: $d_F$ y $H$ constantes; $\rho_S=+0.833$ es $\rho(\alpha,\Delta A)$, no $\rho(\mathcal{Q},\mathrm{ventaja})$. Un barrido structure-aware queda como trabajo futuro.
     \item \textbf{Sin dumps de $K$}: no se inventan heatmaps ni series de rotación proxy si faltan artefactos del notebook.
-    \item \textbf{Series temporales (Caso~9)}: la evidencia en SKG procede de 5 corredores de 12~h (138 ventanas cada uno) y de un único horizonte de un paso; no hay comparación con modelos de series (ARIMA, Prophet) ni con ventanas más largas. El control nativo \texttt{zz\_lag} son pares independientes, no una serie con dinámica propia.
+    \item \textbf{Series temporales (Caso~9)}: la evidencia en SKG procede de 5 corredores de 12~h (138 ventanas cada uno) y de un único horizonte de un paso; no hay comparación con modelos de series (ARIMA, Prophet) ni con ventanas más largas.
 \end{itemize}
 
 \section{Aportación al campo}
 
 Este trabajo contribuye a la literatura con:
 \begin{enumerate}
-    \item \textbf{Evidencia empírica} sobre condiciones reales de ventaja cuántica usando datos empresariales propietarios (SKG Tecnología, Bogotá), evaluada en nueve casos de uso con tres tipos de dataset cada uno cuando aplica.
+    \item \textbf{Evidencia empírica} sobre condiciones reales de ventaja cuántica usando datos empresariales propietarios (SKG Tecnología, Bogotá), evaluada en nueve casos de uso sobre datos reales y conjuntos de referencia.
     \item \textbf{Metodología de evaluación comparativa reproducible} sobre tres familias de problemas (clasificación, regresión y optimización combinatoria), con código abierto en Qiskit~2.x (versiones en el Anexo~\ref{anx:entorno}).
-    \item \textbf{Perfil $\mathcal{Q}(\mathcal{D})=(\Delta A,\hat{d}_F,\Delta H,\hat{g})$}: vector de métricas para leer geometría; el escalar colapsado se descarta como regla de adopción (contraejemplo SKG). Emparejamiento mapa--generador + $\Delta_{\mathrm{op}}$ cierran la decisión.
+    \item \textbf{Perfil $\mathcal{Q}(\mathcal{D})=(\Delta A,\hat{d}_F,\Delta H,\hat{g})$}: vector de métricas para leer geometría; el escalar colapsado se descarta como regla de adopción (contraejemplo SKG), y la decisión de activar el módulo cuántico se toma por $\Delta_{\mathrm{op}}$ frente al mejor clásico.
     \item \textbf{El Framework QCR}: planteado formalmente (protocolo de cuatro pasos + Conjetura~\ref{conj:qcr}); Notebook~09 reportó $+4.2$~pp en Telco, matizado por $\mathcal{Q}_{\mathrm{rob}}$ (Sección~\ref{sec:qml_v2_revision}). Demostración fuerte = post-TFM.
     \item \textbf{El prototipo de arquitectura híbrida cuántico-clásica}: patrón de integración QAOA-COBYLA con criterios explícitos de activación según el tipo de problema, demostrado sobre el conjunto dominante mínimo (NP-difícil) y generalizable a cualquier problema formulable como QUBO en entornos empresariales.
     \item \textbf{Caracterización de la brecha} entre madurez metodológica y madurez de hardware en el estado actual de la computación cuántica aplicada a ciencia de datos.

@@ -70,7 +70,6 @@
                        align=left, inner sep=5pt, anchor=north}}
 
 % Celdas de resultado de la síntesis Q vs C
-\newcommand{\ganaQ}{\cellcolor{unirazul}\textcolor{white}{\textbf{Gana Q}}}
 \newcommand{\ganaC}{\cellcolor{unirclaro}\textbf{Gana C}}
 \newcommand{\empate}{\cellcolor{unirazul!14}Empate}
 
@@ -215,11 +214,11 @@ ventaja real y medible frente a los algoritmos clásicos?
 \end{column}
 \begin{column}{0.31\textwidth}
 \centering\textbf{\textcolor{unirnavy}{Dónde}}\\[0.2em]
-{\small cinco casos de uso comunes y tres clases de datos}
+{\small cinco casos de uso comunes, con datos de SKG y de referencia pública}
 \end{column}
 \begin{column}{0.31\textwidth}
 \centering\textbf{\textcolor{unirnavy}{Qué se obtiene}}\\[0.2em]
-{\small las condiciones en que gana el cuántico y un criterio para activarlo}
+{\small si el cuántico gana en datos reales y un criterio para activarlo}
 \end{column}
 \end{columns}
 \end{frame}
@@ -238,14 +237,13 @@ ventaja real y medible frente a los algoritmos clásicos?
 {\footnotesize Nueve casos de uso con protocolo justo en el documento.}
 \end{column}
 \begin{column}{0.50\textwidth}
-\textbf{Tres clases de datos}
+\textbf{Dos clases de datos}
 \begin{enumerate}
-  \item \textbf{Sintéticos con estructura cuántica nativa}: generados con el
-        \emph{feature map} del kernel cuántico (ZZ); la etiqueta o el objetivo
-        es el valor de un observable sobre el estado codificado
   \item \textbf{Práctica}: datos reales de SKG Tecnología
   \item \textbf{Referencia pública}
 \end{enumerate}
+{\footnotesize No se generan datos etiquetados con el propio kernel cuántico:
+la ventaja sería circular y no informaría sobre problemas reales.}
 \end{column}
 \end{columns}
 \end{frame}
@@ -279,7 +277,7 @@ Dispositivos de escala intermedia \textbf{ruidosos}: qubits limitados, decoheren
   \draw[arr] (h1) -- (h2); \draw[arr] (h2) -- (h3); \draw[arr] (h3) -- (h4);
   \node[cuerpo=unirazul, text width=2.85cm, minimum height=4.6cm] at (0,-0.5) {%
     \begin{itemize}\setlength{\itemsep}{3pt}\setlength{\leftmargini}{0.8em}
-      \item Tres clases: sintéticos nativos (ZZ), práctica SKG, referencia pública
+      \item Dos clases: práctica SKG y referencia pública
       \item Preprocesado: estandarizar, PCA a 2 componentes y escalar a $[-\pi,\pi]$
       \item Particiones aleatorias repetidas; en series, 70/30 en orden temporal
     \end{itemize}};
@@ -303,7 +301,7 @@ Dispositivos de escala intermedia \textbf{ruidosos}: qubits limitados, decoheren
     \end{itemize}};
   \node at (5.3,-5.5) [rectangle, rounded corners=3pt, fill=unirnavy, text=white, font=\footnotesize\bfseries,
         minimum width=13.4cm, minimum height=0.7cm]
-    {Salida: para cada caso de uso y clase de datos, \textquestiondown{}gana Q o gana C?};
+    {Salida: para cada caso de uso y conjunto de datos, \textquestiondown{}gana Q o gana C?};
 \end{tikzpicture}
 \end{frame}
 
@@ -343,30 +341,25 @@ Ridge, SVR-RBF, Gradient Boosting \\
 \centering
 {\footnotesize
 \renewcommand{\arraystretch}{1.25}
-\begin{tabularx}{\linewidth}{@{}>{\raggedright\arraybackslash}p{1.7cm}>{\raggedright\arraybackslash}X>{\raggedright\arraybackslash}X>{\raggedright\arraybackslash}X@{}}
+\begin{tabularx}{\linewidth}{@{}>{\raggedright\arraybackslash}p{2.0cm}>{\raggedright\arraybackslash}X>{\raggedright\arraybackslash}X@{}}
 \toprule
-\textbf{Caso de uso} & \textbf{Sintético nativo} & \textbf{Práctica SKG} & \textbf{Referencia pública} \\
+\textbf{Caso de uso} & \textbf{Práctica SKG} & \textbf{Referencia pública} \\
 \midrule
 Clasificación &
-\textbf{ZZ sintético}: $x\in[-\pi,\pi]^2$; etiqueta = signo de $\langle Z\otimes Z\rangle$ &
 \textbf{Incidentes NUSE (Bogotá)}: gravedad binaria del incidente &
 \textbf{Telco Churn}: abandono de clientes (IBM / Kaggle) \\
 Regresión &
-\textbf{ZZ sintético}: objetivo = $\langle Z\otimes Z\rangle$ &
 \textbf{Tiempos de viaje}: velocidad media a partir de lecturas y hora &
 \textbf{Friedman \#1}: función no lineal sintética con ruido \\
 Anomalías &
-\textbf{\texttt{zz\_phase}}: la fase minoritaria del estado ZZ son los atípicos &
 \textbf{Incidentes} con atípicos inyectados &
 \textbf{\texttt{moons}}: dos lunas con atípicos uniformes en su caja \\
 Series temporales &
-\textbf{\texttt{zz\_lag}}: objetivo = $\langle Z\otimes Z\rangle$ de los 2 últimos valores &
 \textbf{Velocidad de 5 corredores}: lecturas cada 5 minutos &
 \textbf{\texttt{sine}}: senoide con dos estacionalidades y ruido \\
 Optimización &
-\textbf{Asignación} agente--tarea (QUBO) y \textbf{MDS} (red de 6 nodos y grafos Erdős--Rényi) &
 Sin datos SKG (asignación real: trabajo futuro) &
-\textbf{Portafolio} de 6 activos (Yahoo Finance) y \textbf{TSP} con 4 capitales de Colombia \\
+\textbf{Asignación} agente--tarea (QUBO), \textbf{MDS} (red de 6 nodos y grafos Erdős--Rényi), \textbf{portafolio} de 6 activos (Yahoo Finance) y \textbf{TSP} con 4 capitales de Colombia \\
 \bottomrule
 \end{tabularx}}
 \end{frame}
@@ -378,7 +371,7 @@ Sin datos SKG (asignación real: trabajo futuro) &
 \includegraphics[width=\linewidth,height=0.68\textheight,keepaspectratio]{13_mapa_errores_q_vs_c.png}
 
 \vspace{0.2em}
-{\footnotesize El cuántico (azul) solo es el mejor con datos nativos; en optimización, QAOA iguala al exacto, no lo supera.}
+{\footnotesize El cuántico no es el mejor en ninguna celda; en optimización, QAOA iguala al exacto, no lo supera.}
 \end{frame}
 
 \begin{frame}{Síntesis: caso de uso $\times$ conjunto de datos}
@@ -390,31 +383,27 @@ Sin datos SKG (asignación real: trabajo futuro) &
 \toprule
 \textbf{Caso de uso} & \textbf{Clase de datos} & \textbf{Conjunto de datos} & \textbf{Resultado} \\
 \midrule
-Clasificación & Nativo & ZZ sintético & \ganaQ \\
- & SKG & Incidentes NUSE & \empate \\
+Clasificación & SKG & Incidentes NUSE & \empate \\
  & Referencia & Telco Churn & \ganaC \\
 \midrule
-Regresión & Nativo & ZZ sintético & \ganaQ \\
- & SKG & Tiempos de viaje & \ganaC \\
+Regresión & SKG & Tiempos de viaje & \ganaC \\
  & Referencia & Friedman \#1 & \ganaC \\
 \midrule
-Anomalías & Nativo & \texttt{zz\_phase} & \ganaQ \\
- & SKG & Incidentes inyectados & \ganaC \\
+Anomalías & SKG & Incidentes inyectados & \ganaC \\
  & Referencia & \texttt{moons} & \ganaC \\
 \midrule
-Series temporales & Nativo & \texttt{zz\_lag} & \ganaQ \\
- & SKG & Corredores & \ganaC \\
+Series temporales & SKG & Corredores & \ganaC \\
  & Referencia & \texttt{sine} & \ganaC \\
 \midrule
-Optimización & Nativo & Asignación QUBO & \empate \\
- & Nativo & MDS (grafos ER) & \ganaC \\
+Optimización & Referencia & Asignación QUBO & \empate \\
+ & Referencia & MDS (grafos ER) & \ganaC \\
  & Referencia & Portafolio & \ganaC \\
  & Referencia & TSP $n{=}4$ & \empate \\
 \bottomrule
 \end{tabular}}
 
 \vspace{0.1em}
-{\scriptsize Empate: diferencia dentro de una desviación estándar de las repeticiones, o mismo valor óptimo.}
+{\scriptsize Empate: diferencia dentro de una desviación estándar de las repeticiones, o mismo valor óptimo. En ningún caso gana el cuántico.}
 \end{frame}
 
 \begin{frame}{Criterio de activación del módulo cuántico}
@@ -426,18 +415,18 @@ Optimización & Nativo & Asignación QUBO & \empate \\
 \textbf{Problema} & \textbf{Activar si} & \textbf{Módulo Q} & \textbf{Fallback} \\
 \midrule
 Clasif.\ /\ Regresión &
-coincidencia mapa--generador
-\emph{y} vence a GB/RF
+vence a GB/RF
+en comparación justa
 (no basta $\mathcal{Q}>0$ vs RBF) &
 QSVM / QK-SVR &
 GB / RF \\
 Anomalías &
-novedad alineada al mapa
-(\texttt{zz\_phase}) &
+vence a IF / LOF
+en comparación justa &
 OCSVM-ZZ &
 IF / LOF \\
 Forecasting &
-target alineado (\texttt{zz\_lag}) &
+vence a Ridge / GB &
 QK-SVR &
 Ridge / GB \\
 Optimización / TSP &
@@ -445,7 +434,7 @@ QUBO factible, $n$ viable &
 QAOA / VQE &
 Greedy / ILP / 2-opt \\
 Caso general &
-SKG/Telco sin estructura ZZ
+no vence al clásico
 o $n$ demasiado grande &
 \textbf{no se activa} &
 pipeline clásico \\
@@ -461,11 +450,11 @@ pipeline clásico \\
 \begin{enumerate}
   \item \textbf{P1 --- tests de cuanticidad}\\[0.35em]
         \textquestiondown{}Se puede diagnosticar \emph{a priori} si un dataset tiene
-        \emph{estructura cuántica} (alineación mapa--dato) y, por tanto, admitirá ventaja?
+        \emph{estructura cuántica} (alineación kernel--dato) y, por tanto, admitirá ventaja?
 
   \vspace{1.0em}
   \item \textbf{P2 --- mapeos cuántico-compatibles}\\[0.35em]
-        Si no hay estructura nativa, \textquestiondown{}existe un nuevo mapeo $\psi$ y un espacio
+        Si el dato no tiene estructura cuántica, \textquestiondown{}existe un nuevo mapeo $\psi$ y un espacio
         de representación donde se conserve la estructura e información del dato,
         adquiera estructura cuántica, y haya mapa de vuelta si hace falta?
         (analogía con la transformada de Fourier)
@@ -494,9 +483,9 @@ pipeline clásico \\
 \end{column}
 \begin{column}{0.48\textwidth}
 \begin{block}{Hecho empírico}
-Ventaja si el mapa que estructura el dato
-= mapa del modelo \textbf{cuántico}.
-Si no: gana el \textbf{clásico}.
+En datos reales y de referencia
+no se mide alineación kernel--dato
+y gana el \textbf{clásico}.
 \end{block}
 \vspace{0.5em}
 \begin{block}{Idea corregida}
@@ -581,14 +570,13 @@ operativo --- por eso no se usa para decidir.}
 El vector describe geometría vs.\ RBF.
 La adopción exige ventaja vs.\
 mejor clásico \textbf{en el caso de uso}
-(clasif./reg./anomalías) y alineación
-mapa--generador.}
+(clasif./reg./anomalías).}
 \end{alertblock}
 \end{column}
 \end{columns}
 \end{frame}
 
-\begin{frame}{Validación P1 --- barrido sintético ($\alpha$)}
+\begin{frame}{Calibración de P1 --- barrido sintético ($\alpha$)}
 \begin{columns}[T]
 \begin{column}{0.62\textwidth}
 \centering
@@ -600,7 +588,7 @@ mapa--generador.}
 \begin{itemize}
   \item $\alpha$: fracción de etiquetas
         cuánticas ($X$ fijo).
-  \item $\Delta A$ crece con $\alpha$:
+  \item Calibración del indicador: $\Delta A$ crece con $\alpha$:
         $\rho_S{=}0.833$ ($p{=}0.005$).
   \item $d_F$ y $H$ \textbf{constantes}
         (kernels no cambian con labels).
@@ -658,7 +646,7 @@ $d$ = dimensi\'on efectiva del dato en Hilbert.}
 {\scriptsize
 $g$: necesario, no suficiente; no usa $y$.
 Huang ($\lambda{=}10^{-3}$): $g\approx 76$--$85$ en casi todos los casos
-(42 en anomal\'ias-SKG, artefacto). $g\gg1$ pero igual para nativos y reales:
+(42 en anomal\'ias-SKG, artefacto). $g\gg1$ en todos los casos:
 \textbf{no discrimina}. Antes $\approx 3000$ (artefacto).}
 \end{alertblock}
 \end{column}
@@ -675,11 +663,10 @@ Huang ($\lambda{=}10^{-3}$): $g\approx 76$--$85$ en casi todos los casos
 \begin{block}{Cómo leerlo}
 {\footnotesize
 Un panel por indicador; eje X = caso de uso;
-3 barras = Nativo / SKG / Referencia
+Barras por caso: SKG y referencia
 (optimizaci\'on: asignaci\'on / MaxCut / TSP).\\[0.3em]
 \begin{itemize}
-  \item $\Delta A$: solo los nativos superan el ruido (banda azul);
-        el resto, dentro del ruido o por debajo (incluida la optimizaci\'on)
+  \item $\Delta A$: ning\'un dato real ni paisaje de optimizaci\'on supera el ruido (banda azul), salvo MaxCut dentro de \'el
   \item $\Delta H$, $d_F$, $g$: casi planos;
         excepci\'on anomal\'ias-SKG = artefacto de escala (outliers $8\sigma$ comprimen el MinMax)
   \item $\mathcal{Q}$: informativo; lo dominan indicadores planos
@@ -692,10 +679,9 @@ Un panel por indicador; eje X = caso de uso;
 \begin{frame}{P1 --- cómo interpretar}
 \begin{block}{\textquestiondown{}$\Delta A$ negativo + $\Delta H$ mínimo = estructura?}
 {\footnotesize
-\textbf{No.} Los \textbf{nativos} tienen $\Delta A>0$ sobre el ruido
-(clasif.\ $+0.20$, reg.\ $+0.28$, anom.\ $+0.09$); los datos reales y los
-paisajes de optimizaci\'on quedan dentro o por debajo del nulo
-($\Delta A<0$ = el RBF alinea mejor, no ``estructura negativa'').
+\textbf{No.} Los datos reales, los de referencia y los
+paisajes de optimizaci\'on quedan dentro o por debajo del nulo ($\approx+0.03\pm0.02$);
+$\Delta A<0$ = el RBF alinea mejor, no ``estructura negativa''.
 El \'unico $\Delta H$ m\'inimo (anomal\'ias-SKG, $0.44$) es un artefacto de escala.}
 \end{block}
 \vspace{0.35em}
@@ -707,8 +693,8 @@ Solo $\Delta A$ usa $y$; los otros tres solo ven $X$.}
 \vspace{0.35em}
 \begin{alertblock}{Lectura defendible}
 {\footnotesize
-Lo que separa estructura es $\Delta A$ (alineaci\'on mapa--dato \citep{liu2021,huang2021}),
-no $d_F$, $g$ ni $\Delta H$. Optimizaci\'on: paisaje QUBO con 2 qubits
+El \'unico indicador con se\~nal potencial es $\Delta A$ (alineaci\'on kernel--dato \citep{liu2021,huang2021});
+$d_F$, $g$ y $\Delta H$ no discriminan. Con $n=2$ conjuntos comparables, $\mathcal{Q}$ es diagn\'ostico a priori, no predictor validado. Optimizaci\'on: paisaje QUBO con 2 qubits
 (PCA retiene $\approx 1/3$): \textbf{sin evidencia} de estructura; l\'imite del dise\~no.}
 \end{alertblock}
 \end{frame}
@@ -777,9 +763,8 @@ pueda sacar partido de los algoritmos cuánticos, con un mapeo de vuelta al espa
 \begin{frame}{Mensajes clave}
 \begin{columns}[T]
 \begin{column}{0.48\textwidth}
-\begin{block}{1. Ventaja condicionada}
-Solo gana el cuántico cuando el \emph{feature map} coincide con el generador de los datos.
-En datos reales (SKG, Telco) gana el clásico.
+\begin{block}{1. Sin ventaja en datos reales}
+En SKG y en los benchmarks públicos gana el clásico o empatan. No se generan datos a la medida del kernel: sería circular.
 \end{block}
 \begin{block}{2. Optimización: valor de modelado}
 QAOA iguala al óptimo exacto en problemas pequeños, pero no lo supera.
@@ -787,16 +772,16 @@ QAOA iguala al óptimo exacto en problemas pequeños, pero no lo supera.
 \end{column}
 \begin{column}{0.48\textwidth}
 \begin{block}{3. Diagnosticar antes de invertir}
-$\mathcal{Q}(\mathcal{D})$, como vector de indicadores, orienta la decisión; QCR queda planteada como conjetura.
+$\mathcal{Q}(\mathcal{D})$, como vector de indicadores, es un diagnóstico a priori sin validar; QCR queda planteada como conjetura.
 \end{block}
 \begin{block}{4. Adopción selectiva e híbrida}
-El módulo cuántico complementa al stack clásico; no lo sustituye.
+Se activa solo si vence al clásico en comparación justa; hoy, ninguno.
 \end{block}
 \end{column}
 \end{columns}
 \vspace{0.3em}
 \begin{alertblock}{Respuesta a la pregunta del TFM}
-Hay ventaja medible cuando existe coincidencia mapa--generador; fuera de ahí, el clásico domina, y eso también es un resultado.
+No hay ventaja cuántica medible en los casos evaluados con datos reales y de referencia; el clásico domina, y eso también es un resultado.
 \end{alertblock}
 \end{frame}
 
@@ -817,7 +802,7 @@ Statevector sin ruido de hardware; el coste del kernel crece como $O(n^2)$.
 SKG se usó como práctica (series: 5 corredores, un paso, sin ARIMA ni Prophet).
 \end{block}
 \begin{block}{Base teórica abierta}
-$\mathcal{Q}(\mathcal{D})$ es empírico y QCR carece de demostración.
+$\mathcal{Q}(\mathcal{D})$ es empírico, sin validar con ventaja demostrada, y QCR carece de demostración.
 \end{block}
 \end{column}
 \end{columns}
@@ -850,7 +835,7 @@ $\mathcal{Q}(\mathcal{D})$ es empírico y QCR carece de demostración.
   \node[cuerpo=unirgris, text width=4.0cm, minimum height=3.4cm] at (9.8,-0.6) {%
     \begin{itemize}\setlength{\itemsep}{3pt}\setlength{\leftmargini}{0.8em}
       \item Demostrar o refutar QCR
-      \item Benchmarks con separación formal
+      \item Problemas con estructura cuántica natural
       \item Hardware tolerante a fallos
     \end{itemize}};
 \end{tikzpicture}

@@ -2,7 +2,7 @@
 \chapter{Metodología e implementación}
 \label{cap:metodologia}
 
-Este capítulo integra la metodología adoptada y la descripción detallada del diseño, implementación y procedimiento experimental de las pruebas de concepto (PoC) desarrolladas para comparar algoritmos cuánticos y clásicos en tres familias de problemas: clasificación supervisada, regresión y optimización combinatoria. Para cada caso de uso se evalúan tres tipos de conjuntos de datos: (i) un dataset diseñado con \textbf{estructura cuántica explícita} (\textit{cuántico-nativo}; sintético, generado de modo que el kernel resulta óptimo por construcción, en la línea de los conjuntos de datos con estructura cuántica de \cite{havlicek2019} y \cite{huang2021} ---en este TFM el mapa empíricamente validado es el \texttt{ZZFeatureMap}; la misma lógica de alineación aplica a otros feature maps), (ii) un dataset real de SKG Tecnología, y (iii) un dataset de referencia de dominio público. Esta triple perspectiva permite distinguir los escenarios donde aparece ventaja por \textbf{alineación dato--feature map} de aquellos donde los algoritmos clásicos siguen siendo superiores en la práctica.
+Este capítulo integra la metodología adoptada y la descripción detallada del diseño, implementación y procedimiento experimental de las pruebas de concepto (PoC) desarrolladas para comparar algoritmos cuánticos y clásicos en tres familias de problemas: clasificación supervisada, regresión y optimización combinatoria. Para cada caso de uso se evalúan conjuntos de datos reales de SKG Tecnología y conjuntos de referencia de dominio público, o instancias estándar de optimización, y se compara el resultado del método cuántico con el del mejor método clásico. No se generan datos a medida para el feature map cuántico (Sección~\ref{sec:sin_datos_a_medida}).
 
 % =====================================================================
 \section{Metodología general}
@@ -12,7 +12,11 @@ La metodología adoptada en este trabajo combina un enfoque experimental cuantit
 
 \subsection{Fase 1: Selección y preparación de datos}
 
-Se utilizaron conjuntos de datos reales procedentes de una empresa privada, relacionados con problemas de clasificación de clientes y optimización de asignación de recursos. Los datos fueron anonimizados y tratados conforme a las buenas prácticas de protección de datos. En caso necesario, se complementó el análisis con datos sintéticos generados a partir de distribuciones similares para garantizar la robustez de los resultados y preservar la confidencialidad. Los datasets fueron preprocesados siguiendo técnicas estándar de ciencia de datos: normalización, tratamiento de valores ausentes y reducción de dimensionalidad cuando fue necesario \citep{jordan2015}.
+Se utilizaron conjuntos de datos reales procedentes de una empresa privada, relacionados con problemas de clasificación de clientes y optimización de asignación de recursos. Los datos fueron anonimizados y tratados conforme a las buenas prácticas de protección de datos. Los datasets fueron preprocesados siguiendo técnicas estándar de ciencia de datos: normalización, tratamiento de valores ausentes y reducción de dimensionalidad cuando fue necesario \citep{jordan2015}.
+
+\subsection{Criterio sobre los conjuntos de datos}\label{sec:sin_datos_a_medida}
+
+Los experimentos usan datos reales de SKG Tecnología y conjuntos de referencia públicos (Telco Churn, Friedman~\#1, \texttt{moons}, \texttt{sine}), además de instancias estándar en los casos de optimización (asignación, portafolio, TSP y conjunto dominante mínimo). Una versión previa del estudio incluía también conjuntos sintéticos etiquetados con el propio \texttt{ZZFeatureMap} (observable $\langle Z\otimes Z\rangle$), en la línea de los conjuntos con estructura cuántica de \cite{havlicek2019}. Se descartaron por una razón de diseño: si las etiquetas pertenecen al espacio de funciones del kernel cuántico, ese mismo kernel las aprende por construcción, mientras que los clasificadores clásicos se evalúan en otro espacio de representación y, sin ajuste específico, parten en desventaja. El resultado es una consecuencia del generador y no informa sobre problemas de ciencia de datos reales, por lo que no se presenta como evidencia de ventaja cuántica ni como control del estudio. La pregunta de si los datos reales poseen o pueden llevarse a una estructura compatible con un circuito cuántico se aborda con el perfil $\mathcal{Q}(\mathcal{D})$ y el Framework QCR (Capítulo~\ref{cap:investigacion_original}), no con datos fabricados para un mapa concreto.
 
 \subsection{Fase 2: Implementación de algoritmos}
 
@@ -34,8 +38,6 @@ Los experimentos se diseñaron siguiendo un protocolo de validación cruzada est
 
 A partir de los resultados obtenidos, se diseñó un flujo de trabajo conceptual que integra el módulo cuántico de mejor rendimiento dentro de una arquitectura de análisis de datos clásica. Este prototipo ilustra los puntos de integración entre componentes cuánticos y clásicos, los requisitos de interfaz y las condiciones de activación del módulo cuántico, proporcionando una visión práctica orientada a la adopción tecnológica futura \citep{cerezo2021}.
 
-Para cada caso de uso se evalúan tres tipos de conjuntos de datos: (i) un dataset diseñado con estructura cuántica explícita (\textit{cuántico-nativo}), (ii) un dataset real de SKG Tecnología, y (iii) un dataset de referencia de dominio público. Esta triple perspectiva permite distinguir los escenarios donde la computación cuántica ofrece ventaja teórica genuina de aquellos donde los algoritmos clásicos siguen siendo superiores en la práctica.
-
 \begin{figure}[ht]
 \centering
 \begin{tikzpicture}[font=\small,
@@ -45,7 +47,7 @@ Para cada caso de uso se evalúan tres tipos de conjuntos de datos: (i) un datas
     arr/.style={->, very thick, >=stealth}]
   \node[fase, draw=blue!60!black, fill=blue!9] (f1) {
     \textbf{Fase 1 — Selección y preparación de datos}\\[3pt]
-    {\scriptsize Datasets cuántico-nativo, SKG Tecnología y referencia pública
+    {\scriptsize Datasets de SKG Tecnología y de referencia pública
      $\cdot$ Normalización $\cdot$ PCA}
   };
   \node[fase, draw=orange!60!black, fill=orange!9, below=0.6cm of f1] (f2) {
@@ -85,19 +87,12 @@ La elección del simulador de vector de estados garantiza exactitud matemática,
 
 \subsection{Descripción del problema}
 
-El primer caso de uso aborda la clasificación binaria supervisada, comparando el QSVM (Quantum Support Vector Machine con kernel cuántico) frente a cuatro clasificadores clásicos de referencia: Gradient Boosting, Random Forest, SVM-RBF y Regresión Logística. La hipótesis central, motivada por \cite{liu2021} y \cite{huang2021}, es que cuando las etiquetas de clase se derivan de una función cuántica alineada con el mapa de características, el kernel cuántico puede aprender el problema con mayor precisión que los clasificadores clásicos. \cite{liu2021} demuestran una separación rigurosa solo para un problema construido sobre el logaritmo discreto, y \cite{huang2021} muestran que la separación exige una diferencia geométrica grande; el dataset de este trabajo es mucho más sencillo (2 qubits, simulable clásicamente) y solo ilustra el mecanismo. Esta asimetría tiene su origen en la diferencia entre el \textbf{espacio de representación} clásico ---el espacio euclídeo $\mathbb{R}^d$ donde operan los clasificadores convencionales--- y el espacio de Hilbert $\mathcal{H}$ al que accede el kernel cuántico a través del mapa de características $\phi\colon \mathbb{R}^d \rightarrow \mathcal{H}$; la similitud en $\mathcal{H}$, medida por el kernel de fidelidad $\kappa(x_i, x_j)=|\langle\phi(x_i)|\phi(x_j)\rangle|^2$, solo puede reproducirse en general mediante una simulación cuyo coste crece exponencialmente con el número de qubits; con los 2 qubits de este trabajo la simulación es trivial. Esta observación motiva la pregunta central del Capítulo~\ref{cap:investigacion_original}: si un dataset real no tiene estructura cuántica nativa, \textquestiondown{}puede transformarse a un espacio de representación $\mathcal{Z}$ adecuado, resolverse con modelos cuánticos en ese espacio, y mapear el resultado de vuelta al espacio original? Esta hipótesis se formaliza como la Conjetura~\ref{conj:qcr} del espacio de representación cuántico-compatible.
+El primer caso de uso aborda la clasificación binaria supervisada, comparando el QSVM (Quantum Support Vector Machine con kernel cuántico) frente a cuatro clasificadores clásicos de referencia: Gradient Boosting, Random Forest, SVM-RBF y Regresión Logística. La pregunta es si, sobre datos reales y de referencia, el kernel cuántico mejora a los clasificadores clásicos. \cite{liu2021} demuestran una separación rigurosa solo para un problema construido sobre el logaritmo discreto, y \cite{huang2021} muestran que cualquier separación exige una diferencia geométrica grande entre el kernel cuántico y los clásicos; con 2 qubits, simulables clásicamente, este trabajo no puede esperar reproducir esa separación, y evalúa en cambio qué ocurre con modelos y datos de uso común. La diferencia potencial tiene su origen en la diferencia entre el \textbf{espacio de representación} clásico ---el espacio euclídeo $\mathbb{R}^d$ donde operan los clasificadores convencionales--- y el espacio de Hilbert $\mathcal{H}$ al que accede el kernel cuántico a través del mapa de características $\phi\colon \mathbb{R}^d \rightarrow \mathcal{H}$; la similitud en $\mathcal{H}$, medida por el kernel de fidelidad $\kappa(x_i, x_j)=|\langle\phi(x_i)|\phi(x_j)\rangle|^2$, solo puede reproducirse en general mediante una simulación cuyo coste crece exponencialmente con el número de qubits; con los 2 qubits de este trabajo la simulación es trivial. Esta observación motiva la pregunta central del Capítulo~\ref{cap:investigacion_original}: dado un dataset real, \textquestiondown{}puede transformarse a un espacio de representación $\mathcal{Z}$ adecuado, resolverse con modelos cuánticos en ese espacio, y mapear el resultado de vuelta al espacio original? Esta hipótesis se formaliza como la Conjetura~\ref{conj:qcr} del espacio de representación cuántico-compatible.
 
 % ---
-\subsection{Dataset 1: Cuántico-nativo}
+\subsection{Mapa de características y kernel cuántico}
 
-Algunas figuras y notebooks conservan la etiqueta histórica «Liu 2021» para este dataset; se refiere a este conjunto sintético y no al problema basado en el logaritmo discreto de \cite{liu2021}.
-
-\paragraph{Descripción y justificación.}
-Siguiendo una construcción análoga a la del conjunto de datos de \cite{havlicek2019}, y no el problema basado en el logaritmo discreto de \cite{liu2021}, se generó un dataset sintético donde las etiquetas binarias se definen mediante la expectación de un observable cuántico de Pauli:
-\begin{equation}
-  y_i = \text{sgn}\!\bigl(\langle\phi(x_i)|\,Z \otimes Z\,|\phi(x_i)\rangle\bigr)
-\end{equation}
-donde $|\phi(x_i)\rangle$ es el estado cuántico codificado por un \texttt{ZZFeatureMap} de 2 qubits con 2 repeticiones ---el mapa con el que se valida empíricamente el corpus de este TFM, no el único posible---. Por construcción, el kernel de fidelidad $\kappa(x_i, x_j) = |\langle\phi(x_i)|\phi(x_j)\rangle|^2$ es el estimador óptimo del problema. Este dataset no representa un caso práctico real, sino un experimento controlado: la ventaja aparece cuando el feature map está alineado con el generador del dato; ZZ es el mapa que medimos aquí.
+El QSVM usa un \texttt{ZZFeatureMap} de 2 qubits con 2 repeticiones ---el mapa con el que se mide todo el corpus de este TFM, no el único posible---, que codifica cada muestra $x\in[-\pi,\pi]^2$ en un estado $|\phi(x)\rangle$. El kernel de fidelidad $\kappa(x_i, x_j) = |\langle\phi(x_i)|\phi(x_j)\rangle|^2$ se calcula con \texttt{FidelityQuantumKernel} (\texttt{ComputeUncompute} y \texttt{StatevectorSampler}) y se entrega a \texttt{SVC(kernel=``precomputed'', C=1.0)}. Los clasificadores clásicos se entrenan sobre las mismas features euclídeas con hiperparámetros por defecto, salvo en el protocolo justo del Capítulo~\ref{cap:evaluacion}. La evaluación usa exactitud, F1 y matriz de confusión sobre el test.
 
 \begin{figure}[ht]
 \centering
@@ -106,35 +101,8 @@ donde $|\phi(x_i)\rangle$ es el estado cuántico codificado por un \texttt{ZZFea
 \label{fig:zzfeaturemap_circuit}
 \end{figure}
 
-\paragraph{Procedimiento experimental.}
-\begin{enumerate}
-  \item \textbf{Generación del dataset}: 200 muestras $(x_i \in [-\pi, \pi]^2, y_i \in \{0, 1\})$ con \texttt{ZZFeatureMap} como función generadora de etiquetas (signo de $\langle ZZ\rangle$); partición estratificada de 140 entrenamiento y 60 test.
-  \item \textbf{Preprocesamiento}: Las entradas se generan directamente en $[-\pi, \pi]^2$ para la codificación angular de las puertas de rotación; el análisis de escalabilidad (300 muestras) las reescala además con \texttt{MinMaxScaler} a ese rango.
-  \item \textbf{Construcción del kernel}: \texttt{FidelityQuantumKernel} con \texttt{ComputeUncompute} como estimador de fidelidad y \texttt{StatevectorSampler} como backend. La matriz de kernel de entrenamiento ($140 \times 140$) tiene $19{,}600$ entradas, cada una la fidelidad entre dos estados de 2 qubits.
-  \item \textbf{Entrenamiento}: \texttt{SVC(kernel=``precomputed'', C=1.0)} con la matriz de kernel cuántico. Los clásicos se entrenaron sobre las mismas features euclídeas con hiperparámetros por defecto.
-  \item \textbf{Análisis de escalabilidad}: Experimentos adicionales con $n \in \{30,\allowbreak 50,\allowbreak 80,\allowbreak 100,\allowbreak 140,\allowbreak 180\}$ para comprobar si la ventaja depende del tamaño de entrenamiento: el Notebook~01 usa una partición por tamaño y el módulo \texttt{qml\_v2.scalability} lo repite 10 veces (Capítulo~\ref{cap:evaluacion}).
-  \item \textbf{Evaluación}: Accuracy, F1-score y matriz de confusión sobre test ($n=60$).
-\end{enumerate}
-
-\paragraph{Resultados preliminares.}
-El QSVM alcanzó una exactitud del \textbf{91.7\%}, frente al 53.3\% del mejor clasificador clásico (SVM polinomial de grado 3; SVM-RBF: 46.7\%, Gradient Boosting: 51.7\%, SVM lineal: 45.0\%): \textbf{ventaja de +38.3 pp}. El análisis de escalabilidad del notebook muestra una ventaja positiva en todos los tamaños $n \in [30, 180]$ (una partición por tamaño), con una media de +40.9 pp y un máximo de +48.9 pp para $n=50$.
-
-\paragraph{Ventajas identificadas.}
-\begin{itemize}
-  \item El kernel cuántico captura exactamente la estructura del espacio de Hilbert que define las etiquetas, produciendo una ventaja amplia que es esperable por construcción, al coincidir mapa y generador de etiquetas.
-  \item La ventaja es positiva en todos los tamaños de muestra evaluados; repetida 10 veces por tamaño, es de $+27.1$ a $+37.6$~pp, con intervalos de confianza del 95\% que excluyen el cero y creciente con $n$.
-  \item El resultado es coherente con la idea, formalizada por \cite{liu2021} y \cite{huang2021}, de que la ventaja requiere alineación entre kernel y etiquetas; no reproduce la separación rigurosa de \cite{liu2021}, que no es simulable clásicamente.
-\end{itemize}
-
-\paragraph{Limitaciones identificadas.}
-\begin{itemize}
-  \item El dataset es artificial y diseñado a medida para el kernel cuántico; no existe evidencia de que los datos del mundo real presenten esta estructura.
-  \item El coste computacional de construir la matriz de kernel escala como $O(n^2)$ en evaluaciones de circuito, haciendo prohibitivo el entrenamiento con $n > 1{,}000$ en simulación.
-  \item La simulación exacta no captura ruido cuántico; en hardware NISQ real, la fidelidad disminuiría y la ventaja podría reducirse o desaparecer con la profundidad de circuito actual.
-\end{itemize}
-
 % ---
-\subsection{Dataset 2: SKG Tecnología (incidentes de movilidad urbana, NUSE Bogotá)}
+\subsection{Dataset 1: SKG Tecnología (incidentes de movilidad urbana, NUSE Bogotá)}
 
 \paragraph{Descripción y justificación.}
 Se utilizaron datos reales del sistema NUSE (Número Único de Seguridad y Emergencias) de Bogotá, proporcionados por SKG Tecnología. El dataset contiene 27.326 registros de incidentes de movilidad con dos clases: incidente \textit{simple} (sin lesionados, $n=12{,}035$, 44\%) e incidente \textit{con lesionado} ($n=15{,}291$, 56\%). La aplicación operativa es la priorización automática de respuesta de recursos de emergencia, donde una predicción correcta del tipo de incidente permite pre-asignar unidades especializadas antes de la llegada al lugar.
@@ -168,10 +136,10 @@ El QSVM obtuvo exactitud del \textbf{55.0\%}, frente al \textbf{59.5\%} de SVM-R
 \end{itemize}
 
 % ---
-\subsection{Dataset 3: Telco Customer Churn (referencia)}
+\subsection{Dataset 2: Telco Customer Churn (referencia)}
 
 \paragraph{Descripción y justificación.}
-Como benchmark de dominio público se empleó el dataset \textit{Telco Customer Churn} (IBM, 7.043 registros, 20 variables predictoras), problema estándar de predicción de abandono de clientes con clase positiva desbalanceada (26.5\% churn). Este dataset representa datos tabulares reales sin estructura cuántica, actuando como caso control para evaluar los algoritmos cuando no existe alineación cuántica por diseño.
+Como benchmark de dominio público se empleó el dataset \textit{Telco Customer Churn} (IBM, 7.043 registros, 20 variables predictoras), problema estándar de predicción de abandono de clientes con clase positiva desbalanceada (26.5\% churn). Este dataset representa datos tabulares reales de uso común, sin pretensión de estructura cuántica, y es reproducible por terceros.
 
 \paragraph{Procedimiento experimental.}
 \begin{enumerate}
@@ -188,7 +156,7 @@ El QSVM obtuvo exactitud del \textbf{76.0\%} (F1 ponderado: 0.656), frente al \t
 \paragraph{Ventajas identificadas.}
 \begin{itemize}
   \item El QSVM alcanza una exactitud del 76.0\% con solo 4 componentes PCA, pero sobre un test de 50 ejemplos (una desviación de un solo ejemplo equivale a 2~pp), por lo que esta cifra no permite concluir que el kernel cuántico actúe como regularizador.
-  \item El resultado confirma la validez del diseño experimental: la ausencia de estructura cuántica produce la victoria clásica esperada, lo que valida la metodología comparativa.
+  \item Ofrece una referencia pública y reproducible con la que comparar el resultado con otros trabajos.
 \end{itemize}
 
 \paragraph{Limitaciones identificadas.}
@@ -212,7 +180,6 @@ Los resultados de las subsecciones anteriores mezclan dos fuentes de variación:
 \toprule
 \textbf{Dataset} & \textbf{QSVM (Acc)} & \textbf{SVM-RBF (Acc)} & \textbf{$\Delta$ Acc} & \textbf{Ventaja} \\
 \midrule
-Cuántico-nativo & 0.533 & 0.467 & $+0.067$ & \textbf{QSVM} \\
 SKG Incidentes movilidad   & 0.467 & 0.525 & $-0.058$ & SVM-RBF \\
 Telco Customer Churn       & 0.735 & 0.747 & $-0.013$ & SVM-RBF (marginal) \\
 \bottomrule
@@ -222,24 +189,22 @@ Telco Customer Churn       & 0.735 & 0.747 & $-0.013$ & SVM-RBF (marginal) \\
 \begin{figure}[ht]
 \centering
 \includegraphics[width=0.95\textwidth]{../POCs/data/output/figures/01_qsvm_vs_svm_directo.png}
-\caption{Comparativa directa QSVM (kernel cuántico ZZFeatureMap) vs.\ SVM-RBF (kernel clásico) bajo condiciones controladas idénticas (mismo \texttt{SVC} base, $C=1.0$, PCA a 2 componentes). El eje vertical muestra la exactitud; el signo del $\Delta$ indica ventaja cuántica (positivo) o ventaja clásica (negativo). La ventaja cuántica solo emerge en el dataset con estructura cuántica nativa, confirmando la hipótesis de alineación estructural.}
+\caption{Comparativa directa QSVM (kernel cuántico ZZFeatureMap) vs.\ SVM-RBF (kernel clásico) bajo condiciones controladas idénticas (mismo \texttt{SVC} base, $C=1.0$, PCA a 2 componentes). El eje vertical muestra la exactitud; el signo del $\Delta$ indica ventaja cuántica (positivo) o ventaja clásica (negativo); en ambos datasets reales es negativo.}
 \label{fig:qsvm_vs_svm_directo}
 \end{figure}
 
 
 \paragraph{Interpretación.}
-El contraste directo revela un patrón coherente con la expectativa de \cite{liu2021} y \cite{huang2021} de que la ventaja depende de la alineación entre kernel y datos:
+El contraste directo no muestra ventaja del kernel cuántico en ninguno de los dos datasets, en línea con la exigencia de \cite{huang2021} de una diferencia geométrica grande y alineada con los datos:
 
 \begin{itemize}
-  \item \textbf{Dataset cuántico-nativo:} el kernel cuántico ZZFeatureMap supera al RBF en $+6.7$ pp. Ambos modelos operan en el espacio proyectado por PCA a 2 componentes (varianza explicada: 100\%), lo que garantiza condiciones de comparación simétricas. La diferencia equivale a 4 aciertos sobre 60 puntos de test, con ambos modelos cerca del azar tras la proyección a 2 componentes, por lo que no es estadísticamente concluyente; la evidencia robusta de este régimen es la del Caso~1 (10 repeticiones).
+  \item \textbf{Dataset SKG (incidentes de movilidad):} el SVM-RBF supera al QSVM en $5.8$ pp (y GB/RF mantienen la superioridad operativa). Con PCA a 2 componentes y varianza explicada del 63.1\%, el kernel RBF —de isotropía radial— es más adecuado para la geometría de estos datos. Un $\mathcal{Q}(\text{SKG}) = +0.163$ puntual frente a RBF (definición del Notebook~09, Capítulo~\ref{cap:investigacion_original}) \textbf{no} implica compatibilidad con el kernel cuántico: bajo $\mathcal{Q}_{\mathrm{rob}}$ el veredicto es clásico, y el bajo rendimiento absoluto ($< 55\%$) sugiere además pérdida discriminativa por la proyección a 2D.
 
-  \item \textbf{Dataset SKG (incidentes de movilidad):} el SVM-RBF supera al QSVM en $5.8$ pp (y GB/RF mantienen la superioridad operativa). Con PCA a 2 componentes y varianza explicada del 63.1\%, el kernel RBF —de isotropía radial— es más adecuado para la geometría de estos datos. Un $\mathcal{Q}(\text{SKG}) = +0.163$ puntual frente a RBF (definición del Notebook~09, Capítulo~\ref{cap:investigacion_original}) \textbf{no} implica que SKG sea cuántico-nativo: bajo $\mathcal{Q}_{\mathrm{rob}}$ el veredicto es clásico, y el bajo rendimiento absoluto ($< 55\%$) sugiere además pérdida discriminativa por la proyección a 2D.
-
-  \item \textbf{Telco Churn:} la diferencia es mínima ($-1.3$ pp) y dentro del margen de variabilidad estadística con el tamaño de muestra utilizado ($n_{\text{train}} = 120$). El score $\mathcal{Q}(\text{Telco}) = -0.228$ predice correctamente la ausencia de ventaja cuántica en este dataset.
+  \item \textbf{Telco Churn:} la diferencia es mínima ($-1.3$ pp) y dentro del margen de variabilidad estadística con el tamaño de muestra utilizado ($n_{\text{train}} = 120$). El score $\mathcal{Q}(\text{Telco}) = -0.228$ es coherente con la ausencia de ventaja en este dataset, aunque con dos datasets no puede hablarse de capacidad predictiva.
 \end{itemize}
 
 \paragraph{Conclusión del contraste.}
-El diferencial de rendimiento entre el kernel cuántico y el RBF es una función directa de la adecuación estructural del dataset al espacio de Hilbert del circuito, cuantificable mediante el score $\mathcal{Q}(\mathcal{D})$ del Capítulo~\ref{cap:investigacion_original}. Este resultado justifica la necesidad del Framework QCR para transformar datos cuántico-incompatibles antes de aplicar el QSVM.
+En ambos datasets el kernel cuántico no mejora al RBF bajo condiciones controladas. Este resultado motiva el Framework QCR del Capítulo~\ref{cap:investigacion_original}: antes de aplicar el QSVM a un dataset real conviene diagnosticar su compatibilidad con el kernel mediante el perfil $\mathcal{Q}(\mathcal{D})$ y, en su caso, transformar los datos a una representación adecuada.
 
 % =====================================================================
 \section{Caso de uso 2: Regresión con kernel cuántico (QK-SVR)}
@@ -247,43 +212,10 @@ El diferencial de rendimiento entre el kernel cuántico y el RBF es una función
 
 \subsection{Descripción del problema}
 
-El segundo caso de uso evalúa la regresión cuántica mediante QK-SVR (Quantum Kernel Support Vector Regressor) frente a cuatro regressores clásicos: XGBoost, Random Forest, SVR-RBF y Ridge. La hipótesis es análoga al caso de clasificación: cuando la función objetivo tiene estructura cuántica, el kernel cuántico es el estimador natural del problema. Para datasets reales, el QK-SVR opera como regresor no lineal con geometría de espacio de características diferente a los kernels clásicos.
+El segundo caso de uso evalúa la regresión cuántica mediante QK-SVR (Quantum Kernel Support Vector Regressor) frente a cuatro regressores clásicos: XGBoost, Random Forest, SVR-RBF y Ridge. La pregunta es análoga a la del caso de clasificación: sobre datos reales y de referencia, \textquestiondown{}mejora el QK-SVR, que opera como regresor no lineal con una geometría de espacio de características distinta de la de los kernels clásicos, a los regresores habituales?
 
 % ---
-\subsection{Dataset 1: Cuántico-nativo}
-
-\paragraph{Descripción y justificación.}
-Se generó un dataset de regresión donde los valores objetivo son la expectación continua del observable cuántico:
-\begin{equation}
-  y_i = \langle\phi(x_i)|\,Z \otimes Z\,|\phi(x_i)\rangle \in [-1, 1]
-\end{equation}
-El kernel cuántico de fidelidad es, por construcción, el estimador natural de esta función: el dato está generado por el mismo mapa que define el kernel.
-
-\paragraph{Procedimiento experimental.}
-\begin{enumerate}
-  \item \textbf{Generación}: 200 muestras $x_i \in [-\pi,\pi]^2$ con $y_i=\langle ZZ\rangle$ calculado con \texttt{Statevector}; las entradas que recibe el kernel son exactamente aquellas con las que se calculó la etiqueta, y se divide 140/60 (entrenamiento/test, semilla 42).
-  \item \textbf{Construcción del kernel}: \texttt{ZZFeatureMap} (2 qubits, \texttt{reps=2}, entrelazamiento completo) y \texttt{FidelityQuantumKernel}.
-  \item \textbf{Entrenamiento}: \texttt{SVR(kernel=``precomputed'', C=10.0, epsilon=0.1)} con el kernel cuántico; los clásicos (Ridge, Random Forest, SVR-RBF y SVR-Poly) se entrenan sobre las mismas entradas.
-  \item \textbf{Evaluación}: $R^2$ y RMSE sobre el conjunto de test.
-\end{enumerate}
-
-\paragraph{Resultados.}
-El QK-SVR obtuvo $R^2 = 0.985$ frente a $R^2 = 0.020$ del mejor clásico (SVR-Poly): $\Delta R^2 = +0.965$. Los clásicos no superan el nivel de una predicción constante, mientras que el kernel cuántico reproduce la función porque esta es, por construcción, lineal en su espacio de características.
-
-\paragraph{Ventajas identificadas.}
-\begin{itemize}
-  \item Es el único dataset de regresión en el que el kernel cuántico supera al mejor clásico, y es precisamente aquel cuyo generador coincide con el mapa de características.
-  \item La implementación de regresión cuántica es directamente reutilizable sin modificar la arquitectura del modelo.
-\end{itemize}
-
-\paragraph{Limitaciones identificadas.}
-\begin{itemize}
-  \item No se exploraron otros hiperparámetros; los clásicos podrían mejorar con una búsqueda sobre $C$ y $\varepsilon$.
-  \item Una sola partición de 60 puntos de test no permite estimar la incertidumbre de la diferencia; el protocolo justo (10 repeticiones) la acota: $\Delta R^2=+1.002$ con desviación $0.002$ del QK-SVR.
-\end{itemize}
-
-% ---
-\subsection{Dataset 2: SKG Tecnología (tiempos de viaje en corredores viales, Bogotá)}
+\subsection{Dataset 1: SKG Tecnología (tiempos de viaje en corredores viales, Bogotá)}
 
 \paragraph{Descripción y justificación.}
 Se utilizaron los datos históricos de tiempos de viaje en corredores viales de Bogotá (\texttt{bctraveltimes\_history.csv}), con 81.121 registros. La variable objetivo es la velocidad media del vehículo en km/h (media: 26.0, $\sigma = 12.5$ km/h). La aplicación operativa es la predicción de niveles de servicio para la gestión proactiva del tráfico urbano y la asignación dinámica de recursos de respuesta.
@@ -316,7 +248,7 @@ El QK-SVR obtuvo $R^2 = 0.098$ (RMSE = 11.04 km/h), frente al $R^2 = 0.660$ del 
 \end{itemize}
 
 % ---
-\subsection{Dataset 3: Friedman \#1 (referencia)}
+\subsection{Dataset 2: Friedman \#1 (referencia)}
 \label{sec:friedman}
 
 \paragraph{Descripción y justificación.}
@@ -338,7 +270,7 @@ La componente $\sin(\pi x_1 x_2)$ es una interacción multiplicativa oscilatoria
 El QK-SVR obtuvo $R^2 = -0.151$ (RMSE = 4.83) frente a $R^2 = 0.777$ de XGBoost (RMSE = 2.13): $\Delta R^2 = -0.928$.
 
 \paragraph{Lectura.}
-El kernel cuántico no es competitivo en este benchmark clásico: queda por debajo incluso de la regresión lineal ($R^2=0.641$) y de Random Forest ($R^2=0.704$). El resultado es coherente con el criterio de alineación entre mapa y generador: Friedman~\#1 no está generado por el \texttt{ZZFeatureMap}.
+El kernel cuántico no es competitivo en este benchmark clásico: queda por debajo incluso de la regresión lineal ($R^2=0.641$) y de Random Forest ($R^2=0.704$). El resultado es coherente con la ausencia de una diferencia geométrica favorable al mapa ZZ: Friedman~\#1 es un benchmark clásico dominado por términos aditivos y cuadráticos que los árboles y los modelos lineales capturan sin necesidad de un kernel cuántico.
 
 \paragraph{Limitaciones identificadas.}
 \begin{itemize}
@@ -447,16 +379,16 @@ El valor del Caso~5 es de \textbf{protocolo y modelado QUBO/QAOA}, no de speedup
 \section{Caso de uso 6: Análisis de umbral de ventaja del kernel cuántico}
 % =====================================================================
 
-Este caso de uso complementa el caso 1 con un análisis específico del umbral de tamaño de muestra a partir del cual el kernel cuántico supera a los kernels clásicos. Con la motivación teórica de \cite{liu2021} y \cite{huang2021}, se evaluó el régimen de ventaja en el dataset cuántico-nativo ($n\in\{50,80,100,120,150\}$ muestras, partición 70/30 única por tamaño) y se contrastó con controles reales (SKG, Telco) donde \textbf{no} hay alineación mapa--generador.
+Este caso de uso complementa el caso 1 con un análisis específico del umbral de tamaño de muestra a partir del cual el kernel cuántico superaría a los kernels clásicos. Con la motivación teórica de \cite{liu2021} y \cite{huang2021}, se evaluó el contraste en SKG y Telco, con una partición 70/30 única por dataset.
 
 \paragraph{Resultados.}
-En el dataset cuántico-nativo ($n=150$, 45 puntos de test), el QSVC obtuvo 68.9\% frente al 60.0\% del mejor clásico (SVM polinomial): \textbf{+8.9 pp}, es decir, cuatro aciertos más sobre una única partición, por lo que la diferencia no es estadísticamente concluyente por sí sola; la evidencia robusta de este régimen es la del Caso~1 (protocolo con 10 repeticiones). SKG (Incidentes Bogotá) \textbf{no} es cuántico-nativo: QSVC 56.7\% frente a 60.7\% del mejor clásico ($-4.0$~pp). Telco tampoco: QSVM 76.0\% frente a 79.8\% de Gradient Boosting (\textbf{$-3.8$~pp}); el baseline operativo es GB/RF, no un RBF aislado en un subconjunto pequeño. Una versión previa del Notebook~06 estimaba el kernel con un muestreador de 1024 \emph{shots} sin semilla, de modo que el mismo experimento no era reproducible entre ejecuciones; se sustituyó por el cálculo exacto de la fidelidad, que es determinista y coincide con el resto de cuadernos.
+SKG (Incidentes Bogotá): QSVC 56.7\% frente a 60.7\% del mejor clásico ($-4.0$~pp). Telco: QSVM 76.0\% frente a 79.8\% de Gradient Boosting (\textbf{$-3.8$~pp}); el baseline operativo es GB/RF, no un RBF aislado en un subconjunto pequeño. Una versión previa del Notebook~06 estimaba el kernel con un muestreador de 1024 \emph{shots} sin semilla, de modo que el mismo experimento no era reproducible entre ejecuciones; se sustituyó por el cálculo exacto de la fidelidad, que es determinista y coincide con el resto de cuadernos.
 
 \paragraph{Limitaciones identificadas.}
 \begin{itemize}
-  \item El umbral de ventaja depende fuertemente de la estructura del dataset; no es posible determinar a priori si un dataset real exhibirá ventaja cuántica sin experimentación específica.
-  \item El coste cuadrático de la matriz de Gram limita el análisis: con $n\le150$ muestras el QSVC tarda entre 0.8 y 7.4~s en el dataset nativo, pero en SKG (450 ejemplos de entrenamiento) ya requiere 229~s.
-  \item Con una única partición por tamaño, las ventajas del Notebook~06 en $n=50$ y $n=80$ ($-6.7$ y $-4.2$~pp) y en $n\ge100$ ($+20.0$ a $+27.8$~pp) son orientativas; la escalabilidad con 10 repeticiones e IC 95\% se presenta en el Caso~1.
+  \item El umbral de ventaja depende de la estructura del dataset; no es posible determinar a priori si un dataset real exhibirá ventaja cuántica sin experimentación específica o sin un diagnóstico como el del Capítulo~\ref{cap:investigacion_original}.
+  \item El coste cuadrático de la matriz de Gram limita el análisis: en SKG (450 ejemplos de entrenamiento) el QSVC ya requiere 229~s.
+  \item Con una única partición, las diferencias de $-4.0$ y $-3.8$~pp equivalen a uno o dos aciertos y son orientativas; el protocolo con 10 repeticiones se presenta en el Caso~1.
 \end{itemize}
 
 % =====================================================================
@@ -639,8 +571,7 @@ La implementación de referencia vive en el módulo reproducible \texttt{POCs/qm
 \subsection{Hipótesis y delimitación}
 
 \begin{itemize}
-  \item \textbf{H8a:} cuando la anomalía es densidad o distancia (puntos lejos del soporte de los inliers), IsolationForest / LOF / OCSVM-RBF dominan.
-  \item \textbf{H8b:} cuando la anomalía es una \emph{estructura de fase distinta} ocupando el \emph{mismo soporte espacial} que los inliers (\texttt{zz\_phase} ---generador alineado con el mapa ZZ validado en este TFM), el One-Class SVM con kernel de fidelidad ZZ (OCSVM-ZZ) supera a IsolationForest.
+  \item \textbf{H8:} cuando la anomalía es densidad o distancia (puntos lejos del soporte de los inliers), IsolationForest / LOF / OCSVM-RBF dominan sobre el OCSVM-ZZ.
   \item \textbf{No-hipótesis:} no se afirma ventaja cuántica genérica sobre anomalías de negocio ni monopolio de ZZ frente a otros feature maps.
 \end{itemize}
 
@@ -658,24 +589,9 @@ IsolationForest, OCSVM-RBF, LOF y \textbf{OCSVM-ZZ} (kernel de fidelidad sobre \
 \subsection{Datasets}
 
 \begin{itemize}
-  \item \texttt{zz\_phase}: datos nativos alineados al mapa ZZ; la clase mayoritaria del generador es inlier y la minoritaria es outlier (mismo soporte en el plano de ángulos).
   \item \texttt{moons} / \texttt{blobs}: manifolds o gaussianas clásicas + outliers sintéticos lejanos.
   \item \texttt{telco\_injected} / \texttt{skg\_injected}: tablas de práctica; se \textbf{descartan} las etiquetas de churn/gravedad y se inyectan spikes lejanos en el espacio de features. SKG sigue siendo dato de práctica, no cliente.
 \end{itemize}
-
-\begin{figure}[!htbp]
-\centering
-\includegraphics[width=0.98\textwidth]{Imagenes/zz_phase_concept_diagram.png}
-\caption{Idea geométrica del Caso~8. Izquierda: anomalía por distancia (IsolationForest la detecta). Derecha: anomalía por estructura de fase alineada al feature map, mismo soporte espacial (IsolationForest falla; OCSVM-ZZ puede separar ---mapa validado: ZZ).}
-\label{fig:anomaly_concept}
-\end{figure}
-
-\begin{figure}[!htbp]
-\centering
-\includegraphics[width=0.98\textwidth]{Imagenes/zz_phase_vs_blobs_anomaly.png}
-\caption{Datos reales del generador QML~v2. En \texttt{blobs} las anomalías están lejos del blob de inliers; en \texttt{zz\_phase} normales y anomalías comparten la misma nube en el plano de ángulos.}
-\label{fig:anomaly_support}
-\end{figure}
 
 % =====================================================================
 \section{Caso de uso 9: Forecasting one-step por lags (QK-SVR)}
@@ -695,20 +611,12 @@ Este caso extiende la familia de kernels a \textbf{series temporales} con un pro
 
 \subsection{Datasets e hipótesis}
 
-La Figura~\ref{fig:ts_datasets} muestra los tres conjuntos.
+Se usan dos conjuntos:
 
 \begin{itemize}
-  \item \texttt{zz\_lag} (cuántico-nativo): pares de lags $(y_{t-2},y_{t-1})$ en $[-\pi,\pi]^2$ y objetivo $y_t=\langle ZZ\rangle$ del estado preparado por el mapa ZZ con esos ángulos, de modo que target y feature map están alineados por construcción. Los pares son independientes entre sí: es el control nativo del protocolo, no una serie con dinámica propia. Cada repetición toma 160 ventanas de un conjunto de 320.
   \item \texttt{sine} (referencia sintética): $\sin(2\pi t/24)+0.3\sin(2\pi t/7)$ más ruido gaussiano ($\sigma=0.15$), 480 puntos; cada repetición toma una ventana contigua de 160. Periodicidad clásica.
   \item \texttt{skg\_speed} (SKG, datos de práctica): velocidad de los corredores viales de Bogotá (\texttt{bctraveltimes\_history.csv}; 582 corredores con una lectura cada 5 minutos durante 12~h). Cada repetición usa un corredor distinto (los 5 con más lecturas, 144 cada uno, 138 ventanas), de forma que las repeticiones no reutilizan la misma serie.
 \end{itemize}
-
-\begin{figure}[ht]
-\centering
-\includegraphics[width=\textwidth]{../POCs/data/output/figures/12_series_datasets.png}
-\caption{Datasets del Caso~9. Izquierda: \texttt{zz\_lag}, con los dos lags como ejes y el objetivo $\langle ZZ\rangle$ como color. Centro y derecha: \texttt{sine} y un corredor de \texttt{skg\_speed}, con la zona de prueba (futuro) sombreada. Fuente: Notebook~12.}
-\label{fig:ts_datasets}
-\end{figure}
 
 \subsection{Resultados (Tabla~A)}
 
@@ -719,17 +627,16 @@ La Figura~\ref{fig:ts_datasets} muestra los tres conjuntos.
 \hline
 \textbf{Dataset} & \textbf{Mejor Tabla~A} & \textbf{MAE} & \textbf{Lectura} \\
 \hline
-\texttt{zz\_lag} & \textbf{QK-SVR-ZZ} & \textbf{0.056} frente a Ridge 0.414 & Target $=\langle ZZ\rangle$ \\
 \texttt{sine} & SVR-RBF & 0.260 frente a QK-SVR 0.662 & Periodicidad clásica \\
 \texttt{skg\_speed} & Ridge & 2.80 frente a QK-SVR 13.59 & Práctica; clásico \\
 \hline
 \end{tabular}
-\caption{Caso~9. MAE en test (media de 5 repeticiones). Ventaja solo cuando el generador del target está alineado con el feature map (aquí ZZ en \texttt{zz\_lag}). Fuente: \texttt{fair\_timeseries\_*.csv}.}
+\caption{Caso~9. MAE en test (media de 5 repeticiones). Los clásicos con los mismos lags superan al QK-SVR en ambas series. Fuente: \texttt{fair\_timeseries\_*.csv}.}
 \label{tab:timeseries_dev}
 \end{table}
 
 \paragraph{Lectura.}
-Mismo principio transversal que en clasificación y anomalías: no ``ZZ gana en series'', sino ``el mapa alineado gana; ZZ es el que medimos''. Fuera del régimen nativo el kernel ZZ de 2 qubits no extrae señal: su MAE coincide con el de predecir la media del entrenamiento ($0.662$ frente a $0.658$ en \texttt{sine}; $13.59$ frente a $13.61$ en \texttt{skg\_speed}), mientras que Ridge se sitúa en el nivel de la persistencia ($2.80$ frente a $2.75$ en SKG). En el corredor SKG la opción operativa es, por tanto, un modelo lineal sobre lags (o la propia persistencia); añadir variables clásicas (Tabla~B) no mejora el resultado con series de solo 138 ventanas.
+Como en clasificación y anomalías, el QK-SVR no mejora a los clásicos. El kernel ZZ de 2 qubits no extrae señal de los lags: su MAE coincide con el de predecir la media del entrenamiento ($0.662$ frente a $0.658$ en \texttt{sine}; $13.59$ frente a $13.61$ en \texttt{skg\_speed}), mientras que Ridge se sitúa en el nivel de la persistencia ($2.80$ frente a $2.75$ en SKG). En el corredor SKG la opción operativa es, por tanto, un modelo lineal sobre lags (o la propia persistencia); añadir variables clásicas (Tabla~B) no mejora el resultado con series de solo 138 ventanas.
 
 % =====================================================================
 \section{Prototipo de arquitectura híbrida cuántico-clásica}
@@ -754,17 +661,17 @@ No todos los problemas se benefician del módulo cuántico. La Tabla~\ref{tab:fl
 \textbf{Tipo de problema} & \textbf{Criterio de activación} & \textbf{Módulo cuántico} & \textbf{Módulo clásico} \\
 \hline
 Clasificación / Regresión &
-$\mathcal{Q}(\mathcal{D}) > 0$ (score de cuanticidad positivo) &
+Perfil $\mathcal{Q}(\mathcal{D})$ favorable y ventaja confirmada frente al mejor clásico (no basta $\mathcal{Q}>0$) &
 QSVM / QK-SVR (kernel cuántico) &
 Gradient Boosting como fallback \\
 \hline
 Detección de anomalías (one-class) &
-Anomalía alineada al feature map (p.\,ej.\ \texttt{zz\_phase}, $\mathcal{Q}>0$) &
+Anomalía que un feature map separa mejor que los kernels clásicos (hipótesis abierta; no observada aquí) &
 OCSVM-ZZ (u otro kernel si el mapa cambia) &
 IsolationForest / LOF como default \\
 \hline
 Forecasting (lags) &
-Target alineado al mapa (p.\,ej.\ \texttt{zz\_lag}) &
+Target con estructura accesible al mapa (hipótesis abierta; no observada aquí) &
 QK-SVR (ZZ u otro) &
 Ridge / SVR-RBF / GB \\
 \hline
@@ -774,7 +681,7 @@ QAOA ($p \geq 1$) &
 NN+2-opt / ILP / verificación \\
 \hline
 Caso general &
-$\mathcal{Q}(\mathcal{D}) \leq 0$ o $n_{\text{vars}} > 50$ &
+Perfil $\mathcal{Q}(\mathcal{D})$ desfavorable o $n_{\text{vars}} > 50$ &
 No se activa &
 Pipeline clásico estándar \\
 \hline
