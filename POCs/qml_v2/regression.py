@@ -13,7 +13,6 @@ vs quantum on a PCA subsample; quantum-native X re-scaled after generation.
 
 from __future__ import annotations
 
-import json
 from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Any
@@ -28,11 +27,17 @@ from sklearn.model_selection import ShuffleSplit
 from sklearn.preprocessing import StandardScaler
 from sklearn.svm import SVR
 
-from qml_v2.classification import (
+from qml_v2.classification import encode_for_zz_kernel
+from qml_v2.kernels import QuantumKernelModel, feature_map_expectation, zz_map
+from qml_v2.outputs import (
     REPO_ROOT,
-    encode_for_zz_kernel,
-    repo_paths,
-    zz_map,
+    apply_overrides,
+    dataset_names,
+    finish_run,
+    make_parser,
+    metrics_dir,
+    record_dataset,
+    report_header,
 )
 
 
@@ -51,7 +56,7 @@ class RegConfig:
 
 
 @dataclass
-class RegRepeatResult:
+class RepeatScores:
     repeat: int
     model: str
     table: str
@@ -61,6 +66,10 @@ class RegRepeatResult:
     n_train: int
     n_test: int
     n_features: int
+
+
+@dataclass
+class RegRepeatResult(RepeatScores):
     pca_var_explained: float | None = None
 
 
@@ -72,21 +81,11 @@ def make_quantum_native_regression(
     random_state: int = 42,
 ) -> tuple[np.ndarray, np.ndarray]:
     """X in [-pi, pi]^{n_qubits}; y = <Z...Z> (continuous in [-1, 1])."""
-    from qiskit.quantum_info import SparsePauliOp, Statevector
-
-    rng = np.random.RandomState(random_state)
-    X = rng.uniform(-np.pi, np.pi, size=(n_samples, n_qubits))
-    fmap = zz_map(n_qubits, reps, entanglement)
-    pauli = "Z" * n_qubits if n_qubits != 2 else "ZZ"
-    obs = SparsePauliOp.from_list([(pauli, 1.0)])
-    y = np.empty(n_samples, dtype=float)
-    for i, x in enumerate(X):
-        bound = fmap.assign_parameters(dict(zip(fmap.parameters, x)))
-        y[i] = float(Statevector(bound).expectation_value(obs).real)
-    return X, y
+    X = np.random.RandomState(random_state).uniform(-np.pi, np.pi, size=(n_samples, n_qubits))
+    return X, feature_map_expectation(zz_map(n_qubits, reps, entanglement), "Z" * n_qubits, X)
 
 
-class QuantumKernelSVR:
+class QuantumKernelSVR(QuantumKernelModel):
     """Fidelity quantum kernel + classical SVR (precomputed)."""
 
     def __init__(
@@ -98,29 +97,8 @@ class QuantumKernelSVR:
         epsilon: float = 0.1,
         random_state: int = 42,
     ):
-        from qiskit_algorithms.utils import algorithm_globals
-        from qiskit_machine_learning.kernels import FidelityQuantumKernel
-
-        algorithm_globals.random_seed = random_state
-        fmap = zz_map(n_qubits, reps, entanglement)
-        self.kernel = FidelityQuantumKernel(feature_map=fmap)
-        self.C = C
-        self.epsilon = epsilon
-        self.X_train_: np.ndarray | None = None
-        self.svr_: SVR | None = None
-
-    def fit(self, X: np.ndarray, y: np.ndarray) -> QuantumKernelSVR:
-        self.X_train_ = np.asarray(X, dtype=float)
-        K = self.kernel.evaluate(x_vec=self.X_train_)
-        self.svr_ = SVR(kernel="precomputed", C=self.C, epsilon=self.epsilon)
-        self.svr_.fit(K, y)
-        return self
-
-    def predict(self, X: np.ndarray) -> np.ndarray:
-        if self.X_train_ is None or self.svr_ is None:
-            raise RuntimeError("Call fit() before predict().")
-        K = self.kernel.evaluate(x_vec=np.asarray(X, dtype=float), y_vec=self.X_train_)
-        return self.svr_.predict(K)
+        svr = SVR(kernel="precomputed", C=C, epsilon=epsilon)
+        super().__init__(zz_map(n_qubits, reps, entanglement), svr, random_state)
 
 
 def load_friedman(n_samples: int, n_features: int, random_state: int) -> tuple[np.ndarray, np.ndarray]:
@@ -157,7 +135,7 @@ def subsample(X: np.ndarray, y: np.ndarray, n_total: int, random_state: int):
     return X[idx], y[idx]
 
 
-def _scores(y_true: np.ndarray, y_pred: np.ndarray) -> tuple[float, float, float]:
+def regression_scores(y_true: np.ndarray, y_pred: np.ndarray) -> tuple[float, float, float]:
     return (
         float(r2_score(y_true, y_pred)),
         float(np.sqrt(mean_squared_error(y_true, y_pred))),
@@ -211,7 +189,7 @@ def run_reg_dataset(
             random_state=cfg.random_state,
         )
         qmodel.fit(Xq_tr, y_tr)
-        r2, rmse, mae = _scores(y_te, qmodel.predict(Xq_te))
+        r2, rmse, mae = regression_scores(y_te, qmodel.predict(Xq_te))
         rows.append(
             RegRepeatResult(
                 repeat=repeat,
@@ -231,7 +209,7 @@ def run_reg_dataset(
             cfg.svr_C, cfg.svr_epsilon, cfg.n_estimators, cfg.random_state
         ).items():
             clf.fit(Xq_tr, y_tr)
-            r2, rmse, mae = _scores(y_te, clf.predict(Xq_te))
+            r2, rmse, mae = regression_scores(y_te, clf.predict(Xq_te))
             rows.append(
                 RegRepeatResult(
                     repeat=repeat,
@@ -255,7 +233,7 @@ def run_reg_dataset(
                 cfg.svr_C, cfg.svr_epsilon, cfg.n_estimators, cfg.random_state
             ).items():
                 clf.fit(Xb_tr, y_tr)
-                r2, rmse, mae = _scores(y_te, clf.predict(Xb_te))
+                r2, rmse, mae = regression_scores(y_te, clf.predict(Xb_te))
                 rows.append(
                     RegRepeatResult(
                         repeat=repeat,
@@ -385,72 +363,36 @@ def run_all(
         X, y, _ = load_skg_speeds()
         jobs.append(("skg", X, y, False, cfg.n_qubits))
 
-    metrics_dir = repo_paths()["metrics"]
-    metrics_dir.mkdir(parents=True, exist_ok=True)
+    report = report_header(
+        "Regression results (QML v2)",
+        "regression",
+        [
+            "Table A = same features. Table B = classical full features, same n.",
+            "SKG features exclude los_enc / elapsed_time (near-target leakage).",
+            "friedman_full = 5 qubits, no PCA (matched width).",
+        ],
+        cfg,
+    )
     out: dict[str, pd.DataFrame] = {}
-    report_lines = [
-        "# Regression results (QML v2)",
-        "",
-        "Generated by `python -m qml_v2.regression`.",
-        "Table A = same features. Table B = classical full features, same n.",
-        "SKG features exclude los_enc / elapsed_time (near-target leakage).",
-        "friedman_full = 5 qubits, no PCA (matched width).",
-        "",
-        f"Config: `{json.dumps(asdict(cfg))}`",
-        "",
-    ]
-
     for name, X, y, native, n_q in jobs:
         local = RegConfig(**{**asdict(cfg), "n_qubits": n_q})
         print(f"\n=== {name}  n={len(y)}  features={X.shape[1]}  native={native}  qubits={n_q} ===")
         rows = run_reg_dataset(name, X, y, local, already_zz_space=native, include_table_b=not native)
-        raw = pd.DataFrame([asdict(r) for r in rows])
-        raw.insert(0, "dataset", name)
-        raw.to_csv(metrics_dir / f"qml_v2_regression_{name}_raw.csv", index=False)
-        summary = summarize(rows)
-        summary.insert(0, "dataset", name)
-        out[name] = summary
-        summary.to_csv(metrics_dir / f"qml_v2_regression_{name}.csv", index=False)
-        print(summary.to_string(index=False))
-        adv = advantage_report(summary)
-        print(adv)
-        report_lines += [f"## {name}", "", "```", adv, "```", "", "```", summary.to_string(index=False), "```", ""]
+        out[name] = record_dataset(name, rows, summarize, advantage_report, stem="qml_v2_regression", report=report)
 
     if out:
-        pd.concat(out.values(), ignore_index=True).to_csv(metrics_dir / "qml_v2_regression_all.csv", index=False)
-        (metrics_dir / "qml_v2_regression_config.json").write_text(json.dumps(asdict(cfg), indent=2))
-        report_path = REPO_ROOT / "BUSINESS" / "regression_v2_results.md"
-        report_path.write_text("\n".join(report_lines) + "\n")
-        print(f"\nWrote {report_path}")
+        pd.concat(out.values(), ignore_index=True).to_csv(metrics_dir() / "qml_v2_regression_all.csv", index=False)
+        finish_run(report, cfg, report_file="regression_v2_results.md", config_file="qml_v2_regression_config.json")
     return out
 
 
-def main() -> None:
-    import argparse
+FLAGS = ("n_total", "n_repeats", "n_qubits", "zz_reps")
 
-    p = argparse.ArgumentParser(description="QML v2 fair regression")
-    p.add_argument("--quick", action="store_true")
-    p.add_argument("--n-total", type=int, default=None)
-    p.add_argument("--n-repeats", type=int, default=None)
-    p.add_argument("--n-qubits", type=int, default=None)
-    p.add_argument("--zz-reps", type=int, default=None)
-    p.add_argument(
-        "--datasets",
-        default="quantum_native,friedman,friedman_full,skg",
-        help="quantum_native,friedman,friedman_full,skg",
-    )
-    args = p.parse_args()
-    cfg = RegConfig()
-    if args.n_total is not None:
-        cfg.n_total = args.n_total
-    if args.n_repeats is not None:
-        cfg.n_repeats = args.n_repeats
-    if args.n_qubits is not None:
-        cfg.n_qubits = args.n_qubits
-    if args.zz_reps is not None:
-        cfg.zz_reps = args.zz_reps
-    names = tuple(s.strip() for s in args.datasets.split(",") if s.strip())
-    run_all(cfg=cfg, datasets=names, quick=args.quick)
+
+def main() -> None:
+    parser = make_parser("QML v2 fair regression", "quantum_native,friedman,friedman_full,skg", FLAGS)
+    args = parser.parse_args()
+    run_all(cfg=apply_overrides(RegConfig(), args, FLAGS), datasets=dataset_names(args), quick=args.quick)
 
 
 if __name__ == "__main__":

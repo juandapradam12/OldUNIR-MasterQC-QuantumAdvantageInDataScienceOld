@@ -32,7 +32,8 @@ from typing import Any
 import numpy as np
 import pandas as pd
 
-from qml_v2.classification import REPO_ROOT, repo_paths
+from qml_v2.optimization import decode_named_matrix
+from qml_v2.outputs import REPO_ROOT, repo_paths
 
 # 12 Colombian capitals from TFM notebook 05 (CSV not in repo).
 COLOMBIA_CITIES: list[tuple[str, float, float]] = [
@@ -350,31 +351,17 @@ def decode_tsp_from_result(result, n: int, qp=None, fix_depot: bool = True) -> n
     X = np.zeros((n, n), dtype=int)
     if fix_depot:
         X[0, 0] = 1
-    values = np.asarray(result.x, dtype=float)
-    names = list(getattr(result, "variable_names", None) or [])
-    if not names and qp is not None:
-        names = [v.name for v in qp.variables]
-    if names and len(names) >= len(values):
-        names = names[: len(values)]
-    if names and len(names) == len(values):
-        for name, val in zip(names, values):
-            if not str(name).startswith("x_"):
-                continue
-            parts = str(name).split("_")
-            if len(parts) != 3:
-                continue
-            i, p = int(parts[1]), int(parts[2])
-            if 0 <= i < n and 0 <= p < n:
-                X[i, p] = int(val > 0.5)
-        return X
+    named = decode_named_matrix(result, n, qp, X)
+    if named is not None:
+        return named
     # Fallback reshape for full n² only
-    bits = values[: n * n]
+    bits = np.asarray(result.x, dtype=float)[: n * n]
     if bits.size >= n * n:
         return np.round(bits).astype(int).reshape(n, n)
     return X
 
 
-def qubo_dict_from_qp(qp) -> dict[tuple[str, str], float]:
+def qubo_dict_from_qp(qp):
     """Flatten QuadraticProgram (after to_ising path) via converter."""
     from qiskit_optimization.converters import QuadraticProgramToQubo
 

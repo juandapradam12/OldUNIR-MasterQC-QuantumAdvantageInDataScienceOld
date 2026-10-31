@@ -30,15 +30,13 @@ from sklearn.model_selection import train_test_split
 from sklearn.svm import SVC
 
 from qml_v2.classification import (
-    REPO_ROOT,
     encode_for_zz_kernel,
-    load_skg_incidents,
-    load_telco,
+    kernel_dataset_jobs,
     make_quantum_native,
-    repo_paths,
     subsample_stratified,
-    zz_map,
 )
+from qml_v2.kernels import fidelity_kernel, zz_fidelity_kernel, zz_map
+from qml_v2.outputs import REPO_ROOT, apply_overrides, dataset_names, make_parser, metrics_dir
 
 
 @dataclass
@@ -258,7 +256,7 @@ def quantumness_score(
     }
 
 
-def _indicators_on_matrix(
+def indicators_on_matrix(
     Xq: np.ndarray,
     y_s: np.ndarray,
     cfg: QuantumnessConfig,
@@ -342,12 +340,7 @@ def _indicators_on_matrix(
             random_state=seed,
             stratify=y_s,
         )
-        from qiskit_algorithms.utils import algorithm_globals
-        from qiskit_machine_learning.kernels import FidelityQuantumKernel
-
-        algorithm_globals.random_seed = seed
-        fmap = zz_map(cfg.n_qubits, cfg.zz_reps, cfg.entanglement)
-        qk = FidelityQuantumKernel(feature_map=fmap)
+        qk = fidelity_kernel(zz_map(cfg.n_qubits, cfg.zz_reps, cfg.entanglement), seed)
         Kq_tr = qk.evaluate(X_tr)
         Kq_te = qk.evaluate(X_te, X_tr)
         gamma = 1.0 / (2.0 * max(sigma_frob, 1e-6) ** 2)
@@ -394,15 +387,6 @@ def decide_verdict(
 # ---------------------------------------------------------------------------
 
 
-def zz_fidelity_kernel(X: np.ndarray, n_qubits: int, reps: int, entanglement: str, seed: int) -> np.ndarray:
-    from qiskit_algorithms.utils import algorithm_globals
-    from qiskit_machine_learning.kernels import FidelityQuantumKernel
-
-    algorithm_globals.random_seed = seed
-    fmap = zz_map(n_qubits, reps, entanglement)
-    return np.asarray(FidelityQuantumKernel(feature_map=fmap).evaluate(X), dtype=float)
-
-
 def _encode_subsample(
     X: np.ndarray,
     y: np.ndarray,
@@ -437,7 +421,7 @@ def compute_indicators(
         seed = cfg.random_state + 17 * r
         Xq, y_s, pca_var = _encode_subsample(X, y, cfg, already_zz_space, seed)
         pca_vars.append(pca_var)
-        row = _indicators_on_matrix(Xq, y_s, cfg, seed=seed, compute_advantage=compute_advantage)
+        row = indicators_on_matrix(Xq, y_s, cfg, seed=seed, compute_advantage=compute_advantage)
         row["repeat"] = r
         repeats.append(row)
 
@@ -579,8 +563,7 @@ def run_all(
             gate_kappa=cfg.gate_kappa,
         )
 
-    metrics = repo_paths()["metrics"]
-    metrics.mkdir(parents=True, exist_ok=True)
+    metrics = metrics_dir()
     out: dict[str, pd.DataFrame] = {}
     real_rows: list[dict[str, Any]] = []
 
@@ -595,24 +578,7 @@ def run_all(
         "",
     ]
 
-    jobs: list[tuple[str, np.ndarray, np.ndarray, bool]] = []
-    if "quantum_native" in datasets:
-        X, y = make_quantum_native(
-            n_samples=max(cfg.n_sample * 2, 120),
-            n_qubits=cfg.n_qubits,
-            reps=cfg.zz_reps,
-            entanglement=cfg.entanglement,
-            random_state=cfg.random_state,
-        )
-        jobs.append(("quantum_native", X, y, True))
-    if "telco" in datasets:
-        X, y, _ = load_telco()
-        jobs.append(("telco", X, y, False))
-    if "skg" in datasets:
-        X, y, _ = load_skg_incidents()
-        jobs.append(("skg", X, y, False))
-
-    for name, X, y, native in jobs:
+    for name, X, y, native in kernel_dataset_jobs(datasets, max(cfg.n_sample * 2, 120), cfg):
         print(f"\n=== {name}  n={len(y)}  feats={X.shape[1]}  native={native} ===")
         r = compute_indicators(X, y, cfg, already_zz_space=native, dataset=name)
         rep = r.pop("_repeats", None)
@@ -685,32 +651,15 @@ def run_all(
     return out
 
 
-def main() -> None:
-    import argparse
+FLAGS = ("n_sample", "n_repeats", "n_qubits", "zz_reps")
 
-    p = argparse.ArgumentParser(description="QML v2 robust quantumness Q_rob / ZZ structure")
-    p.add_argument("--quick", action="store_true")
-    p.add_argument("--n-sample", type=int, default=None)
-    p.add_argument("--n-repeats", type=int, default=None)
-    p.add_argument("--n-qubits", type=int, default=None)
-    p.add_argument("--zz-reps", type=int, default=None)
-    p.add_argument(
-        "--datasets",
-        default="quantum_native,telco,skg,alpha_sweep",
-        help="quantum_native,telco,skg,alpha_sweep",
+
+def main() -> None:
+    parser = make_parser(
+        "QML v2 robust quantumness Q_rob / ZZ structure", "quantum_native,telco,skg,alpha_sweep", FLAGS
     )
-    args = p.parse_args()
-    cfg = QuantumnessConfig()
-    if args.n_sample is not None:
-        cfg.n_sample = args.n_sample
-    if args.n_repeats is not None:
-        cfg.n_repeats = args.n_repeats
-    if args.n_qubits is not None:
-        cfg.n_qubits = args.n_qubits
-    if args.zz_reps is not None:
-        cfg.zz_reps = args.zz_reps
-    names = tuple(s.strip() for s in args.datasets.split(",") if s.strip())
-    run_all(cfg=cfg, datasets=names, quick=args.quick)
+    args = parser.parse_args()
+    run_all(cfg=apply_overrides(QuantumnessConfig(), args, FLAGS), datasets=dataset_names(args), quick=args.quick)
 
 
 if __name__ == "__main__":

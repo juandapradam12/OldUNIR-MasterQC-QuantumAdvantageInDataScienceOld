@@ -34,7 +34,7 @@ import numpy as np
 import pandas as pd
 
 from qml_v2.classification import encode_for_zz_kernel, subsample_stratified
-from qml_v2.quantumness import QuantumnessConfig, _indicators_on_matrix
+from qml_v2.quantumness import QuantumnessConfig, indicators_on_matrix
 
 CFG = QuantumnessConfig(
     n_qubits=2,
@@ -98,11 +98,11 @@ def measure_job(job: Job, cfg: QuantumnessConfig = CFG, verbose: bool = True) ->
                 random_state=seed,
                 already_zz_space=job.already_zz_space,
             )
-            ind = _indicators_on_matrix(Xq, ys, cfg, seed=seed, compute_advantage=False)
+            ind = indicators_on_matrix(Xq, ys, cfg, seed=seed, compute_advantage=False)
             ind["pca_var"] = float(pca_var)
             rows.append(ind)
             rng = np.random.RandomState(seed + 7)
-            ind0 = _indicators_on_matrix(Xq, rng.permutation(ys), cfg, seed=seed, compute_advantage=False)
+            ind0 = indicators_on_matrix(Xq, rng.permutation(ys), cfg, seed=seed, compute_advantage=False)
             null_dA.append(ind0["delta_A"])
     df = pd.DataFrame(rows)
     out = {

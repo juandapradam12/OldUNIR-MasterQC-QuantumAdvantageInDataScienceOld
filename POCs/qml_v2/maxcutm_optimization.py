@@ -29,7 +29,7 @@ import networkx as nx
 import numpy as np
 import pandas as pd
 
-from qml_v2.classification import REPO_ROOT, repo_paths
+from qml_v2.outputs import REPO_ROOT, repo_paths
 
 
 @dataclass

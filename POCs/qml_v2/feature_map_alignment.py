@@ -26,12 +26,14 @@ from typing import Literal
 
 import numpy as np
 import pandas as pd
+from qiskit.circuit.library import pauli_feature_map
 from sklearn.metrics import accuracy_score, f1_score
 from sklearn.model_selection import StratifiedShuffleSplit
 from sklearn.svm import SVC
 
-REPO_ROOT = Path(__file__).resolve().parents[2]
-POCS_DIR = Path(__file__).resolve().parents[1]
+from qml_v2.kernels import FidelityKernelSVC, feature_map_expectation, zz_map
+from qml_v2.outputs import REPO_ROOT, metrics_dir
+
 MapKind = Literal["zz", "pauli_y"]
 
 
@@ -51,43 +53,11 @@ class AlignConfig:
 def build_feature_map(kind: MapKind, n_qubits: int, reps: int, entanglement: str):
     """Return a plain QuantumCircuit feature map."""
     if kind == "zz":
-        try:
-            from qiskit.circuit.library import zz_feature_map as _zz
-
-            return _zz(n_qubits, reps=reps, entanglement=entanglement)
-        except ImportError:
-            from qiskit.circuit.library import ZZFeatureMap
-
-            return ZZFeatureMap(feature_dimension=n_qubits, reps=reps, entanglement=entanglement)
+        return zz_map(n_qubits, reps, entanglement)
     if kind == "pauli_y":
         # Distinct geometry from ZZ: single-Y + YY interactions.
-        try:
-            from qiskit.circuit.library import pauli_feature_map as _pauli
-
-            return _pauli(
-                n_qubits,
-                reps=reps,
-                entanglement=entanglement,
-                paulis=["Y", "YY"],
-            )
-        except ImportError:
-            from qiskit.circuit.library import PauliFeatureMap
-
-            return PauliFeatureMap(
-                feature_dimension=n_qubits,
-                reps=reps,
-                entanglement=entanglement,
-                paulis=["Y", "YY"],
-            )
+        return pauli_feature_map(n_qubits, reps=reps, entanglement=entanglement, paulis=["Y", "YY"])
     raise ValueError(f"Unknown feature map kind: {kind}")
-
-
-def _obs_pauli(kind: MapKind, n_qubits: int) -> str:
-    if kind == "zz":
-        return "Z" * n_qubits if n_qubits != 2 else "ZZ"
-    if kind == "pauli_y":
-        return "Y" * n_qubits if n_qubits != 2 else "YY"
-    raise ValueError(kind)
 
 
 def make_map_native(
@@ -98,59 +68,11 @@ def make_map_native(
     entanglement: str = "full",
     random_state: int = 42,
 ) -> tuple[np.ndarray, np.ndarray]:
-    """X in [-pi, pi]^{n_q}; y = sign(<obs>) on |phi_kind(x)|."""
-    from qiskit.quantum_info import SparsePauliOp, Statevector
-
-    rng = np.random.RandomState(random_state)
-    X = rng.uniform(-np.pi, np.pi, size=(n_samples, n_qubits))
-    fmap = build_feature_map(kind, n_qubits, reps, entanglement)
-    obs = SparsePauliOp.from_list([(_obs_pauli(kind, n_qubits), 1.0)])
-    y = np.empty(n_samples, dtype=int)
-    for i, x in enumerate(X):
-        bound = fmap.assign_parameters(dict(zip(fmap.parameters, x)))
-        ev = Statevector(bound).expectation_value(obs).real
-        y[i] = 1 if ev >= 0 else 0
-    return X, y
-
-
-class FidelityKernelSVC:
-    """Fidelity quantum kernel + SVC; feature map is injectable."""
-
-    def __init__(
-        self,
-        feature_map,
-        C: float = 1.0,
-        random_state: int = 42,
-        class_weight: str | None = "balanced",
-    ):
-        from qiskit_algorithms.utils import algorithm_globals
-        from qiskit_machine_learning.kernels import FidelityQuantumKernel
-
-        algorithm_globals.random_seed = random_state
-        self.kernel = FidelityQuantumKernel(feature_map=feature_map)
-        self.C = C
-        self.random_state = random_state
-        self.class_weight = class_weight
-        self.X_train_: np.ndarray | None = None
-        self.svc_: SVC | None = None
-
-    def fit(self, X: np.ndarray, y: np.ndarray) -> FidelityKernelSVC:
-        self.X_train_ = np.asarray(X, dtype=float)
-        K = self.kernel.evaluate(x_vec=self.X_train_)
-        self.svc_ = SVC(
-            kernel="precomputed",
-            C=self.C,
-            class_weight=self.class_weight,
-            random_state=self.random_state,
-        )
-        self.svc_.fit(K, y)
-        return self
-
-    def predict(self, X: np.ndarray) -> np.ndarray:
-        if self.X_train_ is None or self.svc_ is None:
-            raise RuntimeError("Call fit() before predict().")
-        K = self.kernel.evaluate(x_vec=np.asarray(X, dtype=float), y_vec=self.X_train_)
-        return self.svc_.predict(K)
+    """X in [-pi, pi]^{n_q}; y = sign(<P...P>) on |phi_kind(x)>, P = Z (zz) or Y (pauli_y)."""
+    X = np.random.RandomState(random_state).uniform(-np.pi, np.pi, size=(n_samples, n_qubits))
+    pauli = ("Z" if kind == "zz" else "Y") * n_qubits
+    ev = feature_map_expectation(build_feature_map(kind, n_qubits, reps, entanglement), pauli, X)
+    return X, (ev >= 0).astype(int)
 
 
 def _one_repeat(
@@ -247,9 +169,7 @@ def summarize(df: pd.DataFrame) -> pd.DataFrame:
 
 def write_business_results(df: pd.DataFrame, cfg: AlignConfig) -> Path:
     out_md = REPO_ROOT / "BUSINESS" / "feature_map_alignment_v2_results.md"
-    out_csv = POCS_DIR / "data" / "output" / "metrics" / "feature_map_alignment_v2.csv"
-    out_csv.parent.mkdir(parents=True, exist_ok=True)
-    df.to_csv(out_csv, index=False)
+    df.to_csv(metrics_dir() / "feature_map_alignment_v2.csv", index=False)
     summary = summarize(df)
 
     lines = [

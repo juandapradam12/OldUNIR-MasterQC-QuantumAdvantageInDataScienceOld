@@ -1,66 +1,32 @@
-# Dependencias para las Pruebas de Concepto (POCs)
+# Dependencias de las Pruebas de Concepto (POCs). Versiones exactas del entorno de reejecución: requirements-lock.txt
 
-# ========================================
-# Quantum Computing Frameworks
-# ========================================
-qiskit>=1.0.0
-qiskit-aer>=0.14.0
+# Computación cuántica (qiskit>=2.1: zz_feature_map / pauli_feature_map como funciones)
+qiskit>=2.1.0
 qiskit-algorithms>=0.3.0
 qiskit-machine-learning>=0.7.0
 qiskit-optimization>=0.6.0
 qiskit-finance>=0.4.0
 pylatexenc>=2.10
-pennylane>=0.35.0
-pennylane-qiskit>=0.35.0
 
-# ========================================
-# Machine Learning - Clásico
-# ========================================
+# Aprendizaje automático y optimización clásica
 scikit-learn>=1.4.0
 xgboost>=2.0.0
-lightgbm>=4.3.0
-
-# ========================================
-# Optimización
-# ========================================
 scipy>=1.12.0
 # PuLP 3.x/4.x cambió la API que usa qml_v2.optimization; se verificó con 2.9.
 pulp>=2.8,<3
 networkx>=3.0
-# Solo para regenerar portfolio_prices.csv (REFRESCAR_YAHOO=1 en el Notebook 04).
-yfinance>=0.2.40
-cvxpy>=1.4.0
-# gurobi>=11.0.0  # Descomentar si tienes licencia
 
-# ========================================
-# Data Science & Visualización
-# ========================================
+# Datos y visualización
 numpy>=1.26.0
 pandas>=2.2.0
 matplotlib>=3.8.0
 seaborn>=0.13.0
-plotly>=5.18.0
+# Solo para regenerar portfolio_prices.csv (REFRESCAR_YAHOO=1 en el Notebook 04).
+yfinance>=0.2.40
 
-# ========================================
-# Utilidades
-# ========================================
-jupyter>=1.0.0
+# Cuadernos, pruebas y calidad de código
+ipykernel>=6.29.0
 nbformat>=5.9.0
 nbconvert>=7.0.0
-jupyterlab>=4.0.0
-ipykernel>=6.29.0
-tqdm>=4.66.0
-python-dotenv>=1.0.0
-pyyaml>=6.0.0
-
-# Descarga de datasets
-opendatasets>=0.1.22
-kaggle>=1.6.0
-
-# ========================================
-# Testing & Quality (opcional)
-# ========================================
 pytest>=8.0.0
-pytest-cov>=4.1.0
-black>=24.0.0
-isort>=5.13.0
+ruff>=0.6.0

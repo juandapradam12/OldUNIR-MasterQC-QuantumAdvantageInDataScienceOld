@@ -11,6 +11,7 @@ Criterio de integridad (no negociable):
 from __future__ import annotations
 
 import math
+import sys
 import timeit
 import warnings
 from pathlib import Path
@@ -25,10 +26,16 @@ from matplotlib.colors import LinearSegmentedColormap
 from matplotlib.patches import Patch
 from scipy.stats import spearmanr
 
+POCS = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(POCS))
+
+from qml_v2.classification import make_quantum_native  # noqa: E402
+from qml_v2.kernels import fidelity_kernel, zz_map  # noqa: E402
+
 warnings.filterwarnings("ignore")
 
-OUT = Path(__file__).resolve().parents[1] / "data" / "output" / "figures"
-OUT_METRICS = Path(__file__).resolve().parents[1] / "data" / "output" / "metrics"
+OUT = POCS / "data" / "output" / "figures"
+OUT_METRICS = POCS / "data" / "output" / "metrics"
 OUT.mkdir(parents=True, exist_ok=True)
 OUT_METRICS.mkdir(parents=True, exist_ok=True)
 
@@ -961,35 +968,21 @@ def fig_06_boundaries():
     try:
         import time
 
-        from qiskit.circuit.library import zz_feature_map
-        from qiskit.quantum_info import SparsePauliOp, Statevector
-        from qiskit_machine_learning.kernels import FidelityQuantumKernel
         from sklearn.ensemble import GradientBoostingClassifier
         from sklearn.inspection import DecisionBoundaryDisplay
         from sklearn.model_selection import train_test_split
         from sklearn.preprocessing import MinMaxScaler
         from sklearn.svm import SVC
 
-        np.random.seed(42)
-        fm = zz_feature_map(2, reps=2, entanglement="full")
-        obs = SparsePauliOp.from_list([("ZZ", 1.0)])
-        n_samples = 50
-        X = np.random.uniform(-np.pi, np.pi, (n_samples, 2))
-        y = np.array(
-            [
-                1
-                if Statevector(fm.assign_parameters(dict(zip(fm.parameters, x)))).expectation_value(obs).real >= 0
-                else 0
-                for x in X
-            ]
-        )
+        fm = zz_map(2, 2, "full")
+        X, y = make_quantum_native(n_samples=50, random_state=42)
         X = MinMaxScaler((-np.pi, np.pi)).fit_transform(X)
         X_tr, X_te, y_tr, y_te = train_test_split(X, y, test_size=0.3, random_state=42, stratify=y)
         classifiers = {
             "SVM RBF": SVC(kernel="rbf", C=1.0, random_state=42).fit(X_tr, y_tr),
             "Gradient Boosting": GradientBoostingClassifier(n_estimators=200, random_state=42).fit(X_tr, y_tr),
         }
-        qk = FidelityQuantumKernel(feature_map=fm)
+        qk = fidelity_kernel(fm, 42)
         qsvc = SVC(kernel="precomputed", C=1.0).fit(qk.evaluate(x_vec=X_tr), y_tr)
         acc_map = {name: clf.score(X_te, y_te) for name, clf in classifiers.items()}
         acc_map["Quantum Kernel SVM"] = qsvc.score(qk.evaluate(x_vec=X_te, y_vec=X_tr), y_te)

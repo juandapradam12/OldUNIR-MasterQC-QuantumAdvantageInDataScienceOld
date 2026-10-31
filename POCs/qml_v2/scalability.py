@@ -26,7 +26,9 @@ from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.svm import SVC
 
-from qml_v2.classification import make_quantum_native, repo_paths, zz_map
+from qml_v2.classification import make_quantum_native
+from qml_v2.kernels import zz_fidelity_kernel, zz_map
+from qml_v2.outputs import repo_paths
 
 SIZES = (30, 50, 80, 100, 140, 180)
 N_TOTAL = 300
@@ -49,10 +51,8 @@ def kernel_fidelidad(A: np.ndarray, B: np.ndarray) -> np.ndarray:
 
 def verificar_kernel(n: int = 6, seed: int = BASE_SEED) -> float:
     """Máxima diferencia con ``FidelityQuantumKernel`` sobre ``n`` puntos."""
-    from qiskit_machine_learning.kernels import FidelityQuantumKernel
-
     X = np.random.RandomState(seed).uniform(-np.pi, np.pi, (n, 2))
-    esperado = FidelityQuantumKernel(feature_map=zz_map(2, 2, "full")).evaluate(x_vec=X)
+    esperado = zz_fidelity_kernel(X, 2, 2, "full", seed)
     obtenido = kernel_fidelidad(estados_zz(X), estados_zz(X)).T
     return float(np.abs(esperado - obtenido).max())
 

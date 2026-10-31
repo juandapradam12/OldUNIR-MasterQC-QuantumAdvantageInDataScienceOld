@@ -28,22 +28,15 @@ from sklearn.decomposition import PCA
 from sklearn.model_selection import StratifiedShuffleSplit
 from sklearn.preprocessing import MinMaxScaler
 
-from qml_v2.classification import (
-    REPO_ROOT,
-    encode_for_zz_kernel,
-    load_skg_incidents,
-    load_telco,
-    make_quantum_native,
-    repo_paths,
-    subsample_stratified,
-)
+from qml_v2.classification import encode_for_zz_kernel, kernel_dataset_jobs, subsample_stratified
+from qml_v2.kernels import zz_fidelity_kernel
+from qml_v2.outputs import REPO_ROOT, apply_overrides, dataset_names, make_parser, metrics_dir
 from qml_v2.quantumness import (
     QuantumnessConfig,
     best_rbf_kernel,
     frobenius_distance,
     kernel_alignment,
     quantumness_score_robust,
-    zz_fidelity_kernel,
 )
 
 
@@ -315,9 +308,7 @@ def run_dataset_qcr(
             f"ΔA={r2['delta_A']:+.3f} adv={r2.get('advantage_pp', float('nan')):+.1f}pp "
             f"→ {r2['verdict']}  (ΔQ={r2['Q_rob'] - base['Q_rob']:+.3f})"
         )
-        metrics = repo_paths()["metrics"]
-        metrics.mkdir(parents=True, exist_ok=True)
-        sweep.to_csv(metrics / f"qml_v2_qcr_{name}_rotation_sweep.csv", index=False)
+        sweep.to_csv(metrics_dir() / f"qml_v2_qcr_{name}_rotation_sweep.csv", index=False)
 
     # Strategy 3: re-uploading
     best_reps, reps_sweep = select_best_reps(Xq, yq, cfg, cfg.random_state + 2)
@@ -329,8 +320,7 @@ def run_dataset_qcr(
         f"adv={r3.get('advantage_pp', float('nan')):+.1f}pp → {r3['verdict']}  "
         f"(ΔQ={r3['Q_rob'] - base['Q_rob']:+.3f})"
     )
-    repo_paths()["metrics"].mkdir(parents=True, exist_ok=True)
-    reps_sweep.to_csv(repo_paths()["metrics"] / f"qml_v2_qcr_{name}_reps_sweep.csv", index=False)
+    reps_sweep.to_csv(metrics_dir() / f"qml_v2_qcr_{name}_reps_sweep.csv", index=False)
 
     # Auto: heuristic recommendation + best empirical ΔQ among tried strategies
     rec = diagnose_bottleneck(base)
@@ -378,23 +368,6 @@ def run_all(
             random_state=cfg.random_state,
         )
 
-    jobs: list[tuple[str, np.ndarray, np.ndarray, bool]] = []
-    if "quantum_native" in datasets:
-        X, y = make_quantum_native(
-            n_samples=max(cfg.n_sample * 2, 120),
-            n_qubits=cfg.n_qubits,
-            reps=cfg.zz_reps,
-            entanglement=cfg.entanglement,
-            random_state=cfg.random_state,
-        )
-        jobs.append(("quantum_native", X, y, True))
-    if "telco" in datasets:
-        X, y, _ = load_telco()
-        jobs.append(("telco", X, y, False))
-    if "skg" in datasets:
-        X, y, _ = load_skg_incidents()
-        jobs.append(("skg", X, y, False))
-
     all_rows: list[dict[str, Any]] = []
     report = [
         "# QCR results (QML v2 — robust Q_rob)",
@@ -405,7 +378,7 @@ def run_all(
         "",
     ]
 
-    for name, X, y, native in jobs:
+    for name, X, y, native in kernel_dataset_jobs(datasets, max(cfg.n_sample * 2, 120), cfg):
         rows = run_dataset_qcr(name, X, y, cfg, already_zz_space=native)
         all_rows.extend(rows)
         base = rows[0]
@@ -434,8 +407,7 @@ def run_all(
         report.append("")
 
     out = pd.DataFrame(all_rows)
-    metrics = repo_paths()["metrics"]
-    metrics.mkdir(parents=True, exist_ok=True)
+    metrics = metrics_dir()
     out.to_csv(metrics / "qml_v2_qcr_all.csv", index=False)
     (metrics / "qml_v2_qcr_config.json").write_text(json.dumps(asdict(cfg), indent=2))
     path = REPO_ROOT / "BUSINESS" / "qcr_v2_results.md"
@@ -461,23 +433,10 @@ def run_classification_probe(
     )
 
     qcfg = QCRConfig(random_state=random_state)
-    if dataset == "skg":
-        X, y, _ = load_skg_incidents()
-        native = False
-    elif dataset == "telco":
-        X, y, _ = load_telco()
-        native = False
-    elif dataset == "quantum_native":
-        X, y = make_quantum_native(
-            n_samples=max(n_total * 2, 120),
-            n_qubits=qcfg.n_qubits,
-            reps=qcfg.zz_reps,
-            entanglement=qcfg.entanglement,
-            random_state=random_state,
-        )
-        native = True
-    else:
+    jobs = kernel_dataset_jobs((dataset,), max(n_total * 2, 120), qcfg)
+    if not jobs:
         raise ValueError(dataset)
+    _, X, y, native = jobs[0]
 
     if theta is None:
         Xq, yq = _to_zz(X, y, qcfg, native, random_state)
@@ -499,49 +458,30 @@ def run_classification_probe(
     rows = base + rot
     summary = summarize(rows)
     print(advantage_report(summary))
-    metrics = repo_paths()["metrics"]
-    metrics.mkdir(parents=True, exist_ok=True)
     out = pd.DataFrame([asdict(r) for r in rows])
     out["dataset"] = dataset
     out["qcr_theta"] = theta
-    out.to_csv(metrics / f"qml_v2_qcr_classprobe_{dataset}.csv", index=False)
+    out.to_csv(metrics_dir() / f"qml_v2_qcr_classprobe_{dataset}.csv", index=False)
     return summary
 
 
-def main() -> None:
-    import argparse
+FLAGS = ("n_sample", "n_repeats")
 
-    p = argparse.ArgumentParser(description="QML v2 QCR pre-maps for robust Q_rob")
-    p.add_argument("--quick", action="store_true")
-    p.add_argument("--n-sample", type=int, default=None)
-    p.add_argument("--n-repeats", type=int, default=None)
-    p.add_argument(
-        "--datasets",
-        default="quantum_native,telco,skg",
-        help="quantum_native,telco,skg",
-    )
-    p.add_argument(
+
+def main() -> None:
+    parser = make_parser("QML v2 QCR pre-maps for robust Q_rob", "quantum_native,telco,skg", FLAGS)
+    parser.add_argument(
         "--class-probe",
         default=None,
         help="Optional: run Table A classification probe on dataset (e.g. skg)",
     )
-    p.add_argument("--class-n-total", type=int, default=200)
-    p.add_argument("--class-n-repeats", type=int, default=5)
-    args = p.parse_args()
-    cfg = QCRConfig()
-    if args.n_sample is not None:
-        cfg.n_sample = args.n_sample
-    if args.n_repeats is not None:
-        cfg.n_repeats = args.n_repeats
-    names = tuple(s.strip() for s in args.datasets.split(",") if s.strip())
+    parser.add_argument("--class-n-total", type=int, default=200)
+    parser.add_argument("--class-n-repeats", type=int, default=5)
+    args = parser.parse_args()
     if args.class_probe:
-        run_classification_probe(
-            args.class_probe,
-            n_total=args.class_n_total,
-            n_repeats=args.class_n_repeats,
-        )
+        run_classification_probe(args.class_probe, n_total=args.class_n_total, n_repeats=args.class_n_repeats)
     else:
-        run_all(cfg=cfg, datasets=names, quick=args.quick)
+        run_all(cfg=apply_overrides(QCRConfig(), args, FLAGS), datasets=dataset_names(args), quick=args.quick)
 
 
 if __name__ == "__main__":
