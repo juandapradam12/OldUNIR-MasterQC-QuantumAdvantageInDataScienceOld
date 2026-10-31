@@ -116,6 +116,7 @@ La contribución de este TFM no es ``forzar'' una narrativa de ventaja cuántica
     \item \textbf{Protocolos no intercambiables}: $\Delta_{\mathrm{RBF}}$ (Notebook~08) y $\Delta_{\mathrm{op}}$ (Caso~1 / Notebook~06) miden cosas distintas; no se fuerzan en una sola $\rho$. El $+8.3$~pp de SKG vs.\ RBF es artefacto de baseline débil.
     \item \textbf{Barrido $\alpha$ con $X$ fijo}: $d_F$ y $H$ constantes; $\rho_S=+0.833$ es $\rho(\alpha,\Delta A)$, no $\rho(\mathcal{Q},\mathrm{ventaja})$. Un barrido structure-aware queda como trabajo futuro.
     \item \textbf{Sin dumps de $K$}: no se inventan heatmaps ni series de rotación proxy si faltan artefactos del notebook.
+    \item \textbf{Series temporales (Caso~9)}: la evidencia en SKG procede de 5 corredores de 12~h (138 ventanas cada uno) y de un único horizonte de un paso; no hay comparación con modelos de series (ARIMA, Prophet) ni con ventanas más largas. El control nativo \texttt{zz\_lag} son pares independientes, no una serie con dinámica propia.
 \end{itemize}
 
 \section{Aportación al campo}
