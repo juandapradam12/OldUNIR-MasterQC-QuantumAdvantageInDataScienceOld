@@ -95,10 +95,10 @@ de modo que, si $g(K_C\Vert K_Q)$ es pequeña, el modelo clásico es competitivo
 
 La Tabla~\ref{tab:lit_indicadores} resume los indicadores propuestos en la literatura, su fundamento teórico, su complejidad computacional y su conexión con la ventaja cuántica demostrada.
 
-\begin{table}[h]
+\begin{table}[ht]
 \centering
 \small
-\begin{tabular}{p{3.2cm}p{2.8cm}p{2.2cm}p{4.5cm}}
+\begin{tabular}{>{\raggedright\arraybackslash}p{3.1cm}>{\raggedright\arraybackslash}p{2.7cm}>{\raggedright\arraybackslash}p{2.5cm}>{\raggedright\arraybackslash}p{4.0cm}}
 \hline
 \textbf{Indicador} & \textbf{Base conceptual} & \textbf{Complejidad} & \textbf{Relación con la literatura} \\
 \hline
@@ -124,7 +124,7 @@ Se implementaron los cinco indicadores anteriores sobre los tres datasets del TF
 
 \subsection{Resultados cuantitativos}
 
-\begin{table}[h]
+\begin{table}[ht]
 \centering
 \small
 \begin{tabular}{lccccccc}
@@ -200,7 +200,7 @@ Un buen TFM se discute desde lo medido, no desde lo deseable. Aquí se exponen l
 
 Un hallazgo metodológico relevante emerge al comparar la configuración base (2 qubits + PCA 2D) con una configuración alternativa (4 qubits + SelectKBest por información mutua). Con 2 qubits + PCA, la varianza explicada es del $31.8\%$ en SKG y $30.7\%$ en Telco. La Tabla~\ref{tab:sensibilidad_dim} muestra que aumentar a 4 qubits con selección de features discriminativas \emph{reduce} $\mathcal{Q}(\mathcal{D})$ en ambos datasets.
 
-\begin{table}[h]
+\begin{table}[ht]
 \centering
 \small
 \begin{tabular}{llcccc}
@@ -238,7 +238,9 @@ donde:
     \item $\Delta A = A(K_Q, K_y) - A(K_{RBF}, K_y)$: diferencia de alineación cuántica vs.\ clásica
     \item $\hat{d}_F = d_F / d_{F,\mathrm{ref}}$: distancia de Frobenius normalizada (aquí, respecto al máximo entre datasets del protocolo)
     \item $\Delta H = H(K_Q) - H(K_{RBF})$: diferencia de entropía espectral
-    \item $\hat{g} = g / g_{\mathrm{ref}}$: diferencia geométrica de \citet{huang2021}, $g=\sqrt{\|\sqrt{K_Q}\,(K_{RBF}+\lambda I)^{-1}\sqrt{K_Q}\|_2}$ con kernels normalizados a $\mathrm{Tr}\,K=n$ y $\lambda=10^{-3}$; normalizada por el máximo entre casos del protocolo, igual que $\hat d_F$. Mide cuánto \emph{no} reproduce el RBF la geometría del kernel cuántico: es condición necesaria, no suficiente, de ventaja, y no usa $y$.
+    \item $\hat{g} = g / g_{\mathrm{ref}}$: diferencia geométrica de \citet{huang2021},
+    \[ g=\sqrt{\bigl\|\sqrt{K_Q}\,(K_{RBF}+\lambda I)^{-1}\sqrt{K_Q}\bigr\|_2}, \]
+    con kernels normalizados a $\mathrm{Tr}\,K=n$ y $\lambda=10^{-3}$; normalizada por el máximo entre casos del protocolo, igual que $\hat d_F$. Mide cuánto \emph{no} reproduce el RBF la geometría del kernel cuántico: es condición necesaria, no suficiente, de ventaja, y no usa $y$.
 \end{itemize}
 
 Puede ampliarse con otras entradas ($\Delta_{\mathrm{op}}$, veredicto $\mathcal{Q}_{\mathrm{rob}}$, etc.). La lectura es la de un \emph{perfil}: p.~ej.\ Telco muestra cuello en $\Delta H$; SKG puede tener $\hat{d}_F$ alto y aun así $\Delta_{\mathrm{op}}<0$.
@@ -347,7 +349,7 @@ Se aplica UMAP usando la distancia de kernel cuántico $d_Q(x_i, x_j) = 1 - K_Q(
 
 La Tabla~\ref{tab:resultados_mapeos} resume los resultados de las cuatro estrategias implementadas en el Notebook~09. La Figura~\ref{fig:mapeos_comparativa} muestra los efectos sobre $\mathcal{Q}(\mathcal{D})$ y la ventaja empírica.
 
-\begin{table}[h]
+\begin{table}[ht]
 \centering
 \small
 \begin{tabular}{llcccc}

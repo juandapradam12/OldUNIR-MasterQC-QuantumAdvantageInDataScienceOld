@@ -36,7 +36,7 @@ A partir de los resultados obtenidos, se diseñó un flujo de trabajo conceptual
 
 Para cada caso de uso se evalúan tres tipos de conjuntos de datos: (i) un dataset diseñado con estructura cuántica explícita (\textit{cuántico-nativo}), (ii) un dataset real de SKG Tecnología, y (iii) un dataset de referencia de dominio público. Esta triple perspectiva permite distinguir los escenarios donde la computación cuántica ofrece ventaja teórica genuina de aquellos donde los algoritmos clásicos siguen siendo superiores en la práctica.
 
-\begin{figure}[h]
+\begin{figure}[ht]
 \centering
 \begin{tikzpicture}[font=\small,
     fase/.style={rectangle, rounded corners=5pt, very thick,
@@ -112,7 +112,7 @@ donde $|\phi(x_i)\rangle$ es el estado cuántico codificado por un \texttt{ZZFea
   \item \textbf{Preprocesamiento}: Escalado al rango $[-\pi, \pi]$ mediante \texttt{MinMaxScaler} para garantizar la correcta codificación angular en las puertas de rotación.
   \item \textbf{Construcción del kernel}: \texttt{FidelityQuantumKernel} con \texttt{ComputeUncompute} como estimador de fidelidad y \texttt{StatevectorSampler} como backend. La matriz de kernel de entrenamiento ($200 \times 200$) requirió $40{,}000$ evaluaciones de circuito.
   \item \textbf{Entrenamiento}: \texttt{SVC(kernel=``precomputed'', C=1.0)} con la matriz de kernel cuántico. Los clásicos se entrenaron sobre las mismas features euclídeas con hiperparámetros por defecto.
-  \item \textbf{Análisis de escalabilidad}: Experimentos adicionales con $n \in \{30, 50, 80, 100, 140, 180\}$ para comprobar si la ventaja depende del tamaño de entrenamiento: el Notebook~01 usa una partición por tamaño y el módulo \texttt{qml\_v2.scalability} lo repite 10 veces (Capítulo~\ref{cap:evaluacion}).
+  \item \textbf{Análisis de escalabilidad}: Experimentos adicionales con $n \in \{30,\allowbreak 50,\allowbreak 80,\allowbreak 100,\allowbreak 140,\allowbreak 180\}$ para comprobar si la ventaja depende del tamaño de entrenamiento: el Notebook~01 usa una partición por tamaño y el módulo \texttt{qml\_v2.scalability} lo repite 10 veces (Capítulo~\ref{cap:evaluacion}).
   \item \textbf{Evaluación}: Accuracy, F1-score y matriz de confusión sobre test ($n=120$).
 \end{enumerate}
 
@@ -208,7 +208,7 @@ Los resultados de las subsecciones anteriores mezclan dos fuentes de variación:
 \centering
 \caption{Comparativa directa QSVM (kernel cuántico ZZFeatureMap) vs.\ SVM-RBF (kernel clásico). Condiciones controladas: mismo \texttt{SVC} base, $C=1.0$, PCA a 2 componentes, mismas particiones train/test.}
 \label{tab:qsvm_vs_svm_directo}
-\begin{tabularx}{\linewidth}{Xcccc}
+\begin{tabularx}{\linewidth}{>{\raggedright\arraybackslash}Xcccc}
 \toprule
 \textbf{Dataset} & \textbf{QSVM (Acc)} & \textbf{SVM-RBF (Acc)} & \textbf{$\Delta$ Acc} & \textbf{Ventaja} \\
 \midrule
@@ -410,9 +410,9 @@ El Notebook~05 comparaba instancias de distinto tamaño y puntuaba QAOA con ener
 
 Configuración reportada: $n=4$ ciudades, depot fijo $\Rightarrow$ 9 qubits, $p=1$, familia Colombia (distancias reales entre capitales) y réplicas Euclidean.
 
-\subsection{Resultados (Colombia $n=4$)}
+\subsection{Resultados (Colombia \texorpdfstring{$n=4$}{n=4})}
 
-\begin{table}[h]
+\begin{table}[ht]
 \centering
 \small
 \begin{tabular}{lcc}
@@ -565,7 +565,7 @@ El QAOA \citep{farhi2014} implementa el paradigma de optimización variacional m
 \paragraph{Interfaz cuántico-clásica.}
 La interfaz entre módulos es \textit{deliberadamente mínima}: el módulo clásico transfiere $2p$ reales al cuántico y recibe un único escalar de retorno:
 
-\begin{table}[h]
+\begin{table}[ht]
 \centering
 \caption{Interfaz del loop híbrido QAOA-COBYLA.}
 \label{tab:interfaz_hibrida}
@@ -699,7 +699,7 @@ Este caso extiende la familia de kernels a \textbf{series temporales} con un pro
 
 \subsection{Resultados (Table~A)}
 
-\begin{table}[h]
+\begin{table}[ht]
 \centering
 \small
 \begin{tabular}{llcc}
@@ -736,7 +736,7 @@ No todos los problemas se benefician del módulo cuántico. La Tabla~\ref{tab:fl
 \begin{table}[ht]
 \centering
 \small
-\begin{tabular}{p{3.2cm}p{3.2cm}p{3.5cm}p{3.0cm}}
+\begin{tabular}{>{\raggedright\arraybackslash}p{3.2cm}>{\raggedright\arraybackslash}p{3.2cm}>{\raggedright\arraybackslash}p{3.5cm}>{\raggedright\arraybackslash}p{3.0cm}}
 \hline
 \textbf{Tipo de problema} & \textbf{Criterio de activación} & \textbf{Módulo cuántico} & \textbf{Módulo clásico} \\
 \hline

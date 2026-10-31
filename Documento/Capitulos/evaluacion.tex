@@ -13,9 +13,10 @@ Los resultados sobre el dataset con estructura cuántica explícita constituyen 
 
 El análisis de escalabilidad (Tabla~\ref{tab:escala_clasificacion}) repite el experimento 10 veces por tamaño (\texttt{python -m qml\_v2.scalability}): en cada repetición se regenera el dataset con una semilla distinta, se reserva el 30\% como test y se entrena con los primeros $n$ ejemplos. La ventaja del QSVM sobre el mejor clásico (SVM-RBF o Gradient Boosting) es positiva en las 10 repeticiones de los seis tamaños $n \in [30, 180]$, con una media de \textbf{+33.2 pp} (de $+27.1$~pp para $n=30$ a $+37.6$~pp para $n=180$) y un intervalo de confianza del 95\% que no incluye el cero en ningún tamaño (límite inferior mínimo: $+22.1$~pp). La exactitud del QSVM crece con $n$ ($79.6\%$ a $92.6\%$), mientras que los clásicos permanecen cerca del azar. La partición única del Notebook~01 (media $+40.9$~pp, máximo $+48.9$~pp para $n=50$) cae por encima de este rango y debe leerse como una realización optimista.
 
-\begin{table}[h]
+\begin{table}[ht]
 \centering
 \small
+\resizebox{\textwidth}{!}{%
 \begin{tabular}{rccccc}
 \hline
 $n$ & QSVM (\%) & SVM-RBF (\%) & Grad.\ Boosting (\%) & $\Delta$ vs.\ mejor clásico (pp) [IC 95\%] & Rep.\ con ventaja \\
@@ -27,7 +28,7 @@ $n$ & QSVM (\%) & SVM-RBF (\%) & Grad.\ Boosting (\%) & $\Delta$ vs.\ mejor clá
 140 & $90.0\pm3.1$ & $50.9\pm3.9$ & $54.7\pm4.3$ & $+35.1$ [$+32.2$, $+38.0$] & 10/10 \\
 180 & $92.6\pm2.6$ & $49.0\pm3.6$ & $55.0\pm6.2$ & $+37.6$ [$+33.4$, $+41.7$] & 10/10 \\
 \hline
-\end{tabular}
+\end{tabular}}
 \caption{Escalabilidad de la ventaja cuántica en clasificación (dataset cuántico-nativo, ZZFeatureMap de 2 qubits): media $\pm$ desviación sobre 10 repeticiones y 90 ejemplos de test por repetición. El $\Delta$ se calcula en cada repetición frente al mejor de los dos clásicos; el IC es de 95\% (t de Student). Fuente: \texttt{fair\_scalability\_native.csv}.}
 \label{tab:escala_clasificacion}
 \end{table}
@@ -74,6 +75,7 @@ El protocolo justo de \texttt{qml\_v2} (Tabla~\ref{tab:clasif_justa}) corrige es
 \centering
 \footnotesize
 \setlength{\tabcolsep}{4pt}
+\resizebox{\textwidth}{!}{%
 \begin{tabular}{lccccc}
 \toprule
 \textbf{Dataset} & \textbf{QSVM-ZZ} & \textbf{Mejor clásico (A)} & \textbf{$\Delta$ (A)} & \textbf{Mejor clásico (B)} & \textbf{$\Delta$ (B)} \\
@@ -82,7 +84,7 @@ Cuántico-nativo & $88.8\pm5.8$ & GB $52.3\pm6.0$ & $+36.5$ & --- & --- \\
 SKG Incidentes & $49.5\pm7.0$ & GB $52.7\pm5.7$ & $-3.2$ & SVM lineal (7 var.) $56.2\pm5.3$ & $-6.7$ \\
 Telco Churn & $53.3\pm9.3$ & Reg. logística $77.2\pm4.3$ & $-23.8$ & GB (19 var.) $79.5\pm2.9$ & $-26.2$ \\
 \bottomrule
-\end{tabular}
+\end{tabular}}
 \caption{Protocolo justo de clasificación (\texttt{qml\_v2.classification}); GB = Gradient Boosting. Exactitud en test (\%, media $\pm$ desviación sobre 10 repeticiones; 140 ejemplos de entrenamiento y 60 de test). A: todos los modelos con las mismas 2 variables que el QSVM. B: clásicos con todas las variables originales. $\Delta$ en puntos porcentuales respecto al QSVM. Fuente: \texttt{fair\_classification\_all.csv}.}
 \label{tab:clasif_justa}
 \end{table}
@@ -107,8 +109,9 @@ Telco Churn & $53.3\pm9.3$ & Reg. logística $77.2\pm4.3$ & $-23.8$ & GB (19 var
 
 Los resultados de regresión son mayoritariamente negativos para el kernel cuántico: solo el dataset construido con el propio mapa de características muestra una diferencia a su favor, que es por construcción. La Tabla~\ref{tab:regresion_3ds} resume los resultados del Notebook~03 (una partición) y la Tabla~\ref{tab:regresion_justa}, los del protocolo justo de \texttt{qml\_v2} (10 repeticiones, mismas particiones y variables).
 
-\begin{table}[h]
+\begin{table}[ht]
 \centering
+\resizebox{\textwidth}{!}{%
 \begin{tabular}{lcccc}
 \hline
 \textbf{Dataset} & \textbf{QK-SVR ($R^2$)} & \textbf{Mejor clásico ($R^2$)} & \textbf{$\Delta R^2$} & \textbf{Resultado} \\
@@ -117,7 +120,7 @@ Cuántico-nativo  & $+0.985$  & $+0.020$ (SVR-Poly)  & $\mathbf{+0.965}$ & \text
 SKG Corredores   & $+0.098$  & $+0.660$ (GradBoost) & $-0.562$ & Desventaja \\
 Friedman \#1     & $-0.151$  & $+0.777$ (XGBoost)   & $-0.928$ & Desventaja \\
 \hline
-\end{tabular}
+\end{tabular}}
 \caption{Comparativa de regresión cuántica vs clásica en los tres datasets. El mejor clásico incluye XGBoost, Random Forest, SVR-RBF y Ridge.}
 \label{tab:regresion_3ds}
 \end{table}
@@ -154,6 +157,7 @@ Como en el Caso~1, las comparaciones SKG y Friedman del Notebook~03 son asimétr
 \centering
 \footnotesize
 \setlength{\tabcolsep}{4pt}
+\resizebox{\textwidth}{!}{%
 \begin{tabular}{lccccc}
 \toprule
 \textbf{Dataset} & \textbf{QK-SVR} & \textbf{Mejor clásico (A)} & \textbf{$\Delta R^2$ (A)} & \textbf{Mejor clásico (B)} & \textbf{$\Delta R^2$ (B)} \\
@@ -163,7 +167,7 @@ SKG Corredores & $-0.118\pm0.081$ & Ridge $0.032\pm0.079$ & $-0.150$ & SVR-RBF $
 Friedman \#1 (2 comp.) & $-0.098\pm0.096$ & Ridge $0.559\pm0.122$ & $-0.657$ & SVR-RBF $0.903\pm0.009$ & $-1.001$ \\
 Friedman \#1 (5 qubits) & $-0.181\pm0.111$ & SVR-RBF $0.889\pm0.013$ & $-1.069$ & SVR-RBF $0.890\pm0.012$ & $-1.071$ \\
 \bottomrule
-\end{tabular}
+\end{tabular}}
 \caption{Protocolo justo de regresión (\texttt{qml\_v2.regression}); $R^2$ en test (media $\pm$ desviación sobre 10 repeticiones; 140 ejemplos de entrenamiento y 60 de test; $C=10$, $\varepsilon=0.1$ en todos los SVR). A: todos los modelos con las mismas variables que el QK-SVR. B: clásicos con todas las variables originales (3 en SKG, 5 en Friedman). RF = Random Forest. Fuente: \texttt{qml\_v2\_regression\_all.csv}.}
 \label{tab:regresion_justa}
 \end{table}
@@ -184,6 +188,7 @@ El protocolo \texttt{qml\_v2.optimization} resuelve el mismo problema de asignac
 \begin{table}[ht]
 \centering
 \small
+\resizebox{\textwidth}{!}{%
 \begin{tabular}{lcccc}
 \hline
 \textbf{Método} & \textbf{Coste medio} & \textbf{Brecha media} & \textbf{Instancias óptimas} & \textbf{Tiempo por instancia} \\
@@ -192,7 +197,7 @@ Hungarian / PuLP-CBC & 9.335 & 0\%   & 5/5 & $<0.02$~s \\
 QAOA ($p=1$)         & 9.335 & 0\%   & 5/5 & 270--700~s (simulación) \\
 Greedy               & 10.146 & 7.0\% & 4/5 & $<0.001$~s \\
 \hline
-\end{tabular}
+\end{tabular}}
 \caption{Caso~3: asignación $3\times3$, cinco instancias (semillas 42--46). La brecha se mide frente al óptimo exacto. Greedy falla en una instancia ($+35.2\%$). Los tiempos de QAOA dependen de la carga de la máquina; el orden de magnitud es el de un simulador de 9 qubits.}
 \label{tab:asignacion}
 \end{table}
@@ -277,7 +282,7 @@ Aunque la evaluación es cualitativa, el análisis de tiempos aporta una perspec
 \begin{table}[ht]
 \centering
 \small
-\begin{tabularx}{\linewidth}{p{3.0cm}p{3.0cm}p{2.8cm}X}
+\begin{tabularx}{\linewidth}{>{\raggedright\arraybackslash}p{3.0cm}>{\raggedright\arraybackslash}p{3.0cm}>{\raggedright\arraybackslash}p{2.8cm}>{\raggedright\arraybackslash}X}
 \hline
 \textbf{Método} & \textbf{Complejidad tiempo} & \textbf{Garantía solución} & \textbf{Limitante principal} \\
 \hline
@@ -300,6 +305,7 @@ La Tabla~\ref{tab:escala_mds} recoge el experimento real sobre grafos de Erdős-
 \centering
 \footnotesize
 \setlength{\tabcolsep}{4pt}
+\resizebox{\textwidth}{!}{%
 \begin{tabular}{rrrrrcrrr}
 \hline
 $n$ & Aristas & ILP & Greedy & Óptimo QUBO & Mejor muestra QAOA ($|S|$, ¿dominante?) & $P_{\max}(\text{opt})$ & $P_{\text{unif}}$ & $t_{\text{QAOA}}$ (s) \\
@@ -310,7 +316,7 @@ $n$ & Aristas & ILP & Greedy & Óptimo QUBO & Mejor muestra QAOA ($|S|$, ¿domin
 12 & 33 & 2 & 2 & 6 & 2 (no) & 0.0045 & 0.0007 & 9.0 \\
 15 & 50 & 3 & 3 & 8 & 2 (no) & 0.0010 & 0.0001 & 31.0 \\
 \hline
-\end{tabular}
+\end{tabular}}
 \caption{Escalabilidad real del Caso~7 (ER, densidad 0.45). ILP y Greedy: tamaño del conjunto dominante hallado. Mejor muestra QAOA: tamaño del conjunto con menor coste QUBO entre las muestras de los 20 reinicios y si es dominante. $P_{\max}(\text{opt})$: mayor probabilidad exacta de medir el óptimo del QUBO entre 20 reinicios con $p=3$; $P_{\text{unif}}$: probabilidad del óptimo bajo una distribución uniforme (referencia nula); $t_{\text{QAOA}}$: tiempo de los 20 reinicios (simulación NumPy). Fuente: \texttt{10\_mds\_qaoa\_escalabilidad.csv}.}
 \label{tab:escala_mds}
 \end{table}
@@ -329,7 +335,7 @@ $n$ & Aristas & ILP & Greedy & Óptimo QUBO & Mejor muestra QAOA ($|S|$, ¿domin
 
 Los resultados del módulo \texttt{qml\_v2.anomaly} ($n=160$, 5 repeticiones, contaminación $10\%$) confirman las hipótesis H8a/H8b del Capítulo~\ref{cap:metodologia} y \textbf{rechazan} la lectura de que el detector cuántico sea superior ``en general''.
 
-\begin{table}[h]
+\begin{table}[ht]
 \centering
 \small
 \begin{tabular}{llcc}
@@ -379,20 +385,21 @@ La ventaja no es ``usar un kernel cuántico en series temporales'', sino alinear
 
 La Tabla~\ref{tab:sintesis} sintetiza los resultados principales del estudio comparativo.
 
-\begin{table}[h]
+\begin{table}[ht]
 \centering
 \small
-\begin{tabular}{llccc}
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{>{\centering\arraybackslash}p{0.7cm}>{\raggedright\arraybackslash}p{2.4cm}>{\centering\arraybackslash}p{2.5cm}>{\centering\arraybackslash}p{2.5cm}>{\centering\arraybackslash}p{2.5cm}}
 \hline
-\textbf{CU} & \textbf{Algoritmo cuántico} & \textbf{Dataset cuántico-nativo} & \textbf{Dataset SKG} & \textbf{Dataset referencia} \\
+\textbf{CU} & \textbf{Algoritmo cuántico} & \textbf{Cuántico-nativo} & \textbf{SKG} & \textbf{Referencia} \\
 \hline
 1 & QSVM & \textbf{+38.3 pp} & $-$4.5 pp & $-$3.8 pp \\
 2 & QK-SVR & \textbf{$+0.965\,\Delta R^2$} & $-0.562\,\Delta R^2$ & $-0.928\,\Delta R^2$ \\
-3 & QAOA ($p=1$) & \multicolumn{3}{c}{Iguala al óptimo exacto en 5/5 instancias; sin ventaja (coste idéntico)} \\
-4 & VQE/QAOA & \multicolumn{3}{c}{VQE no alcanza el óptimo (brecha $+34.0\%$ en coste); QAOA infactible} \\
+3 & QAOA ($p=1$) & \multicolumn{3}{>{\centering\arraybackslash}p{8.0cm}}{Iguala al óptimo exacto en 5/5 instancias; sin ventaja (coste idéntico)} \\
+4 & VQE/QAOA & \multicolumn{3}{>{\centering\arraybackslash}p{8.0cm}}{VQE no alcanza el óptimo (brecha $+34.0\%$ en coste); QAOA infactible} \\
 5 & QAOA TSP & \multicolumn{2}{c}{empate óptimo vs NN+2-opt ($n=4$)} & Euclidean gap~$0$ \\
 6 & QSVM (umbral) & $+8.9$ pp ($n=150$, una partición) & $-4.0$ pp (clásico) & $-3.8$ pp vs GB (clásico) \\
-7 & QAOA MDS ($p=3$) & \multicolumn{3}{c}{Red de 6 nodos: empate con ILP ($0$ pp); ER $n=6$--$15$: $-60$ pp de instancias con MDS óptimo (2/5 frente a 5/5)} \\
+7 & QAOA MDS ($p=3$) & \multicolumn{3}{>{\centering\arraybackslash}p{8.0cm}}{Red de 6 nodos: empate con ILP ($0$ pp); ER $n=6$--$15$: $-60$ pp de instancias con MDS óptimo (2/5 frente a 5/5)} \\
 8 & OCSVM-ZZ & \textbf{+31.2 pp AUC} (\texttt{zz\_phase}) & $-29.9$ pp (inyectado) & $-29.1$ pp (moons), $-50.8$ pp (blobs) \\
 9 & QK-SVR lags & \textbf{+86.6\% MAE} (\texttt{zz\_lag}) & $-325.2\%$ (\texttt{skg\_speed}) & $-154.9\%$ (\texttt{sine}) \\
 \hline
