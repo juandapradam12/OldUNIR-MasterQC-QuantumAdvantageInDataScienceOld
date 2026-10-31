@@ -1,23 +1,18 @@
 caso,capa,etiqueta,valor,unidad,fuente
-1,nativo,QSVM,38.3,pp,NB01 §13.6
 1,skg,QSVM,-4.5,pp,NB01 §13.6
 1,referencia,QSVM,-3.8,pp,NB01 §13.6
-2,nativo,QK-SVR,96.5,ΔR²×100,NB03 §13.5
 2,skg,QK-SVR,-56.2,ΔR²×100,NB03 §13.5
 2,referencia,QK-SVR,-92.8,ΔR²×100,NB03 §13.5
 3,referencia,QAOA p=1,0.0,% coste,qml_v2.optimization
 4,referencia,QAOA (P=10),-40.0,pp semillas óptimas,qml_v2.portfolio
 5,referencia,QAOA p=1,0.0,pp brecha,qml_v2.tsp_optimization
-6,nativo,QSVC,8.9,pp,NB06 §5
 6,skg,QSVC,-4.0,pp,NB06 §5
 6,referencia,QSVC,-3.8,pp,NB06 §5
 7,complementario,red de 6 nodos,0.0,pp instancias con MDS óptimo,qml_v2.mds_qaoa
 7,referencia,grafos ER n=6–15,-60.0,pp instancias con MDS óptimo,qml_v2.mds_qaoa
-8,nativo,zz_phase,31.2,pp AUC,qml_v2.anomaly
 8,complementario,telco_injected,-32.0,pp AUC,qml_v2.anomaly
 8,skg,skg_injected,-29.9,pp AUC,qml_v2.anomaly
 8,referencia,moons,-29.1,pp AUC,qml_v2.anomaly
 8,complementario,blobs,-50.8,pp AUC,qml_v2.anomaly
-9,nativo,zz_lag,86.6,% MAE,qml_v2.timeseries
 9,skg,skg_speed,-385.6,% MAE,qml_v2.timeseries
 9,referencia,sine,-154.9,% MAE,qml_v2.timeseries

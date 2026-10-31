@@ -1,6 +1,6 @@
 """Mapa de errores cuántico vs clásico para los cinco casos de uso (protocolo justo, Tabla A).
 
-Cada panel es un caso de uso: filas = clase de datos, columnas = modelos, color = error
+Cada panel es un caso de uso: filas = conjunto de datos, columnas = modelos, color = error
 (0 es perfecto). Todo se lee de ``POCs/data/output/metrics``; no se escribe ningún número a mano.
 
 Error por caso de uso: 1 - exactitud (clasificación), 1 - R² (regresión y series),
@@ -46,7 +46,7 @@ def matriz(pivot: pd.DataFrame, filas: dict[str, str], columnas: dict[str, str])
 
 def panel_clasificacion() -> Panel:
     p = tabla_a("fair_classification_all.csv", "acc_mean", "dataset", lambda s: 1 - s)
-    filas = {"Nativo": "quantum_native", "SKG": "skg", "Telco": "telco"}
+    filas = {"SKG": "skg", "Telco": "telco"}
     cols = {
         "QSVM": "QSVM-ZZ",
         "SVM-RBF": "SVM-RBF",
@@ -59,7 +59,7 @@ def panel_clasificacion() -> Panel:
 
 def panel_regresion() -> Panel:
     p = tabla_a("qml_v2_regression_all.csv", "r2_mean", "dataset", lambda s: 1 - s)
-    filas = {"Nativo": "quantum_native", "SKG": "skg", "Friedman #1": "friedman"}
+    filas = {"SKG": "skg", "Friedman #1": "friedman"}
     cols = {
         "QK-SVR": "QK-SVR-ZZ",
         "SVR-RBF": "SVR-RBF",
@@ -71,7 +71,7 @@ def panel_regresion() -> Panel:
 
 
 def panel_anomalias() -> Panel:
-    filas = {"Nativo": "zz_phase", "SKG": "skg_injected", "moons": "moons"}
+    filas = {"SKG": "skg_injected", "moons": "moons"}
     cols = {"OCSVM-ZZ": "OCSVM-ZZ", "OCSVM-RBF": "OCSVM-RBF", "IsoForest": "IsolationForest", "LOF": "LOF"}
     frames = []
     for ds in filas.values():
@@ -83,7 +83,7 @@ def panel_anomalias() -> Panel:
 
 def panel_series() -> Panel:
     frames = []
-    filas = {"Nativo": "zz_lag", "SKG": "skg_speed", "sine": "sine"}
+    filas = {"SKG": "skg_speed", "sine": "sine"}
     for ds in filas.values():
         d = pd.read_csv(METRICS / f"fair_timeseries_{ds}.csv")
         frames.append(d[d["table"].str.startswith("A")].assign(dataset=ds, error=lambda x: 1 - x["r2_mean"]))

@@ -12,10 +12,9 @@ Deben coincidir con la salida impresa de los notebooks (no con valores
 | `08_test_cuanticidad_resultados.csv` | Notebook 08, tabla resumen (protocolo NB08) |
 | `08_barrido_sintetico_alpha.csv` | Notebook 08, barrido α |
 | `09_mapeos_resultados.csv` | Notebook 09, tabla de estrategias |
-| `07_sintesis_resultados.csv` | `scripts/sintesis_resultados.py`: consolida los nueve casos leyendo solo CSV/JSON ejecutados; es la única fuente del panel y del mapa de calor de síntesis |
+| `07_sintesis_resultados.csv` | `scripts/sintesis_resultados.py`: consolida los nueve casos leyendo solo CSV/JSON ejecutados; es la única fuente de la tabla de síntesis y del mapa de errores |
 | `01_clasificacion_*.csv`, `03_regresion_*.csv`, `04_portafolio_resultados.csv`, `06_*.csv` | Notebooks 01, 03, 04 y 06 reejecutados de principio a fin (Qiskit 2.6.1, kernel exacto) |
 | `qml_v2_*_summary.csv`, `fair_*.csv` | Módulos `python -m qml_v2.<módulo>` (semillas y repeticiones en los `*_config.json`) |
-| `fair_scalability_native*.csv` | `python -m qml_v2.scalability` (6 tamaños × 10 repeticiones; kernel de fidelidad exacto verificado contra `FidelityQuantumKernel`) |
 | `10_mds_qaoa_*` | `python -m qml_v2.mds_qaoa` (simulador exacto verificado contra Qiskit) |
 | `estructura_por_caso_uso.csv` | Script `medir_estructura_por_caso.py`: ΔA, ΔH, d_F, g (+control nulo de ΔA) en clasif./reg./anomalías/optimización (paisaje QUBO); lógica en `qml_v2/estructura_casos.py`; notebook 11 |
 | `qml_v2_portfolio_*` | `python -m qml_v2.portfolio` (Caso 4: 10 semillas, dos penalizaciones; precios de `data/output/input/portfolio_prices.csv`); los `tiempo_s` son orientativos (3 procesos en paralelo) |

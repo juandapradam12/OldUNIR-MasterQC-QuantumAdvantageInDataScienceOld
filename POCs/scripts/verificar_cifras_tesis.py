@@ -175,28 +175,8 @@ def comprobar(hecho: Hecho, destino: Destino) -> bool:
 # ----------------------------------------------------------------------------- hechos por caso
 def caso1() -> list[Hecho]:
     h: list[Hecho] = []
-    nativo = csv("01_clasificacion_ventaja_cuantica.csv").set_index("model")["accuracy"]
-    mejor_nb = nativo.drop("Quantum Kernel SVM").max()
     resumen = csv("01_clasificacion_resumen_3datasets.csv")
-    nat, skg, telco = (resumen.iloc[i] for i in range(3))
-    h.append(
-        Hecho(
-            1,
-            "NB01 nativo: QSVM y clásicos",
-            (
-                f(nativo["Quantum Kernel SVM"], 1, 100),
-                f(mejor_nb, 1, 100),
-                f(nativo["SVM (RBF)"], 1, 100),
-                f(nativo["Gradient Boost"], 1, 100),
-                f(nativo["SVM (Linear)"], 1, 100),
-                f(nat["Ventaja (pp)"]),
-            ),
-            en("eval", caso=1),
-            "QSVM alcanzó",
-        )
-    )
-    for clave in ("resumen", "abstract", "conc"):
-        h.append(Hecho(1, f"Ventaja NB01 nativo en {clave}", (f(nat["Ventaja (pp)"]),), en(clave), "QSVM"))
+    skg, telco = (resumen.iloc[i] for i in (1, 2))
     h.append(
         Hecho(
             1,
@@ -242,56 +222,8 @@ def caso1() -> list[Hecho]:
         )
     )
 
-    esc = csv("fair_scalability_native.csv")
-    delta = esc["delta_vs_mejor_clasico_pp"]
-    h.append(
-        Hecho(
-            1,
-            "Escalabilidad justa: resumen",
-            (
-                f(delta.mean()),
-                f(delta.iloc[0]),
-                f(delta.iloc[-1]),
-                f(esc["delta_ic95_inf"].min()),
-                f(esc["qsvm_media"].iloc[0]),
-                f(esc["qsvm_media"].iloc[-1]),
-            ),
-            en("eval", caso=1),
-            "ventaja del QSVM sobre",
-        )
-    )
-    h.append(Hecho(1, "Escalabilidad justa en conclusiones", (f(delta.iloc[0]), f(delta.iloc[-1])), en("conc"), "27.1"))
-    for _, r in esc.iterrows():
-        h.append(
-            Hecho(
-                1,
-                f"Escalabilidad n={int(r.n_train)}",
-                (
-                    pm(r.qsvm_media, r.qsvm_std),
-                    pm(r.rbf_media, r.rbf_std),
-                    pm(r.gb_media, r.gb_std),
-                    f"{r.delta_vs_mejor_clasico_pp:.1f}",
-                    f"{r.delta_ic95_inf:.1f}",
-                    f"{r.delta_ic95_sup:.1f}",
-                    f"{int(r.repeticiones_qsvm_gana)}/{int(r.n_repeticiones)}",
-                ),
-                en("eval", caso=1),
-                rf"^{int(r.n_train)} &",
-            )
-        )
-    nb_esc = csv("01_clasificacion_escalabilidad.csv")
-    h.append(
-        Hecho(
-            1,
-            "Escalabilidad NB01 (partición única)",
-            (f(nb_esc["advantage"].mean(), 1, 100), f(nb_esc["advantage"].max(), 1, 100)),
-            en("eval", caso=1),
-            "partición única",
-        )
-    )
-
     fair = csv("fair_classification_all.csv")
-    for dataset in ("quantum_native", "skg", "telco"):
+    for dataset in ("skg", "telco"):
         g = fair[fair["dataset"] == dataset]
         q = g[g["model"] == "QSVM-ZZ"].iloc[0]
         a = g[(g["table"] == "A_matched_features") & (g["model"] != "QSVM-ZZ")].nlargest(1, "acc_mean").iloc[0]
@@ -304,18 +236,8 @@ def caso1() -> list[Hecho]:
         if not b.empty:
             mb = b.nlargest(1, "acc_mean").iloc[0]
             valores += [pm(mb.acc_mean, mb.acc_std, 1, 100), f((q.acc_mean - mb.acc_mean) * 100)]
-        ancla = {"quantum_native": "Cuántico-nativo &", "skg": "SKG Incidentes &", "telco": "Telco Churn &"}[dataset]
+        ancla = {"skg": "SKG Incidentes &", "telco": "Telco Churn &"}[dataset]
         h.append(Hecho(1, f"Protocolo justo clasificación: {dataset}", tuple(valores), en("eval", caso=1), ancla))
-    q = fair[(fair["dataset"] == "quantum_native") & (fair["model"] == "QSVM-ZZ")].iloc[0]
-    h.append(
-        Hecho(
-            1,
-            "Protocolo justo nativo en conclusiones",
-            (f(q.delta_acc_vs_best_classical, 1, 100),),
-            en("conc"),
-            "protocolo justo",
-        )
-    )
     skg_a = fair[(fair["dataset"] == "skg") & (fair["model"] == "QSVM-ZZ")].iloc[0]
     telco_a = fair[(fair["dataset"] == "telco") & (fair["model"] == "QSVM-ZZ")].iloc[0]
     h.append(
@@ -359,27 +281,8 @@ def caso1() -> list[Hecho]:
             "reserva",
         )
     )
-    nat_n = de_notebook("01", r"  (\d+) muestras \| Balance")
-    h.append(
-        Hecho(
-            1,
-            "Dataset nativo de NB01: tamaño y partición",
-            (nat_n, "140", "60"),
-            en("desa", caso=1),
-            "Generación del dataset",
-        )
-    )
-    h.append(
-        Hecho(
-            1,
-            "Dataset nativo de NB01: entradas de la matriz de kernel",
-            (str(140 * 140 - 0),),
-            en("desa", caso=1),
-            "matriz de kernel",
-        )
-    )
     directo = csv("01_qsvm_vs_svm_directo.csv")
-    for _, r in directo.iterrows():
+    for _, r in directo.iloc[1:].iterrows():
         h.append(
             Hecho(
                 1,
@@ -393,15 +296,6 @@ def caso1() -> list[Hecho]:
     base = map9[map9["strategy"] == "Baseline"].set_index("dataset")["Q_score"]
     h.append(Hecho(1, "Q baseline de NB09 (SKG)", (f(base["SKG Incidentes"], 3),), en("desa", caso=1), "Dataset SKG"))
     h.append(Hecho(1, "Q baseline de NB09 (Telco)", (f(base["Telco Churn"], 3),), en("desa", caso=1), "Telco Churn:"))
-    h.append(
-        Hecho(
-            1,
-            "Contraste directo: nativo",
-            (f(directo.delta_acc.iloc[0], 1, 100),),
-            en("desa", caso=1),
-            "Dataset cuántico-nativo:",
-        )
-    )
     h.append(
         Hecho(
             1,
@@ -474,9 +368,8 @@ def caso1() -> list[Hecho]:
 def caso2() -> list[Hecho]:
     h: list[Hecho] = []
     res = csv("03_regresion_resumen_3datasets.csv")
-    nat, skg, fri = (res.iloc[i] for i in range(3))
+    skg, fri = (res.iloc[i] for i in (1, 2))
     for nombre, fila, ancla in (
-        ("nativo", nat, "Cuántico-nativo"),
         ("SKG", skg, "SKG Corredores"),
         ("Friedman", fri, "Friedman"),
     ):
@@ -489,15 +382,6 @@ def caso2() -> list[Hecho]:
                 ancla,
             )
         )
-    h.append(
-        Hecho(
-            2,
-            "NB03 resumen nativo",
-            (f(nat["QK-SVR"], 3), f(nat["Mejor Clásico"], 3), f(nat["Ventaja R²"], 3)),
-            en("conc"),
-            "R",
-        )
-    )
     skg_bc = csv("03_regresion_skg_bc.csv").set_index("Modelo")
     gb = skg_bc.loc["Gradient Boosting"]
     h.append(
@@ -615,7 +499,6 @@ def caso2() -> list[Hecho]:
 
     reg = csv("qml_v2_regression_all.csv")
     filas = {
-        "quantum_native": ("Cuántico-nativo &", "A_matched_features"),
         "skg": ("SKG Corredores &", "A_matched_features"),
         "friedman": ("Friedman #1 \\(2 comp.\\) &", "A_matched_features"),
         "friedman_full": ("Friedman #1 \\(5 qubits\\) &", "A_matched_features"),
@@ -630,11 +513,8 @@ def caso2() -> list[Hecho]:
             mb = b.nlargest(1, "r2_mean").iloc[0]
             valores += [pm(mb.r2_mean, mb.r2_std, 3), f(q.r2_mean - mb.r2_mean, 3)]
         h.append(Hecho(2, f"Protocolo justo regresión: {dataset}", tuple(valores), en("eval", caso=2), ancla))
-    nat_q = reg[(reg["dataset"] == "quantum_native") & (reg["model"] == "QK-SVR-ZZ")].iloc[0]
-    delta_nat = f(nat_q.delta_r2_vs_best_classical, 3)
     skg_q = reg[(reg["dataset"] == "skg") & (reg["model"] == "QK-SVR-ZZ")].iloc[0]
     fri_q = reg[(reg["dataset"] == "friedman") & (reg["model"] == "QK-SVR-ZZ")].iloc[0]
-    h.append(Hecho(2, "Δ justo nativo en prosa", (delta_nat,), en("eval", "conc", caso=2), "protocolo justo"))
     h.append(
         Hecho(
             2,
@@ -748,16 +628,9 @@ def caso3() -> list[Hecho]:
 
 def caso6() -> list[Hecho]:
     res = csv("06_qkernel_resumen_3datasets.csv")
-    nat, skg, telco = (res.iloc[i] for i in range(3))
+    skg, telco = (res.iloc[i] for i in (1, 2))
     adv = csv("06_quantum_kernel_advantage.csv")
     h = [
-        Hecho(
-            6,
-            "NB06 nativo",
-            (f(nat["QSVC"], 1, 100), f(nat["Mejor Clásico"], 1, 100), f(nat["Ventaja (pp)"])),
-            en("eval", "desa", caso=6),
-            "cuántico-nativo",
-        ),
         Hecho(
             6,
             "NB06 SKG",
@@ -772,7 +645,7 @@ def caso6() -> list[Hecho]:
             en("eval", "desa", caso=6),
             "Telco",
         ),
-        Hecho(6, "Granularidad de la partición", ("45", "2.2"), en("eval", caso=6), "puntos de test"),
+        Hecho(6, "Partición única de SKG", ("150",), en("eval", caso=6), "puntos de test"),
     ]
     assert len(adv) >= 2
     assert (
@@ -788,31 +661,6 @@ def caso6() -> list[Hecho]:
             (n_skg_tr, f(float(t_skg), 0)),
             en("desa", caso=6),
             "coste cuadrático",
-        )
-    )
-    esc6 = csv("06_quantum_kernel_escalabilidad.csv")
-    ventajas = {int(r.n_samples): 100 * r.advantage for r in esc6.itertuples()}
-    h.append(
-        Hecho(
-            6,
-            "NB06 escalabilidad (ventaja n=50, 80 y rango n>=100)",
-            (
-                f(ventajas[50]),
-                f(ventajas[80]),
-                f(min(ventajas[n] for n in (100, 120, 150))),
-                f(max(ventajas[n] for n in (100, 120, 150))),
-            ),
-            en("desa", caso=6),
-            "partición única por tamaño|una única partición",
-        )
-    )
-    h.append(
-        Hecho(
-            6,
-            "NB06 tiempos del QSVC nativo",
-            (f(esc6["q_time_s"].min(), 1), f(esc6["q_time_s"].max(), 1)),
-            en("desa", caso=6),
-            "una única partición|0.8",
         )
     )
     return h
@@ -972,15 +820,6 @@ def caso8() -> list[Hecho]:
     h.append(
         Hecho(
             8,
-            "zz_phase",
-            (f(auc("zz_phase", "OCSVM-ZZ"), 3), f(auc("zz_phase", "IsolationForest"), 3)),
-            en("eval", caso=8),
-            "zz\\\\_phase|zz_phase",
-        )
-    )
-    h.append(
-        Hecho(
-            8,
             "moons",
             (f(auc("moons", "IsolationForest"), 3), f(auc("moons", "OCSVM-ZZ"), 3)),
             en("eval", caso=8),
@@ -993,8 +832,8 @@ def caso8() -> list[Hecho]:
     h.append(
         Hecho(
             8,
-            "Conclusiones: zz_phase",
-            (f(auc("zz_phase", "OCSVM-ZZ"), 3), f(auc("zz_phase", "IsolationForest"), 3)),
+            "Conclusiones: Caso 8",
+            tuple(f(s8[k], 1) for k in ("telco_injected", "skg_injected", "moons", "blobs")),
             en("conc"),
             "Caso 8",
         )
@@ -1003,8 +842,8 @@ def caso8() -> list[Hecho]:
         Hecho(
             8,
             "Síntesis del caso 8",
-            tuple(f(s8[k], 1) for k in ("zz_phase", "skg_injected", "moons", "blobs")),
-            en("eval", caso=8) and en("eval"),
+            tuple(f(s8[k], 1) for k in ("skg_injected", "moons", "blobs")),
+            en("eval"),
             "OCSVM-ZZ",
         )
     )
@@ -1027,21 +866,11 @@ def caso8() -> list[Hecho]:
             "Configuración reportada",
         )
     )
-    h.append(
-        Hecho(
-            8,
-            "Figura de scores: media multi-repeat",
-            (f(auc("zz_phase", "OCSVM-ZZ"), 3),),
-            en("eval", caso=8),
-            "media multi-repeat",
-        )
-    )
     return h
 
 
 def caso9() -> list[Hecho]:
     h: list[Hecho] = []
-    zz = csv("fair_timeseries_zz_lag.csv")
     sine = csv("fair_timeseries_sine.csv")
     skg = csv("fair_timeseries_skg_speed.csv")
 
@@ -1049,14 +878,6 @@ def caso9() -> list[Hecho]:
         d = d[d["table"].str.startswith(tabla)]
         return d[d["model"] == modelo].iloc[0]
 
-    q = fila(zz, "QK-SVR-ZZ")
-    ridge = fila(zz, "Ridge")
-    h.append(
-        Hecho(
-            9, "zz_lag", (pm(q.mae_mean, q.mae_std, 3), f(q.r2_mean, 2), f(ridge.mae_mean, 3)), en("eval", caso=9), "zz"
-        )
-    )
-    h.append(Hecho(9, "zz_lag en conclusiones", (f(q.mae_mean, 3), f(ridge.mae_mean, 3)), en("conc"), "zz"))
     sine_cl = (
         sine[(sine["table"].str.startswith("A")) & (sine["model"] != "QK-SVR-ZZ")].nsmallest(1, "mae_mean").iloc[0]
     )
@@ -1068,8 +889,11 @@ def caso9() -> list[Hecho]:
         Hecho(9, "skg_speed", (f(skg_cl.mae_mean, 2), f(fila(skg, "QK-SVR-ZZ").mae_mean, 2)), en("eval", caso=9), "skg")
     )
     cfg9 = json.loads((METRICS / "qml_v2_timeseries_config.json").read_text(encoding="utf-8"))
-    h.append(Hecho(9, "Configuración", (str(cfg9["n_total"]), str(cfg9["n_repeats"])), en("desa", caso=9), "zz_lag"))
-    pares = max(cfg9["n_total"] * 2, 240)
+    h.append(
+        Hecho(
+            9, "Configuración", (str(cfg9["n_total"]), str(cfg9["n_repeats"])), en("desa", caso=9), "ventana contigua"
+        )
+    )
     puntos_sine = max(cfg9["n_total"] * 3, 400)
     fuente_ts = (POCS / "qml_v2" / "timeseries.py").read_text(encoding="utf-8")
     ruido = float(re.search(r"def make_sine_series\([^)]*noise: float = ([\d.]+)", fuente_ts).group(1))
@@ -1077,14 +901,13 @@ def caso9() -> list[Hecho]:
     h.append(
         Hecho(9, "Partición temporal", (str(round((1 - cfg9["test_size"]) * 100)),), en("desa", caso=9), "División")
     )
-    h.append(Hecho(9, "Tamaño del pool zz_lag", (str(pares),), en("desa", caso=9), "zz_lag"))
     h.append(Hecho(9, "Serie sine", (str(puntos_sine), f(ruido, 2)), en("desa", caso=9), "sine"))
     h.append(Hecho(9, "Corredores SKG", (str(skg_n.max()), str(len(skg_n))), en("desa", caso=9), "skg_speed"))
     h.append(
         Hecho(
             9,
             "README: Caso 9",
-            (f(q.mae_mean, 3), f(ridge.mae_mean, 3), f(skg_cl.mae_mean, 2), f(fila(skg, "QK-SVR-ZZ").mae_mean, 2)),
+            (f(skg_cl.mae_mean, 2), f(fila(skg, "QK-SVR-ZZ").mae_mean, 2)),
             en("readme"),
             "Forecasting",
         )
@@ -1095,31 +918,19 @@ def caso9() -> list[Hecho]:
             9,
             "Tabla del desarrollo (MAE)",
             (
-                f(q.mae_mean, 3),
-                f(ridge.mae_mean, 3),
                 f(sine_cl.mae_mean, 3),
                 f(fila(sine, "QK-SVR-ZZ").mae_mean, 3),
                 f(skg_cl.mae_mean, 2),
                 f(fila(skg, "QK-SVR-ZZ").mae_mean, 2),
             ),
             en("desa", caso=9),
-            "zz_lag",
+            "sine",
         )
     )
     refs = csv("fair_timeseries_references.csv").set_index(["dataset", "reference"])["mae_mean"]
-    zz_others = [fila(zz, m).mae_mean for m in ("SVR-RBF", "GradientBoosting")]
     sine_b = sine[sine["table"].str.startswith("B")].nsmallest(1, "mae_mean").iloc[0]
     skg_b = skg[skg["table"].str.startswith("B")].nsmallest(1, "mae_mean").iloc[0]
     skg_q = fila(skg, "QK-SVR-ZZ")
-    h.append(
-        Hecho(
-            9,
-            "zz_lag: otros clásicos y media del entrenamiento",
-            (*(f(v, 3) for v in zz_others), f(refs["zz_lag", "train_mean"], 3)),
-            en("eval", caso=9),
-            "zz_lag",
-        )
-    )
     h.append(
         Hecho(
             9,
@@ -1155,7 +966,7 @@ def caso9() -> list[Hecho]:
         Hecho(
             9,
             "Síntesis del caso 9",
-            tuple(f(s9[k], 1) for k in ("zz_lag", "skg_speed", "sine")),
+            tuple(f(s9[k], 1) for k in ("skg_speed", "sine")),
             en("eval"),
             "QK-SVR lags",
         )
@@ -1167,19 +978,11 @@ def sintesis_general() -> list[Hecho]:
     sint = csv("07_sintesis_resultados.csv")
     h = []
     fila = sint[(sint["caso"] == 1)].set_index("capa")["valor"]
-    h.append(
-        Hecho(1, "Síntesis CU1", tuple(f(fila[c], 1) for c in ("nativo", "skg", "referencia")), en("eval"), "QSVM")
-    )
+    h.append(Hecho(1, "Síntesis CU1", tuple(f(fila[c], 1) for c in ("skg", "referencia")), en("eval"), "QSVM"))
     fila = sint[(sint["caso"] == 2)].set_index("capa")["valor"]
-    h.append(
-        Hecho(
-            2, "Síntesis CU2", tuple(f(fila[c] / 100, 3) for c in ("nativo", "skg", "referencia")), en("eval"), "QK-SVR"
-        )
-    )
+    h.append(Hecho(2, "Síntesis CU2", tuple(f(fila[c] / 100, 3) for c in ("skg", "referencia")), en("eval"), "QK-SVR"))
     fila = sint[(sint["caso"] == 6)].set_index("capa")["valor"]
-    h.append(
-        Hecho(6, "Síntesis CU6", tuple(f(fila[c], 1) for c in ("nativo", "skg", "referencia")), en("eval"), "umbral")
-    )
+    h.append(Hecho(6, "Síntesis CU6", tuple(f(fila[c], 1) for c in ("skg", "referencia")), en("eval"), "umbral"))
     return h
 
 
@@ -1301,19 +1104,16 @@ def datos_de_entrada() -> list[Hecho]:
 
 
 def readme() -> list[Hecho]:
-    reg = csv("qml_v2_regression_all.csv")
-    q = reg[(reg["dataset"] == "quantum_native") & (reg["model"] == "QK-SVR-ZZ")].iloc[0]
-    res = csv("03_regresion_resumen_3datasets.csv").iloc[0]
+    sint = csv("07_sintesis_resultados.csv")
+    c2 = sint[sint["caso"] == 2].set_index("capa")["valor"]
+    c1 = sint[sint["caso"] == 1].set_index("capa")["valor"]
     j = json.loads((METRICS / "10_mds_qaoa_resumen.json").read_text(encoding="utf-8"))
     esc = csv("10_mds_qaoa_escalabilidad.csv")
     n_dom = int(esc["qaoa_mejor_muestra_es_dominante"].sum())
     return [
+        Hecho(2, "README: regresión", (f(c2["skg"], 1), f(c2["referencia"], 1)), en("readme"), "Quantum-kernel SVR"),
         Hecho(
-            2,
-            "README: regresión nativa",
-            (f(res["Ventaja R²"], 3), f(q.delta_r2_vs_best_classical, 3)),
-            en("readme"),
-            "Quantum-kernel SVR",
+            1, "README: clasificación", (f(c1["skg"], 1), f(c1["referencia"], 1)), en("readme"), "Quantum kernel SVM"
         ),
         Hecho(
             7,
@@ -1500,7 +1300,7 @@ def caso5() -> list[Hecho]:
 
 # ----------------------------------------------------------------------------- auditoría de cobertura
 PREFIJOS_CASO = {
-    1: ("fair_classification", "fair_scalability", "01_", "06_"),
+    1: ("fair_classification", "01_", "06_"),
     2: ("03_", "qml_v2_regression", "regresion_"),
     3: ("02_", "qml_v2_optimization"),
     4: ("qml_v2_portfolio", "04_"),
@@ -1622,7 +1422,9 @@ def auditar() -> int:
                 continue
             if clave not in CON_SECCIONES_POR_CASO:
                 caso = 0
-            pool = pools.setdefault(caso, _valores_csv(PREFIJOS_CASO[caso]))
+            if caso not in pools:
+                pools[caso] = _valores_csv(PREFIJOS_CASO[caso])
+            pool = pools[caso]
             malos = []
             for t in _numeros(linea):
                 if t in cubiertos or any(

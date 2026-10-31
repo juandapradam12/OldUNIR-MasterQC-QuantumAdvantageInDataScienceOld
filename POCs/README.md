@@ -36,11 +36,10 @@ POCs/
 │   ├── mds_qaoa.py         # Caso 7: conjunto dominante mínimo
 │   ├── anomaly.py          # Caso 8: OCSVM-ZZ one-class
 │   ├── timeseries.py       # Caso 9: forecasting de un paso por lags
-│   ├── scalability.py      # Escalabilidad del régimen nativo (10 repeticiones)
 │   ├── quantumness.py      # Puntuación de cuanticidad Q(D)
 │   ├── qcr.py              # Remapeos cuántico-compatibles
 │   ├── estructura_casos.py # Indicadores de estructura por caso de uso
-│   ├── clustering.py, maxcutm_optimization.py, feature_map_alignment.py
+│   ├── clustering.py, maxcutm_optimization.py
 ├── notebooks/              # 01-12: registro ejecutado de cada experimento
 ├── scripts/                # Figuras, síntesis y verificación de cifras
 ├── tests/
@@ -60,7 +59,7 @@ Los datos de SKG están en `../Datos/` y los precios de Yahoo Finance en `data/i
 | 3 | Optimización (asignación) | `optimization` | 02 |
 | 4 | Cartera | `portfolio` | 04 |
 | 5 | TSP | `tsp_optimization` | 05 |
-| 6 | Clasificación (umbral) / escalabilidad | `scalability` | 06 |
+| 6 | Clasificación (umbral) | `classification` | 06 |
 | 7 | Conjunto dominante mínimo | `mds_qaoa` | 10 |
 | 8 | Anomalías | `anomaly` | — (`python -m qml_v2.anomaly`) |
 | 9 | Series temporales | `timeseries` | 12 |

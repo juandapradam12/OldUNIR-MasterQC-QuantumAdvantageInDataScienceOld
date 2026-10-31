@@ -26,7 +26,7 @@ NOTEBOOKS = POCS / "notebooks"
 METRICS = POCS / "data" / "output" / "metrics"
 SALIDA = METRICS / "07_sintesis_resultados.csv"
 
-CAPAS = ("nativo", "skg", "referencia")
+CAPAS = ("skg", "referencia")
 COLUMNAS = ["caso", "capa", "etiqueta", "valor", "unidad", "fuente"]
 
 
@@ -47,18 +47,23 @@ def _fila(caso: int, capa: str, etiqueta: str, valor: float, unidad: str, fuente
 
 
 def _por_capa(tabla: pd.DataFrame) -> list[tuple[str, pd.Series]]:
-    """Empareja las tres filas de un resumen de datasets con sus capas."""
-    return [(capa, fila) for capa, (_, fila) in zip(CAPAS, tabla.iterrows())]
+    """Empareja las filas SKG y de referencia de un resumen de datasets con sus capas.
+
+    Los resúmenes de los notebooks 01, 03 y 06 conservan una primera fila con el dataset
+    sintético generado con el propio feature map; se descarta porque su ventaja es
+    por construcción y no informa sobre datos reales.
+    """
+    return [(capa, fila) for capa, (_, fila) in zip(CAPAS, tabla.iloc[1:].iterrows())]
 
 
 def caso1_clasificacion() -> list[dict]:
-    """Notebook 01, resumen de tres datasets (pp de accuracy)."""
+    """Notebook 01, resumen de SKG y Telco (pp de accuracy)."""
     tabla = pd.read_csv(METRICS / "01_clasificacion_resumen_3datasets.csv")
     return [_fila(1, capa, "QSVM", fila["Ventaja (pp)"], "pp", "NB01 §13.6") for capa, fila in _por_capa(tabla)]
 
 
 def caso2_regresion() -> list[dict]:
-    """Notebook 03, resumen de tres datasets (diferencia de R² por 100)."""
+    """Notebook 03, resumen de SKG y Friedman (diferencia de R² por 100)."""
     tabla = pd.read_csv(METRICS / "03_regresion_resumen_3datasets.csv")
     return [
         _fila(2, capa, "QK-SVR", 100 * fila["Ventaja R²"], "ΔR²×100", "NB03 §13.5") for capa, fila in _por_capa(tabla)
@@ -110,7 +115,7 @@ def caso5_tsp() -> list[dict]:
 
 
 def caso6_umbral() -> list[dict]:
-    """Notebook 06: tres datasets, pp de accuracy (una sola ejecución)."""
+    """Notebook 06: SKG y Telco, pp de accuracy (una sola ejecución)."""
     tabla = pd.read_csv(METRICS / "06_qkernel_resumen_3datasets.csv")
     return [_fila(6, capa, "QSVC", fila["Ventaja (pp)"], "pp", "NB06 §5") for capa, fila in _por_capa(tabla)]
 
@@ -174,9 +179,9 @@ def caso7_mds() -> list[dict]:
 
 def caso8_anomalias() -> list[dict]:
     """Protocolo QML v2 de anomalías: ΔAUC de OCSVM-ZZ frente al mejor clásico (pp)."""
-    capas = {"zz_phase": "nativo", "skg_injected": "skg", "moons": "referencia"}
+    capas = {"skg_injected": "skg", "moons": "referencia"}
     filas = []
-    for dataset in ("zz_phase", "telco_injected", "skg_injected", "moons", "blobs"):
+    for dataset in ("telco_injected", "skg_injected", "moons", "blobs"):
         tabla = pd.read_csv(METRICS / f"fair_anomaly_{dataset}.csv")
         delta = tabla["delta_auc_vs_best_classical"].dropna().iloc[0]
         filas.append(_fila(8, capas.get(dataset, "complementario"), dataset, 100 * delta, "pp AUC", "qml_v2.anomaly"))
@@ -185,9 +190,9 @@ def caso8_anomalias() -> list[dict]:
 
 def caso9_series() -> list[dict]:
     """Protocolo QML v2 de series: mejora relativa del MAE de QK-SVR (en %)."""
-    capas = {"zz_lag": "nativo", "skg_speed": "skg", "sine": "referencia"}
+    capas = {"skg_speed": "skg", "sine": "referencia"}
     filas = []
-    for dataset in ("zz_lag", "skg_speed", "sine"):
+    for dataset in ("skg_speed", "sine"):
         tabla = pd.read_csv(METRICS / f"fair_timeseries_{dataset}.csv")
         tabla = tabla[tabla["table"].str.startswith("A")]
         qk = tabla[tabla["model"].str.startswith("QK-SVR")]["mae_mean"].iloc[0]
