@@ -417,46 +417,43 @@ El framework QCR es, en su esencia, el intento operativo de verificar la siguien
 
 \begin{conjetura}[Espacio de Representación Cuántico-Compatible]
 \label{conj:qcr}
-Sea $\mathcal{D} = \{(\mathbf{x}_i, y_i)\}_{i=1}^n \subset \mathcal{X} \times \mathcal{Y}$ un dataset con distribución arbitraria y sin estructura cuántica nativa $(\mathcal{Q}(\mathcal{D}) \leq 0)$. La conjetura establece que existen:
+Sea $\mathcal{D} = \{(\mathbf{x}_i, y_i)\}_{i=1}^n \subset \mathcal{X} \times \mathcal{Y}$ un dataset con distribución arbitraria y sin estructura cuántica nativa. La conjetura establece que existen:
 \begin{enumerate}
-  \item Un \textbf{espacio de representación cuántico-compatible} $\mathcal{Z}$,
-  \item Una transformación $\psi: \mathcal{X} \rightarrow \mathcal{Z}$ que conserve la estructura y la información del dato ---no necesariamente polinómica como función: la transformada de Fourier, por analogía, se define a partir de un núcleo y no es un polinomio---,
-  \item Un modelo cuántico óptimo $f_Q^*: \mathcal{Z} \rightarrow \mathcal{Y}$,
+  \item Un \textbf{espacio de representación} $\mathcal{Z}$,
+  \item Un \textbf{isomorfismo} $\psi: \mathcal{X} \rightarrow \mathcal{Z}$, de modo que se conserven la estructura y la información del dato, y cuya \textbf{imagen tenga estructura cuántica},
+  \item Un modelo cuántico $f_Q^*: \mathcal{Z} \rightarrow \mathcal{Y}$,
 \end{enumerate}
-tales que el ciclo completo de inferencia
+con un mapa de vuelta $\rho = \psi^{-1}$, de modo que el ciclo completo de inferencia
 \begin{equation}
   \mathbf{x}
   \;\xrightarrow{\;\psi\;}\;
   \mathbf{z}
   \;\xrightarrow{\;f_Q^*\;}\;
   \hat{y}
-  \;\Big[\xrightarrow{\;\psi^{-1}\;}\; \mathbf{x}^* \;\text{(solo en optimización)}\Big]
+  \;\Big[\xrightarrow{\;\rho=\psi^{-1}\;}\; \mathbf{x}^* \;\text{(solo en optimización)}\Big]
   \label{eq:ciclo_qcr}
 \end{equation}
-satisface simultáneamente:
-\begin{itemize}
-  \item $\mathcal{Q}(\psi(\mathcal{D})) > 0$ \quad (el dataset transformado es cuántico-compatible en $\mathcal{Z}$),
-  \item $\varepsilon(f_Q^* \circ \psi) \leq \varepsilon(f_C^*)$ \quad (la tasa de error cuántica en $\mathcal{Z}$ no supera a la del mejor predictor clásico $f_C^*$ en $\mathcal{X}$).
-\end{itemize}
-En problemas de \emph{clasificación y regresión}, la predicción $\hat{y} \in \mathcal{Y}$ es directamente interpretable en el espacio original sin necesidad de transformación inversa. En problemas de \emph{optimización}, la solución cuántica óptima $\mathbf{z}^* = \arg\min_{\mathbf{z} \in \mathcal{Z}} C(\mathbf{z})$ debe mapearse de vuelta al espacio de decisión original mediante $\psi^{-1}(\mathbf{z}^*)$ para recuperar la solución factible en $\mathcal{X}$.
+sea posible. No se fija todavía un criterio cuantitativo de «estructura cuántica» de la imagen: queda por precisar.
+
+En problemas de \emph{clasificación y regresión}, la predicción $\hat{y} \in \mathcal{Y}$ es directamente interpretable en el espacio original sin necesidad de transformación inversa. En problemas de \emph{optimización}, la solución cuántica óptima $\mathbf{z}^* = \arg\min_{\mathbf{z} \in \mathcal{Z}} C(\mathbf{z})$ debe mapearse de vuelta al espacio de decisión original mediante $\rho(\mathbf{z}^*)=\psi^{-1}(\mathbf{z}^*)$ para recuperar la solución factible en $\mathcal{X}$.
 \end{conjetura}
 
 \paragraph{Implicaciones de la conjetura.}
 La Conjetura~\ref{conj:qcr} es no trivial por tres razones:
 
 \begin{enumerate}
-  \item \textbf{Existencia del espacio $\mathcal{Z}$}: La conjetura afirma que, para cualquier distribución de datos clásica, existe al menos un espacio en el que dicha distribución adquiere estructura cuántica explotable. Esto no implica que $\mathcal{Z}$ sea único ni que $\psi$ sea eficientemente encontrable: la existencia es la afirmación mínima necesaria para que el programa de investigación sea científicamente coherente.
+  \item \textbf{Existencia del espacio $\mathcal{Z}$}: La conjetura afirma que, para cualquier distribución de datos clásica, existe al menos un espacio, isomorfo al original, cuya imagen tiene estructura cuántica explotable. Esto no implica que $\mathcal{Z}$ sea único ni que $\psi$ sea eficientemente encontrable: la existencia es la afirmación mínima necesaria para que el programa de investigación sea científicamente coherente.
 
-  \item \textbf{Forma y coste de $\psi$}: no se exige que $\psi$ sea un polinomio; la analogía es la transformada de Fourier, cuyo núcleo $e^{-i\omega x}$ la define y que conserva la información (es invertible). Lo que sí debe contabilizarse es el coste de calcular $\psi$: si fuese exponencial, la ventaja cuántica en $\mathcal{Z}$ no se traduciría en ventaja global, y siempre es posible construir un mapeo costoso que haga cuántico cualquier dataset sin utilidad práctica. Por el teorema de Bochner, los kernels invariantes por traslación son transformadas de Fourier de una medida, de modo que el mapa de características de un kernel es un mapeo de tipo Fourier.
+  \item \textbf{Forma y coste de $\psi$}: no se conoce con certeza la forma de $\psi$; la analogía es la transformada de Fourier, que conserva la información y es invertible. El coste de calcular $\psi$ debe contabilizarse en las aplicaciones: si fuese exponencial, la ventaja cuántica en $\mathcal{Z}$ no se traduciría en ventaja global, y siempre es posible construir un mapeo costoso que haga cuántico cualquier dataset sin utilidad práctica.
 
-  \item \textbf{El back-mapping $\psi^{-1}$ en optimización}: Para clasificación y regresión, el ciclo no requiere volver al espacio original porque la etiqueta $\hat{y}$ pertenece a $\mathcal{Y}$, no a $\mathcal{X}$. Sin embargo, en problemas de optimización combinatoria, la solución cuántica $\mathbf{z}^*$ debe ser decodificable en términos de decisiones reales (asignación de agentes, rutas, activos financieros). Esto impone que $\psi$ sea invertible o, al menos, que exista un decodificador $\psi^{-1}$ que preserve la factibilidad de la solución.
+  \item \textbf{El back-mapping $\psi^{-1}$ en optimización}: Para clasificación y regresión, el ciclo no requiere volver al espacio original porque la etiqueta $\hat{y}$ pertenece a $\mathcal{Y}$, no a $\mathcal{X}$. Sin embargo, en problemas de optimización combinatoria, la solución cuántica $\mathbf{z}^*$ debe ser decodificable en términos de decisiones reales (asignación de agentes, rutas, activos financieros). Al ser $\psi$ un isomorfismo, el mapa de vuelta es su inversa $\rho=\psi^{-1}$, que debe preservar la factibilidad de la solución.
 \end{enumerate}
 
 \paragraph{Estado de la conjetura.}
-La Conjetura~\ref{conj:qcr} es actualmente \textbf{abierta}: no existe demostración general de existencia ni contraejemplo conocido. El alcance de este TFM es \textbf{plantearla formalmente} y aportar evidencia preliminar (Notebook~09: re-uploading en Telco elevaba $\mathcal{Q}$ y $+4.2$~pp \emph{vs.\ RBF}; QML~v2 con $\mathcal{Q}_{\mathrm{rob}}$ deja Telco \texttt{classical} y en SKG solo un cambio geométrico \texttt{try-ZZ} por rotación, \textbf{sin} lift de accuracy). Eso muestra plausibilidad del programa, no un rescate operativo ni una demostración. Su prueba formal requiere:
+La Conjetura~\ref{conj:qcr} es actualmente \textbf{abierta}: no existe demostración general de existencia ni contraejemplo conocido. El alcance de este TFM es \textbf{plantearla formalmente} y aportar evidencia preliminar (Notebook~09: re-uploading en Telco elevaba $\mathcal{Q}$ y $+4.2$~pp \emph{vs.\ RBF}; QML~v2 con $\mathcal{Q}_{\mathrm{rob}}$ deja Telco \texttt{classical} y en SKG solo un cambio geométrico \texttt{try-ZZ} por rotación, \textbf{sin} lift de accuracy). Eso muestra plausibilidad del programa, no un rescate operativo ni una demostración. Su estudio formal requiere:
 \begin{itemize}
-  \item Caracterizar la clase de distribuciones $p(\mathbf{x}, y)$ para las que existe $\psi$ con $\mathcal{Q}(\psi(\mathcal{D})) > 0$ y coste de cálculo asumible.
-  \item Demostrar que la ventaja cuántica en $\mathcal{Z}$ se traduce en ventaja en $\mathcal{X}$ bajo condiciones de invarianza: $\varepsilon(f_Q^* \circ \psi) \leq \varepsilon(f_C^*)$.
+  \item Precisar qué significa que la imagen de $\psi$ tenga estructura cuántica, sin asumir de antemano que un indicador concreto lo caracterice.
+  \item Caracterizar la clase de distribuciones $p(\mathbf{x}, y)$ para las que existe un isomorfismo $\psi$ de ese tipo y de coste de cálculo asumible.
   \item Proporcionar un algoritmo de construcción de $\psi$ con garantías de aproximación.
 \end{itemize}
 Esta hoja de ruta formal se desarrolla en el Capítulo~\ref{cap:futuro}.

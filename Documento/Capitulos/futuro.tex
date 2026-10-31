@@ -142,20 +142,20 @@ La contribución teórica central del Capítulo~\ref{cap:investigacion_original}
   \mathbf{z}
   \;\xrightarrow{\;f_Q^*\;}\;
   \hat{y}
-  \;\Big[\xrightarrow{\;\psi^{-1}\;}\; \mathbf{x}^* \;\text{(solo en optimización)}\Big]
+  \;\Big[\xrightarrow{\;\rho=\psi^{-1}\;}\; \mathbf{x}^* \;\text{(solo en optimización)}\Big]
 \end{equation}
 
-donde $\psi: \mathcal{X} \rightarrow \mathcal{Z}$ es una transformación ---no necesariamente polinómica, en analogía con la transformada de Fourier, que nace de un kernel--- que convierte cualquier dataset clásico en cuántico-compatible. Esta conjetura permanece abierta, y su demostración o refutación constituye la línea de investigación post-TFM de mayor impacto potencial. La hoja de ruta propuesta es la siguiente:
+donde $\psi: \mathcal{X} \rightarrow \mathcal{Z}$ es un isomorfismo, por analogía con la transformada de Fourier, cuya imagen tiene estructura cuántica y cuya forma no se conoce con certeza. Esta conjetura permanece abierta, y su demostración o refutación constituye la línea de investigación post-TFM de mayor impacto potencial. La hoja de ruta propuesta es la siguiente:
 
 \begin{enumerate}
   \item \textbf{Caracterización de la clase de distribuciones $p(\mathbf{x},y)$ para las que existe $\psi$.} \\
-  Determinar si la existencia de $\psi$ depende de propiedades universales de la distribución (como suavidad, separabilidad de clases o estructura espectral) o si existen distribuciones para las cuales ninguna $\psi$ produce $\mathcal{Q}(\psi(\mathcal{D})) > 0$. Un contraejemplo de esta segunda hipótesis constituiría una refutación de la conjetura.
+  Determinar si la existencia de $\psi$ depende de propiedades universales de la distribución (como suavidad, separabilidad de clases o estructura espectral) o si existen distribuciones para las cuales ninguna $\psi$ tiene una imagen con estructura cuántica. Un contraejemplo de esta segunda hipótesis constituiría una refutación de la conjetura.
 
-  \item \textbf{Demostración de invarianza de error: $\varepsilon(f_Q^* \circ \psi) \leq \varepsilon(f_C^*)$.} \\
-  Probar que la ventaja cuántica obtenida en $\mathcal{Z}$ no se destruye al componer con $\psi$. Esto requiere una cota de la distorsión informacional introducida por $\psi$ ---análoga a la preservación de separabilidad en PCA de kernels--- en términos del score $\mathcal{Q}$ y de la cota de Huang et al.\ \citep{huang2021}.
+  \item \textbf{Definición de la estructura cuántica de la imagen y coste de $\psi$.} \\
+  Precisar qué propiedad de la imagen de $\psi$ constituye estructura cuántica ---sin presuponer que un indicador concreto la caracterice--- y acotar el coste de calcular $\psi$, que debe contabilizarse en las aplicaciones.
 
-  \item \textbf{Back-mapping $\psi^{-1}$ con garantías de factibilidad en optimización.} \\
-  Para problemas combinatorios (asignación de agentes, rutas, portafolio), la solución cuántica óptima $\mathbf{z}^* \in \mathcal{Z}$ debe decodificarse en una solución factible $\psi^{-1}(\mathbf{z}^*) \in \mathcal{X}$. Hay que demostrar que $\psi$ admite un decodificador que preserva la factibilidad de las restricciones QUBO bajo la transformación inversa, o diseñar un decodificador aproximado con cota de penalización controlada.
+  \item \textbf{Mapa de vuelta $\rho=\psi^{-1}$ con garantías de factibilidad en optimización.} \\
+  Para problemas combinatorios (asignación de agentes, rutas, portafolio), la solución cuántica óptima $\mathbf{z}^* \in \mathcal{Z}$ debe decodificarse en una solución factible $\rho(\mathbf{z}^*) \in \mathcal{X}$. Hay que demostrar que $\psi$ admite un decodificador que preserva la factibilidad de las restricciones QUBO bajo la transformación inversa, o diseñar un decodificador aproximado con cota de penalización controlada.
 
   \item \textbf{Algoritmo de búsqueda de $\psi$ con garantías de aproximación.} \\
   El re-uploading adaptativo encontrado empíricamente en el Notebook~09 es solo una instancia particular de $\psi$ en un espacio de búsqueda mucho mayor. Desarrollar un algoritmo de búsqueda ---posiblemente variacional, tipo quantum metric learning \citep{lloyd2020}--- que encuentre $\psi$ óptima con garantías de convergencia y complejidad polinómica en el tamaño del dataset.
