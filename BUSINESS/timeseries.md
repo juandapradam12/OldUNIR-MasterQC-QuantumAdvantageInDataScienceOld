@@ -9,17 +9,18 @@ One-step forecast from a lag window. **Not** an ARIMA bake-off.
 | Table | What each model sees |
 |---|---|
 | A | Same `n_lags` (= `n_qubits`) features → QK-SVR-ZZ vs Ridge / SVR-RBF / GB |
-| B | Classical gets extra lags + hour cyclic features (matched n) |
+| B | Classical gets extra lags, lag mean/std and (SKG) cyclic hour (matched n) |
 
-Splits are **time-ordered** (train = past, test = future).
+Splits are **time-ordered** (70 % past for training, 30 % future for test). Two naive
+references are reported on the same test windows: persistence (`y_{t-1}`) and the training mean.
 
 ## Datasets
 
 | Dataset | Construction | Expectation |
 |---|---|---|
-| `zz_lag` | Lag window in ZZ angle space; target = ⟨ZZ⟩ | QK-SVR may win |
+| `zz_lag` | Independent lag pairs in ZZ angle space; target = ⟨ZZ⟩ (native control, not a dynamic series) | QK-SVR may win |
 | `sine` | Periodic classical series + noise | classical |
-| `skg_speed` | One corridor speed series (practice) | classical Table B |
+| `skg_speed` | Speed of real SKG corridors (5-min readings, 144 per corridor); one corridor per repeat | classical |
 
 ## Run
 
@@ -31,13 +32,14 @@ python3 -m qml_v2.timeseries --n-total 160 --n-repeats 5
 
 Results: [`timeseries_v2_results.md`](timeseries_v2_results.md).
 
-## Headline (n=160, 5 repeats, time-ordered)
+## Headline (5 repeats, time-ordered; MAE on test)
 
-| Dataset | Table A winner | Note |
-|---------|----------------|------|
-| **zz_lag** | **QK-SVR MAE 0.06 vs Ridge 0.41** | target = ⟨ZZ⟩ of lag window |
-| sine | SVR-RBF | classical periodicity |
-| skg_speed | Ridge | practice corridor; classical wins |
+| Dataset | Table A winner | QK-SVR-ZZ | Naive references |
+|---------|----------------|-----------|------------------|
+| **zz_lag** | **QK-SVR 0.056** (Ridge 0.414) | 0.056 | train mean 0.404 |
+| sine | SVR-RBF 0.260 | 0.662 | train mean 0.658, persistence 0.287 |
+| skg_speed | Ridge 2.80 | 13.59 | train mean 13.61, persistence 2.75 |
 
 Same story as classification/regression: quantum wins only on ZZ-structured
-targets; SKG practice series stays classical.
+targets. Outside that regime QK-SVR matches the training-mean predictor, and Ridge
+sits at the level of persistence. Figures and table: notebook 12.

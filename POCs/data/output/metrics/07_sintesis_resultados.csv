@@ -19,5 +19,5 @@ caso,capa,etiqueta,valor,unidad,fuente
 8,referencia,moons,-29.1,pp AUC,qml_v2.anomaly
 8,complementario,blobs,-50.8,pp AUC,qml_v2.anomaly
 9,nativo,zz_lag,86.6,% MAE,qml_v2.timeseries
-9,skg,skg_speed,-325.2,% MAE,qml_v2.timeseries
+9,skg,skg_speed,-385.6,% MAE,qml_v2.timeseries
 9,referencia,sine,-154.9,% MAE,qml_v2.timeseries
