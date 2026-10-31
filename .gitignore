@@ -43,6 +43,9 @@ venv/
 # ──────────────────────────────────────────────────────────────────────────────
 .DS_Store
 **/.DS_Store
+# copias " 2" que macOS crea al sincronizar o resolver conflictos
+* 2
+* 2.*
 
 # ──────────────────────────────────────────────────────────────────────────────
 # POCs — datos de entrada y salida (tamaño / privacidad)
