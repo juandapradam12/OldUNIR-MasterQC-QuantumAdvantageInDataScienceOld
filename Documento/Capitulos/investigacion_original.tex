@@ -387,7 +387,7 @@ El resultado más destacado es la disociación en la Estrategia~2 para SKG: $\ma
 Sobre la base de los resultados empíricos y la revisión de la literatura, se propone un \textbf{framework de representación cuántico-compatible (QCR)} que sistematiza el proceso de adecuación de datos clásicos a algoritmos cuánticos:
 
 \begin{enumerate}
-    \item \textbf{Diagnóstico}: Calcular $\mathcal{Q}(\mathcal{D})$ (y, cuando esté disponible, $\mathcal{Q}_{\mathrm{rob}}$) y comparar también frente al \textbf{mejor clásico} (GB/RF), no solo RBF. $\mathcal{Q}>\theta$ vs.\ RBF \textbf{no} autoriza por sí solo a desplegar QSVM (contraejemplo: SKG).
+    \item \textbf{Diagnóstico}: Calcular $\mathcal{Q}(\mathcal{D})$ (y, cuando esté disponible, $\mathcal{Q}_{\mathrm{rob}}$) y comparar también frente al \textbf{mejor clásico} (GB/RF), no solo RBF. Un $\mathcal{Q}$ favorable vs.\ RBF \textbf{no} autoriza por sí solo a desplegar QSVM (contraejemplo: SKG).
 
     \item \textbf{Identificación del cuello de botella}: Si el diagnóstico sugiere explorar pre-mapeo, analizar qué componente de $\mathcal{Q}$ es más negativo:
     \begin{itemize}
@@ -396,16 +396,16 @@ Sobre la base de los resultados empíricos y la revisión de la literatura, se p
         \item Si $\Delta H < 0$: concentración espectral → regularización del feature map o data re-uploading.
     \end{itemize}
 
-    \item \textbf{Pre-mapeo}: Aplicar la transformación $\psi$ candidata. Recalcular $\mathcal{Q}(\psi(\mathcal{D}))$ y la ventaja frente al stack clásico fuerte.
+    \item \textbf{Pre-mapeo}: Aplicar la transformación $\psi$ candidata. Recalcular los indicadores de $\mathcal{Q}$ y la ventaja frente al stack clásico fuerte.
 
-    \item \textbf{Verificación}: Solo si la geometría \emph{y} la métrica supervisada frente a GB/RF son favorables, entrenar QSVM sobre $\psi(\mathcal{D})$. En caso contrario, reportar \texttt{classical} / no cuántico-compatible con el feature map actual.
+    \item \textbf{Verificación}: Solo si la geometría \emph{y} la métrica supervisada frente a GB/RF son favorables, entrenar QSVM sobre los datos transformados. En caso contrario, reportar \texttt{classical} / no cuántico-compatible con el feature map actual.
 \end{enumerate}
 
 \paragraph{Validación empírica del Framework QCR.}
 El framework se aplicó a los dos datasets reales (Notebook~09, §10). Los resultados son:
 \begin{itemize}
-    \item \textbf{SKG Incidentes}: $\mathcal{Q}=+0.163 > \theta=0$ frente a RBF, \textbf{pero el dataset no es cuántico-nativo}. Frente a GB/RF la ventaja desaparece; bajo $\mathcal{Q}_{\mathrm{rob}}$ (Sección~\ref{sec:qml_v2_revision}) el veredicto es \texttt{classical}. Lectura: $\mathcal{Q}>0$ vs.\ un único baseline RBF \textbf{no} implica compatibilidad operativa.
-    \item \textbf{Telco Churn}: $\mathcal{Q}=-0.228 \leq \theta=0$. Cuello de botella: $\Delta H = -1.131$ (concentración espectral). En Notebook~09, re-uploading $reps=3$ elevaba $\mathcal{Q}$ y $+4.2$~pp vs.\ RBF; bajo $\mathcal{Q}_{\mathrm{rob}}$ Telco permanece \texttt{classical}. Evidencia preliminar, no rescate robusto.
+    \item \textbf{SKG Incidentes}: $\mathcal{Q}=+0.163$ frente a RBF, \textbf{pero el dataset no es cuántico-nativo}. Frente a GB/RF la ventaja desaparece; bajo $\mathcal{Q}_{\mathrm{rob}}$ (Sección~\ref{sec:qml_v2_revision}) el veredicto es \texttt{classical}. Lectura: $\mathcal{Q}>0$ vs.\ un único baseline RBF \textbf{no} implica compatibilidad operativa.
+    \item \textbf{Telco Churn}: $\mathcal{Q}=-0.228$. Cuello de botella: $\Delta H = -1.131$ (concentración espectral). En Notebook~09, re-uploading $reps=3$ elevaba $\mathcal{Q}$ y $+4.2$~pp vs.\ RBF; bajo $\mathcal{Q}_{\mathrm{rob}}$ Telco permanece \texttt{classical}. Evidencia preliminar, no rescate robusto.
 \end{itemize}
 
 % -------------------------------------------------------------------
@@ -474,8 +474,8 @@ Esta hoja de ruta formal se desarrolla en el Capítulo~\ref{cap:futuro}.
   % Nodo de entrada
   \node[terminal] (start) at (0, 0) {Dataset $\mathcal{D}$};
 
-  % Decisión 1: Q > theta? (insuficiente solo; exige también stack clásico)
-  \node[decision] (d1) at (0, -1.4) {$\mathcal{Q}>\theta$ \emph{y}\\vence a GB/RF?};
+  % Decisión 1: perfil favorable (insuficiente solo; exige también stack clásico)
+  \node[decision] (d1) at (0, -1.4) {Perfil $\mathcal{Q}$ favorable \emph{y}\\vence a GB/RF?};
   \draw[arr] (start) -- (d1);
 
   % Sí → QSVM (solo si también gana al stack clásico fuerte)
@@ -509,17 +509,17 @@ Esta hoja de ruta formal se desarrolla en el Capítulo~\ref{cap:futuro}.
   \draw[arr] (d4) -- node[left, font=\scriptsize]{Sí} (t3);
 
   % Convergencia → verificación
-  \node[action] (verify) at (0, -7.2) {Recalcular $\mathcal{Q}(\psi(\mathcal{D}))$};
+  \node[action] (verify) at (0, -7.2) {Recalcular indicadores\\y ventaja};
   \draw[arr] (t1) |- (verify);
   \draw[arr] (t2) -- (verify);
   \draw[arr] (t3) |- (verify);
 
   % Decisión final
-  \node[decision] (d5) at (0, -8.55) {$\mathcal{Q}(\psi)>\theta$\\y vence GB/RF?};
+  \node[decision] (d5) at (0, -8.55) {\textquestiondown{}Vence a GB/RF\\tras $\psi$?};
   \draw[arr] (verify) -- (d5);
 
   % Resultado Sí
-  \node[terminal] (qsvm2) at (3.8, -8.55) {Probar QSVM\\sobre $\psi(\mathcal{D})$};
+  \node[terminal] (qsvm2) at (3.8, -8.55) {Probar QSVM\\sobre datos transformados};
   \draw[arr] (d5) -- node[above, font=\scriptsize]{Sí} (qsvm2);
 
   % Resultado No
@@ -528,7 +528,7 @@ Esta hoja de ruta formal se desarrolla en el Capítulo~\ref{cap:futuro}.
   \draw[arr] (d5) -- node[above, font=\scriptsize]{No} (fallback);
 
 \end{tikzpicture}
-\caption{Diagrama de decisión del Framework QCR. $\mathcal{Q}>\theta$ frente a RBF \textbf{no} basta: se exige también ventaja frente a GB/RF (contraejemplo SKG). Cada rama identifica el cuello ($\Delta A$, $\hat{d}_F$, $\Delta H$) y aplica $\psi$; la verificación final es geométrica \emph{y} supervisada.}
+\caption{Diagrama de decisión del Framework QCR. Un $\mathcal{Q}$ favorable frente a RBF \textbf{no} basta: se exige también ventaja frente a GB/RF (contraejemplo SKG). Cada rama identifica el cuello ($\Delta A$, $\hat{d}_F$, $\Delta H$) y aplica $\psi$; la verificación final es geométrica \emph{y} supervisada.}
 \label{fig:qcr_flowchart}
 \end{figure}
 
@@ -543,7 +543,7 @@ Esta hoja de ruta formal se desarrolla en el Capítulo~\ref{cap:futuro}.
 El framework tiene tres propiedades deseables: (i) es \textbf{interpretable}, porque cada transformación tiene una justificación geométrica explícita; (ii) es \textbf{modular}, porque el diagnóstico y el pre-mapeo son componentes independientes que pueden combinarse; y (iii) es \textbf{falseable}, porque la hipótesis ``el pre-mapeo incrementa $\mathcal{Q}$'' es una predicción verificable empíricamente.
 
 \paragraph{Limitaciones y trabajo futuro.}
-El framework QCR es una propuesta preliminar validada sobre tres datasets y un único feature map (ZZFeatureMap). Las generalizaciones necesarias son: (a) extender a otros feature maps (PauliFeatureMap, IQP Encoding); (b) demostrar que $\mathcal{Q} > \theta$ es condición suficiente ---no solo necesaria--- para la ventaja, lo que requeriría la demostración teórica delineada en el Capítulo~\ref{cap:futuro}; (c) evaluar el coste del pre-mapeo frente al beneficio de ventaja cuántica obtenida.
+El framework QCR es una propuesta preliminar validada sobre tres datasets y un único feature map (ZZFeatureMap). Las generalizaciones necesarias son: (a) extender a otros feature maps (PauliFeatureMap, IQP Encoding); (b) demostrar que un perfil $\mathcal{Q}$ favorable es condición suficiente ---no solo necesaria--- para la ventaja, lo que requeriría la demostración teórica delineada en el Capítulo~\ref{cap:futuro}; (c) evaluar el coste del pre-mapeo frente al beneficio de ventaja cuántica obtenida.
 
 % =====================================================================
 \section{Revisión endurecida QML~v2 (protocolos justos)}
