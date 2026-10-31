@@ -36,13 +36,11 @@ tectonic defensa.tex
 
 ## Secciones
 
-1. Título / agenda  
-2. Motivación (+ diagrama Cap. 1–8)  
-3. Introducción (problema + alcance)  
-4. Contexto NISQ y estado de la técnica  
-5. Metodología (fases + diseño 4×3; **sin** slides de formalismo sueltas)  
-6. Resultados de modelos (**muchos plots**; se pueden recortar después)  
-7. Conjeturas: camino empírico → $\mathcal{Q}$ → QCR  
-8. Evidencia de las conjeturas  
-9. Conclusiones (3) + limitaciones (2)  
-10. Trabajo futuro (2) + referencias  
+1. Título
+2. Motivación (+ diagrama Cap. 1–8)
+3. Introducción (pregunta de investigación + alcance)
+4. Contexto: era NISQ
+5. Planteamiento y metodología (cuatro fases, modelos comparados, datasets utilizados)
+6. Resultados Q vs C (mapa de errores, síntesis por caso de uso y conjunto de datos, criterio de activación)
+7. Conjeturas: camino empírico → $\mathcal{Q}$ → QCR
+8. Conclusiones, limitaciones y trabajo futuro (una diapositiva cada una) + referencias

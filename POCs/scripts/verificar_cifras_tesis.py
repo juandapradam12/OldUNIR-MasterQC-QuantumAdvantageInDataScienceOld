@@ -330,15 +330,6 @@ def caso1() -> list[Hecho]:
     h.append(
         Hecho(
             1,
-            "Protocolo justo Telco en defensa",
-            (f(telco_a.delta_acc_vs_best_classical, 1, 100),),
-            en("defensa"),
-            "Telco",
-        )
-    )
-    h.append(
-        Hecho(
-            1,
             "Protocolo justo SKG (fair_classification_skg)",
             (pm(skg_a.acc_mean, skg_a.acc_std, 1, 100),),
             en("eval", caso=1),
@@ -503,17 +494,8 @@ def caso2() -> list[Hecho]:
             2,
             "NB03 resumen nativo",
             (f(nat["QK-SVR"], 3), f(nat["Mejor Clásico"], 3), f(nat["Ventaja R²"], 3)),
-            en("conc", "defensa"),
+            en("conc"),
             "R",
-        )
-    )
-    h.append(
-        Hecho(
-            2,
-            "NB03 SKG y Friedman en defensa",
-            (f(skg["Ventaja R²"], 3), f(fri["Ventaja R²"], 3)),
-            en("defensa"),
-            "SKG",
         )
     )
     skg_bc = csv("03_regresion_skg_bc.csv").set_index("Modelo")
@@ -626,7 +608,7 @@ def caso2() -> list[Hecho]:
             2,
             "Varianza descartada en NB08 (SKG y Telco)",
             (min(descartada_nb08), max(descartada_nb08)),
-            en("conc", "defensa"),
+            en("conc"),
             "(varianza|PCA)",
         )
     )
@@ -791,13 +773,6 @@ def caso6() -> list[Hecho]:
             "Telco",
         ),
         Hecho(6, "Granularidad de la partición", ("45", "2.2"), en("eval", caso=6), "puntos de test"),
-        Hecho(
-            6,
-            "NB06 en defensa",
-            (f(nat["Ventaja (pp)"]), f(skg["Ventaja (pp)"]), f(telco["Ventaja (pp)"])),
-            en("defensa"),
-            "Nativo",
-        ),
     ]
     assert len(adv) >= 2
     assert (
@@ -885,7 +860,6 @@ def caso7() -> list[Hecho]:
             en("resumen", "abstract"),
             "p=3|\\$p=3",
         ),
-        Hecho(7, "Probabilidad media en defensa", (f(p3["p_opt_media"], 1, 100),), en("defensa"), "MDS"),
         Hecho(
             7,
             "Mejor energía esperada por profundidad",
@@ -901,7 +875,6 @@ def caso7() -> list[Hecho]:
             "Medido como porcentaje",
         ),
         Hecho(7, "Instancias ER en resumen/abstract", (f"{n_dom} de {len(esc)}",), en("resumen"), "Erd"),
-        Hecho(7, "Instancias ER en defensa", (f"{n_dom}/{len(esc)}",), en("defensa"), "ER"),
         Hecho(7, "Instancias ER en conclusiones", (f"{n_dom}",), en("conc"), "Caso~7|MDS"),
         Hecho(
             7,
@@ -1035,15 +1008,6 @@ def caso8() -> list[Hecho]:
             "OCSVM-ZZ",
         )
     )
-    h.append(
-        Hecho(
-            8,
-            "Defensa: caso 8",
-            (f(s8["zz_phase"], 1), f(s8["skg_injected"], 1), f(s8["moons"], 1)),
-            en("defensa"),
-            "Nativo|SKG|moons",
-        )
-    )
     cfg8 = json.loads((METRICS / "qml_v2_anomaly_config.json").read_text(encoding="utf-8"))
     h.append(
         Hecho(
@@ -1116,25 +1080,6 @@ def caso9() -> list[Hecho]:
     h.append(Hecho(9, "Tamaño del pool zz_lag", (str(pares),), en("desa", caso=9), "zz_lag"))
     h.append(Hecho(9, "Serie sine", (str(puntos_sine), f(ruido, 2)), en("desa", caso=9), "sine"))
     h.append(Hecho(9, "Corredores SKG", (str(skg_n.max()), str(len(skg_n))), en("desa", caso=9), "skg_speed"))
-    h.append(Hecho(9, "Defensa: nativo", (f(q.mae_mean, 3), f(ridge.mae_mean, 3)), en("defensa"), "vs 0.414 de Ridge"))
-    h.append(
-        Hecho(
-            9,
-            "Defensa: SKG",
-            (f(skg_cl.mae_mean, 2), f(fila(skg, "QK-SVR-ZZ").mae_mean, 2)),
-            en("defensa"),
-            "persistencia",
-        )
-    )
-    h.append(
-        Hecho(
-            9,
-            "Defensa: sine",
-            (f(sine_cl.mae_mean, 3), f(fila(sine, "QK-SVR-ZZ").mae_mean, 3)),
-            en("defensa"),
-            "media del entrenamiento",
-        )
-    )
     h.append(
         Hecho(
             9,
@@ -1502,10 +1447,6 @@ def caso4() -> list[Hecho]:
             (f"{int(alta_qaoa['optimo_encontrado'])}", f"{int(alta_vqe['optimo_encontrado'])}", "0.01"),
             en("conc"),
             "portafolio",
-        ),
-        Hecho(4, "Defensa (tabla y bloque)", (aciertos(alta_qaoa), aciertos(alta_vqe)), en("defensa"), "Portafolio"),
-        Hecho(
-            4, "Defensa (bloque)", (aciertos(alta_qaoa), aciertos(alta_vqe)), en("defensa"), "Asignación y portafolio"
         ),
         Hecho(4, "README", (aciertos(alta_qaoa), aciertos(alta_vqe)), en("readme"), "portfolio"),
     ]
