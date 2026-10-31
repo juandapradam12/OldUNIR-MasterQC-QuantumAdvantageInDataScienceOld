@@ -1,0 +1,5 @@
+configuracion,metodo,semillas,factibles,optimo_encontrado,brecha_media_pct,brecha_mediana_pct,brecha_max_pct,coste_medio,tiempo_medio_s
+penalizacion_alta,QAOA,10,10,6,111.51731962131915,0.0,724.3796140065913,0.09246944607185638,683.799
+penalizacion_alta,VQE,10,10,3,83.4852888591057,63.68459253351542,253.02348653963722,0.08021462759414599,8.239
+penalizacion_baja,QAOA,10,0,0,,,,,60.742
+penalizacion_baja,VQE,10,0,0,,,,,2.1239999999999997

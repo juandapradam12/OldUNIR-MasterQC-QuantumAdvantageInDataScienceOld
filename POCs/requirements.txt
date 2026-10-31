@@ -27,6 +27,8 @@ scipy>=1.12.0
 # PuLP 3.x/4.x cambió la API que usa qml_v2.optimization; se verificó con 2.9.
 pulp>=2.8,<3
 networkx>=3.0
+# Solo para regenerar portfolio_prices.csv (REFRESCAR_YAHOO=1 en el Notebook 04).
+yfinance>=0.2.40
 cvxpy>=1.4.0
 # gurobi>=11.0.0  # Descomentar si tienes licencia
 

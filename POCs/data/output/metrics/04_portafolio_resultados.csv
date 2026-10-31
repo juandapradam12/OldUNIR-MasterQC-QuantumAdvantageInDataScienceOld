@@ -1,0 +1,6 @@
+modelo,tipo,penalizacion,factible,coste_qp,activos,tiempo_s,brecha_pct
+Exacto (enumeración),clásico,,True,0.04371719830669424,"EC, CIB, MSFT",0.0051,0.0
+VQE (P=0.01),cuántico,0.01,False,,"EC, MSFT",0.8,
+QAOA (P=0.01),cuántico,0.01,False,,,10.6,
+VQE (P=10),cuántico,10.0,True,0.058601229871933835,"EC, AAPL, MSFT",1.2,34.04616979528733
+QAOA (P=10),cuántico,10.0,True,0.3433696499646482,"EC, GOOGL, AMZN",43.4,685.4337955414434

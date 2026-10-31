@@ -1,0 +1,48 @@
+{
+  "optimo_exacto": 0.04371719830669424,
+  "activos_optimo": [
+    "EC",
+    "CIB",
+    "MSFT"
+  ],
+  "coste_voraz": 0.04371719830669424,
+  "activos_voraz": [
+    "EC",
+    "CIB",
+    "MSFT"
+  ],
+  "estado_fundamental_penalizacion_10": {
+    "activos": [
+      "EC",
+      "CIB",
+      "MSFT"
+    ],
+    "energia_qp": 0.04371719830666976
+  },
+  "semillas": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9
+  ],
+  "disparos": 4096,
+  "qaoa_p": 3,
+  "configuraciones": {
+    "penalizacion_alta": {
+      "penalty": 10.0,
+      "restarts": 5,
+      "maxiter": 300
+    },
+    "penalizacion_baja": {
+      "penalty": 0.01,
+      "restarts": 1,
+      "maxiter": 200
+    }
+  }
+}
