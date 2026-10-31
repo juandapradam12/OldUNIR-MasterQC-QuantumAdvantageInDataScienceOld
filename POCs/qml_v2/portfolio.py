@@ -20,6 +20,7 @@ configuración), ``qml_v2_portfolio_summary.csv`` y ``qml_v2_portfolio_reference
 
 Uso:  python -m qml_v2.portfolio
 """
+
 from __future__ import annotations
 
 import itertools
@@ -147,8 +148,11 @@ def _ejecutar(args: tuple) -> dict:
             if coste < mejor_coste:
                 mejor_coste, mejor_bits = coste, modal
     return {
-        "metodo": metodo, "configuracion": config, "semilla": semilla,
-        "reinicios": parametros["restarts"], "reinicios_factibles": factibles,
+        "metodo": metodo,
+        "configuracion": config,
+        "semilla": semilla,
+        "reinicios": parametros["restarts"],
+        "reinicios_factibles": factibles,
         "factible": factibles > 0,
         "coste": mejor_coste if factibles else np.nan,
         "activos": ", ".join(TICKERS[i] for i in np.flatnonzero(_bits(mejor_bits))) if factibles else "",
@@ -170,7 +174,10 @@ def ejecutar(workers: int = 3) -> tuple[pd.DataFrame, pd.DataFrame, dict]:
             "activos": [TICKERS[i] for i in np.flatnonzero(_bits(bits_gs))],
             "energia_qp": energia_gs,
         },
-        "semillas": SEEDS, "disparos": SHOTS, "qaoa_p": QAOA_REPS, "configuraciones": CONFIGS,
+        "semillas": SEEDS,
+        "disparos": SHOTS,
+        "qaoa_p": QAOA_REPS,
+        "configuraciones": CONFIGS,
     }
     tareas = [(m, c, s) for c in CONFIGS for m in ("VQE", "QAOA") for s in SEEDS]
     with ProcessPoolExecutor(max_workers=workers, mp_context=multiprocessing.get_context("spawn")) as pool:

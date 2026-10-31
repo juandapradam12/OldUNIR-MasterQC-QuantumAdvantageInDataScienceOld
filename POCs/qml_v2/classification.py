@@ -88,9 +88,8 @@ def zz_map(n_qubits: int, reps: int, entanglement: str):
     except ImportError:
         from qiskit.circuit.library import ZZFeatureMap
 
-        return ZZFeatureMap(
-            feature_dimension=n_qubits, reps=reps, entanglement=entanglement
-        )
+        return ZZFeatureMap(feature_dimension=n_qubits, reps=reps, entanglement=entanglement)
+
 
 def make_quantum_native(
     n_samples: int,
@@ -143,7 +142,7 @@ class QuantumKernelSVC:
         self.X_train_: np.ndarray | None = None
         self.svc_: SVC | None = None
 
-    def fit(self, X: np.ndarray, y: np.ndarray) -> "QuantumKernelSVC":
+    def fit(self, X: np.ndarray, y: np.ndarray) -> QuantumKernelSVC:
         self.X_train_ = np.asarray(X, dtype=float)
         K = self.kernel.evaluate(x_vec=self.X_train_)
         self.svc_ = SVC(
@@ -172,10 +171,7 @@ class QuantumKernelSVC:
 # Tabular loaders
 # ---------------------------------------------------------------------------
 
-TELCO_URL = (
-    "https://raw.githubusercontent.com/IBM/telco-customer-churn-on-icp4d/"
-    "master/data/Telco-Customer-Churn.csv"
-)
+TELCO_URL = "https://raw.githubusercontent.com/IBM/telco-customer-churn-on-icp4d/master/data/Telco-Customer-Churn.csv"
 
 
 def load_telco(path: Path | None = None) -> tuple[np.ndarray, np.ndarray, list[str]]:
@@ -237,6 +233,7 @@ def subsample_stratified(
 # Preprocess (train-only fit)
 # ---------------------------------------------------------------------------
 
+
 def encode_for_zz_kernel(
     X_train: np.ndarray,
     X_test: np.ndarray,
@@ -265,9 +262,7 @@ def encode_for_zz_kernel(
         Xte = pca.transform(Xte)
         pca_var = float(pca.explained_variance_ratio_.sum())
     elif Xtr.shape[1] < n_qubits:
-        raise ValueError(
-            f"Need at least {n_qubits} features, got {Xtr.shape[1]}."
-        )
+        raise ValueError(f"Need at least {n_qubits} features, got {Xtr.shape[1]}.")
     mms = MinMaxScaler(feature_range=(-np.pi, np.pi))
     Xtr = mms.fit_transform(Xtr)
     Xte = mms.transform(Xte)
@@ -316,18 +311,10 @@ def _classical_models(
     class_weight: str | None = "balanced",
 ) -> dict[str, Any]:
     return {
-        "SVM-RBF": SVC(
-            kernel="rbf", C=C, class_weight=class_weight, random_state=random_state
-        ),
-        "SVM-linear": SVC(
-            kernel="linear", C=C, class_weight=class_weight, random_state=random_state
-        ),
-        "GradientBoosting": GradientBoostingClassifier(
-            n_estimators=n_estimators, random_state=random_state
-        ),
-        "LogisticRegression": LogisticRegression(
-            max_iter=1000, class_weight=class_weight, random_state=random_state
-        ),
+        "SVM-RBF": SVC(kernel="rbf", C=C, class_weight=class_weight, random_state=random_state),
+        "SVM-linear": SVC(kernel="linear", C=C, class_weight=class_weight, random_state=random_state),
+        "GradientBoosting": GradientBoostingClassifier(n_estimators=n_estimators, random_state=random_state),
+        "LogisticRegression": LogisticRegression(max_iter=1000, class_weight=class_weight, random_state=random_state),
     }
 
 
@@ -389,9 +376,7 @@ def run_fair_dataset(
         X_tr, X_te = X[tr], X[te]
         y_tr, y_te = y[tr], y[te]
 
-        Xq_tr, Xq_te, pca_var = encode_for_zz_kernel(
-            X_tr, X_te, cfg.n_qubits, cfg.random_state, already_zz_space
-        )
+        Xq_tr, Xq_te, pca_var = encode_for_zz_kernel(X_tr, X_te, cfg.n_qubits, cfg.random_state, already_zz_space)
         if zz_premap is not None:
             Xq_tr, Xq_te = zz_premap(Xq_tr, Xq_te)
 
@@ -486,16 +471,14 @@ def summarize(rows: list[RepeatResult]) -> pd.DataFrame:
 
     # Advantage of QSVM-ZZ vs best classical *within the same table*.
     g["delta_acc_vs_best_classical"] = np.nan
-    for table, idx in g.groupby("table").groups.items():
+    for _table, idx in g.groupby("table").groups.items():
         block = g.loc[idx]
         classical = block[~block["model"].str.startswith("QSVM")]
         qsvm = block[block["model"] == "QSVM-ZZ"]
         if classical.empty or qsvm.empty:
             continue
         best_cl = float(classical["acc_mean"].max())
-        g.loc[qsvm.index, "delta_acc_vs_best_classical"] = (
-            float(qsvm["acc_mean"].iloc[0]) - best_cl
-        )
+        g.loc[qsvm.index, "delta_acc_vs_best_classical"] = float(qsvm["acc_mean"].iloc[0]) - best_cl
     return g
 
 
@@ -529,13 +512,8 @@ def advantage_report(summary: pd.DataFrame) -> str:
         )
 
     # Business question: Table A QSVM vs Table B best classical
-    q_a = summary[
-        (summary["table"] == "A_matched_features") & (summary["model"] == "QSVM-ZZ")
-    ]
-    cl_b = summary[
-        (summary["table"] == "B_matched_n_full_features")
-        & (~summary["model"].str.startswith("QSVM"))
-    ]
+    q_a = summary[(summary["table"] == "A_matched_features") & (summary["model"] == "QSVM-ZZ")]
+    cl_b = summary[(summary["table"] == "B_matched_n_full_features") & (~summary["model"].str.startswith("QSVM"))]
     if not q_a.empty and not cl_b.empty:
         best_b = cl_b.loc[cl_b["acc_mean"].idxmax()]
         qa = q_a.iloc[0]
@@ -586,8 +564,7 @@ def run_all(
         "# Fair classification results",
         "",
         "Generated by `python -m qml_v2.classification`.",
-        "Table A = same features for QSVM and classical. "
-        "Table B = classical keeps full features (matched n only).",
+        "Table A = same features for QSVM and classical. Table B = classical keeps full features (matched n only).",
         "",
         f"Config: `{json.dumps(asdict(cfg))}`",
         "",
@@ -595,9 +572,7 @@ def run_all(
 
     for name, X, y, native in jobs:
         print(f"\n=== {name}  n={len(y)}  features={X.shape[1]}  native={native} ===")
-        rows = run_fair_dataset(
-            name, X, y, cfg, already_zz_space=native, include_table_b=not native
-        )
+        rows = run_fair_dataset(name, X, y, cfg, already_zz_space=native, include_table_b=not native)
         raw = pd.DataFrame([asdict(r) for r in rows])
         raw.insert(0, "dataset", name)
         raw.to_csv(metrics_dir / f"fair_classification_{name}_raw.csv", index=False)
@@ -621,12 +596,8 @@ def run_all(
         report_lines.append("")
 
     if out:
-        pd.concat(out.values(), ignore_index=True).to_csv(
-            metrics_dir / "fair_classification_all.csv", index=False
-        )
-        (metrics_dir / "fair_classification_config.json").write_text(
-            json.dumps(asdict(cfg), indent=2)
-        )
+        pd.concat(out.values(), ignore_index=True).to_csv(metrics_dir / "fair_classification_all.csv", index=False)
+        (metrics_dir / "fair_classification_config.json").write_text(json.dumps(asdict(cfg), indent=2))
         report_path = REPO_ROOT / "BUSINESS" / "classification_fair_results.md"
         report_path.write_text("\n".join(report_lines) + "\n")
         print(f"\nWrote {report_path}")

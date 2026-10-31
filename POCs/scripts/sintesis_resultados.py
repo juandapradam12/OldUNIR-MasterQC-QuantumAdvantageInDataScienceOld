@@ -15,7 +15,6 @@ Uso, desde ``POCs/``::
 from __future__ import annotations
 
 import json
-import re
 from pathlib import Path
 
 import nbformat
@@ -44,7 +43,7 @@ def _texto_salidas(nombre: str) -> str:
 
 
 def _fila(caso: int, capa: str, etiqueta: str, valor: float, unidad: str, fuente: str) -> dict:
-    return dict(caso=caso, capa=capa, etiqueta=etiqueta, valor=float(valor), unidad=unidad, fuente=fuente)
+    return {"caso": caso, "capa": capa, "etiqueta": etiqueta, "valor": float(valor), "unidad": unidad, "fuente": fuente}
 
 
 def _por_capa(tabla: pd.DataFrame) -> list[tuple[str, pd.Series]]:
@@ -55,18 +54,14 @@ def _por_capa(tabla: pd.DataFrame) -> list[tuple[str, pd.Series]]:
 def caso1_clasificacion() -> list[dict]:
     """Notebook 01, resumen de tres datasets (pp de accuracy)."""
     tabla = pd.read_csv(METRICS / "01_clasificacion_resumen_3datasets.csv")
-    return [
-        _fila(1, capa, "QSVM", fila["Ventaja (pp)"], "pp", "NB01 §13.6")
-        for capa, fila in _por_capa(tabla)
-    ]
+    return [_fila(1, capa, "QSVM", fila["Ventaja (pp)"], "pp", "NB01 §13.6") for capa, fila in _por_capa(tabla)]
 
 
 def caso2_regresion() -> list[dict]:
     """Notebook 03, resumen de tres datasets (diferencia de R² por 100)."""
     tabla = pd.read_csv(METRICS / "03_regresion_resumen_3datasets.csv")
     return [
-        _fila(2, capa, "QK-SVR", 100 * fila["Ventaja R²"], "ΔR²×100", "NB03 §13.5")
-        for capa, fila in _por_capa(tabla)
+        _fila(2, capa, "QK-SVR", 100 * fila["Ventaja R²"], "ΔR²×100", "NB03 §13.5") for capa, fila in _por_capa(tabla)
     ]
 
 
@@ -92,8 +87,16 @@ def caso4_portafolio() -> list[dict]:
     referencia = json.loads((METRICS / "qml_v2_portfolio_reference.json").read_text(encoding="utf-8"))
     if not np.isclose(referencia["coste_voraz"], referencia["optimo_exacto"]):
         raise ValueError("El Greedy ya no alcanza el óptimo: revisar la referencia clásica del Caso 4.")
-    return [_fila(4, "referencia", f"{mejor['metodo']} (P=10)", mejor["acierto_pct"] - 100, "pp semillas óptimas",
-                  "qml_v2.portfolio")]
+    return [
+        _fila(
+            4,
+            "referencia",
+            f"{mejor['metodo']} (P=10)",
+            mejor["acierto_pct"] - 100,
+            "pp semillas óptimas",
+            "qml_v2.portfolio",
+        )
+    ]
 
 
 def caso5_tsp() -> list[dict]:
@@ -109,10 +112,7 @@ def caso5_tsp() -> list[dict]:
 def caso6_umbral() -> list[dict]:
     """Notebook 06: tres datasets, pp de accuracy (una sola ejecución)."""
     tabla = pd.read_csv(METRICS / "06_qkernel_resumen_3datasets.csv")
-    return [
-        _fila(6, capa, "QSVC", fila["Ventaja (pp)"], "pp", "NB06 §5")
-        for capa, fila in _por_capa(tabla)
-    ]
+    return [_fila(6, capa, "QSVC", fila["Ventaja (pp)"], "pp", "NB06 §5") for capa, fila in _por_capa(tabla)]
 
 
 def _mds_minimo_fuerza_bruta(nodos: list[str], aristas: list[list[str]]) -> int:
@@ -153,10 +153,22 @@ def caso7_mds() -> list[dict]:
     resuelta = esc["qaoa_mejor_muestra_es_dominante"] & (esc["qaoa_tamano_mejor_muestra"] == esc["ilp_tamano"])
     mejor_clasico = max(1.0, float((esc["greedy_tamano"] == esc["ilp_tamano"]).mean()))
     return [
-        _fila(7, "complementario", "red de 6 nodos", 100 * (float(resuelto_red6) - 1.0),
-              "pp instancias con MDS óptimo", "qml_v2.mds_qaoa"),
-        _fila(7, "referencia", "grafos ER n=6–15", 100 * (float(resuelta.mean()) - mejor_clasico),
-              "pp instancias con MDS óptimo", "qml_v2.mds_qaoa"),
+        _fila(
+            7,
+            "complementario",
+            "red de 6 nodos",
+            100 * (float(resuelto_red6) - 1.0),
+            "pp instancias con MDS óptimo",
+            "qml_v2.mds_qaoa",
+        ),
+        _fila(
+            7,
+            "referencia",
+            "grafos ER n=6–15",
+            100 * (float(resuelta.mean()) - mejor_clasico),
+            "pp instancias con MDS óptimo",
+            "qml_v2.mds_qaoa",
+        ),
     ]
 
 
@@ -167,9 +179,7 @@ def caso8_anomalias() -> list[dict]:
     for dataset in ("zz_phase", "telco_injected", "skg_injected", "moons", "blobs"):
         tabla = pd.read_csv(METRICS / f"fair_anomaly_{dataset}.csv")
         delta = tabla["delta_auc_vs_best_classical"].dropna().iloc[0]
-        filas.append(
-            _fila(8, capas.get(dataset, "complementario"), dataset, 100 * delta, "pp AUC", "qml_v2.anomaly")
-        )
+        filas.append(_fila(8, capas.get(dataset, "complementario"), dataset, 100 * delta, "pp AUC", "qml_v2.anomaly"))
     return filas
 
 
@@ -182,16 +192,21 @@ def caso9_series() -> list[dict]:
         tabla = tabla[tabla["table"].str.startswith("A")]
         qk = tabla[tabla["model"].str.startswith("QK-SVR")]["mae_mean"].iloc[0]
         clasico = tabla[~tabla["model"].str.startswith("QK-SVR")]["mae_mean"].min()
-        filas.append(
-            _fila(9, capas[dataset], dataset, 100 * (clasico - qk) / clasico, "% MAE", "qml_v2.timeseries")
-        )
+        filas.append(_fila(9, capas[dataset], dataset, 100 * (clasico - qk) / clasico, "% MAE", "qml_v2.timeseries"))
     return filas
 
 
 def consolidar() -> pd.DataFrame:
     generadores = (
-        caso1_clasificacion, caso2_regresion, caso3_asignacion, caso4_portafolio, caso5_tsp,
-        caso6_umbral, caso7_mds, caso8_anomalias, caso9_series,
+        caso1_clasificacion,
+        caso2_regresion,
+        caso3_asignacion,
+        caso4_portafolio,
+        caso5_tsp,
+        caso6_umbral,
+        caso7_mds,
+        caso8_anomalias,
+        caso9_series,
     )
     filas: list[dict] = []
     for generar in generadores:

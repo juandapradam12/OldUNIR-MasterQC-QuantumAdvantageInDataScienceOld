@@ -1,0 +1,17 @@
+[tool.ruff]
+line-length = 120
+target-version = "py312"
+extend-exclude = ["data"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP", "C4"]
+# B905: los zip del código comparan secuencias de igual longitud por construcción.
+ignore = ["B905"]
+
+[tool.ruff.lint.per-file-ignores]
+# Los cuadernos son narrativos: los imports aparecen donde se usan y las líneas largas son salidas de tabla.
+"notebooks/*.ipynb" = ["E402", "E501", "E701", "E702", "I001", "B007", "B023", "C408", "E741"]
+"tests/*" = ["E501"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["qml_v2"]

@@ -15,6 +15,7 @@ Salidas en ``POCs/data/output/metrics``:
 
 Uso, desde ``POCs/``::  python -m qml_v2.scalability
 """
+
 from __future__ import annotations
 
 import numpy as np
@@ -38,9 +39,7 @@ def estados_zz(X: np.ndarray, n_qubits: int = 2, reps: int = 2) -> np.ndarray:
     from qiskit.quantum_info import Statevector
 
     mapa = zz_map(n_qubits, reps, "full")
-    return np.array([
-        Statevector(mapa.assign_parameters(dict(zip(mapa.parameters, x)))).data for x in X
-    ])
+    return np.array([Statevector(mapa.assign_parameters(dict(zip(mapa.parameters, x)))).data for x in X])
 
 
 def kernel_fidelidad(A: np.ndarray, B: np.ndarray) -> np.ndarray:
@@ -62,8 +61,7 @@ def una_repeticion(repeticion: int, tamanos=SIZES) -> list[dict]:
     seed = BASE_SEED + repeticion
     X, y = make_quantum_native(N_TOTAL, random_state=seed)
     X = MinMaxScaler((-np.pi, np.pi)).fit_transform(X)
-    X_pool, X_te, y_pool, y_te = train_test_split(
-        X, y, test_size=0.3, random_state=seed, stratify=y)
+    X_pool, X_te, y_pool, y_te = train_test_split(X, y, test_size=0.3, random_state=seed, stratify=y)
     S_pool, S_te = estados_zz(X_pool), estados_zz(X_te)
     K_pool = kernel_fidelidad(S_pool, S_pool)
     K_te = kernel_fidelidad(S_te, S_pool)
@@ -71,16 +69,23 @@ def una_repeticion(repeticion: int, tamanos=SIZES) -> list[dict]:
     filas = []
     for n in tamanos:
         modelos = {
-            "QSVM-ZZ": (SVC(kernel="precomputed", C=1.0, random_state=seed)
-                        .fit(K_pool[:n, :n], y_pool[:n]), K_te[:, :n]),
-            "SVM-RBF": (SVC(kernel="rbf", C=1.0, random_state=seed)
-                        .fit(X_pool[:n], y_pool[:n]), X_te),
-            "Gradient Boosting": (GradientBoostingClassifier(random_state=seed)
-                                  .fit(X_pool[:n], y_pool[:n]), X_te),
+            "QSVM-ZZ": (
+                SVC(kernel="precomputed", C=1.0, random_state=seed).fit(K_pool[:n, :n], y_pool[:n]),
+                K_te[:, :n],
+            ),
+            "SVM-RBF": (SVC(kernel="rbf", C=1.0, random_state=seed).fit(X_pool[:n], y_pool[:n]), X_te),
+            "Gradient Boosting": (GradientBoostingClassifier(random_state=seed).fit(X_pool[:n], y_pool[:n]), X_te),
         }
         for nombre, (modelo, entrada) in modelos.items():
-            filas.append(dict(repeticion=repeticion, n_train=n, modelo=nombre,
-                              n_test=len(y_te), accuracy=float((modelo.predict(entrada) == y_te).mean())))
+            filas.append(
+                {
+                    "repeticion": repeticion,
+                    "n_train": n,
+                    "modelo": nombre,
+                    "n_test": len(y_te),
+                    "accuracy": float((modelo.predict(entrada) == y_te).mean()),
+                }
+            )
     return filas
 
 
@@ -94,14 +99,23 @@ def resumir(raw: pd.DataFrame) -> pd.DataFrame:
         delta_rbf = 100 * (bloque["QSVM-ZZ"] - bloque["SVM-RBF"])
         k = len(delta)
         semi = stats.t.ppf(0.975, k - 1) * delta.std(ddof=1) / np.sqrt(k)
-        filas.append(dict(
-            n_train=int(n), n_repeticiones=k,
-            qsvm_media=100 * bloque["QSVM-ZZ"].mean(), qsvm_std=100 * bloque["QSVM-ZZ"].std(ddof=1),
-            rbf_media=100 * bloque["SVM-RBF"].mean(), rbf_std=100 * bloque["SVM-RBF"].std(ddof=1),
-            gb_media=100 * bloque["Gradient Boosting"].mean(), gb_std=100 * bloque["Gradient Boosting"].std(ddof=1),
-            delta_vs_mejor_clasico_pp=delta.mean(), delta_ic95_inf=delta.mean() - semi,
-            delta_ic95_sup=delta.mean() + semi, delta_vs_rbf_pp=delta_rbf.mean(),
-            repeticiones_qsvm_gana=int((delta > 0).sum())))
+        filas.append(
+            {
+                "n_train": int(n),
+                "n_repeticiones": k,
+                "qsvm_media": 100 * bloque["QSVM-ZZ"].mean(),
+                "qsvm_std": 100 * bloque["QSVM-ZZ"].std(ddof=1),
+                "rbf_media": 100 * bloque["SVM-RBF"].mean(),
+                "rbf_std": 100 * bloque["SVM-RBF"].std(ddof=1),
+                "gb_media": 100 * bloque["Gradient Boosting"].mean(),
+                "gb_std": 100 * bloque["Gradient Boosting"].std(ddof=1),
+                "delta_vs_mejor_clasico_pp": delta.mean(),
+                "delta_ic95_inf": delta.mean() - semi,
+                "delta_ic95_sup": delta.mean() + semi,
+                "delta_vs_rbf_pp": delta_rbf.mean(),
+                "repeticiones_qsvm_gana": int((delta > 0).sum()),
+            }
+        )
     return pd.DataFrame(filas)
 
 

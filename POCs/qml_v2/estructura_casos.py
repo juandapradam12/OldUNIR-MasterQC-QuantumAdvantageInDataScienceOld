@@ -24,6 +24,7 @@ el rendimiento de QAOA ni es comparable con una ventaja de coste.
 Control nulo: ΔA con y permutada (misma X) cuantifica el ruido de ΔA.
 Solo ΔA depende de y; ΔH, d_F y g solo dependen de X.
 """
+
 from __future__ import annotations
 
 import time
@@ -91,16 +92,17 @@ def measure_job(job: Job, cfg: QuantumnessConfig = CFG, verbose: bool = True) ->
             seed = cfg.random_state + 17 * r + 1000 * k
             Xs, ys = subsample(X, y, cfg.n_sample, seed)
             Xq, _, pca_var = encode_for_zz_kernel(
-                Xs, Xs, n_qubits=cfg.n_qubits, random_state=seed,
+                Xs,
+                Xs,
+                n_qubits=cfg.n_qubits,
+                random_state=seed,
                 already_zz_space=job.already_zz_space,
             )
             ind = _indicators_on_matrix(Xq, ys, cfg, seed=seed, compute_advantage=False)
             ind["pca_var"] = float(pca_var)
             rows.append(ind)
             rng = np.random.RandomState(seed + 7)
-            ind0 = _indicators_on_matrix(
-                Xq, rng.permutation(ys), cfg, seed=seed, compute_advantage=False
-            )
+            ind0 = _indicators_on_matrix(Xq, rng.permutation(ys), cfg, seed=seed, compute_advantage=False)
             null_dA.append(ind0["delta_A"])
     df = pd.DataFrame(rows)
     out = {
@@ -199,12 +201,19 @@ def tsp_instances(n_instances: int = 3, seed: int = 42) -> list[tuple[np.ndarray
 
 def optimization_jobs() -> list[Job]:
     return [
-        Job("optimizacion", "Asignación", assignment_instances(5),
-            note="asignación QUBO n=3 (9 qubits lógicos), 5 matrices de coste"),
-        Job("optimizacion", "MaxCut", maxcut_instances(5),
-            note="MaxCut n=10, 5 grafos Erdős–Rényi (módulo maxcutm; proxy de cobertura/MDS)"),
-        Job("optimizacion", "TSP", tsp_instances(3),
-            note="TSP n=4 euclídeo, depósito fijo (9 binarias), 3 instancias"),
+        Job(
+            "optimizacion",
+            "Asignación",
+            assignment_instances(5),
+            note="asignación QUBO n=3 (9 qubits lógicos), 5 matrices de coste",
+        ),
+        Job(
+            "optimizacion",
+            "MaxCut",
+            maxcut_instances(5),
+            note="MaxCut n=10, 5 grafos Erdős–Rényi (módulo maxcutm; proxy de cobertura/MDS)",
+        ),
+        Job("optimizacion", "TSP", tsp_instances(3), note="TSP n=4 euclídeo, depósito fijo (9 binarias), 3 instancias"),
     ]
 
 

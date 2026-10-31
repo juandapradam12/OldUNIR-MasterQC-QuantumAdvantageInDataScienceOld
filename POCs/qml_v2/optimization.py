@@ -94,9 +94,7 @@ def format_assignment(X: np.ndarray) -> str:
     return str(pairs)
 
 
-def decode_assignment_from_result(
-    result, n: int, qp: QuadraticProgram | None = None
-) -> np.ndarray:
+def decode_assignment_from_result(result, n: int, qp: QuadraticProgram | None = None) -> np.ndarray:
     """Map QuadraticProgram decision vars by name (ignore QUBO slacks)."""
     X = np.zeros((n, n), dtype=int)
     values = np.asarray(result.x, dtype=float)
@@ -118,7 +116,7 @@ def decode_assignment_from_result(
         return X
     bits = values[: n * n]
     if bits.size < n * n:
-        raise ValueError(f"Expected at least {n*n} decision bits, got {bits.size}")
+        raise ValueError(f"Expected at least {n * n} decision bits, got {bits.size}")
     return (bits.reshape(n, n) > 0.5).astype(int)
 
 
@@ -126,11 +124,7 @@ def solve_pulp(C: np.ndarray) -> tuple[float, np.ndarray, float]:
     n = C.shape[0]
     t0 = time.time()
     prob = pulp.LpProblem("Assignment", pulp.LpMinimize)
-    x = {
-        (i, j): pulp.LpVariable(f"x_{i}_{j}", cat="Binary")
-        for i in range(n)
-        for j in range(n)
-    }
+    x = {(i, j): pulp.LpVariable(f"x_{i}_{j}", cat="Binary") for i in range(n) for j in range(n)}
     prob += pulp.lpSum(C[i, j] * x[i, j] for i in range(n) for j in range(n))
     for i in range(n):
         prob += pulp.lpSum(x[i, j] for j in range(n)) == 1
@@ -320,11 +314,7 @@ def run_suite(cfg: AssignConfig | None = None, quick: bool = False) -> pd.DataFr
             )
         )
         g_gap = 100 * (g_cost - pulp_cost) / pulp_cost if pulp_cost else float("nan")
-        q_gap_s = (
-            f"{100 * (q_cost - pulp_cost) / pulp_cost:+.1f}%"
-            if q_ok and pulp_cost
-            else "n/a"
-        )
+        q_gap_s = f"{100 * (q_cost - pulp_cost) / pulp_cost:+.1f}%" if q_ok and pulp_cost else "n/a"
         print(
             f"instance {k}: pulp={pulp_cost:.3f}  hung={h_cost:.3f}  "
             f"greedy={g_cost:.3f} (gap={g_gap:+.1f}%)  "

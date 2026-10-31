@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import numpy as np
-import pytest
 
 from qml_v2.feature_map_alignment import (
     AlignConfig,

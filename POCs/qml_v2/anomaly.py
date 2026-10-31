@@ -108,7 +108,7 @@ class QuantumKernelOCSVM:
         self.X_train_: np.ndarray | None = None
         self.ocsvm_: OneClassSVM | None = None
 
-    def fit(self, X: np.ndarray) -> "QuantumKernelOCSVM":
+    def fit(self, X: np.ndarray) -> QuantumKernelOCSVM:
         self.X_train_ = np.asarray(X, dtype=float)
         K = self.kernel.evaluate(x_vec=self.X_train_)
         self.ocsvm_ = OneClassSVM(kernel="precomputed", nu=self.nu)
@@ -131,6 +131,7 @@ class QuantumKernelOCSVM:
 # ---------------------------------------------------------------------------
 # Generators (y=1 is outlier; used only for splits + evaluation)
 # ---------------------------------------------------------------------------
+
 
 def set_contamination(
     X: np.ndarray,
@@ -257,9 +258,7 @@ def inject_feature_outliers(
     return X, y
 
 
-def subsample_rows(
-    X: np.ndarray, n_total: int, random_state: int
-) -> np.ndarray:
+def subsample_rows(X: np.ndarray, n_total: int, random_state: int) -> np.ndarray:
     if len(X) <= n_total:
         return np.asarray(X, dtype=float)
     rng = np.random.RandomState(random_state)
@@ -271,9 +270,8 @@ def subsample_rows(
 # Scoring
 # ---------------------------------------------------------------------------
 
-def _roc_ap_f1(
-    y_true: np.ndarray, scores: np.ndarray, pred_outlier: np.ndarray
-) -> tuple[float, float, float]:
+
+def _roc_ap_f1(y_true: np.ndarray, scores: np.ndarray, pred_outlier: np.ndarray) -> tuple[float, float, float]:
     """scores: higher = more anomalous. pred_outlier: 1 = predicted outlier."""
     y_true = np.asarray(y_true, dtype=int)
     scores = np.asarray(scores, dtype=float)
@@ -334,9 +332,7 @@ def fit_score_classical(
     )
 
     n_nei = _lof_n_neighbors(len(X_tr), n_neighbors)
-    lof = LocalOutlierFactor(
-        n_neighbors=n_nei, novelty=True, contamination=contamination
-    )
+    lof = LocalOutlierFactor(n_neighbors=n_nei, novelty=True, contamination=contamination)
     lof.fit(X_tr)
     out["LOF"] = (
         -np.asarray(lof.decision_function(X_te), dtype=float),
@@ -400,9 +396,7 @@ def run_fair_dataset(
         if X_in.shape[0] < 8:
             continue
 
-        Xq_tr, Xq_te, pca_var = encode_for_zz_kernel(
-            X_in, X_te, cfg.n_qubits, cfg.random_state, already_zz_space
-        )
+        Xq_tr, Xq_te, pca_var = encode_for_zz_kernel(X_in, X_te, cfg.n_qubits, cfg.random_state, already_zz_space)
         pca_a = None if already_zz_space else float(pca_var)
 
         classical_a = fit_score_classical(
@@ -501,15 +495,13 @@ def summarize(rows: list[AnomalyRepeatResult]) -> pd.DataFrame:
         .reset_index(drop=True)
     )
     g["delta_auc_vs_best_classical"] = np.nan
-    for table, block in g.groupby("table"):
+    for _table, block in g.groupby("table"):
         classical = block[~block["model"].str.contains("ZZ", regex=False)]
         quantum = block[block["model"].str.contains("ZZ", regex=False)]
         if classical.empty or quantum.empty:
             continue
         best_cl = float(classical["auc_mean"].max())
-        g.loc[quantum.index, "delta_auc_vs_best_classical"] = (
-            quantum["auc_mean"].astype(float) - best_cl
-        )
+        g.loc[quantum.index, "delta_auc_vs_best_classical"] = quantum["auc_mean"].astype(float) - best_cl
     return g
 
 
@@ -536,13 +528,9 @@ def advantage_report(summary: pd.DataFrame) -> str:
             f"{best['auc_mean']:.3f}±{best['auc_std']:.3f} (Δ={delta:+.3f}) → {winner}"
         )
 
-    q_a = summary[
-        (summary["table"] == "A_matched_features")
-        & (summary["model"].str.contains("ZZ", regex=False))
-    ]
+    q_a = summary[(summary["table"] == "A_matched_features") & (summary["model"].str.contains("ZZ", regex=False))]
     cl_b = summary[
-        (summary["table"] == "B_matched_n_full_features")
-        & (~summary["model"].str.contains("ZZ", regex=False))
+        (summary["table"] == "B_matched_n_full_features") & (~summary["model"].str.contains("ZZ", regex=False))
     ]
     if not q_a.empty and not cl_b.empty:
         best_b = cl_b.loc[cl_b["auc_mean"].idxmax()]
@@ -555,9 +543,7 @@ def advantage_report(summary: pd.DataFrame) -> str:
     return "\n".join(lines)
 
 
-def _load_injected(
-    loader, n_pool: int, contamination: float, random_state: int
-) -> tuple[np.ndarray, np.ndarray]:
+def _load_injected(loader, n_pool: int, contamination: float, random_state: int) -> tuple[np.ndarray, np.ndarray]:
     X, _y_discarded, _ = loader()
     del _y_discarded
     Xp = subsample_rows(X, n_pool, random_state)
@@ -597,22 +583,16 @@ def run_all(
         )
         jobs.append(("zz_phase", X, y, True))
     if "moons" in datasets:
-        X, y = make_moons_anomaly(
-            n_total=n_pool, contamination=cfg.contamination, random_state=cfg.random_state
-        )
+        X, y = make_moons_anomaly(n_total=n_pool, contamination=cfg.contamination, random_state=cfg.random_state)
         jobs.append(("moons", X, y, False))
     if "blobs" in datasets:
-        X, y = make_blob_anomaly(
-            n_total=n_pool, contamination=cfg.contamination, random_state=cfg.random_state
-        )
+        X, y = make_blob_anomaly(n_total=n_pool, contamination=cfg.contamination, random_state=cfg.random_state)
         jobs.append(("blobs", X, y, False))
     if "telco_injected" in datasets:
         X, y = _load_injected(load_telco, n_pool, cfg.contamination, cfg.random_state)
         jobs.append(("telco_injected", X, y, False))
     if "skg_injected" in datasets:
-        X, y = _load_injected(
-            load_skg_incidents, n_pool, cfg.contamination, cfg.random_state
-        )
+        X, y = _load_injected(load_skg_incidents, n_pool, cfg.contamination, cfg.random_state)
         jobs.append(("skg_injected", X, y, False))
 
     all_rows: list[AnomalyRepeatResult] = []
@@ -647,17 +627,13 @@ def run_all(
 
         metrics = repo_paths()["metrics"]
         metrics.mkdir(parents=True, exist_ok=True)
-        pd.DataFrame([asdict(r) for r in rows]).to_csv(
-            metrics / f"fair_anomaly_{name}_raw.csv", index=False
-        )
+        pd.DataFrame([asdict(r) for r in rows]).to_csv(metrics / f"fair_anomaly_{name}_raw.csv", index=False)
         summary.to_csv(metrics / f"fair_anomaly_{name}.csv", index=False)
 
     out = pd.DataFrame([asdict(r) for r in all_rows])
     path = REPO_ROOT / "BUSINESS" / "anomaly_v2_results.md"
     path.write_text("\n".join(report) + "\n")
-    (repo_paths()["metrics"] / "qml_v2_anomaly_config.json").write_text(
-        json.dumps(asdict(cfg), indent=2)
-    )
+    (repo_paths()["metrics"] / "qml_v2_anomaly_config.json").write_text(json.dumps(asdict(cfg), indent=2))
     print(f"\nWrote {path}")
     return out
 
@@ -665,9 +641,7 @@ def run_all(
 def main() -> None:
     import argparse
 
-    p = argparse.ArgumentParser(
-        description="Fair OCSVM-ZZ vs classical one-class anomaly detection"
-    )
+    p = argparse.ArgumentParser(description="Fair OCSVM-ZZ vs classical one-class anomaly detection")
     p.add_argument("--quick", action="store_true")
     p.add_argument("--n-total", type=int, default=None)
     p.add_argument("--n-repeats", type=int, default=None)

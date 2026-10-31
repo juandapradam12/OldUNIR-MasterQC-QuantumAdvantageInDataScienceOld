@@ -20,18 +20,16 @@ from typing import Any
 
 import numpy as np
 import pandas as pd
-from sklearn.decomposition import PCA
 from sklearn.datasets import make_friedman1
 from sklearn.ensemble import GradientBoostingRegressor, RandomForestRegressor
 from sklearn.linear_model import Ridge
 from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 from sklearn.model_selection import ShuffleSplit
-from sklearn.preprocessing import MinMaxScaler, StandardScaler
+from sklearn.preprocessing import StandardScaler
 from sklearn.svm import SVR
 
 from qml_v2.classification import (
     REPO_ROOT,
-    POCS_DIR,
     encode_for_zz_kernel,
     repo_paths,
     zz_map,
@@ -111,7 +109,7 @@ class QuantumKernelSVR:
         self.X_train_: np.ndarray | None = None
         self.svr_: SVR | None = None
 
-    def fit(self, X: np.ndarray, y: np.ndarray) -> "QuantumKernelSVR":
+    def fit(self, X: np.ndarray, y: np.ndarray) -> QuantumKernelSVR:
         self.X_train_ = np.asarray(X, dtype=float)
         K = self.kernel.evaluate(x_vec=self.X_train_)
         self.svr_ = SVR(kernel="precomputed", C=self.C, epsilon=self.epsilon)
@@ -126,9 +124,7 @@ class QuantumKernelSVR:
 
 
 def load_friedman(n_samples: int, n_features: int, random_state: int) -> tuple[np.ndarray, np.ndarray]:
-    X, y = make_friedman1(
-        n_samples=n_samples, n_features=n_features, noise=1.0, random_state=random_state
-    )
+    X, y = make_friedman1(n_samples=n_samples, n_features=n_features, noise=1.0, random_state=random_state)
     return X, y
 
 
@@ -173,12 +169,8 @@ def _classical_models(C: float, epsilon: float, n_estimators: int, random_state:
     return {
         "SVR-RBF": SVR(kernel="rbf", C=C, epsilon=epsilon),
         "Ridge": Ridge(alpha=1.0),
-        "GradientBoosting": GradientBoostingRegressor(
-            n_estimators=n_estimators, random_state=random_state
-        ),
-        "RandomForest": RandomForestRegressor(
-            n_estimators=n_estimators, random_state=random_state
-        ),
+        "GradientBoosting": GradientBoostingRegressor(n_estimators=n_estimators, random_state=random_state),
+        "RandomForest": RandomForestRegressor(n_estimators=n_estimators, random_state=random_state),
     }
 
 
@@ -304,7 +296,7 @@ def summarize(rows: list[RegRepeatResult]) -> pd.DataFrame:
         g[col] = g[col].fillna(0.0)
 
     g["delta_r2_vs_best_classical"] = np.nan
-    for table, idx in g.groupby("table").groups.items():
+    for _table, idx in g.groupby("table").groups.items():
         block = g.loc[idx]
         classical = block[~block["model"].str.startswith("QK-SVR")]
         q = block[block["model"] == "QK-SVR-ZZ"]
@@ -338,13 +330,8 @@ def advantage_report(summary: pd.DataFrame) -> str:
             f"best classical {best['model']} R²={best['r2_mean']:.3f}±{best['r2_std']:.3f} "
             f"(Δ={delta:+.3f}) → {winner}"
         )
-    q_a = summary[
-        (summary["table"] == "A_matched_features") & (summary["model"] == "QK-SVR-ZZ")
-    ]
-    cl_b = summary[
-        (summary["table"] == "B_matched_n_full_features")
-        & (~summary["model"].str.startswith("QK-SVR"))
-    ]
+    q_a = summary[(summary["table"] == "A_matched_features") & (summary["model"] == "QK-SVR-ZZ")]
+    cl_b = summary[(summary["table"] == "B_matched_n_full_features") & (~summary["model"].str.startswith("QK-SVR"))]
     if not q_a.empty and not cl_b.empty:
         best_b = cl_b.loc[cl_b["r2_mean"].idxmax()]
         qa = q_a.iloc[0]
@@ -416,9 +403,7 @@ def run_all(
     for name, X, y, native, n_q in jobs:
         local = RegConfig(**{**asdict(cfg), "n_qubits": n_q})
         print(f"\n=== {name}  n={len(y)}  features={X.shape[1]}  native={native}  qubits={n_q} ===")
-        rows = run_reg_dataset(
-            name, X, y, local, already_zz_space=native, include_table_b=not native
-        )
+        rows = run_reg_dataset(name, X, y, local, already_zz_space=native, include_table_b=not native)
         raw = pd.DataFrame([asdict(r) for r in rows])
         raw.insert(0, "dataset", name)
         raw.to_csv(metrics_dir / f"qml_v2_regression_{name}_raw.csv", index=False)
@@ -429,16 +414,11 @@ def run_all(
         print(summary.to_string(index=False))
         adv = advantage_report(summary)
         print(adv)
-        report_lines += [f"## {name}", "", "```", adv, "```", "", "```",
-                         summary.to_string(index=False), "```", ""]
+        report_lines += [f"## {name}", "", "```", adv, "```", "", "```", summary.to_string(index=False), "```", ""]
 
     if out:
-        pd.concat(out.values(), ignore_index=True).to_csv(
-            metrics_dir / "qml_v2_regression_all.csv", index=False
-        )
-        (metrics_dir / "qml_v2_regression_config.json").write_text(
-            json.dumps(asdict(cfg), indent=2)
-        )
+        pd.concat(out.values(), ignore_index=True).to_csv(metrics_dir / "qml_v2_regression_all.csv", index=False)
+        (metrics_dir / "qml_v2_regression_config.json").write_text(json.dumps(asdict(cfg), indent=2))
         report_path = REPO_ROOT / "BUSINESS" / "regression_v2_results.md"
         report_path.write_text("\n".join(report_lines) + "\n")
         print(f"\nWrote {report_path}")

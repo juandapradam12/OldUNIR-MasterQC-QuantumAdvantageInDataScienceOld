@@ -20,7 +20,6 @@ import matplotlib.patches as mpatches
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-
 import sintesis_resultados
 
 warnings.filterwarnings("ignore")
@@ -81,8 +80,7 @@ def dibujar_panel(ax: plt.Axes, caso: int, filas: pd.DataFrame) -> str:
     valores = filas["valor"].to_numpy(dtype=float)
     posiciones = np.arange(len(valores))
 
-    barras = ax.barh(posiciones, valores, color=[color_barra(v) for v in valores],
-                     edgecolor="white", height=0.55)
+    barras = ax.barh(posiciones, valores, color=[color_barra(v) for v in valores], edgecolor="white", height=0.55)
     ax.axvline(0, color=CARBON, linewidth=0.8, linestyle="--", alpha=0.6)
     ax.set_yticks(posiciones)
     ax.set_yticklabels(etiquetas, fontsize=8.5, color=CARBON)
@@ -93,26 +91,45 @@ def dibujar_panel(ax: plt.Axes, caso: int, filas: pd.DataFrame) -> str:
     holgura = max(np.abs(valores).max() * 0.12, 3)
     ax.set_xlim(min(valores.min(), 0) - 2.5 * holgura, max(valores.max(), 0) + 2.5 * holgura)
     for barra, valor in zip(barras, valores):
-        ax.text(valor + (holgura * 0.1 if valor >= 0 else -holgura * 0.1),
-                barra.get_y() + barra.get_height() / 2, f"{valor:+.1f}",
-                va="center", ha="left" if valor >= 0 else "right", fontsize=8, color=CARBON)
+        ax.text(
+            valor + (holgura * 0.1 if valor >= 0 else -holgura * 0.1),
+            barra.get_y() + barra.get_height() / 2,
+            f"{valor:+.1f}",
+            va="center",
+            ha="left" if valor >= 0 else "right",
+            fontsize=8,
+            color=CARBON,
+        )
 
     texto = veredicto(valores)
-    ax.text(0.98, 0.02, texto, transform=ax.transAxes, ha="right", va="bottom",
-            fontsize=8, color=AZUL_OSCURO, fontweight="bold")
+    ax.text(
+        0.98,
+        0.02,
+        texto,
+        transform=ax.transAxes,
+        ha="right",
+        va="bottom",
+        fontsize=8,
+        color=AZUL_OSCURO,
+        fontweight="bold",
+    )
     return texto
 
 
 def main() -> None:
     sintesis = sintesis_resultados.cargar()
-    plt.rcParams.update({"font.family": "sans-serif", "axes.spines.top": False,
-                         "axes.spines.right": False})
+    plt.rcParams.update({"font.family": "sans-serif", "axes.spines.top": False, "axes.spines.right": False})
     fig = plt.figure(figsize=(22, 20))
-    fig.suptitle("Dashboard de ventaja cuántica: nueve casos de uso\n"
-                 "Juan David Prada Malagón  ·  SKG Tecnología  ·  UNIR 2026",
-                 fontsize=16, fontweight="bold", y=0.995, color=AZUL_OSCURO)
-    cuadricula = gridspec.GridSpec(3, 3, figure=fig, hspace=0.55, wspace=0.38,
-                                   left=0.08, right=0.97, top=0.94, bottom=0.08)
+    fig.suptitle(
+        "Dashboard de ventaja cuántica: nueve casos de uso\nJuan David Prada Malagón  ·  SKG Tecnología  ·  UNIR 2026",
+        fontsize=16,
+        fontweight="bold",
+        y=0.995,
+        color=AZUL_OSCURO,
+    )
+    cuadricula = gridspec.GridSpec(
+        3, 3, figure=fig, hspace=0.55, wspace=0.38, left=0.08, right=0.97, top=0.94, bottom=0.08
+    )
 
     veredictos = []
     for indice, caso in enumerate(sorted(TITULOS)):
@@ -120,18 +137,28 @@ def main() -> None:
         veredictos.append(dibujar_panel(ax, caso, sintesis[sintesis["caso"] == caso]))
 
     resumen = pd.Series(veredictos).value_counts()
-    fig.text(0.5, 0.02,
-             "Veredictos: " + "  ·  ".join(f"{n} {v.lower()}" for v, n in resumen.items())
-             + "\nCada panel usa su propia unidad; positivo = favorece al método cuántico.",
-             ha="center", fontsize=9.5, color=CARBON)
+    fig.text(
+        0.5,
+        0.02,
+        "Veredictos: "
+        + "  ·  ".join(f"{n} {v.lower()}" for v, n in resumen.items())
+        + "\nCada panel usa su propia unidad; positivo = favorece al método cuántico.",
+        ha="center",
+        fontsize=9.5,
+        color=CARBON,
+    )
     fig.legend(
         handles=[
             mpatches.Patch(color=AZUL, label="Ventaja cuántica"),
             mpatches.Patch(color=GRIS, label="Clásico superior"),
             mpatches.Patch(color=GRIS_CLARO, label="Empate (|Δ| < 1)"),
         ],
-        loc="lower center", bbox_to_anchor=(0.5, 0.045), ncol=3, fontsize=9,
-        framealpha=0.92, edgecolor=GRIS_CLARO,
+        loc="lower center",
+        bbox_to_anchor=(0.5, 0.045),
+        ncol=3,
+        fontsize=9,
+        framealpha=0.92,
+        edgecolor=GRIS_CLARO,
     )
 
     SALIDA.parent.mkdir(parents=True, exist_ok=True)

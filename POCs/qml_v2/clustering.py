@@ -19,7 +19,6 @@ from __future__ import annotations
 
 import json
 from dataclasses import asdict, dataclass
-from typing import Any
 
 import numpy as np
 import pandas as pd
@@ -64,16 +63,12 @@ class ClusterRepeatResult:
     pca_var_explained: float | None = None
 
 
-def make_moons_dataset(
-    n_samples: int = 300, random_state: int = 42
-) -> tuple[np.ndarray, np.ndarray]:
+def make_moons_dataset(n_samples: int = 300, random_state: int = 42) -> tuple[np.ndarray, np.ndarray]:
     X, y = make_moons(n_samples=n_samples, noise=0.08, random_state=random_state)
     return X.astype(float), y.astype(int)
 
 
-def make_blobs_dataset(
-    n_samples: int = 300, random_state: int = 42
-) -> tuple[np.ndarray, np.ndarray]:
+def make_blobs_dataset(n_samples: int = 300, random_state: int = 42) -> tuple[np.ndarray, np.ndarray]:
     X, y = make_blobs(
         n_samples=n_samples,
         centers=2,
@@ -98,11 +93,7 @@ def _fit_predict_models(
     K_zz: np.ndarray | None = None,
 ) -> dict[str, np.ndarray]:
     out: dict[str, np.ndarray] = {}
-    out["KMeans"] = _relabel_binary(
-        KMeans(n_clusters=n_clusters, n_init=10, random_state=random_state).fit_predict(
-            X
-        )
-    )
+    out["KMeans"] = _relabel_binary(KMeans(n_clusters=n_clusters, n_init=10, random_state=random_state).fit_predict(X))
     out["Spectral-RBF"] = _relabel_binary(
         SpectralClustering(
             n_clusters=n_clusters,
@@ -112,9 +103,7 @@ def _fit_predict_models(
             assign_labels="kmeans",
         ).fit_predict(X)
     )
-    out["Agglomerative"] = _relabel_binary(
-        AgglomerativeClustering(n_clusters=n_clusters).fit_predict(X)
-    )
+    out["Agglomerative"] = _relabel_binary(AgglomerativeClustering(n_clusters=n_clusters).fit_predict(X))
     if K_zz is not None:
         # Fidelity kernel ∈ [0,1]; SpectralClustering expects similarity.
         K = np.clip((K_zz + K_zz.T) / 2.0, 0.0, 1.0)
@@ -142,12 +131,8 @@ def run_fair_dataset(
     for repeat in range(cfg.n_repeats):
         seed = cfg.random_state + repeat
         Xs, ys = subsample_stratified(X, y, cfg.n_total, seed)
-        Xq, _, pca_var = encode_for_zz_kernel(
-            Xs, Xs, cfg.n_qubits, seed, already_zz_space=already_zz_space
-        )
-        K_zz = zz_fidelity_kernel(
-            Xq, cfg.n_qubits, cfg.zz_reps, cfg.entanglement, seed
-        )
+        Xq, _, pca_var = encode_for_zz_kernel(Xs, Xs, cfg.n_qubits, seed, already_zz_space=already_zz_space)
+        K_zz = zz_fidelity_kernel(Xq, cfg.n_qubits, cfg.zz_reps, cfg.entanglement, seed)
         preds_a = _fit_predict_models(
             Xq,
             n_clusters=cfg.n_clusters,
@@ -212,15 +197,13 @@ def summarize(rows: list[ClusterRepeatResult]) -> pd.DataFrame:
         .reset_index(drop=True)
     )
     g["delta_ari_vs_best_classical"] = np.nan
-    for table, block in g.groupby("table"):
+    for _table, block in g.groupby("table"):
         classical = block[~block["model"].str.contains("ZZ", regex=False)]
         quantum = block[block["model"].str.contains("ZZ", regex=False)]
         if classical.empty or quantum.empty:
             continue
         best_cl = float(classical["ari_mean"].max())
-        g.loc[quantum.index, "delta_ari_vs_best_classical"] = (
-            quantum["ari_mean"].astype(float) - best_cl
-        )
+        g.loc[quantum.index, "delta_ari_vs_best_classical"] = quantum["ari_mean"].astype(float) - best_cl
     return g
 
 
@@ -247,13 +230,9 @@ def advantage_report(summary: pd.DataFrame) -> str:
             f"{best['ari_mean']:.3f}±{best['ari_std']:.3f} (Δ={delta:+.3f}) → {winner}"
         )
 
-    q_a = summary[
-        (summary["table"] == "A_matched_features")
-        & (summary["model"].str.contains("ZZ", regex=False))
-    ]
+    q_a = summary[(summary["table"] == "A_matched_features") & (summary["model"].str.contains("ZZ", regex=False))]
     cl_b = summary[
-        (summary["table"] == "B_matched_n_full_features")
-        & (~summary["model"].str.contains("ZZ", regex=False))
+        (summary["table"] == "B_matched_n_full_features") & (~summary["model"].str.contains("ZZ", regex=False))
     ]
     if not q_a.empty and not cl_b.empty:
         best_b = cl_b.loc[cl_b["ari_mean"].idxmax()]
@@ -338,17 +317,13 @@ def run_all(
 
         metrics = repo_paths()["metrics"]
         metrics.mkdir(parents=True, exist_ok=True)
-        pd.DataFrame([asdict(r) for r in rows]).to_csv(
-            metrics / f"fair_clustering_{name}_raw.csv", index=False
-        )
+        pd.DataFrame([asdict(r) for r in rows]).to_csv(metrics / f"fair_clustering_{name}_raw.csv", index=False)
         summary.to_csv(metrics / f"fair_clustering_{name}.csv", index=False)
 
     out = pd.DataFrame([asdict(r) for r in all_rows])
     path = REPO_ROOT / "BUSINESS" / "clustering_v2_results.md"
     path.write_text("\n".join(report) + "\n")
-    (repo_paths()["metrics"] / "qml_v2_clustering_config.json").write_text(
-        json.dumps(asdict(cfg), indent=2)
-    )
+    (repo_paths()["metrics"] / "qml_v2_clustering_config.json").write_text(json.dumps(asdict(cfg), indent=2))
     print(f"\nWrote {path}")
     return out
 

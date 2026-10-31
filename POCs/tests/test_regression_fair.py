@@ -16,9 +16,7 @@ def test_friedman_matched_width_no_pca():
     X, y = load_friedman(60, 5, random_state=0)
     assert X.shape[1] == 5
     Xtr, Xte = X[:40], X[40:]
-    out_tr, out_te, var = encode_for_zz_kernel(
-        Xtr, Xte, n_qubits=5, random_state=0, already_zz_space=False
-    )
+    out_tr, out_te, var = encode_for_zz_kernel(Xtr, Xte, n_qubits=5, random_state=0, already_zz_space=False)
     assert out_tr.shape[1] == 5
     assert var == 1.0
 

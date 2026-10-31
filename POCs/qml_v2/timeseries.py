@@ -63,9 +63,7 @@ class TSRepeatResult:
     n_features: int
 
 
-def make_lag_matrix(
-    y: np.ndarray, n_lags: int
-) -> tuple[np.ndarray, np.ndarray]:
+def make_lag_matrix(y: np.ndarray, n_lags: int) -> tuple[np.ndarray, np.ndarray]:
     """Rows: [y_{t-n_lags}, ..., y_{t-1}] → target y_t."""
     y = np.asarray(y, dtype=float).ravel()
     if len(y) <= n_lags:
@@ -98,14 +96,10 @@ def make_zz_lag_series(
     )
 
 
-def make_sine_series(
-    n_samples: int = 400, noise: float = 0.15, random_state: int = 42
-) -> np.ndarray:
+def make_sine_series(n_samples: int = 400, noise: float = 0.15, random_state: int = 42) -> np.ndarray:
     rng = np.random.RandomState(random_state)
     t = np.arange(n_samples)
-    return np.sin(2 * np.pi * t / 24) + 0.3 * np.sin(2 * np.pi * t / 7) + noise * rng.normal(
-        size=n_samples
-    )
+    return np.sin(2 * np.pi * t / 24) + 0.3 * np.sin(2 * np.pi * t / 7) + noise * rng.normal(size=n_samples)
 
 
 def load_skg_speed_series(
@@ -171,9 +165,7 @@ def _classical_models(cfg: TSConfig, seed: int) -> dict[str, Any]:
     return {
         "Ridge": Ridge(alpha=1.0),
         "SVR-RBF": SVR(kernel="rbf", C=cfg.svr_C, epsilon=cfg.svr_epsilon),
-        "GradientBoosting": GradientBoostingRegressor(
-            n_estimators=cfg.n_estimators, random_state=seed
-        ),
+        "GradientBoosting": GradientBoostingRegressor(n_estimators=cfg.n_estimators, random_state=seed),
     }
 
 
@@ -260,9 +252,7 @@ def run_fair_dataset(
             scaler = StandardScaler()
             Xb_tr = scaler.fit_transform(Xb[tr])
             Xb_te = scaler.transform(Xb[te])
-            for model_name, model in _classical_models(
-                cfg, cfg.random_state + repeat
-            ).items():
+            for model_name, model in _classical_models(cfg, cfg.random_state + repeat).items():
                 model.fit(Xb_tr, y_tr)
                 yp = model.predict(Xb_te)
                 r2, rmse, mae = _scores(y_te, yp)
@@ -301,15 +291,13 @@ def summarize(rows: list[TSRepeatResult]) -> pd.DataFrame:
         .reset_index(drop=True)
     )
     g["delta_mae_vs_best_classical"] = np.nan
-    for table, block in g.groupby("table"):
+    for _table, block in g.groupby("table"):
         classical = block[~block["model"].str.contains("ZZ", regex=False)]
         quantum = block[block["model"].str.contains("ZZ", regex=False)]
         if classical.empty or quantum.empty:
             continue
         best_cl = float(classical["mae_mean"].min())
-        g.loc[quantum.index, "delta_mae_vs_best_classical"] = (
-            quantum["mae_mean"].astype(float) - best_cl
-        )
+        g.loc[quantum.index, "delta_mae_vs_best_classical"] = quantum["mae_mean"].astype(float) - best_cl
     return g
 
 
@@ -352,9 +340,7 @@ def _prepare_jobs(cfg: TSConfig, datasets: tuple[str, ...]):
         # already angle features → Table A is X itself; no Table B
         jobs.append(("zz_lag", X, y, True, None))
     if "sine" in datasets:
-        series = make_sine_series(
-            n_samples=max(cfg.n_total * 3, 400), random_state=cfg.random_state
-        )
+        series = make_sine_series(n_samples=max(cfg.n_total * 3, 400), random_state=cfg.random_state)
         total_lags = cfg.n_lags + cfg.n_extra_lags
         X_full, y = make_lag_matrix(series, total_lags)
         X_a = X_full[:, -cfg.n_lags :]
@@ -367,9 +353,7 @@ def _prepare_jobs(cfg: TSConfig, datasets: tuple[str, ...]):
         X_full, y = make_lag_matrix(speed, total_lags)
         hour_t = hour[total_lags:]
         X_a = X_full[:, -cfg.n_lags :]
-        X_b = enrich_classical_features(
-            X_a, hour=hour_t, extra_lags=X_full[:, : cfg.n_extra_lags]
-        )
+        X_b = enrich_classical_features(X_a, hour=hour_t, extra_lags=X_full[:, : cfg.n_extra_lags])
         jobs.append(("skg_speed", X_a, y, False, X_b))
     return jobs
 
@@ -429,17 +413,13 @@ def run_all(
         report.append("")
         metrics = repo_paths()["metrics"]
         metrics.mkdir(parents=True, exist_ok=True)
-        pd.DataFrame([asdict(r) for r in rows]).to_csv(
-            metrics / f"fair_timeseries_{name}_raw.csv", index=False
-        )
+        pd.DataFrame([asdict(r) for r in rows]).to_csv(metrics / f"fair_timeseries_{name}_raw.csv", index=False)
         summary.to_csv(metrics / f"fair_timeseries_{name}.csv", index=False)
 
     out = pd.DataFrame([asdict(r) for r in all_rows])
     path = REPO_ROOT / "BUSINESS" / "timeseries_v2_results.md"
     path.write_text("\n".join(report) + "\n")
-    (repo_paths()["metrics"] / "qml_v2_timeseries_config.json").write_text(
-        json.dumps(asdict(cfg), indent=2)
-    )
+    (repo_paths()["metrics"] / "qml_v2_timeseries_config.json").write_text(json.dumps(asdict(cfg), indent=2))
     print(f"\nWrote {path}")
     return out
 

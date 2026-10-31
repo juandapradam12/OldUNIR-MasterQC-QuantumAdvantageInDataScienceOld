@@ -26,7 +26,7 @@ import pandas as pd
 from scipy.optimize import minimize_scalar
 from scipy.spatial.distance import cdist
 from sklearn.metrics.pairwise import rbf_kernel
-from sklearn.model_selection import StratifiedShuffleSplit, train_test_split
+from sklearn.model_selection import train_test_split
 from sklearn.svm import SVC
 
 from qml_v2.classification import (
@@ -70,6 +70,7 @@ class QuantumnessConfig:
 # ---------------------------------------------------------------------------
 # Indicators (no Qiskit)
 # ---------------------------------------------------------------------------
+
 
 def labels_pm1(y: np.ndarray) -> np.ndarray:
     y = np.asarray(y)
@@ -132,9 +133,7 @@ def best_rbf_kernel(X: np.ndarray, K_Q: np.ndarray) -> tuple[np.ndarray, float]:
     return K_rbf, sigma
 
 
-def best_classical_for_labels(
-    X: np.ndarray, y: np.ndarray, *, centered: bool = True
-) -> tuple[np.ndarray, float, str]:
+def best_classical_for_labels(X: np.ndarray, y: np.ndarray, *, centered: bool = True) -> tuple[np.ndarray, float, str]:
     """Classical kernel with highest (centered) alignment to y.
 
     Searches RBF σ on a log-grid plus a linear kernel.
@@ -183,9 +182,7 @@ def geometric_difference(K_Q: np.ndarray, K_cl: np.ndarray, eps: float = 1e-6) -
     return float(np.sqrt(np.linalg.norm(M, "fro")))
 
 
-def geometric_difference_huang(
-    K_Q: np.ndarray, K_cl: np.ndarray, lam: float = 1e-3
-) -> float:
+def geometric_difference_huang(K_Q: np.ndarray, K_cl: np.ndarray, lam: float = 1e-3) -> float:
     """Diferencia geométrica g_CQ de Huang et al. (2021), con norma espectral.
 
     g = sqrt( || sqrt(K_Q) (K_cl + lam I)^{-1} sqrt(K_Q) ||_2 ), con ambos kernels
@@ -276,9 +273,7 @@ def _indicators_on_matrix(
     only as a diagnostic.
     """
     y_pm = labels_pm1(y_s)
-    K_Q = zz_fidelity_kernel(
-        Xq, cfg.n_qubits, cfg.zz_reps, cfg.entanglement, seed
-    )
+    K_Q = zz_fidelity_kernel(Xq, cfg.n_qubits, cfg.zz_reps, cfg.entanglement, seed)
     K_rbf, sigma_frob = best_rbf_kernel(Xq, K_Q)
     _, _, cl_label_name = best_classical_for_labels(Xq, y_s, centered=True)
 
@@ -358,12 +353,8 @@ def _indicators_on_matrix(
         gamma = 1.0 / (2.0 * max(sigma_frob, 1e-6) ** 2)
         Kr_tr = rbf_kernel(X_tr, gamma=gamma)
         Kr_te = rbf_kernel(X_te, X_tr, gamma=gamma)
-        acc_q = float(
-            SVC(kernel="precomputed", C=cfg.svm_C).fit(Kq_tr, y_tr).score(Kq_te, y_te)
-        )
-        acc_cl = float(
-            SVC(kernel="precomputed", C=cfg.svm_C).fit(Kr_tr, y_tr).score(Kr_te, y_te)
-        )
+        acc_q = float(SVC(kernel="precomputed", C=cfg.svm_C).fit(Kq_tr, y_tr).score(Kq_te, y_te))
+        acc_cl = float(SVC(kernel="precomputed", C=cfg.svm_C).fit(Kr_tr, y_tr).score(Kr_te, y_te))
         out["acc_QSVM"] = acc_q
         out["acc_SVM_RBF"] = acc_cl
         out["advantage_pp"] = (acc_q - acc_cl) * 100.0
@@ -402,9 +393,8 @@ def decide_verdict(
 # Quantum kernel
 # ---------------------------------------------------------------------------
 
-def zz_fidelity_kernel(
-    X: np.ndarray, n_qubits: int, reps: int, entanglement: str, seed: int
-) -> np.ndarray:
+
+def zz_fidelity_kernel(X: np.ndarray, n_qubits: int, reps: int, entanglement: str, seed: int) -> np.ndarray:
     from qiskit_algorithms.utils import algorithm_globals
     from qiskit_machine_learning.kernels import FidelityQuantumKernel
 
@@ -431,7 +421,6 @@ def _encode_subsample(
     return Xq, y_s, (1.0 if already_zz_space else float(pca_var))
 
 
-
 def compute_indicators(
     X: np.ndarray,
     y: np.ndarray,
@@ -448,9 +437,7 @@ def compute_indicators(
         seed = cfg.random_state + 17 * r
         Xq, y_s, pca_var = _encode_subsample(X, y, cfg, already_zz_space, seed)
         pca_vars.append(pca_var)
-        row = _indicators_on_matrix(
-            Xq, y_s, cfg, seed=seed, compute_advantage=compute_advantage
-        )
+        row = _indicators_on_matrix(Xq, y_s, cfg, seed=seed, compute_advantage=compute_advantage)
         row["repeat"] = r
         repeats.append(row)
 
@@ -503,6 +490,7 @@ def compute_indicators(
 # Alpha sweep
 # ---------------------------------------------------------------------------
 
+
 def make_alpha_dataset(
     alpha: float,
     n: int,
@@ -545,9 +533,7 @@ def run_alpha_sweep(cfg: QuantumnessConfig) -> pd.DataFrame:
                 "n_sample": min(cfg.n_sample, cfg.alpha_n),
             }
         )
-        r = compute_indicators(
-            X, y, local, already_zz_space=True, dataset=f"alpha_{alpha:.2f}"
-        )
+        r = compute_indicators(X, y, local, already_zz_space=True, dataset=f"alpha_{alpha:.2f}")
         r.pop("_repeats", None)
         r["alpha"] = float(alpha)
         rows.append(r)
@@ -572,6 +558,7 @@ def spearman_alpha_vs_Q(df: pd.DataFrame, col: str = "Q_rob") -> float:
 # ---------------------------------------------------------------------------
 # Driver
 # ---------------------------------------------------------------------------
+
 
 def run_all(
     cfg: QuantumnessConfig | None = None,
@@ -631,9 +618,7 @@ def run_all(
         rep = r.pop("_repeats", None)
         real_rows.append(r)
         if rep is not None:
-            pd.DataFrame(rep).to_csv(
-                metrics / f"qml_v2_quantumness_{name}_repeats.csv", index=False
-            )
+            pd.DataFrame(rep).to_csv(metrics / f"qml_v2_quantumness_{name}_repeats.csv", index=False)
         print(
             f"Q_rob={r['Q_rob']:+.3f}±{r['Q_rob_std']:.3f} "
             f"[{r['Q_rob_lo']:+.3f},{r['Q_rob_hi']:+.3f}]  "

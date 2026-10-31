@@ -51,8 +51,16 @@ error = [delta - datos["delta_ic95_inf"].to_numpy(), datos["delta_ic95_sup"].to_
 ax2.bar(n_train, delta, width=11, color=AZUL, zorder=3)
 ax2.errorbar(n_train, delta, yerr=error, fmt="none", ecolor=AZUL_OSCURO, capsize=4, lw=1.4, zorder=4)
 for x, v in zip(n_train, delta):
-    ax2.text(x, v + error[1][list(n_train).index(x)] + 1, f"{v:+.1f}", ha="center", va="bottom",
-             fontsize=8.5, fontweight="bold", color=AZUL_OSCURO)
+    ax2.text(
+        x,
+        v + error[1][list(n_train).index(x)] + 1,
+        f"{v:+.1f}",
+        ha="center",
+        va="bottom",
+        fontsize=8.5,
+        fontweight="bold",
+        color=AZUL_OSCURO,
+    )
 ax2.set_ylim(0, (delta + error[1]).max() * 1.2)
 ax2.set_xticks(n_train)
 ax2.set_xticklabels([f"{n}\n({k}/{n_rep})" for n, k in zip(n_train, datos["repeticiones_qsvm_gana"])])
@@ -62,7 +70,8 @@ ax2.set_title("Ventaja del QSVM sobre el mejor clásico (IC 95 %)", fontsize=11)
 
 fig.suptitle(
     "Escalabilidad de la ventaja cuántica: dataset cuántico-nativo (2 qubits, ZZFeatureMap reps=2)",
-    fontsize=12, fontweight="bold",
+    fontsize=12,
+    fontweight="bold",
 )
 fig.tight_layout()
 ruta = OUT / "01_escalabilidad_ventaja_clasificacion.png"

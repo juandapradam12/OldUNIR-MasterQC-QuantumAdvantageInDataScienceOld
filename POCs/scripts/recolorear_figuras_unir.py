@@ -26,6 +26,7 @@ Uso:
 Sin argumentos procesa las figuras de POCs/data/output/figures y
 Documento/Imagenes/zz_phase_*.png.
 """
+
 from __future__ import annotations
 
 import sys
@@ -121,7 +122,10 @@ def main(argv: list[str]) -> None:
         rutas = sorted((RAIZ / "POCs/data/output/figures").glob("*.png"))
         rutas += sorted((RAIZ / "Documento/Imagenes").glob("zz_phase_*.png"))
     for r in rutas:
-        print(("recoloreada " if procesar(r) else "omitida     ") + str(r.resolve().relative_to(RAIZ) if r.resolve().is_relative_to(RAIZ) else r))
+        print(
+            ("recoloreada " if procesar(r) else "omitida     ")
+            + str(r.resolve().relative_to(RAIZ) if r.resolve().is_relative_to(RAIZ) else r)
+        )
 
 
 if __name__ == "__main__":

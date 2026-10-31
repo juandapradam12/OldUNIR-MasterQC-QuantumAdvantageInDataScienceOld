@@ -58,9 +58,7 @@ def build_feature_map(kind: MapKind, n_qubits: int, reps: int, entanglement: str
         except ImportError:
             from qiskit.circuit.library import ZZFeatureMap
 
-            return ZZFeatureMap(
-                feature_dimension=n_qubits, reps=reps, entanglement=entanglement
-            )
+            return ZZFeatureMap(feature_dimension=n_qubits, reps=reps, entanglement=entanglement)
     if kind == "pauli_y":
         # Distinct geometry from ZZ: single-Y + YY interactions.
         try:
@@ -136,7 +134,7 @@ class FidelityKernelSVC:
         self.X_train_: np.ndarray | None = None
         self.svc_: SVC | None = None
 
-    def fit(self, X: np.ndarray, y: np.ndarray) -> "FidelityKernelSVC":
+    def fit(self, X: np.ndarray, y: np.ndarray) -> FidelityKernelSVC:
         self.X_train_ = np.asarray(X, dtype=float)
         K = self.kernel.evaluate(x_vec=self.X_train_)
         self.svc_ = SVC(
@@ -205,8 +203,7 @@ def _one_repeat(
                 "n_train": int(len(ytr)),
                 "n_test": int(len(yte)),
                 "aligned": (
-                    (generator == "zz" and name == "QSVM-ZZ")
-                    or (generator == "pauli_y" and name == "QSVM-PauliY")
+                    (generator == "zz" and name == "QSVM-ZZ") or (generator == "pauli_y" and name == "QSVM-PauliY")
                 ),
             }
         )
@@ -286,8 +283,7 @@ def write_business_results(df: pd.DataFrame, cfg: AlignConfig) -> Path:
         )
     lines.append("")
     lines.append(
-        "Reading: if matched >> mismatched quantum and >> RBF, alignment "
-        "(not ZZ exclusivity) explains the lift."
+        "Reading: if matched >> mismatched quantum and >> RBF, alignment (not ZZ exclusivity) explains the lift."
     )
     lines.append("")
     out_md.write_text("\n".join(lines), encoding="utf-8")

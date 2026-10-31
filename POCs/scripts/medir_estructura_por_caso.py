@@ -4,6 +4,7 @@
 Toda la lógica vive en qml_v2.estructura_casos (la usa también el notebook 11).
 Salida: POCs/data/output/metrics/estructura_por_caso_uso.csv
 """
+
 from __future__ import annotations
 
 import sys
@@ -26,7 +27,9 @@ def main() -> None:
     path = OUT / "estructura_por_caso_uso.csv"
     df.to_csv(path, index=False)
     print(f"\nGuardado: {path}")
-    print(df[["family", "dataset", "delta_A", "delta_A_null", "delta_H", "d_F", "g", "g_legacy"]].to_string(index=False))
+    print(
+        df[["family", "dataset", "delta_A", "delta_A_null", "delta_H", "d_F", "g", "g_legacy"]].to_string(index=False)
+    )
 
 
 if __name__ == "__main__":

@@ -87,10 +87,7 @@ def haversine_km(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
     p1, p2 = math.radians(lat1), math.radians(lat2)
     dlat = math.radians(lat2 - lat1)
     dlon = math.radians(lon2 - lon1)
-    a = (
-        math.sin(dlat / 2) ** 2
-        + math.cos(p1) * math.cos(p2) * math.sin(dlon / 2) ** 2
-    )
+    a = math.sin(dlat / 2) ** 2 + math.cos(p1) * math.cos(p2) * math.sin(dlon / 2) ** 2
     return r * 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
 
 
@@ -105,9 +102,7 @@ def distance_matrix_haversine(cities: list[tuple[str, float, float]]) -> np.ndar
     return D
 
 
-def make_instance(
-    family: str, n: int, seed: int
-) -> tuple[np.ndarray, list[str]]:
+def make_instance(family: str, n: int, seed: int) -> tuple[np.ndarray, list[str]]:
     if family == "colombia":
         if n > len(COLOMBIA_CITIES):
             raise ValueError(f"colombia family has only {len(COLOMBIA_CITIES)} cities")
@@ -293,14 +288,14 @@ def build_tsp_qp(D: np.ndarray, fix_depot: bool = True):
             linear[f"x_{i}_1"] = linear.get(f"x_{i}_1", 0.0) + float(D[0, i])
         # city at position n-1 → depot
         for i in range(1, n):
-            linear[f"x_{i}_{n-1}"] = linear.get(f"x_{i}_{n-1}", 0.0) + float(D[i, 0])
+            linear[f"x_{i}_{n - 1}"] = linear.get(f"x_{i}_{n - 1}", 0.0) + float(D[i, 0])
         # consecutive non-depot positions
         for u in range(1, n):
             for v in range(1, n):
                 if u == v:
                     continue
                 for p in range(1, n - 1):
-                    a, b = f"x_{u}_{p}", f"x_{v}_{p+1}"
+                    a, b = f"x_{u}_{p}", f"x_{v}_{p + 1}"
                     key = (a, b) if a <= b else (b, a)
                     quadratic[key] = quadratic.get(key, 0.0) + float(D[u, v])
 

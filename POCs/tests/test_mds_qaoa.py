@@ -17,7 +17,7 @@ def test_qubo_optimo_de_una_estrella_es_su_centro():
 def test_escalabilidad_incluye_referencia_nula_y_factibilidad():
     esc = escalabilidad(ns=(6,), n_restarts=1, maxiter=20)
     fila = esc.iloc[0]
-    assert fila["p_uniforme_opt"] == fila["n_optimos_qubo"] / 2 ** 6
+    assert fila["p_uniforme_opt"] == fila["n_optimos_qubo"] / 2**6
     assert 0.0 <= fila["p_hallar_uniforme_mismo_presupuesto"] <= 1.0
     assert fila["qaoa_tamano_mejor_muestra"] >= 0
     assert fila["qaoa_mejor_muestra_es_dominante"] in (True, False)
