@@ -1,0 +1,6 @@
+model,type,accuracy,time_s
+Quantum Kernel SVM,quantum,0.9166666666666666,25.77
+SVM (Poly-3),classical,0.5333333333333333,0.0015
+Gradient Boost,classical,0.5166666666666667,0.0407
+SVM (RBF),classical,0.4666666666666667,0.0023
+SVM (Linear),classical,0.45,0.0014

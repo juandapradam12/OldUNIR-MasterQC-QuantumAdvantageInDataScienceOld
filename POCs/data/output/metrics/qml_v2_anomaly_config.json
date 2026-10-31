@@ -1,0 +1,13 @@
+{
+  "n_qubits": 2,
+  "zz_reps": 2,
+  "entanglement": "full",
+  "n_total": 160,
+  "test_size": 0.3,
+  "n_repeats": 5,
+  "random_state": 42,
+  "contamination": 0.1,
+  "nu": 0.05,
+  "n_estimators_if": 200,
+  "n_neighbors_lof": 20
+}

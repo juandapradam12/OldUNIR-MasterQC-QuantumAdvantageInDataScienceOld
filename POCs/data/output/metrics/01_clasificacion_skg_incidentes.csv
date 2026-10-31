@@ -1,0 +1,6 @@
+Modelo,Accuracy,Tipo,Dataset
+QSVM (ZZFeatureMap),0.55,Cuántico,SKG Incidentes
+Gradient Boosting,0.5881814855470179,Clásico,SKG Incidentes
+Random Forest,0.5878155872667399,Clásico,SKG Incidentes
+SVM-RBF,0.5949506037321625,Clásico,SKG Incidentes
+Logistic Reg.,0.5700695206732528,Clásico,SKG Incidentes

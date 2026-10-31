@@ -18,6 +18,11 @@ Deben coincidir con la salida impresa de los notebooks (no con valores
 | `fair_scalability_native*.csv` | `python -m qml_v2.scalability` (6 tamaños × 10 repeticiones; kernel de fidelidad exacto verificado contra `FidelityQuantumKernel`) |
 | `10_mds_qaoa_*` | `python -m qml_v2.mds_qaoa` (simulador exacto verificado contra Qiskit) |
 | `estructura_por_caso_uso.csv` | Script `medir_estructura_por_caso.py`: ΔA, ΔH, d_F, g (+control nulo de ΔA) en clasif./reg./anomalías/optimización (paisaje QUBO); lógica en `qml_v2/estructura_casos.py`; notebook 11 |
+| `qml_v2_portfolio_*` | `python -m qml_v2.portfolio` (Caso 4: 10 semillas, dos penalizaciones; precios de `data/output/input/portfolio_prices.csv`); los `tiempo_s` son orientativos (3 procesos en paralelo) |
+| `04_portafolio_resultados.csv` | Notebook 04, una ejecución (semilla 0) |
+| `05_tsp_resultados.csv` | Notebook 05 (Colombia, 12 capitales; QAOA y SA-QUBO sobre las 4 primeras) |
+| `qml_v2_tsp_*` | `python -m qml_v2.tsp_optimization` |
+| `07_sintesis_resultados.csv` | `scripts/sintesis_resultados.py` (lee los demás CSV; ningún valor a mano) |
 
 Reglas:
 1. Si un artefacto falta, **no inventarlo**. Re-ejecutar el notebook/script o omitir la figura.

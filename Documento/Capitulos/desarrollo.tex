@@ -455,7 +455,7 @@ En el dataset cuántico-nativo ($n=150$, 45 puntos de test), el QSVC obtuvo 68.9
 \paragraph{Limitaciones identificadas.}
 \begin{itemize}
   \item El umbral de ventaja depende fuertemente de la estructura del dataset; no es posible determinar a priori si un dataset real exhibirá ventaja cuántica sin experimentación específica.
-  \item El coste cuadrático de la matriz de Gram limita el análisis: con $n\le150$ muestras el QSVC tarda entre 0.8 y 7.6~s en el dataset nativo, pero en SKG (450 ejemplos de entrenamiento) ya requiere 242~s.
+  \item El coste cuadrático de la matriz de Gram limita el análisis: con $n\le150$ muestras el QSVC tarda entre 0.8 y 7.4~s en el dataset nativo, pero en SKG (450 ejemplos de entrenamiento) ya requiere 229~s.
   \item Con una única partición por tamaño, las ventajas del Notebook~06 en $n=50$ y $n=80$ ($-6.7$ y $-4.2$~pp) y en $n\ge100$ ($+20.0$ a $+27.8$~pp) son orientativas; la escalabilidad con 10 repeticiones e IC 95\% se presenta en el Caso~1.
 \end{itemize}
 
