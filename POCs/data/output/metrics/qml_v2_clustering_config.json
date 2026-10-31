@@ -1,0 +1,10 @@
+{
+  "n_qubits": 2,
+  "zz_reps": 2,
+  "entanglement": "full",
+  "n_clusters": 2,
+  "n_total": 120,
+  "n_repeats": 5,
+  "random_state": 42,
+  "spectral_rbf_gamma": 1.0
+}

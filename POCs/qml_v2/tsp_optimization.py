@@ -32,7 +32,8 @@ from typing import Any
 import numpy as np
 import pandas as pd
 
-from qml_v2.classification import REPO_ROOT, repo_paths
+from qml_v2.optimization import decode_named_matrix
+from qml_v2.outputs import REPO_ROOT, repo_paths
 
 # 12 Colombian capitals from TFM notebook 05 (CSV not in repo).
 COLOMBIA_CITIES: list[tuple[str, float, float]] = [
@@ -87,10 +88,7 @@ def haversine_km(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
     p1, p2 = math.radians(lat1), math.radians(lat2)
     dlat = math.radians(lat2 - lat1)
     dlon = math.radians(lon2 - lon1)
-    a = (
-        math.sin(dlat / 2) ** 2
-        + math.cos(p1) * math.cos(p2) * math.sin(dlon / 2) ** 2
-    )
+    a = math.sin(dlat / 2) ** 2 + math.cos(p1) * math.cos(p2) * math.sin(dlon / 2) ** 2
     return r * 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
 
 
@@ -105,9 +103,7 @@ def distance_matrix_haversine(cities: list[tuple[str, float, float]]) -> np.ndar
     return D
 
 
-def make_instance(
-    family: str, n: int, seed: int
-) -> tuple[np.ndarray, list[str]]:
+def make_instance(family: str, n: int, seed: int) -> tuple[np.ndarray, list[str]]:
     if family == "colombia":
         if n > len(COLOMBIA_CITIES):
             raise ValueError(f"colombia family has only {len(COLOMBIA_CITIES)} cities")
@@ -293,14 +289,14 @@ def build_tsp_qp(D: np.ndarray, fix_depot: bool = True):
             linear[f"x_{i}_1"] = linear.get(f"x_{i}_1", 0.0) + float(D[0, i])
         # city at position n-1 → depot
         for i in range(1, n):
-            linear[f"x_{i}_{n-1}"] = linear.get(f"x_{i}_{n-1}", 0.0) + float(D[i, 0])
+            linear[f"x_{i}_{n - 1}"] = linear.get(f"x_{i}_{n - 1}", 0.0) + float(D[i, 0])
         # consecutive non-depot positions
         for u in range(1, n):
             for v in range(1, n):
                 if u == v:
                     continue
                 for p in range(1, n - 1):
-                    a, b = f"x_{u}_{p}", f"x_{v}_{p+1}"
+                    a, b = f"x_{u}_{p}", f"x_{v}_{p + 1}"
                     key = (a, b) if a <= b else (b, a)
                     quadratic[key] = quadratic.get(key, 0.0) + float(D[u, v])
 
@@ -355,31 +351,17 @@ def decode_tsp_from_result(result, n: int, qp=None, fix_depot: bool = True) -> n
     X = np.zeros((n, n), dtype=int)
     if fix_depot:
         X[0, 0] = 1
-    values = np.asarray(result.x, dtype=float)
-    names = list(getattr(result, "variable_names", None) or [])
-    if not names and qp is not None:
-        names = [v.name for v in qp.variables]
-    if names and len(names) >= len(values):
-        names = names[: len(values)]
-    if names and len(names) == len(values):
-        for name, val in zip(names, values):
-            if not str(name).startswith("x_"):
-                continue
-            parts = str(name).split("_")
-            if len(parts) != 3:
-                continue
-            i, p = int(parts[1]), int(parts[2])
-            if 0 <= i < n and 0 <= p < n:
-                X[i, p] = int(val > 0.5)
-        return X
+    named = decode_named_matrix(result, n, qp, X)
+    if named is not None:
+        return named
     # Fallback reshape for full n² only
-    bits = values[: n * n]
+    bits = np.asarray(result.x, dtype=float)[: n * n]
     if bits.size >= n * n:
         return np.round(bits).astype(int).reshape(n, n)
     return X
 
 
-def qubo_dict_from_qp(qp) -> dict[tuple[str, str], float]:
+def qubo_dict_from_qp(qp):
     """Flatten QuadraticProgram (after to_ising path) via converter."""
     from qiskit_optimization.converters import QuadraticProgramToQubo
 
@@ -476,7 +458,7 @@ def qaoa_tsp(
     qp = build_tsp_qp(D, fix_depot=fix_depot)
     best_route: list[int] | None = None
     best_L = float("inf")
-    t0 = time.time()
+    t0 = time.perf_counter()
     for r in range(max(1, restarts)):
         seed = random_state + 17 * r
         algorithm_globals.random_seed = seed
@@ -490,7 +472,7 @@ def qaoa_tsp(
         L = tour_length(D, route)
         if L < best_L:
             best_L, best_route = L, route
-    return best_route, time.time() - t0
+    return best_route, time.perf_counter() - t0
 
 
 def _append_scored(
@@ -558,7 +540,7 @@ def run_suite(cfg: TSPConfig | None = None, quick: bool = False) -> pd.DataFrame
         D, names = make_instance(cfg.family, cfg.n, seed)
         n = cfg.n
 
-        t0 = time.time()
+        t0 = time.perf_counter()
         exact = brute_force_tsp(D, fix_depot=cfg.fix_depot)
         exact_L = tour_length(D, exact)
         _append_scored(
@@ -570,11 +552,11 @@ def run_suite(cfg: TSPConfig | None = None, quick: bool = False) -> pd.DataFrame
             D=D,
             route=exact,
             exact_L=exact_L,
-            time_s=time.time() - t0,
+            time_s=time.perf_counter() - t0,
             names=names,
         )
 
-        t0 = time.time()
+        t0 = time.perf_counter()
         nn = nearest_neighbor(D, start=0)
         _append_scored(
             rows,
@@ -585,11 +567,11 @@ def run_suite(cfg: TSPConfig | None = None, quick: bool = False) -> pd.DataFrame
             D=D,
             route=nn,
             exact_L=exact_L,
-            time_s=time.time() - t0,
+            time_s=time.perf_counter() - t0,
             names=names,
         )
 
-        t0 = time.time()
+        t0 = time.perf_counter()
         nn_ms = nearest_neighbor_multistart(D, n_starts=cfg.nn_starts)
         _append_scored(
             rows,
@@ -600,11 +582,11 @@ def run_suite(cfg: TSPConfig | None = None, quick: bool = False) -> pd.DataFrame
             D=D,
             route=nn_ms,
             exact_L=exact_L,
-            time_s=time.time() - t0,
+            time_s=time.perf_counter() - t0,
             names=names,
         )
 
-        t0 = time.time()
+        t0 = time.perf_counter()
         nn2 = nn_plus_two_opt(D, n_starts=cfg.nn_starts)
         _append_scored(
             rows,
@@ -615,11 +597,11 @@ def run_suite(cfg: TSPConfig | None = None, quick: bool = False) -> pd.DataFrame
             D=D,
             route=nn2,
             exact_L=exact_L,
-            time_s=time.time() - t0,
+            time_s=time.perf_counter() - t0,
             names=names,
         )
 
-        t0 = time.time()
+        t0 = time.perf_counter()
         rnd = random_tour(D, random_state=seed)
         _append_scored(
             rows,
@@ -630,12 +612,12 @@ def run_suite(cfg: TSPConfig | None = None, quick: bool = False) -> pd.DataFrame
             D=D,
             route=rnd,
             exact_L=exact_L,
-            time_s=time.time() - t0,
+            time_s=time.perf_counter() - t0,
             names=names,
         )
 
         if cfg.run_sa:
-            t0 = time.time()
+            t0 = time.perf_counter()
             sa_route, _ = sa_qubo_tsp(
                 D,
                 fix_depot=cfg.fix_depot,
@@ -652,7 +634,7 @@ def run_suite(cfg: TSPConfig | None = None, quick: bool = False) -> pd.DataFrame
                 D=D,
                 route=sa_route,
                 exact_L=exact_L,
-                time_s=time.time() - t0,
+                time_s=time.perf_counter() - t0,
                 names=names,
             )
 

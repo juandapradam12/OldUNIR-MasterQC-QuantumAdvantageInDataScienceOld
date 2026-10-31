@@ -1,5 +1,5 @@
 \NeedsTeXFormat{LaTeX2e}
-\ProvidesPackage{unir}
+\ProvidesPackage{Estilos/unir}
 %
 %---paquetes---------------------
 %
@@ -8,7 +8,7 @@
 \usepackage{lmodern}
 
 %idioma y codificación
-\usepackage[spanish]{babel}
+\usepackage[spanish,es-lcroman]{babel}
 
 %simbolos
 \usepackage{amsmath}
@@ -35,7 +35,6 @@
 %cabeceras y pies de página
 \usepackage{vmargin}
 \usepackage{fancyhdr}
-\usepackage{sectsty}
 \pagestyle{fancy}
 \fancyhfoffset{20pt}
 \setlength{\headheight}{25.3pt}
@@ -43,6 +42,11 @@
 \renewcommand{\headrulewidth}{0.0pt}
 \renewcommand{\maketitle}{\creaportada}
 \renewcommand{\baselinestretch}{1.5}
+\raggedbottom
+\hbadness=5000
+\DeclareRobustCommand\ttfamily{\not@math@alphabet\ttfamily\mathtt\fontfamily\ttdefault\selectfont\hyphenchar\font=`\-\relax}
+\DeclareRobustCommand{\_}{\textunderscore\penalty100\hskip0pt\relax}
+\setlength{\emergencystretch}{3em}
 
 \usepackage{etoolbox}
 \patchcmd{\chapter}{\if@openright\cleardoublepage\else\clearpage\fi}{\if@openright\clearpage\else\clearpage\fi}{}{}
@@ -119,9 +123,12 @@
 \renewcommand{\labelitemiii}{$\textcolor{unir-azul-fuerte}{\diamond}$}
 \renewcommand{\labelitemiv}{$\textcolor{unir-azul-fuerte}{\ast}$}
 \titleformat{\chapter}[hang]{\vspace{-4cm}\huge\bfseries\color{unir-azul-fuerte}}{\thechapter. }{0pt}{\Huge\bfseries}
-\chapterfont{\color{unir-azul-fuerte}}
-\sectionfont{\color{unir-azul-fuerte}}
-\subsectionfont{\color{unir-azul-fuerte}}
+\titleformat{\section}{\normalfont\Large\bfseries\raggedright\color{unir-azul-fuerte}}{\thesection}{1em}{}
+\titleformat{\subsection}{\normalfont\large\bfseries\color{unir-azul-fuerte}}{\thesubsection}{1em}{}
+\titleformat{\subsubsection}{\normalfont\normalsize\bfseries}{\thesubsubsection}{1em}{}
+\titlespacing*{\section}{0pt}{3.5ex plus 1ex minus .2ex}{2.3ex plus .2ex}
+\titlespacing*{\subsection}{0pt}{3.25ex plus 1ex minus .2ex}{1.5ex plus .2ex}
+\titlespacing*{\subsubsection}{0pt}{3.25ex plus 1ex minus .2ex}{1.5ex plus .2ex}
 \renewcommand{\listfigurename}{Índice de figuras}
 \renewcommand{\listtablename}{Índice de tablas}
 \renewcommand{\contentsname}{Índice de contenidos}

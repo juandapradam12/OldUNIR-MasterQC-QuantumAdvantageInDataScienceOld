@@ -1,0 +1,36 @@
+dataset,repeat,model,table,roc_auc,avg_precision,f1_anomaly,n_train_inliers,n_test,n_test_outliers,n_features,pca_var_explained
+blobs,0,IsolationForest,A_matched_features,0.9953488372093022,0.9666666666666666,0.625,101,48,5,2,0.5477935375555099
+blobs,0,OCSVM-RBF,A_matched_features,1.0,1.0,0.5882352941176471,101,48,5,2,0.5477935375555099
+blobs,0,LOF,A_matched_features,1.0,1.0,0.625,101,48,5,2,0.5477935375555099
+blobs,0,OCSVM-ZZ,A_matched_features,0.34418604651162793,0.09066531844838643,0.0,101,48,5,2,0.5477935375555099
+blobs,0,IsolationForest [full features],B_matched_n_full_features,1.0,1.0,0.625,101,48,5,4,
+blobs,0,OCSVM-RBF [full features],B_matched_n_full_features,1.0,1.0,0.43478260869565216,101,48,5,4,
+blobs,0,LOF [full features],B_matched_n_full_features,1.0,1.0,0.6666666666666666,101,48,5,4,
+blobs,1,IsolationForest,A_matched_features,1.0,1.0,0.9090909090909091,101,48,5,2,0.5810022267561967
+blobs,1,OCSVM-RBF,A_matched_features,1.0,1.0,0.5555555555555556,101,48,5,2,0.5810022267561967
+blobs,1,LOF,A_matched_features,1.0,1.0,1.0,101,48,5,2,0.5810022267561967
+blobs,1,OCSVM-ZZ,A_matched_features,0.46511627906976744,0.28507812625459683,0.09090909090909091,101,48,5,2,0.5810022267561967
+blobs,1,IsolationForest [full features],B_matched_n_full_features,1.0,1.0,0.8333333333333334,101,48,5,4,
+blobs,1,OCSVM-RBF [full features],B_matched_n_full_features,1.0,1.0,0.5263157894736842,101,48,5,4,
+blobs,1,LOF [full features],B_matched_n_full_features,1.0,1.0,0.8333333333333334,101,48,5,4,
+blobs,2,IsolationForest,A_matched_features,1.0,1.0,0.7692307692307693,101,48,5,2,0.572824377421354
+blobs,2,OCSVM-RBF,A_matched_features,1.0,1.0,0.6666666666666666,101,48,5,2,0.572824377421354
+blobs,2,LOF,A_matched_features,1.0,1.0,0.9090909090909091,101,48,5,2,0.572824377421354
+blobs,2,OCSVM-ZZ,A_matched_features,0.7209302325581396,0.2917948717948718,0.3157894736842105,101,48,5,2,0.572824377421354
+blobs,2,IsolationForest [full features],B_matched_n_full_features,1.0,1.0,0.625,101,48,5,4,
+blobs,2,OCSVM-RBF [full features],B_matched_n_full_features,1.0,1.0,0.43478260869565216,101,48,5,4,
+blobs,2,LOF [full features],B_matched_n_full_features,1.0,1.0,0.7142857142857143,101,48,5,4,
+blobs,3,IsolationForest,A_matched_features,1.0,1.0,0.625,101,48,5,2,0.5482292370977476
+blobs,3,OCSVM-RBF,A_matched_features,1.0,1.0,0.625,101,48,5,2,0.5482292370977476
+blobs,3,LOF,A_matched_features,1.0,1.0,0.6666666666666666,101,48,5,2,0.5482292370977476
+blobs,3,OCSVM-ZZ,A_matched_features,0.48372093023255813,0.11610295501599849,0.0,101,48,5,2,0.5482292370977476
+blobs,3,IsolationForest [full features],B_matched_n_full_features,1.0,1.0,0.5882352941176471,101,48,5,4,
+blobs,3,OCSVM-RBF [full features],B_matched_n_full_features,1.0,1.0,0.43478260869565216,101,48,5,4,
+blobs,3,LOF [full features],B_matched_n_full_features,1.0,1.0,0.6666666666666666,101,48,5,4,
+blobs,4,IsolationForest,A_matched_features,0.9906976744186047,0.9428571428571428,0.7692307692307693,101,48,5,2,0.5887653668312147
+blobs,4,OCSVM-RBF,A_matched_features,0.8232558139534885,0.8232558139534885,0.4444444444444444,101,48,5,2,0.5887653668312147
+blobs,4,LOF,A_matched_features,0.9906976744186047,0.9428571428571428,0.8333333333333334,101,48,5,2,0.5887653668312147
+blobs,4,OCSVM-ZZ,A_matched_features,0.4372093023255815,0.14321458024080488,0.21052631578947367,101,48,5,2,0.5887653668312147
+blobs,4,IsolationForest [full features],B_matched_n_full_features,1.0,1.0,0.625,101,48,5,4,
+blobs,4,OCSVM-RBF [full features],B_matched_n_full_features,1.0,1.0,0.47619047619047616,101,48,5,4,
+blobs,4,LOF [full features],B_matched_n_full_features,1.0,1.0,0.625,101,48,5,4,

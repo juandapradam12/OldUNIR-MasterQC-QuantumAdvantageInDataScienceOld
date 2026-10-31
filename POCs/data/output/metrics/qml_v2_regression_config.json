@@ -1,0 +1,12 @@
+{
+  "n_qubits": 2,
+  "zz_reps": 2,
+  "entanglement": "full",
+  "svr_C": 10.0,
+  "svr_epsilon": 0.1,
+  "n_total": 200,
+  "test_size": 0.3,
+  "n_repeats": 10,
+  "random_state": 42,
+  "n_estimators": 100
+}

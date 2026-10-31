@@ -3,6 +3,7 @@
 import numpy as np
 
 from qml_v2.tsp_optimization import (
+    COLOMBIA_CITIES,
     brute_force_tsp,
     distance_matrix_haversine,
     is_valid_tour,
@@ -12,7 +13,6 @@ from qml_v2.tsp_optimization import (
     nn_plus_two_opt,
     permutation_to_matrix,
     tour_length,
-    COLOMBIA_CITIES,
 )
 
 

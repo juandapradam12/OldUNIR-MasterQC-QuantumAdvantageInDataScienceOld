@@ -5,14 +5,14 @@ import numpy as np
 from qml_v2.anomaly import (
     AnomalyConfig,
     AnomalyRepeatResult,
+    _roc_ap_f1,
+    _sklearn_outlier_to_binary,
     fit_score_classical,
     inject_feature_outliers,
     make_blob_anomaly,
     make_moons_anomaly,
     set_contamination,
     summarize,
-    _roc_ap_f1,
-    _sklearn_outlier_to_binary,
 )
 
 

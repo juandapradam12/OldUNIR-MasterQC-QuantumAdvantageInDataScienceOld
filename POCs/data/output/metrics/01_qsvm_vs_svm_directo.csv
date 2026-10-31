@@ -1,0 +1,4 @@
+dataset,n_train,n_test,pca_var_exp,acc_qsvm,f1_qsvm,time_qsvm_s,acc_svm_rbf,f1_svm_rbf,time_svm_s,delta_acc,winner
+Cuántico-nativo (por construcción),140,60,1.0,0.5333,0.5312,26.55,0.4667,0.4643,0.0014,0.0667,QSVM
+SKG Incidentes movilidad,120,120,0.6307,0.4667,0.4514,30.95,0.525,0.5128,0.0013,-0.0583,SVM-RBF
+Telco Customer Churn,120,1409,0.3468,0.7346,0.4235,251.6,0.7473,0.6022,0.0028,-0.0128,SVM-RBF

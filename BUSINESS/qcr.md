@@ -34,9 +34,9 @@ Ver [`qcr_v2_results.md`](qcr_v2_results.md). Headline:
 |---------|------------|
 | native_xor | Ya try-ZZ; rotación da boost menor |
 | telco_churn | Sin efecto útil (sigue classical) |
-| **skg_churn** | **Rotación → try-ZZ (+5.6 pp ventaja)** |
+| skg_churn | Rotación → try-ZZ geométrico (+5.6 pp vs RBF); **sin** lift de accuracy vs GB/RF. SKG **no** es cuántico-nativo. |
 
-La heurística falló en SKG (sugirió `zz_interactions`); **`qcr_auto_best` acertó**. Preferir empírico sobre regla.
+La heurística falló en SKG (sugirió `zz_interactions`); **`qcr_auto_best`** encuentra la rotación, pero eso es señal de geometría — no rescate operativo.
 
 ## Classification probe (cierra Q_rob → ML)
 

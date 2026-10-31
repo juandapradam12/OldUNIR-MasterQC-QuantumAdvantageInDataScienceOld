@@ -39,17 +39,29 @@ dataset                     table                            model   r2_mean   r
 ## skg_speed
 
 ```
-A_matched_lags: QK-SVR MAE 13.202±0.000 (R²=-1.534) vs best classical Ridge 3.105±0.000 (ΔMAE=+10.097) → classical
+A_matched_lags: QK-SVR MAE 13.592±5.681 (R²=-17.817) vs best classical Ridge 2.799±0.632 (ΔMAE=+10.793) → classical
 ```
 
 ```
-  dataset                     table                            model   r2_mean   r2_std  mae_mean  mae_std  rmse_mean  n_train  n_test  n_features  n_repeats  delta_mae_vs_best_classical
-skg_speed            A_matched_lags                            Ridge  0.807054 0.000000  3.104730 0.000000   4.397448       97      41           2          5                          NaN
-skg_speed            A_matched_lags                          SVR-RBF  0.755998 0.000000  3.892922 0.000000   4.945150       97      41           2          5                          NaN
-skg_speed            A_matched_lags                 GradientBoosting  0.666784 0.009703  4.232794 0.073010   5.778427       97      41           2          5                          NaN
-skg_speed            A_matched_lags                        QK-SVR-ZZ -1.534131 0.000000 13.201817 0.000000  15.936672       97      41           2          5                    10.097087
-skg_speed B_matched_n_rich_features GradientBoosting [full features]  0.641446 0.025535  4.862329 0.185274   5.991527       97      41          11          5                          NaN
-skg_speed B_matched_n_rich_features          SVR-RBF [full features]  0.500343 0.000000  5.684159 0.000000   7.076508       97      41          11          5                          NaN
-skg_speed B_matched_n_rich_features            Ridge [full features]  0.377426 0.000000  6.149253 0.000000   7.899118       97      41          11          5                          NaN
+  dataset                     table                            model    r2_mean    r2_std  mae_mean  mae_std  rmse_mean  n_train  n_test  n_features  n_repeats  delta_mae_vs_best_classical
+skg_speed            A_matched_lags                            Ridge   0.047275  0.752139  2.798826 0.632399   3.522239       97      41           2          5                          NaN
+skg_speed            A_matched_lags                 GradientBoosting  -0.053864  0.565461  3.186714 0.765869   4.014776       97      41           2          5                          NaN
+skg_speed            A_matched_lags                          SVR-RBF  -0.375463  0.640489  3.578357 0.589732   4.386286       97      41           2          5                          NaN
+skg_speed            A_matched_lags                        QK-SVR-ZZ -17.816761 16.259834 13.592163 5.680629  14.757120       97      41           2          5                    10.793338
+skg_speed B_matched_n_rich_features GradientBoosting [full features]  -0.012866  0.511895  3.242472 1.181133   4.055618       97      41          11          5                          NaN
+skg_speed B_matched_n_rich_features            Ridge [full features]  -1.478848  1.500049  4.899378 1.383466   6.013655       97      41          11          5                          NaN
+skg_speed B_matched_n_rich_features          SVR-RBF [full features]  -2.786250  3.520534  5.875582 2.655579   6.786128       97      41          11          5                          NaN
+```
+
+## naive references (MAE, same test windows)
+
+```
+  dataset   reference  mae_mean  mae_std
+   zz_lag persistence  1.753909 0.076953
+   zz_lag  train_mean  0.403814 0.030858
+     sine persistence  0.287464 0.029073
+     sine  train_mean  0.658387 0.022708
+skg_speed persistence  2.749268 0.975506
+skg_speed  train_mean 13.614025 7.092636
 ```
 

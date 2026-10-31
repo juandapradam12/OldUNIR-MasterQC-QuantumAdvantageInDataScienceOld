@@ -26,19 +26,17 @@ import pandas as pd
 from scipy.optimize import minimize_scalar
 from scipy.spatial.distance import cdist
 from sklearn.metrics.pairwise import rbf_kernel
-from sklearn.model_selection import StratifiedShuffleSplit, train_test_split
+from sklearn.model_selection import train_test_split
 from sklearn.svm import SVC
 
 from qml_v2.classification import (
-    REPO_ROOT,
     encode_for_zz_kernel,
-    load_skg_incidents,
-    load_telco,
+    kernel_dataset_jobs,
     make_quantum_native,
-    repo_paths,
     subsample_stratified,
-    zz_map,
 )
+from qml_v2.kernels import fidelity_kernel, zz_fidelity_kernel, zz_map
+from qml_v2.outputs import REPO_ROOT, apply_overrides, dataset_names, make_parser, metrics_dir
 
 
 @dataclass
@@ -70,6 +68,7 @@ class QuantumnessConfig:
 # ---------------------------------------------------------------------------
 # Indicators (no Qiskit)
 # ---------------------------------------------------------------------------
+
 
 def labels_pm1(y: np.ndarray) -> np.ndarray:
     y = np.asarray(y)
@@ -132,9 +131,7 @@ def best_rbf_kernel(X: np.ndarray, K_Q: np.ndarray) -> tuple[np.ndarray, float]:
     return K_rbf, sigma
 
 
-def best_classical_for_labels(
-    X: np.ndarray, y: np.ndarray, *, centered: bool = True
-) -> tuple[np.ndarray, float, str]:
+def best_classical_for_labels(X: np.ndarray, y: np.ndarray, *, centered: bool = True) -> tuple[np.ndarray, float, str]:
     """Classical kernel with highest (centered) alignment to y.
 
     Searches RBF σ on a log-grid plus a linear kernel.
@@ -181,6 +178,24 @@ def geometric_difference(K_Q: np.ndarray, K_cl: np.ndarray, eps: float = 1e-6) -
     K_cl_inv = np.linalg.inv(K_cl_reg)
     M = K_Q_sqrt @ K_cl_inv @ K_Q_sqrt
     return float(np.sqrt(np.linalg.norm(M, "fro")))
+
+
+def geometric_difference_huang(K_Q: np.ndarray, K_cl: np.ndarray, lam: float = 1e-3) -> float:
+    """Diferencia geométrica g_CQ de Huang et al. (2021), con norma espectral.
+
+    g = sqrt( || sqrt(K_Q) (K_cl + lam I)^{-1} sqrt(K_Q) ||_2 ), con ambos kernels
+    normalizados a Tr(K) = n. A diferencia de ``geometric_difference`` (norma de
+    Frobenius, eps=1e-6), la regularización lam acota la inversa y evita que g
+    refleje solo el condicionamiento del RBF.
+    """
+    n = K_Q.shape[0]
+    K_Q = K_Q * (n / max(float(np.trace(K_Q)), 1e-12))
+    K_cl = K_cl * (n / max(float(np.trace(K_cl)), 1e-12))
+    w, v = np.linalg.eigh((K_Q + K_Q.T) / 2.0)
+    K_Q_sqrt = (v * np.sqrt(np.maximum(w, 0.0))) @ v.T
+    inv = np.linalg.inv((K_cl + K_cl.T) / 2.0 + lam * np.eye(n))
+    M = K_Q_sqrt @ inv @ K_Q_sqrt
+    return float(np.sqrt(np.linalg.norm((M + M.T) / 2.0, 2)))
 
 
 def logistic_gate(x: float, kappa: float = 20.0) -> float:
@@ -241,7 +256,7 @@ def quantumness_score(
     }
 
 
-def _indicators_on_matrix(
+def indicators_on_matrix(
     Xq: np.ndarray,
     y_s: np.ndarray,
     cfg: QuantumnessConfig,
@@ -256,9 +271,7 @@ def _indicators_on_matrix(
     only as a diagnostic.
     """
     y_pm = labels_pm1(y_s)
-    K_Q = zz_fidelity_kernel(
-        Xq, cfg.n_qubits, cfg.zz_reps, cfg.entanglement, seed
-    )
+    K_Q = zz_fidelity_kernel(Xq, cfg.n_qubits, cfg.zz_reps, cfg.entanglement, seed)
     K_rbf, sigma_frob = best_rbf_kernel(Xq, K_Q)
     _, _, cl_label_name = best_classical_for_labels(Xq, y_s, centered=True)
 
@@ -271,6 +284,7 @@ def _indicators_on_matrix(
 
     d_F = frobenius_distance(K_Q, K_rbf, normalize=True)
     g = geometric_difference(K_Q, K_rbf)
+    g_huang = geometric_difference_huang(K_Q, K_rbf)
     H_Q = spectral_entropy(K_Q)
     H_cl = spectral_entropy(K_rbf)
 
@@ -309,6 +323,7 @@ def _indicators_on_matrix(
         "d_F": d_F,
         "d_F_norm": rob["d_F_norm"],
         "g": g,
+        "g_huang": g_huang,
         "geom_gate": rob["geom_gate"],
         "geom_term": rob["geom_term"],
         "Q_rob": rob["Q_rob"],
@@ -325,23 +340,14 @@ def _indicators_on_matrix(
             random_state=seed,
             stratify=y_s,
         )
-        from qiskit_algorithms.utils import algorithm_globals
-        from qiskit_machine_learning.kernels import FidelityQuantumKernel
-
-        algorithm_globals.random_seed = seed
-        fmap = zz_map(cfg.n_qubits, cfg.zz_reps, cfg.entanglement)
-        qk = FidelityQuantumKernel(feature_map=fmap)
+        qk = fidelity_kernel(zz_map(cfg.n_qubits, cfg.zz_reps, cfg.entanglement), seed)
         Kq_tr = qk.evaluate(X_tr)
         Kq_te = qk.evaluate(X_te, X_tr)
         gamma = 1.0 / (2.0 * max(sigma_frob, 1e-6) ** 2)
         Kr_tr = rbf_kernel(X_tr, gamma=gamma)
         Kr_te = rbf_kernel(X_te, X_tr, gamma=gamma)
-        acc_q = float(
-            SVC(kernel="precomputed", C=cfg.svm_C).fit(Kq_tr, y_tr).score(Kq_te, y_te)
-        )
-        acc_cl = float(
-            SVC(kernel="precomputed", C=cfg.svm_C).fit(Kr_tr, y_tr).score(Kr_te, y_te)
-        )
+        acc_q = float(SVC(kernel="precomputed", C=cfg.svm_C).fit(Kq_tr, y_tr).score(Kq_te, y_te))
+        acc_cl = float(SVC(kernel="precomputed", C=cfg.svm_C).fit(Kr_tr, y_tr).score(Kr_te, y_te))
         out["acc_QSVM"] = acc_q
         out["acc_SVM_RBF"] = acc_cl
         out["advantage_pp"] = (acc_q - acc_cl) * 100.0
@@ -380,16 +386,6 @@ def decide_verdict(
 # Quantum kernel
 # ---------------------------------------------------------------------------
 
-def zz_fidelity_kernel(
-    X: np.ndarray, n_qubits: int, reps: int, entanglement: str, seed: int
-) -> np.ndarray:
-    from qiskit_algorithms.utils import algorithm_globals
-    from qiskit_machine_learning.kernels import FidelityQuantumKernel
-
-    algorithm_globals.random_seed = seed
-    fmap = zz_map(n_qubits, reps, entanglement)
-    return np.asarray(FidelityQuantumKernel(feature_map=fmap).evaluate(X), dtype=float)
-
 
 def _encode_subsample(
     X: np.ndarray,
@@ -409,7 +405,6 @@ def _encode_subsample(
     return Xq, y_s, (1.0 if already_zz_space else float(pca_var))
 
 
-
 def compute_indicators(
     X: np.ndarray,
     y: np.ndarray,
@@ -426,9 +421,7 @@ def compute_indicators(
         seed = cfg.random_state + 17 * r
         Xq, y_s, pca_var = _encode_subsample(X, y, cfg, already_zz_space, seed)
         pca_vars.append(pca_var)
-        row = _indicators_on_matrix(
-            Xq, y_s, cfg, seed=seed, compute_advantage=compute_advantage
-        )
+        row = indicators_on_matrix(Xq, y_s, cfg, seed=seed, compute_advantage=compute_advantage)
         row["repeat"] = r
         repeats.append(row)
 
@@ -481,6 +474,7 @@ def compute_indicators(
 # Alpha sweep
 # ---------------------------------------------------------------------------
 
+
 def make_alpha_dataset(
     alpha: float,
     n: int,
@@ -523,9 +517,7 @@ def run_alpha_sweep(cfg: QuantumnessConfig) -> pd.DataFrame:
                 "n_sample": min(cfg.n_sample, cfg.alpha_n),
             }
         )
-        r = compute_indicators(
-            X, y, local, already_zz_space=True, dataset=f"alpha_{alpha:.2f}"
-        )
+        r = compute_indicators(X, y, local, already_zz_space=True, dataset=f"alpha_{alpha:.2f}")
         r.pop("_repeats", None)
         r["alpha"] = float(alpha)
         rows.append(r)
@@ -551,6 +543,7 @@ def spearman_alpha_vs_Q(df: pd.DataFrame, col: str = "Q_rob") -> float:
 # Driver
 # ---------------------------------------------------------------------------
 
+
 def run_all(
     cfg: QuantumnessConfig | None = None,
     datasets: tuple[str, ...] = ("quantum_native", "telco", "skg", "alpha_sweep"),
@@ -570,8 +563,7 @@ def run_all(
             gate_kappa=cfg.gate_kappa,
         )
 
-    metrics = repo_paths()["metrics"]
-    metrics.mkdir(parents=True, exist_ok=True)
+    metrics = metrics_dir()
     out: dict[str, pd.DataFrame] = {}
     real_rows: list[dict[str, Any]] = []
 
@@ -586,32 +578,13 @@ def run_all(
         "",
     ]
 
-    jobs: list[tuple[str, np.ndarray, np.ndarray, bool]] = []
-    if "quantum_native" in datasets:
-        X, y = make_quantum_native(
-            n_samples=max(cfg.n_sample * 2, 120),
-            n_qubits=cfg.n_qubits,
-            reps=cfg.zz_reps,
-            entanglement=cfg.entanglement,
-            random_state=cfg.random_state,
-        )
-        jobs.append(("quantum_native", X, y, True))
-    if "telco" in datasets:
-        X, y, _ = load_telco()
-        jobs.append(("telco", X, y, False))
-    if "skg" in datasets:
-        X, y, _ = load_skg_incidents()
-        jobs.append(("skg", X, y, False))
-
-    for name, X, y, native in jobs:
+    for name, X, y, native in kernel_dataset_jobs(datasets, max(cfg.n_sample * 2, 120), cfg):
         print(f"\n=== {name}  n={len(y)}  feats={X.shape[1]}  native={native} ===")
         r = compute_indicators(X, y, cfg, already_zz_space=native, dataset=name)
         rep = r.pop("_repeats", None)
         real_rows.append(r)
         if rep is not None:
-            pd.DataFrame(rep).to_csv(
-                metrics / f"qml_v2_quantumness_{name}_repeats.csv", index=False
-            )
+            pd.DataFrame(rep).to_csv(metrics / f"qml_v2_quantumness_{name}_repeats.csv", index=False)
         print(
             f"Q_rob={r['Q_rob']:+.3f}±{r['Q_rob_std']:.3f} "
             f"[{r['Q_rob_lo']:+.3f},{r['Q_rob_hi']:+.3f}]  "
@@ -678,32 +651,15 @@ def run_all(
     return out
 
 
-def main() -> None:
-    import argparse
+FLAGS = ("n_sample", "n_repeats", "n_qubits", "zz_reps")
 
-    p = argparse.ArgumentParser(description="QML v2 robust quantumness Q_rob / ZZ structure")
-    p.add_argument("--quick", action="store_true")
-    p.add_argument("--n-sample", type=int, default=None)
-    p.add_argument("--n-repeats", type=int, default=None)
-    p.add_argument("--n-qubits", type=int, default=None)
-    p.add_argument("--zz-reps", type=int, default=None)
-    p.add_argument(
-        "--datasets",
-        default="quantum_native,telco,skg,alpha_sweep",
-        help="quantum_native,telco,skg,alpha_sweep",
+
+def main() -> None:
+    parser = make_parser(
+        "QML v2 robust quantumness Q_rob / ZZ structure", "quantum_native,telco,skg,alpha_sweep", FLAGS
     )
-    args = p.parse_args()
-    cfg = QuantumnessConfig()
-    if args.n_sample is not None:
-        cfg.n_sample = args.n_sample
-    if args.n_repeats is not None:
-        cfg.n_repeats = args.n_repeats
-    if args.n_qubits is not None:
-        cfg.n_qubits = args.n_qubits
-    if args.zz_reps is not None:
-        cfg.zz_reps = args.zz_reps
-    names = tuple(s.strip() for s in args.datasets.split(",") if s.strip())
-    run_all(cfg=cfg, datasets=names, quick=args.quick)
+    args = parser.parse_args()
+    run_all(cfg=apply_overrides(QuantumnessConfig(), args, FLAGS), datasets=dataset_names(args), quick=args.quick)
 
 
 if __name__ == "__main__":

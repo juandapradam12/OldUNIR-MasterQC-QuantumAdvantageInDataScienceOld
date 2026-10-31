@@ -23,7 +23,6 @@ not re-scaled.
 
 from __future__ import annotations
 
-import json
 from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Any
@@ -38,8 +37,17 @@ from sklearn.model_selection import StratifiedShuffleSplit
 from sklearn.preprocessing import MinMaxScaler, StandardScaler
 from sklearn.svm import SVC
 
-REPO_ROOT = Path(__file__).resolve().parents[2]
-POCS_DIR = Path(__file__).resolve().parents[1]
+from qml_v2.kernels import FidelityKernelSVC, feature_map_expectation, zz_map
+from qml_v2.outputs import (
+    apply_overrides,
+    dataset_names,
+    finish_run,
+    make_parser,
+    metrics_dir,
+    record_dataset,
+    repo_paths,
+    report_header,
+)
 
 
 @dataclass
@@ -71,27 +79,6 @@ class RepeatResult:
     pca_var_explained: float | None = None
 
 
-def repo_paths() -> dict[str, Path]:
-    return {
-        "telco": POCS_DIR / "data" / "input" / "telco_customer_churn.csv",
-        "skg": REPO_ROOT / "Datos" / "incidents_movility.csv",
-        "metrics": POCS_DIR / "data" / "output" / "metrics",
-    }
-
-
-def zz_map(n_qubits: int, reps: int, entanglement: str):
-    """ZZ feature map as a plain QuantumCircuit (Qiskit 2.1+)."""
-    try:
-        from qiskit.circuit.library import zz_feature_map as _zz
-
-        return _zz(n_qubits, reps=reps, entanglement=entanglement)
-    except ImportError:
-        from qiskit.circuit.library import ZZFeatureMap
-
-        return ZZFeatureMap(
-            feature_dimension=n_qubits, reps=reps, entanglement=entanglement
-        )
-
 def make_quantum_native(
     n_samples: int,
     n_qubits: int = 2,
@@ -100,27 +87,13 @@ def make_quantum_native(
     random_state: int = 42,
 ) -> tuple[np.ndarray, np.ndarray]:
     """X in [-pi, pi]^{n_qubits}; y = sign(<Z...Z> on ZZFeatureMap|0>)."""
-    from qiskit.quantum_info import SparsePauliOp, Statevector
-
-    rng = np.random.RandomState(random_state)
-    X = rng.uniform(-np.pi, np.pi, size=(n_samples, n_qubits))
-    fmap = zz_map(n_qubits, reps, entanglement)
-    pauli = "Z" * n_qubits if n_qubits != 2 else "ZZ"
-    obs = SparsePauliOp.from_list([(pauli, 1.0)])
-    y = np.empty(n_samples, dtype=int)
-    for i, x in enumerate(X):
-        bound = fmap.assign_parameters(dict(zip(fmap.parameters, x)))
-        ev = Statevector(bound).expectation_value(obs).real
-        y[i] = 1 if ev >= 0 else 0
-    return X, y
+    X = np.random.RandomState(random_state).uniform(-np.pi, np.pi, size=(n_samples, n_qubits))
+    ev = feature_map_expectation(zz_map(n_qubits, reps, entanglement), "Z" * n_qubits, X)
+    return X, (ev >= 0).astype(int)
 
 
-class QuantumKernelSVC:
-    """Fidelity quantum kernel + classical SVC (precomputed).
-
-    The circuit is the model of similarity; the decision is SVM. Train points
-    are stored so predict() does not need a second X_train argument.
-    """
+class QuantumKernelSVC(FidelityKernelSVC):
+    """``FidelityKernelSVC`` with the ZZFeatureMap used throughout the TFM."""
 
     def __init__(
         self,
@@ -131,51 +104,14 @@ class QuantumKernelSVC:
         random_state: int = 42,
         class_weight: str | None = "balanced",
     ):
-        from qiskit_algorithms.utils import algorithm_globals
-        from qiskit_machine_learning.kernels import FidelityQuantumKernel
-
-        algorithm_globals.random_seed = random_state
-        fmap = zz_map(n_qubits, reps, entanglement)
-        self.kernel = FidelityQuantumKernel(feature_map=fmap)
-        self.C = C
-        self.random_state = random_state
-        self.class_weight = class_weight
-        self.X_train_: np.ndarray | None = None
-        self.svc_: SVC | None = None
-
-    def fit(self, X: np.ndarray, y: np.ndarray) -> "QuantumKernelSVC":
-        self.X_train_ = np.asarray(X, dtype=float)
-        K = self.kernel.evaluate(x_vec=self.X_train_)
-        self.svc_ = SVC(
-            kernel="precomputed",
-            C=self.C,
-            class_weight=self.class_weight,
-            random_state=self.random_state,
-        )
-        self.svc_.fit(K, y)
-        return self
-
-    def predict(self, X: np.ndarray) -> np.ndarray:
-        if self.X_train_ is None or self.svc_ is None:
-            raise RuntimeError("Call fit() before predict().")
-        K = self.kernel.evaluate(x_vec=np.asarray(X, dtype=float), y_vec=self.X_train_)
-        return self.svc_.predict(K)
-
-    def decision_function(self, X: np.ndarray) -> np.ndarray:
-        if self.X_train_ is None or self.svc_ is None:
-            raise RuntimeError("Call fit() before decision_function().")
-        K = self.kernel.evaluate(x_vec=np.asarray(X, dtype=float), y_vec=self.X_train_)
-        return self.svc_.decision_function(K)
+        super().__init__(zz_map(n_qubits, reps, entanglement), C, random_state, class_weight)
 
 
 # ---------------------------------------------------------------------------
 # Tabular loaders
 # ---------------------------------------------------------------------------
 
-TELCO_URL = (
-    "https://raw.githubusercontent.com/IBM/telco-customer-churn-on-icp4d/"
-    "master/data/Telco-Customer-Churn.csv"
-)
+TELCO_URL = "https://raw.githubusercontent.com/IBM/telco-customer-churn-on-icp4d/master/data/Telco-Customer-Churn.csv"
 
 
 def load_telco(path: Path | None = None) -> tuple[np.ndarray, np.ndarray, list[str]]:
@@ -223,6 +159,29 @@ def load_skg_incidents(path: Path | None = None) -> tuple[np.ndarray, np.ndarray
     return X.to_numpy(dtype=float), y, cols
 
 
+def kernel_dataset_jobs(
+    datasets: tuple[str, ...], n_native: int, cfg
+) -> list[tuple[str, np.ndarray, np.ndarray, bool]]:
+    """(name, X, y, already_zz_space) for the quantum-native, Telco and SKG classification tables."""
+    jobs: list[tuple[str, np.ndarray, np.ndarray, bool]] = []
+    if "quantum_native" in datasets:
+        X, y = make_quantum_native(
+            n_samples=n_native,
+            n_qubits=cfg.n_qubits,
+            reps=cfg.zz_reps,
+            entanglement=cfg.entanglement,
+            random_state=cfg.random_state,
+        )
+        jobs.append(("quantum_native", X, y, True))
+    if "telco" in datasets:
+        X, y, _ = load_telco()
+        jobs.append(("telco", X, y, False))
+    if "skg" in datasets:
+        X, y, _ = load_skg_incidents()
+        jobs.append(("skg", X, y, False))
+    return jobs
+
+
 def subsample_stratified(
     X: np.ndarray, y: np.ndarray, n_total: int, random_state: int
 ) -> tuple[np.ndarray, np.ndarray]:
@@ -236,6 +195,7 @@ def subsample_stratified(
 # ---------------------------------------------------------------------------
 # Preprocess (train-only fit)
 # ---------------------------------------------------------------------------
+
 
 def encode_for_zz_kernel(
     X_train: np.ndarray,
@@ -265,9 +225,7 @@ def encode_for_zz_kernel(
         Xte = pca.transform(Xte)
         pca_var = float(pca.explained_variance_ratio_.sum())
     elif Xtr.shape[1] < n_qubits:
-        raise ValueError(
-            f"Need at least {n_qubits} features, got {Xtr.shape[1]}."
-        )
+        raise ValueError(f"Need at least {n_qubits} features, got {Xtr.shape[1]}.")
     mms = MinMaxScaler(feature_range=(-np.pi, np.pi))
     Xtr = mms.fit_transform(Xtr)
     Xte = mms.transform(Xte)
@@ -316,18 +274,10 @@ def _classical_models(
     class_weight: str | None = "balanced",
 ) -> dict[str, Any]:
     return {
-        "SVM-RBF": SVC(
-            kernel="rbf", C=C, class_weight=class_weight, random_state=random_state
-        ),
-        "SVM-linear": SVC(
-            kernel="linear", C=C, class_weight=class_weight, random_state=random_state
-        ),
-        "GradientBoosting": GradientBoostingClassifier(
-            n_estimators=n_estimators, random_state=random_state
-        ),
-        "LogisticRegression": LogisticRegression(
-            max_iter=1000, class_weight=class_weight, random_state=random_state
-        ),
+        "SVM-RBF": SVC(kernel="rbf", C=C, class_weight=class_weight, random_state=random_state),
+        "SVM-linear": SVC(kernel="linear", C=C, class_weight=class_weight, random_state=random_state),
+        "GradientBoosting": GradientBoostingClassifier(n_estimators=n_estimators, random_state=random_state),
+        "LogisticRegression": LogisticRegression(max_iter=1000, class_weight=class_weight, random_state=random_state),
     }
 
 
@@ -389,9 +339,7 @@ def run_fair_dataset(
         X_tr, X_te = X[tr], X[te]
         y_tr, y_te = y[tr], y[te]
 
-        Xq_tr, Xq_te, pca_var = encode_for_zz_kernel(
-            X_tr, X_te, cfg.n_qubits, cfg.random_state, already_zz_space
-        )
+        Xq_tr, Xq_te, pca_var = encode_for_zz_kernel(X_tr, X_te, cfg.n_qubits, cfg.random_state, already_zz_space)
         if zz_premap is not None:
             Xq_tr, Xq_te = zz_premap(Xq_tr, Xq_te)
 
@@ -486,16 +434,14 @@ def summarize(rows: list[RepeatResult]) -> pd.DataFrame:
 
     # Advantage of QSVM-ZZ vs best classical *within the same table*.
     g["delta_acc_vs_best_classical"] = np.nan
-    for table, idx in g.groupby("table").groups.items():
+    for _table, idx in g.groupby("table").groups.items():
         block = g.loc[idx]
         classical = block[~block["model"].str.startswith("QSVM")]
         qsvm = block[block["model"] == "QSVM-ZZ"]
         if classical.empty or qsvm.empty:
             continue
         best_cl = float(classical["acc_mean"].max())
-        g.loc[qsvm.index, "delta_acc_vs_best_classical"] = (
-            float(qsvm["acc_mean"].iloc[0]) - best_cl
-        )
+        g.loc[qsvm.index, "delta_acc_vs_best_classical"] = float(qsvm["acc_mean"].iloc[0]) - best_cl
     return g
 
 
@@ -529,13 +475,8 @@ def advantage_report(summary: pd.DataFrame) -> str:
         )
 
     # Business question: Table A QSVM vs Table B best classical
-    q_a = summary[
-        (summary["table"] == "A_matched_features") & (summary["model"] == "QSVM-ZZ")
-    ]
-    cl_b = summary[
-        (summary["table"] == "B_matched_n_full_features")
-        & (~summary["model"].str.startswith("QSVM"))
-    ]
+    q_a = summary[(summary["table"] == "A_matched_features") & (summary["model"] == "QSVM-ZZ")]
+    cl_b = summary[(summary["table"] == "B_matched_n_full_features") & (~summary["model"].str.startswith("QSVM"))]
     if not q_a.empty and not cl_b.empty:
         best_b = cl_b.loc[cl_b["acc_mean"].idxmax()]
         qa = q_a.iloc[0]
@@ -562,110 +503,46 @@ def run_all(
             random_state=cfg.random_state,
             class_weight=cfg.class_weight,
         )
+    report = report_header(
+        "Fair classification results",
+        "classification",
+        [
+            "Table A = same features for QSVM and classical. Table B = classical keeps full features (matched n only).",
+        ],
+        cfg,
+    )
     out: dict[str, pd.DataFrame] = {}
-    jobs: list[tuple[str, np.ndarray, np.ndarray, bool]] = []
-    if "quantum_native" in datasets:
-        X, y = make_quantum_native(
-            n_samples=cfg.n_total,
-            n_qubits=cfg.n_qubits,
-            reps=cfg.zz_reps,
-            entanglement=cfg.entanglement,
-            random_state=cfg.random_state,
-        )
-        jobs.append(("quantum_native", X, y, True))
-    if "telco" in datasets:
-        X, y, _ = load_telco()
-        jobs.append(("telco", X, y, False))
-    if "skg" in datasets:
-        X, y, _ = load_skg_incidents()
-        jobs.append(("skg", X, y, False))
-
-    metrics_dir = repo_paths()["metrics"]
-    metrics_dir.mkdir(parents=True, exist_ok=True)
-    report_lines = [
-        "# Fair classification results",
-        "",
-        "Generated by `python -m qml_v2.classification`.",
-        "Table A = same features for QSVM and classical. "
-        "Table B = classical keeps full features (matched n only).",
-        "",
-        f"Config: `{json.dumps(asdict(cfg))}`",
-        "",
-    ]
-
-    for name, X, y, native in jobs:
+    for name, X, y, native in kernel_dataset_jobs(datasets, cfg.n_total, cfg):
         print(f"\n=== {name}  n={len(y)}  features={X.shape[1]}  native={native} ===")
-        rows = run_fair_dataset(
-            name, X, y, cfg, already_zz_space=native, include_table_b=not native
-        )
-        raw = pd.DataFrame([asdict(r) for r in rows])
-        raw.insert(0, "dataset", name)
-        raw.to_csv(metrics_dir / f"fair_classification_{name}_raw.csv", index=False)
-
-        summary = summarize(rows)
-        summary.insert(0, "dataset", name)
-        out[name] = summary
-        summary.to_csv(metrics_dir / f"fair_classification_{name}.csv", index=False)
-        print(summary.to_string(index=False))
-        adv = advantage_report(summary)
-        print(adv)
-        report_lines.append(f"## {name}")
-        report_lines.append("")
-        report_lines.append("```")
-        report_lines.append(adv)
-        report_lines.append("```")
-        report_lines.append("")
-        report_lines.append("```")
-        report_lines.append(summary.to_string(index=False))
-        report_lines.append("```")
-        report_lines.append("")
+        rows = run_fair_dataset(name, X, y, cfg, already_zz_space=native, include_table_b=not native)
+        out[name] = record_dataset(name, rows, summarize, advantage_report, stem="fair_classification", report=report)
 
     if out:
-        pd.concat(out.values(), ignore_index=True).to_csv(
-            metrics_dir / "fair_classification_all.csv", index=False
+        pd.concat(out.values(), ignore_index=True).to_csv(metrics_dir() / "fair_classification_all.csv", index=False)
+        finish_run(
+            report,
+            cfg,
+            report_file="classification_fair_results.md",
+            config_file="fair_classification_config.json",
         )
-        (metrics_dir / "fair_classification_config.json").write_text(
-            json.dumps(asdict(cfg), indent=2)
-        )
-        report_path = REPO_ROOT / "BUSINESS" / "classification_fair_results.md"
-        report_path.write_text("\n".join(report_lines) + "\n")
-        print(f"\nWrote {report_path}")
     return out
 
 
-def main() -> None:
-    import argparse
+FLAGS = ("n_total", "n_repeats", "n_qubits", "zz_reps")
 
-    p = argparse.ArgumentParser(description="Fair QSVM vs classical classification")
-    p.add_argument("--quick", action="store_true", help="1 repeat, n=40, reps=1")
-    p.add_argument("--n-total", type=int, default=None, help="Override sample size")
-    p.add_argument("--n-repeats", type=int, default=None, help="Override repeats")
-    p.add_argument("--n-qubits", type=int, default=None, help="ZZFeatureMap qubits")
-    p.add_argument("--zz-reps", type=int, default=None, help="ZZFeatureMap reps")
-    p.add_argument(
+
+def main() -> None:
+    parser = make_parser("Fair QSVM vs classical classification", "quantum_native,telco,skg", FLAGS)
+    parser.add_argument(
         "--class-weight",
         default=None,
         help="SVM/LogReg class_weight (default balanced; use none to disable)",
     )
-    p.add_argument(
-        "--datasets",
-        default="quantum_native,telco,skg",
-        help="Comma-separated: quantum_native,telco,skg",
-    )
-    args = p.parse_args()
-    names = tuple(s.strip() for s in args.datasets.split(",") if s.strip())
-    cfg = FairConfig()
-    if args.n_total is not None:
-        cfg.n_total = args.n_total
-    if args.n_repeats is not None:
-        cfg.n_repeats = args.n_repeats
-    if args.n_qubits is not None:
-        cfg.n_qubits = args.n_qubits
-    if args.zz_reps is not None:
-        cfg.zz_reps = args.zz_reps
+    args = parser.parse_args()
+    cfg = apply_overrides(FairConfig(), args, FLAGS)
     if args.class_weight is not None:
         cfg.class_weight = None if args.class_weight.lower() in ("none", "null") else args.class_weight
-    run_all(cfg=cfg, datasets=names, quick=args.quick)
+    run_all(cfg=cfg, datasets=dataset_names(args), quick=args.quick)
 
 
 if __name__ == "__main__":

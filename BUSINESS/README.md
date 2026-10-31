@@ -11,7 +11,8 @@ Understanding means **going through the notebooks together**, not summarizing th
 | Clustering | new QML v2: `qml_v2/clustering.py` | [clustering.md](clustering.md) |
 | Anomaly detection | new QML v2: `qml_v2/anomaly.py` (one-class; not fraud) | [anomaly.md](anomaly.md) |
 | Time series | new QML v2: `qml_v2/timeseries.py` (lag forecast) | [timeseries.md](timeseries.md) |
-| Feature-map alignment | new QML v2: `qml_v2/feature_map_alignment.py` (ZZ vs Pauli-Y) | [feature_map_alignment.md](feature_map_alignment.md) |
 | QCR pre-maps | TFM: `09_*.ipynb`. QML v2: `qml_v2/qcr.py` | [qcr.md](qcr.md) |
 
 SKG files are **practice data only**. They appear in the notebooks as the real-operational cell; they are not a customer.
+
+**Note on "native" datasets.** The reports in this folder were written before the thesis dropped datasets labelled with the ZZ feature map's own observable (`quantum_native`, `native_xor`, `zz_phase`, `zz_lag`). Those cells are kept as exploratory records only; the thesis and the defence do not use them as results, because the advantage they show is true by construction. See section "Criterio sobre los conjuntos de datos" in `Documento/Capitulos/desarrollo.tex`.

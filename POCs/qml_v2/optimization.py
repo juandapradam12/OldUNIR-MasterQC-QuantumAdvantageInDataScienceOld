@@ -42,7 +42,7 @@ from qiskit_algorithms.utils import algorithm_globals
 from qiskit_optimization import QuadraticProgram
 from qiskit_optimization.algorithms import MinimumEigenOptimizer
 
-from qml_v2.classification import REPO_ROOT, repo_paths
+from qml_v2.outputs import REPO_ROOT, repo_paths
 
 
 @dataclass
@@ -94,31 +94,37 @@ def format_assignment(X: np.ndarray) -> str:
     return str(pairs)
 
 
-def decode_assignment_from_result(
-    result, n: int, qp: QuadraticProgram | None = None
-) -> np.ndarray:
-    """Map QuadraticProgram decision vars by name (ignore QUBO slacks)."""
-    X = np.zeros((n, n), dtype=int)
+def decode_named_matrix(result, n: int, qp: QuadraticProgram | None, start: np.ndarray) -> np.ndarray | None:
+    """Fill ``start`` from the ``x_i_j`` decision variables by name (QUBO slacks ignored).
+
+    Returns ``None`` when the solver result carries no usable variable names.
+    """
     values = np.asarray(result.x, dtype=float)
     names = list(getattr(result, "variable_names", None) or [])
     if not names and qp is not None:
         names = [v.name for v in qp.variables]
     if names and len(names) >= len(values):
         names = names[: len(values)]
-    if names and len(names) == len(values):
-        for name, val in zip(names, values):
-            if not str(name).startswith("x_"):
-                continue
-            parts = str(name).split("_")
-            if len(parts) != 3:
-                continue
-            i, j = int(parts[1]), int(parts[2])
-            if 0 <= i < n and 0 <= j < n:
-                X[i, j] = int(val > 0.5)
+    if not names or len(names) != len(values):
+        return None
+    for name, val in zip(names, values):
+        parts = str(name).split("_")
+        if parts[0] != "x" or len(parts) != 3:
+            continue
+        i, j = int(parts[1]), int(parts[2])
+        if 0 <= i < n and 0 <= j < n:
+            start[i, j] = int(val > 0.5)
+    return start
+
+
+def decode_assignment_from_result(result, n: int, qp: QuadraticProgram | None = None) -> np.ndarray:
+    """Map QuadraticProgram decision vars by name (ignore QUBO slacks)."""
+    X = decode_named_matrix(result, n, qp, np.zeros((n, n), dtype=int))
+    if X is not None:
         return X
-    bits = values[: n * n]
+    bits = np.asarray(result.x, dtype=float)[: n * n]
     if bits.size < n * n:
-        raise ValueError(f"Expected at least {n*n} decision bits, got {bits.size}")
+        raise ValueError(f"Expected at least {n * n} decision bits, got {bits.size}")
     return (bits.reshape(n, n) > 0.5).astype(int)
 
 
@@ -126,11 +132,7 @@ def solve_pulp(C: np.ndarray) -> tuple[float, np.ndarray, float]:
     n = C.shape[0]
     t0 = time.time()
     prob = pulp.LpProblem("Assignment", pulp.LpMinimize)
-    x = {
-        (i, j): pulp.LpVariable(f"x_{i}_{j}", cat="Binary")
-        for i in range(n)
-        for j in range(n)
-    }
+    x = {(i, j): pulp.LpVariable(f"x_{i}_{j}", cat="Binary") for i in range(n) for j in range(n)}
     prob += pulp.lpSum(C[i, j] * x[i, j] for i in range(n) for j in range(n))
     for i in range(n):
         prob += pulp.lpSum(x[i, j] for j in range(n)) == 1
@@ -320,11 +322,7 @@ def run_suite(cfg: AssignConfig | None = None, quick: bool = False) -> pd.DataFr
             )
         )
         g_gap = 100 * (g_cost - pulp_cost) / pulp_cost if pulp_cost else float("nan")
-        q_gap_s = (
-            f"{100 * (q_cost - pulp_cost) / pulp_cost:+.1f}%"
-            if q_ok and pulp_cost
-            else "n/a"
-        )
+        q_gap_s = f"{100 * (q_cost - pulp_cost) / pulp_cost:+.1f}%" if q_ok and pulp_cost else "n/a"
         print(
             f"instance {k}: pulp={pulp_cost:.3f}  hung={h_cost:.3f}  "
             f"greedy={g_cost:.3f} (gap={g_gap:+.1f}%)  "

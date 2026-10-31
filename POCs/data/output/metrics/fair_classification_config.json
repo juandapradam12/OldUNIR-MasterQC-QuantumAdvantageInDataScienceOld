@@ -1,0 +1,12 @@
+{
+  "n_qubits": 2,
+  "zz_reps": 2,
+  "entanglement": "full",
+  "svm_C": 1.0,
+  "n_total": 200,
+  "test_size": 0.3,
+  "n_repeats": 10,
+  "random_state": 42,
+  "n_estimators_gb": 100,
+  "class_weight": "balanced"
+}

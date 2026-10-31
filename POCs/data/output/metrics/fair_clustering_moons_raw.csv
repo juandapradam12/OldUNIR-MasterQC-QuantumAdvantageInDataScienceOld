@@ -1,0 +1,36 @@
+dataset,repeat,model,table,ari,nmi,n_samples,n_features,pca_var_explained
+moons,0,KMeans,A_matched_features,0.4856779661016949,0.39015969528360006,120,2,1.0
+moons,0,Spectral-RBF,A_matched_features,0.6919014084507042,0.6250918597483952,120,2,1.0
+moons,0,Agglomerative,A_matched_features,0.5590259396506088,0.5615896365639187,120,2,1.0
+moons,0,Spectral-ZZ,A_matched_features,-0.000225140712945591,0.007034596441936169,120,2,1.0
+moons,0,KMeans [full features],B_matched_n_full_features,0.46242828995223645,0.369905314706017,120,2,
+moons,0,Spectral-RBF [full features],B_matched_n_full_features,0.6103595598187489,0.5146756016023222,120,2,
+moons,0,Agglomerative [full features],B_matched_n_full_features,0.5590259396506088,0.5615896365639187,120,2,
+moons,1,KMeans,A_matched_features,0.4856828090130978,0.3910891476368804,120,2,1.0
+moons,1,Spectral-RBF,A_matched_features,0.5588183369622786,0.4642292870277508,120,2,1.0
+moons,1,Agglomerative,A_matched_features,0.44026340545625586,0.4787039713856792,120,2,1.0
+moons,1,Spectral-ZZ,A_matched_features,-0.004690431519699813,0.0,120,2,1.0
+moons,1,KMeans [full features],B_matched_n_full_features,0.4397363465160075,0.3499775783516463,120,2,
+moons,1,Spectral-RBF [full features],B_matched_n_full_features,0.4856828090130978,0.3910891476368804,120,2,
+moons,1,Agglomerative [full features],B_matched_n_full_features,0.7490396927016645,0.7084390726940077,120,2,
+moons,2,KMeans,A_matched_features,0.5094903260585545,0.41166595632736214,120,2,1.0
+moons,2,Spectral-RBF,A_matched_features,0.691866596361719,0.5946957616025977,120,2,1.0
+moons,2,Agglomerative,A_matched_features,0.3758032017567577,0.4346978937679474,120,2,1.0
+moons,2,Spectral-ZZ,A_matched_features,0.004992445641463575,0.014427495923957345,120,2,1.0
+moons,2,KMeans [full features],B_matched_n_full_features,0.4856779661016949,0.39015969528360006,120,2,
+moons,2,Spectral-RBF [full features],B_matched_n_full_features,0.5338606403013183,0.4334904934470954,120,2,
+moons,2,Agglomerative [full features],B_matched_n_full_features,0.21151257894191947,0.17880468875921995,120,2,
+moons,3,KMeans,A_matched_features,0.4397363465160075,0.3499775783516463,120,2,1.0
+moons,3,Spectral-RBF,A_matched_features,0.7490042466643441,0.6493517255749479,120,2,1.0
+moons,3,Agglomerative,A_matched_features,0.5843469910371318,0.5035199429559457,120,2,1.0
+moons,3,Spectral-ZZ,A_matched_features,0.02065443327282475,0.0245758584394368,120,2,1.0
+moons,3,KMeans [full features],B_matched_n_full_features,0.4397363465160075,0.3499775783516463,120,2,
+moons,3,Spectral-RBF [full features],B_matched_n_full_features,0.5338781966780912,0.4379852332702897,120,2,
+moons,3,Agglomerative [full features],B_matched_n_full_features,0.5843469910371318,0.5035199429559457,120,2,
+moons,4,KMeans,A_matched_features,0.5587934115032686,0.45673923140572054,120,2,1.0
+moons,4,Spectral-RBF,A_matched_features,0.6918578921102437,0.5882566766866647,120,2,1.0
+moons,4,Agglomerative,A_matched_features,0.5588432596051773,0.4721451777188601,120,2,1.0
+moons,4,Spectral-ZZ,A_matched_features,-0.004931614939505524,0.0012567234464460869,120,2,1.0
+moons,4,KMeans [full features],B_matched_n_full_features,0.5338606403013183,0.4334904934470954,120,2,
+moons,4,Spectral-RBF [full features],B_matched_n_full_features,0.5842843691148776,0.48029721349569493,120,2,
+moons,4,Agglomerative [full features],B_matched_n_full_features,0.5844760891867218,0.5799681060803559,120,2,

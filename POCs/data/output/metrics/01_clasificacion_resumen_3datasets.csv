@@ -1,0 +1,7 @@
+Dataset,QSVM,Mejor Clásico,Tipo,Ventaja (pp)
+"1. Cuántico-nativo
+(por construcción)",0.9166666666666666,0.5333333333333333,Sintético cuántico,38.33333333333333
+"2. SKG
+(Incidentes Bogotá)",0.55,0.5949506037321625,Datos reales SKG,-4.495060373216242
+"3. Vida real
+(Telco Churn)",0.76,0.7977288857345636,Datos reales externos,-3.7728885734563566

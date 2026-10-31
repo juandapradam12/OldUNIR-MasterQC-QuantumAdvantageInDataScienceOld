@@ -1,0 +1,5 @@
+metodo,tipo,coste,factible,es_optimo,tiempo_s
+Fuerza bruta (óptimo),clásico,140.73813377486132,True,True,0.0014786940009798855
+Greedy (k más baratos),clásico,140.73813377486132,True,True,7.323402678593993e-05
+QAOA p=1 (media de 5 semillas),cuántico,162.69883632003626,5/5,3/5,0.03396023079985753
+QAOA p=2 (media de 5 semillas),cuántico,150.4184433346145,5/5,3/5,0.06641995459794998

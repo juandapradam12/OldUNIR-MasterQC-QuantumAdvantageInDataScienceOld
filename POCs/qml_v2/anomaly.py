@@ -28,7 +28,6 @@ special case.
 
 from __future__ import annotations
 
-import json
 from dataclasses import asdict, dataclass
 
 import numpy as np
@@ -42,14 +41,20 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.svm import OneClassSVM
 
 from qml_v2.classification import (
-    REPO_ROOT,
     encode_for_zz_kernel,
     load_skg_incidents,
     load_telco,
     make_quantum_native,
-    repo_paths,
     subsample_stratified,
-    zz_map,
+)
+from qml_v2.kernels import QuantumKernelModel, zz_map
+from qml_v2.outputs import (
+    apply_overrides,
+    dataset_names,
+    finish_run,
+    make_parser,
+    record_dataset,
+    report_header,
 )
 
 
@@ -83,7 +88,7 @@ class AnomalyRepeatResult:
     pca_var_explained: float | None = None
 
 
-class QuantumKernelOCSVM:
+class QuantumKernelOCSVM(QuantumKernelModel):
     """Fidelity ZZ kernel + classical One-Class SVM (precomputed).
 
     ``fit`` receives inliers only. ``decision_function`` follows sklearn:
@@ -98,39 +103,14 @@ class QuantumKernelOCSVM:
         nu: float = 0.05,
         random_state: int = 42,
     ):
-        from qiskit_algorithms.utils import algorithm_globals
-        from qiskit_machine_learning.kernels import FidelityQuantumKernel
-
-        algorithm_globals.random_seed = random_state
-        fmap = zz_map(n_qubits, reps, entanglement)
-        self.kernel = FidelityQuantumKernel(feature_map=fmap)
-        self.nu = nu
-        self.X_train_: np.ndarray | None = None
-        self.ocsvm_: OneClassSVM | None = None
-
-    def fit(self, X: np.ndarray) -> "QuantumKernelOCSVM":
-        self.X_train_ = np.asarray(X, dtype=float)
-        K = self.kernel.evaluate(x_vec=self.X_train_)
-        self.ocsvm_ = OneClassSVM(kernel="precomputed", nu=self.nu)
-        self.ocsvm_.fit(K)
-        return self
-
-    def decision_function(self, X: np.ndarray) -> np.ndarray:
-        if self.X_train_ is None or self.ocsvm_ is None:
-            raise RuntimeError("Call fit() before decision_function().")
-        K = self.kernel.evaluate(x_vec=np.asarray(X, dtype=float), y_vec=self.X_train_)
-        return np.asarray(self.ocsvm_.decision_function(K), dtype=float)
-
-    def predict(self, X: np.ndarray) -> np.ndarray:
-        if self.X_train_ is None or self.ocsvm_ is None:
-            raise RuntimeError("Call fit() before predict().")
-        K = self.kernel.evaluate(x_vec=np.asarray(X, dtype=float), y_vec=self.X_train_)
-        return np.asarray(self.ocsvm_.predict(K), dtype=int)
+        ocsvm = OneClassSVM(kernel="precomputed", nu=nu)
+        super().__init__(zz_map(n_qubits, reps, entanglement), ocsvm, random_state)
 
 
 # ---------------------------------------------------------------------------
 # Generators (y=1 is outlier; used only for splits + evaluation)
 # ---------------------------------------------------------------------------
+
 
 def set_contamination(
     X: np.ndarray,
@@ -257,9 +237,7 @@ def inject_feature_outliers(
     return X, y
 
 
-def subsample_rows(
-    X: np.ndarray, n_total: int, random_state: int
-) -> np.ndarray:
+def subsample_rows(X: np.ndarray, n_total: int, random_state: int) -> np.ndarray:
     if len(X) <= n_total:
         return np.asarray(X, dtype=float)
     rng = np.random.RandomState(random_state)
@@ -271,9 +249,8 @@ def subsample_rows(
 # Scoring
 # ---------------------------------------------------------------------------
 
-def _roc_ap_f1(
-    y_true: np.ndarray, scores: np.ndarray, pred_outlier: np.ndarray
-) -> tuple[float, float, float]:
+
+def _roc_ap_f1(y_true: np.ndarray, scores: np.ndarray, pred_outlier: np.ndarray) -> tuple[float, float, float]:
     """scores: higher = more anomalous. pred_outlier: 1 = predicted outlier."""
     y_true = np.asarray(y_true, dtype=int)
     scores = np.asarray(scores, dtype=float)
@@ -334,9 +311,7 @@ def fit_score_classical(
     )
 
     n_nei = _lof_n_neighbors(len(X_tr), n_neighbors)
-    lof = LocalOutlierFactor(
-        n_neighbors=n_nei, novelty=True, contamination=contamination
-    )
+    lof = LocalOutlierFactor(n_neighbors=n_nei, novelty=True, contamination=contamination)
     lof.fit(X_tr)
     out["LOF"] = (
         -np.asarray(lof.decision_function(X_te), dtype=float),
@@ -400,9 +375,7 @@ def run_fair_dataset(
         if X_in.shape[0] < 8:
             continue
 
-        Xq_tr, Xq_te, pca_var = encode_for_zz_kernel(
-            X_in, X_te, cfg.n_qubits, cfg.random_state, already_zz_space
-        )
+        Xq_tr, Xq_te, pca_var = encode_for_zz_kernel(X_in, X_te, cfg.n_qubits, cfg.random_state, already_zz_space)
         pca_a = None if already_zz_space else float(pca_var)
 
         classical_a = fit_score_classical(
@@ -501,15 +474,13 @@ def summarize(rows: list[AnomalyRepeatResult]) -> pd.DataFrame:
         .reset_index(drop=True)
     )
     g["delta_auc_vs_best_classical"] = np.nan
-    for table, block in g.groupby("table"):
+    for _table, block in g.groupby("table"):
         classical = block[~block["model"].str.contains("ZZ", regex=False)]
         quantum = block[block["model"].str.contains("ZZ", regex=False)]
         if classical.empty or quantum.empty:
             continue
         best_cl = float(classical["auc_mean"].max())
-        g.loc[quantum.index, "delta_auc_vs_best_classical"] = (
-            quantum["auc_mean"].astype(float) - best_cl
-        )
+        g.loc[quantum.index, "delta_auc_vs_best_classical"] = quantum["auc_mean"].astype(float) - best_cl
     return g
 
 
@@ -536,13 +507,9 @@ def advantage_report(summary: pd.DataFrame) -> str:
             f"{best['auc_mean']:.3f}±{best['auc_std']:.3f} (Δ={delta:+.3f}) → {winner}"
         )
 
-    q_a = summary[
-        (summary["table"] == "A_matched_features")
-        & (summary["model"].str.contains("ZZ", regex=False))
-    ]
+    q_a = summary[(summary["table"] == "A_matched_features") & (summary["model"].str.contains("ZZ", regex=False))]
     cl_b = summary[
-        (summary["table"] == "B_matched_n_full_features")
-        & (~summary["model"].str.contains("ZZ", regex=False))
+        (summary["table"] == "B_matched_n_full_features") & (~summary["model"].str.contains("ZZ", regex=False))
     ]
     if not q_a.empty and not cl_b.empty:
         best_b = cl_b.loc[cl_b["auc_mean"].idxmax()]
@@ -555,9 +522,7 @@ def advantage_report(summary: pd.DataFrame) -> str:
     return "\n".join(lines)
 
 
-def _load_injected(
-    loader, n_pool: int, contamination: float, random_state: int
-) -> tuple[np.ndarray, np.ndarray]:
+def _load_injected(loader, n_pool: int, contamination: float, random_state: int) -> tuple[np.ndarray, np.ndarray]:
     X, _y_discarded, _ = loader()
     del _y_discarded
     Xp = subsample_rows(X, n_pool, random_state)
@@ -597,93 +562,49 @@ def run_all(
         )
         jobs.append(("zz_phase", X, y, True))
     if "moons" in datasets:
-        X, y = make_moons_anomaly(
-            n_total=n_pool, contamination=cfg.contamination, random_state=cfg.random_state
-        )
+        X, y = make_moons_anomaly(n_total=n_pool, contamination=cfg.contamination, random_state=cfg.random_state)
         jobs.append(("moons", X, y, False))
     if "blobs" in datasets:
-        X, y = make_blob_anomaly(
-            n_total=n_pool, contamination=cfg.contamination, random_state=cfg.random_state
-        )
+        X, y = make_blob_anomaly(n_total=n_pool, contamination=cfg.contamination, random_state=cfg.random_state)
         jobs.append(("blobs", X, y, False))
     if "telco_injected" in datasets:
         X, y = _load_injected(load_telco, n_pool, cfg.contamination, cfg.random_state)
         jobs.append(("telco_injected", X, y, False))
     if "skg_injected" in datasets:
-        X, y = _load_injected(
-            load_skg_incidents, n_pool, cfg.contamination, cfg.random_state
-        )
+        X, y = _load_injected(load_skg_incidents, n_pool, cfg.contamination, cfg.random_state)
         jobs.append(("skg_injected", X, y, False))
 
+    report = report_header(
+        "Fair anomaly-detection results",
+        "anomaly",
+        [
+            "One-class protocol: fit on inliers only. Not fraud (no rare-class labels).",
+            "Table A = same ZZ features. Table B = classical full features (matched n).",
+        ],
+        cfg,
+    )
     all_rows: list[AnomalyRepeatResult] = []
-    report = [
-        "# Fair anomaly-detection results",
-        "",
-        "Generated by `python -m qml_v2.anomaly`.",
-        "One-class protocol: fit on inliers only. Not fraud (no rare-class labels).",
-        "Table A = same ZZ features. Table B = classical full features (matched n).",
-        "",
-        f"Config: `{json.dumps(asdict(cfg))}`",
-        "",
-    ]
-
     for name, X, y, native in jobs:
         print(f"\n=== {name} ===")
         rows = run_fair_dataset(name, X, y, cfg, already_zz_space=native)
         all_rows.extend(rows)
-        summary = summarize(rows)
-        summary.insert(0, "dataset", name)
-        print(advantage_report(summary))
-        report.append(f"## {name}")
-        report.append("")
-        report.append("```")
-        report.append(advantage_report(summary))
-        report.append("```")
-        report.append("")
-        report.append("```")
-        report.append(summary.to_string(index=False))
-        report.append("```")
-        report.append("")
+        record_dataset(name, rows, summarize, advantage_report, stem="fair_anomaly", report=report)
 
-        metrics = repo_paths()["metrics"]
-        metrics.mkdir(parents=True, exist_ok=True)
-        pd.DataFrame([asdict(r) for r in rows]).to_csv(
-            metrics / f"fair_anomaly_{name}_raw.csv", index=False
-        )
-        summary.to_csv(metrics / f"fair_anomaly_{name}.csv", index=False)
+    finish_run(report, cfg, report_file="anomaly_v2_results.md", config_file="qml_v2_anomaly_config.json")
+    return pd.DataFrame([asdict(r) for r in all_rows])
 
-    out = pd.DataFrame([asdict(r) for r in all_rows])
-    path = REPO_ROOT / "BUSINESS" / "anomaly_v2_results.md"
-    path.write_text("\n".join(report) + "\n")
-    (repo_paths()["metrics"] / "qml_v2_anomaly_config.json").write_text(
-        json.dumps(asdict(cfg), indent=2)
-    )
-    print(f"\nWrote {path}")
-    return out
+
+FLAGS = ("n_total", "n_repeats")
 
 
 def main() -> None:
-    import argparse
-
-    p = argparse.ArgumentParser(
-        description="Fair OCSVM-ZZ vs classical one-class anomaly detection"
+    parser = make_parser(
+        "Fair OCSVM-ZZ vs classical one-class anomaly detection",
+        "zz_phase,moons,blobs,telco_injected,skg_injected",
+        FLAGS,
     )
-    p.add_argument("--quick", action="store_true")
-    p.add_argument("--n-total", type=int, default=None)
-    p.add_argument("--n-repeats", type=int, default=None)
-    p.add_argument(
-        "--datasets",
-        default="zz_phase,moons,blobs,telco_injected,skg_injected",
-        help="Comma-separated dataset names",
-    )
-    args = p.parse_args()
-    cfg = AnomalyConfig()
-    if args.n_total is not None:
-        cfg.n_total = args.n_total
-    if args.n_repeats is not None:
-        cfg.n_repeats = args.n_repeats
-    names = tuple(s.strip() for s in args.datasets.split(",") if s.strip())
-    run_all(cfg=cfg, datasets=names, quick=args.quick)
+    args = parser.parse_args()
+    run_all(cfg=apply_overrides(AnomalyConfig(), args, FLAGS), datasets=dataset_names(args), quick=args.quick)
 
 
 if __name__ == "__main__":

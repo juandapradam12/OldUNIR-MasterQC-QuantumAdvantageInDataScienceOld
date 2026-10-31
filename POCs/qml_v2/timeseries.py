@@ -12,12 +12,11 @@ vector beats classical regressors on the **same lags**.
 Splits are **time-ordered** (train = past, test = future) within each repeat
 window — no ShuffleSplit leakage.
 
-SKG speeds are practice data only.
+SKG speeds are practice data only: each repeat uses a different corridor.
 """
 
 from __future__ import annotations
 
-import json
 from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Any
@@ -26,12 +25,21 @@ import numpy as np
 import pandas as pd
 from sklearn.ensemble import GradientBoostingRegressor
 from sklearn.linear_model import Ridge
-from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 from sklearn.preprocessing import StandardScaler
 from sklearn.svm import SVR
 
-from qml_v2.classification import REPO_ROOT, encode_for_zz_kernel, repo_paths
-from qml_v2.regression import QuantumKernelSVR, make_quantum_native_regression
+from qml_v2.classification import encode_for_zz_kernel
+from qml_v2.outputs import (
+    REPO_ROOT,
+    apply_overrides,
+    dataset_names,
+    finish_run,
+    make_parser,
+    metrics_dir,
+    record_dataset,
+    report_header,
+)
+from qml_v2.regression import QuantumKernelSVR, RepeatScores, make_quantum_native_regression, regression_scores
 
 
 @dataclass
@@ -50,22 +58,7 @@ class TSConfig:
     n_estimators: int = 100
 
 
-@dataclass
-class TSRepeatResult:
-    repeat: int
-    model: str
-    table: str
-    r2: float
-    rmse: float
-    mae: float
-    n_train: int
-    n_test: int
-    n_features: int
-
-
-def make_lag_matrix(
-    y: np.ndarray, n_lags: int
-) -> tuple[np.ndarray, np.ndarray]:
+def make_lag_matrix(y: np.ndarray, n_lags: int) -> tuple[np.ndarray, np.ndarray]:
     """Rows: [y_{t-n_lags}, ..., y_{t-1}] → target y_t."""
     y = np.asarray(y, dtype=float).ravel()
     if len(y) <= n_lags:
@@ -77,62 +70,29 @@ def make_lag_matrix(
     return np.asarray(X, dtype=float), np.asarray(t, dtype=float)
 
 
-def make_zz_lag_series(
-    n_samples: int,
-    n_qubits: int = 2,
-    reps: int = 2,
-    entanglement: str = "full",
-    random_state: int = 42,
-) -> tuple[np.ndarray, np.ndarray]:
-    """Windows whose target is the ZZ expectation of the lag vector.
-
-    Equivalent to quantum-native regression on lag features already in angle
-    space — the series framing is for the forecasting protocol.
-    """
-    return make_quantum_native_regression(
-        n_samples=n_samples,
-        n_qubits=n_qubits,
-        reps=reps,
-        entanglement=entanglement,
-        random_state=random_state,
-    )
-
-
-def make_sine_series(
-    n_samples: int = 400, noise: float = 0.15, random_state: int = 42
-) -> np.ndarray:
+def make_sine_series(n_samples: int = 400, noise: float = 0.15, random_state: int = 42) -> np.ndarray:
     rng = np.random.RandomState(random_state)
     t = np.arange(n_samples)
-    return np.sin(2 * np.pi * t / 24) + 0.3 * np.sin(2 * np.pi * t / 7) + noise * rng.normal(
-        size=n_samples
-    )
+    return np.sin(2 * np.pi * t / 24) + 0.3 * np.sin(2 * np.pi * t / 7) + noise * rng.normal(size=n_samples)
 
 
-def load_skg_speed_series(
-    path: Path | None = None,
-    tid: int | None = None,
-    max_points: int = 2000,
-    random_state: int = 42,
-) -> tuple[np.ndarray, np.ndarray]:
-    """Return (speed series, hour series) for one corridor (practice data)."""
+def load_skg_corridors(n: int, path: Path | None = None) -> list[tuple[np.ndarray, np.ndarray]]:
+    """(speed, hour) series of the ``n`` corridors with most readings (practice data).
+
+    Each corridor has a single 5-minute series (144 readings, 12 hours), so repeats
+    use one corridor each instead of resampling windows of the same series.
+    """
     path = path or (REPO_ROOT / "Datos" / "bctraveltimes_history.csv")
     if not path.exists():
         raise FileNotFoundError(path)
     df = pd.read_csv(path)
     df["read_time"] = pd.to_datetime(df["read_time"])
-    if tid is None:
-        # pick a frequent corridor deterministically
-        counts = df["tid"].value_counts()
-        tid = int(counts.index[0])
-    sub = df[df["tid"] == tid].sort_values("read_time")
-    if len(sub) > max_points:
-        # take a contiguous window starting at a seeded offset
-        rng = np.random.RandomState(random_state)
-        start = int(rng.randint(0, len(sub) - max_points + 1))
-        sub = sub.iloc[start : start + max_points]
-    speed = sub["speed"].astype(float).to_numpy()
-    hour = sub["read_time"].dt.hour.astype(float).to_numpy()
-    return speed, hour
+    counts = df["tid"].value_counts().sort_index().sort_values(ascending=False, kind="stable")
+    series = []
+    for tid in counts.index[:n]:
+        sub = df[df["tid"] == tid].sort_values("read_time")
+        series.append((sub["speed"].astype(float).to_numpy(), sub["read_time"].dt.hour.astype(float).to_numpy()))
+    return series
 
 
 def enrich_classical_features(
@@ -160,47 +120,52 @@ def time_split_indices(n: int, test_size: float) -> tuple[np.ndarray, np.ndarray
     return np.arange(0, n_tr), np.arange(n_tr, n)
 
 
-def _scores(y_true: np.ndarray, y_pred: np.ndarray) -> tuple[float, float, float]:
-    r2 = float(r2_score(y_true, y_pred))
-    rmse = float(np.sqrt(mean_squared_error(y_true, y_pred)))
-    mae = float(mean_absolute_error(y_true, y_pred))
-    return r2, rmse, mae
-
-
 def _classical_models(cfg: TSConfig, seed: int) -> dict[str, Any]:
     return {
         "Ridge": Ridge(alpha=1.0),
         "SVR-RBF": SVR(kernel="rbf", C=cfg.svr_C, epsilon=cfg.svr_epsilon),
-        "GradientBoosting": GradientBoostingRegressor(
-            n_estimators=cfg.n_estimators, random_state=seed
-        ),
+        "GradientBoosting": GradientBoostingRegressor(n_estimators=cfg.n_estimators, random_state=seed),
     }
 
 
-def run_fair_dataset(
-    name: str,
-    X_a: np.ndarray,
-    y: np.ndarray,
-    cfg: TSConfig,
-    *,
-    already_zz_space: bool,
-    X_b: np.ndarray | None = None,
-    include_table_b: bool = True,
-) -> list[TSRepeatResult]:
-    """``X_a`` = Table A lags; ``X_b`` = richer classical features (optional)."""
-    n = len(y)
-    # subsample contiguous block for repeats
+Block = tuple[np.ndarray, np.ndarray, np.ndarray | None]
+
+
+def repeat_windows(blocks: list[Block], cfg: TSConfig):
+    """Yield ``(repeat, Table A lags, target, Table B features or None)`` for every repeat.
+
+    Repeat ``r`` uses ``blocks[r % len(blocks)]``; a block longer than ``n_total``
+    contributes a seeded contiguous window.
+    """
     rng = np.random.RandomState(cfg.random_state)
-    rows: list[TSRepeatResult] = []
     for repeat in range(cfg.n_repeats):
-        if n > cfg.n_total:
-            start = int(rng.randint(0, n - cfg.n_total + 1))
+        Xa, ya, Xb = blocks[repeat % len(blocks)]
+        if len(ya) > cfg.n_total:
+            start = int(rng.randint(0, len(ya) - cfg.n_total + 1))
             sl = slice(start, start + cfg.n_total)
-        else:
-            sl = slice(0, n)
-        Xa = X_a[sl]
-        ya = y[sl]
-        Xb = X_b[sl] if X_b is not None else None
+            Xa, ya = Xa[sl], ya[sl]
+            Xb = Xb[sl] if Xb is not None else None
+        yield repeat, Xa, ya, Xb
+
+
+def naive_references(blocks: list[Block], cfg: TSConfig) -> pd.DataFrame:
+    """MAE of persistence (``y_{t-1}``) and of the training mean on the same test windows."""
+    rows = []
+    for repeat, Xa, ya, _ in repeat_windows(blocks, cfg):
+        tr, te = time_split_indices(len(ya), cfg.test_size)
+        rows.append(
+            {
+                "repeat": repeat,
+                "persistence": float(np.mean(np.abs(ya[te] - Xa[te, -1]))),
+                "train_mean": float(np.mean(np.abs(ya[te] - ya[tr].mean()))),
+            }
+        )
+    return pd.DataFrame(rows)
+
+
+def run_fair_dataset(blocks: list[Block], cfg: TSConfig, *, already_zz_space: bool) -> list[RepeatScores]:
+    rows: list[RepeatScores] = []
+    for repeat, Xa, ya, Xb in repeat_windows(blocks, cfg):
         tr, te = time_split_indices(len(ya), cfg.test_size)
         Xa_tr, Xa_te = Xa[tr], Xa[te]
         y_tr, y_te = ya[tr], ya[te]
@@ -223,9 +188,9 @@ def run_fair_dataset(
         )
         q.fit(Xq_tr, y_tr)
         yp = q.predict(Xq_te)
-        r2, rmse, mae = _scores(y_te, yp)
+        r2, rmse, mae = regression_scores(y_te, yp)
         rows.append(
-            TSRepeatResult(
+            RepeatScores(
                 repeat=repeat,
                 model="QK-SVR-ZZ",
                 table="A_matched_lags",
@@ -241,9 +206,9 @@ def run_fair_dataset(
         for model_name, model in _classical_models(cfg, cfg.random_state + repeat).items():
             model.fit(Xq_tr, y_tr)
             yp = model.predict(Xq_te)
-            r2, rmse, mae = _scores(y_te, yp)
+            r2, rmse, mae = regression_scores(y_te, yp)
             rows.append(
-                TSRepeatResult(
+                RepeatScores(
                     repeat=repeat,
                     model=model_name,
                     table="A_matched_lags",
@@ -256,18 +221,16 @@ def run_fair_dataset(
                 )
             )
 
-        if include_table_b and Xb is not None and not already_zz_space:
+        if Xb is not None:
             scaler = StandardScaler()
             Xb_tr = scaler.fit_transform(Xb[tr])
             Xb_te = scaler.transform(Xb[te])
-            for model_name, model in _classical_models(
-                cfg, cfg.random_state + repeat
-            ).items():
+            for model_name, model in _classical_models(cfg, cfg.random_state + repeat).items():
                 model.fit(Xb_tr, y_tr)
                 yp = model.predict(Xb_te)
-                r2, rmse, mae = _scores(y_te, yp)
+                r2, rmse, mae = regression_scores(y_te, yp)
                 rows.append(
-                    TSRepeatResult(
+                    RepeatScores(
                         repeat=repeat,
                         model=f"{model_name} [full features]",
                         table="B_matched_n_rich_features",
@@ -282,7 +245,7 @@ def run_fair_dataset(
     return rows
 
 
-def summarize(rows: list[TSRepeatResult]) -> pd.DataFrame:
+def summarize(rows: list[RepeatScores]) -> pd.DataFrame:
     df = pd.DataFrame([asdict(r) for r in rows])
     g = (
         df.groupby(["table", "model"], as_index=False)
@@ -301,15 +264,13 @@ def summarize(rows: list[TSRepeatResult]) -> pd.DataFrame:
         .reset_index(drop=True)
     )
     g["delta_mae_vs_best_classical"] = np.nan
-    for table, block in g.groupby("table"):
+    for _table, block in g.groupby("table"):
         classical = block[~block["model"].str.contains("ZZ", regex=False)]
         quantum = block[block["model"].str.contains("ZZ", regex=False)]
         if classical.empty or quantum.empty:
             continue
         best_cl = float(classical["mae_mean"].min())
-        g.loc[quantum.index, "delta_mae_vs_best_classical"] = (
-            quantum["mae_mean"].astype(float) - best_cl
-        )
+        g.loc[quantum.index, "delta_mae_vs_best_classical"] = quantum["mae_mean"].astype(float) - best_cl
     return g
 
 
@@ -339,38 +300,34 @@ def advantage_report(summary: pd.DataFrame) -> str:
     return "\n".join(lines)
 
 
-def _prepare_jobs(cfg: TSConfig, datasets: tuple[str, ...]):
+def lag_block(series: np.ndarray, cfg: TSConfig, hour: np.ndarray | None = None) -> Block:
+    """Table A lags, one-step target and Table B classical features for one series."""
+    total_lags = cfg.n_lags + cfg.n_extra_lags
+    X_full, y = make_lag_matrix(series, total_lags)
+    X_a = X_full[:, -cfg.n_lags :]
+    hour_t = None if hour is None else hour[total_lags:]
+    X_b = enrich_classical_features(X_a, hour=hour_t, extra_lags=X_full[:, : cfg.n_extra_lags])
+    return X_a, y, X_b
+
+
+def prepare_jobs(cfg: TSConfig, datasets: tuple[str, ...]):
+    """(name, blocks, already_zz_space); the native ZZ series has no Table B."""
     jobs = []
     if "zz_lag" in datasets:
-        X, y = make_zz_lag_series(
+        X, y = make_quantum_native_regression(
             n_samples=max(cfg.n_total * 2, 240),
             n_qubits=cfg.n_qubits,
             reps=cfg.zz_reps,
             entanglement=cfg.entanglement,
             random_state=cfg.random_state,
         )
-        # already angle features → Table A is X itself; no Table B
-        jobs.append(("zz_lag", X, y, True, None))
+        jobs.append(("zz_lag", [(X, y, None)], True))
     if "sine" in datasets:
-        series = make_sine_series(
-            n_samples=max(cfg.n_total * 3, 400), random_state=cfg.random_state
-        )
-        total_lags = cfg.n_lags + cfg.n_extra_lags
-        X_full, y = make_lag_matrix(series, total_lags)
-        X_a = X_full[:, -cfg.n_lags :]
-        X_b = enrich_classical_features(X_a, hour=None, extra_lags=X_full[:, : cfg.n_extra_lags])
-        jobs.append(("sine", X_a, y, False, X_b))
+        series = make_sine_series(n_samples=max(cfg.n_total * 3, 400), random_state=cfg.random_state)
+        jobs.append(("sine", [lag_block(series, cfg)], False))
     if "skg_speed" in datasets:
-        speed, hour = load_skg_speed_series(random_state=cfg.random_state)
-        total_lags = cfg.n_lags + cfg.n_extra_lags
-        # align hour with targets (drop first total_lags)
-        X_full, y = make_lag_matrix(speed, total_lags)
-        hour_t = hour[total_lags:]
-        X_a = X_full[:, -cfg.n_lags :]
-        X_b = enrich_classical_features(
-            X_a, hour=hour_t, extra_lags=X_full[:, : cfg.n_extra_lags]
-        )
-        jobs.append(("skg_speed", X_a, y, False, X_b))
+        corridors = load_skg_corridors(cfg.n_repeats)
+        jobs.append(("skg_speed", [lag_block(speed, cfg, hour) for speed, hour in corridors], False))
     return jobs
 
 
@@ -391,79 +348,47 @@ def run_all(
             entanglement=cfg.entanglement,
         )
 
-    all_rows: list[TSRepeatResult] = []
-    report = [
-        "# Fair time-series forecasting results",
+    report = report_header(
+        "Fair time-series forecasting results",
+        "timeseries",
+        [
+            "One-step ahead from lag windows; time-ordered splits. SKG = practice data.",
+        ],
+        cfg,
+    )
+    all_rows: list[RepeatScores] = []
+    references = []
+    for name, blocks, native in prepare_jobs(cfg, datasets):
+        print(f"\n=== {name} ===")
+        rows = run_fair_dataset(blocks, cfg, already_zz_space=native)
+        all_rows.extend(rows)
+        record_dataset(name, rows, summarize, advantage_report, stem="fair_timeseries", report=report)
+        stats = naive_references(blocks, cfg).drop(columns="repeat").agg(["mean", "std"]).T
+        stats.columns = ["mae_mean", "mae_std"]
+        stats.index.name = "reference"
+        references.append(stats.reset_index().assign(dataset=name)[["dataset", "reference", "mae_mean", "mae_std"]])
+
+    references_df = pd.concat(references, ignore_index=True)
+    references_df.to_csv(metrics_dir() / "fair_timeseries_references.csv", index=False)
+    report += [
+        "## naive references (MAE, same test windows)",
         "",
-        "Generated by `python -m qml_v2.timeseries`.",
-        "One-step ahead from lag windows; time-ordered splits. SKG = practice data.",
-        "",
-        f"Config: `{json.dumps(asdict(cfg))}`",
+        "```",
+        references_df.to_string(index=False),
+        "```",
         "",
     ]
+    finish_run(report, cfg, report_file="timeseries_v2_results.md", config_file="qml_v2_timeseries_config.json")
+    return pd.DataFrame([asdict(r) for r in all_rows])
 
-    for name, X_a, y, native, X_b in _prepare_jobs(cfg, datasets):
-        print(f"\n=== {name} ===")
-        rows = run_fair_dataset(
-            name,
-            X_a,
-            y,
-            cfg,
-            already_zz_space=native,
-            X_b=X_b,
-            include_table_b=X_b is not None,
-        )
-        all_rows.extend(rows)
-        summary = summarize(rows)
-        summary.insert(0, "dataset", name)
-        print(advantage_report(summary))
-        report.append(f"## {name}")
-        report.append("")
-        report.append("```")
-        report.append(advantage_report(summary))
-        report.append("```")
-        report.append("")
-        report.append("```")
-        report.append(summary.to_string(index=False))
-        report.append("```")
-        report.append("")
-        metrics = repo_paths()["metrics"]
-        metrics.mkdir(parents=True, exist_ok=True)
-        pd.DataFrame([asdict(r) for r in rows]).to_csv(
-            metrics / f"fair_timeseries_{name}_raw.csv", index=False
-        )
-        summary.to_csv(metrics / f"fair_timeseries_{name}.csv", index=False)
 
-    out = pd.DataFrame([asdict(r) for r in all_rows])
-    path = REPO_ROOT / "BUSINESS" / "timeseries_v2_results.md"
-    path.write_text("\n".join(report) + "\n")
-    (repo_paths()["metrics"] / "qml_v2_timeseries_config.json").write_text(
-        json.dumps(asdict(cfg), indent=2)
-    )
-    print(f"\nWrote {path}")
-    return out
+FLAGS = ("n_total", "n_repeats")
 
 
 def main() -> None:
-    import argparse
-
-    p = argparse.ArgumentParser(description="Fair lag-based time-series forecasting")
-    p.add_argument("--quick", action="store_true")
-    p.add_argument("--n-total", type=int, default=None)
-    p.add_argument("--n-repeats", type=int, default=None)
-    p.add_argument(
-        "--datasets",
-        default="zz_lag,sine,skg_speed",
-        help="Comma-separated: zz_lag,sine,skg_speed",
-    )
-    args = p.parse_args()
-    cfg = TSConfig()
-    if args.n_total is not None:
-        cfg.n_total = args.n_total
-    if args.n_repeats is not None:
-        cfg.n_repeats = args.n_repeats
-    names = tuple(s.strip() for s in args.datasets.split(",") if s.strip())
-    run_all(cfg=cfg, datasets=names, quick=args.quick)
+    parser = make_parser("Fair lag-based time-series forecasting", "zz_lag,sine,skg_speed", FLAGS)
+    args = parser.parse_args()
+    run_all(cfg=apply_overrides(TSConfig(), args, FLAGS), datasets=dataset_names(args), quick=args.quick)
 
 
 if __name__ == "__main__":

@@ -2,14 +2,14 @@
 \chapter{Tests de Cuanticidad y Mapeos Cuántico-Compatibles}
 \label{cap:investigacion_original}
 
-Los capítulos anteriores han mostrado un patrón consistente: la ventaja cuántica en kernels aparece con robustez cuando el \textbf{generador del dato está alineado con el feature map} del kernel ---en los experimentos de este TFM, datos sintéticos generados con el \texttt{ZZFeatureMap} de modo que ese kernel es óptimo por construcción---, y desaparece en datos reales de movilidad y telecomunicaciones sin esa alineación. ZZ no es el único mapa posible (Pauli, IQP, re-uploading, etc.); es el que se validó empíricamente aquí. Este resultado plantea dos preguntas que este capítulo aborda como contribución original del TFM:
+Los capítulos anteriores han mostrado un patrón consistente: sobre datos reales de movilidad y telecomunicaciones y sobre conjuntos de referencia públicos no se observa ventaja del método cuántico sobre el mejor clásico. La literatura \citep{huang2021, liu2021} indica que una ventaja de kernel exige que su geometría sea difícil de reproducir clásicamente y que esté alineada con los datos; ZZ no es el único mapa posible (Pauli, IQP, re-uploading, etc.) y es el que se midió aquí. En lugar de fabricar datos a medida del mapa (Sección~\ref{sec:sin_datos_a_medida}), este capítulo plantea dos preguntas que se abordan como contribución original del TFM:
 
 \begin{enumerate}
     \item \textbf{Tests de cuanticidad}: \textquestiondown{}Existe algún indicador calculable a priori sobre un dataset que permita predecir si un algoritmo cuántico mostrará ventaja sobre los clásicos?
-    \item \textbf{Mapeos cuántico-compatibles}: Si un dataset no tiene estructura cuántica nativa, \textquestiondown{}puede transformarse a un espacio de representación donde la tenga, sin alterar la información discriminativa?
+    \item \textbf{Mapeos cuántico-compatibles}: Dado un dataset real, \textquestiondown{}puede transformarse a un espacio de representación con estructura cuántica, sin alterar la información discriminativa?
 \end{enumerate}
 
-Ambas preguntas se abordan con la misma metodología científica: revisión de literatura, implementación de métodos prometedores, aplicación a los tres datasets del TFM, análisis de resultados y propuesta de mejora teórica.
+Ambas preguntas se abordan con la misma metodología científica: revisión de literatura, implementación de métodos prometedores, aplicación a los datasets reales del TFM, análisis de resultados y propuesta de mejora teórica.
 
 % =====================================================================
 \section{Tests de cuanticidad: revisión de la literatura}
@@ -31,7 +31,14 @@ El \textit{kernel alignment} \citep{cortes2012} es una medida de la corresponden
 
 donde $\langle \cdot, \cdot \rangle_F$ denota el producto interno de Frobenius. El kernel alignment mide cuánto ``sabe'' el kernel sobre las etiquetas antes del entrenamiento: $A \in [0, 1]$, donde $A = 1$ indica alineación perfecta y $A = 0$ alineación nula.
 
-\citet{huang2021} adaptaron este concepto al contexto cuántico, proponiendo el \textit{geometric difference} $g(K_Q, K_{cl})$ como medida de la separación entre los espacios de características cuántico y clásico. Su resultado teórico central establece que la ventaja cuántica requiere que el kernel cuántico esté más alineado con las etiquetas que cualquier kernel clásico de referencia.
+\citet{huang2021} adaptaron este concepto al contexto cuántico, proponiendo el \textit{geometric difference} $g(K_Q, K_{cl})$ como medida de la separación entre los espacios de características cuántico y clásico. Su resultado teórico central acota el error de predicción de un modelo de kernel mediante su complejidad $s_K(N)$ y establece que, si $g$ es pequeña, un modelo clásico tiene una complejidad, y por tanto un error de predicción, similar o mejor que el cuántico, con independencia de las etiquetas. Una $g$ grande es solo una condición necesaria: garantiza que existe un conjunto de etiquetas con ventaja cuántica, no que el dataset real la tenga.
+
+\begin{figure}[ht]
+\centering
+\includegraphics[width=0.62\textwidth]{Imagenes/huang2021_fig2_geometria_kernel.png}
+\caption{Geometría del kernel clásico y cuántico. Las letras A, B, \dots{} son puntos de datos $\{x_i\}$ en espacios distintos; las flechas representan la similitud (función kernel) entre datos. La diferencia geométrica $g$ compara las similitudes entre modelos (flechas naranja/roja: $g$ pequeño; naranja/azul: $g$ mayor) y $d$ es una dimensión efectiva del conjunto de datos en el espacio de Hilbert cuántico. Reproducida de \citet{huang2021}, Fig.~2, bajo licencia CC~BY~4.0.}
+\label{fig:huang_geometria}
+\end{figure}
 
 \subsection{Concentración exponencial y entropía espectral}
 
@@ -48,7 +55,7 @@ Un kernel con espectro concentrado en un único valor propio tiene $H(K_Q) \appr
 
 \subsection{Divergencia cuántica-clásica en el espacio de kernels}
 
-\citet{liu2021} demostraron que la ventaja del QSVM requiere que el kernel cuántico no sea eficientemente aproximable por ningún kernel clásico en tiempo polinomial. Un proxy operativo de esta condición es la \textbf{distancia de Frobenius normalizada}:
+\citet{liu2021} demostraron, bajo la conjetura de dificultad del logaritmo discreto, que existe un problema de clasificación que un kernel cuántico aprende de forma eficiente y que ningún algoritmo clásico eficiente puede aprender. De ahí se desprende que una ventaja de este tipo exige un kernel difícil de aproximar clásicamente. Un proxy operativo, definido en este trabajo y no propuesto por esos autores, es la \textbf{distancia de Frobenius normalizada}:
 
 \begin{equation}
     d_F(K_Q, K_{cl}) = \frac{\|K_Q - K_{cl}^*\|_F}{n}
@@ -68,16 +75,18 @@ donde $K_{cl}^* = \arg\min_{K \in \mathcal{K}_{cl}} \|K_Q - K\|_F$ es el mejor k
 
 Un circuito con baja expresividad (alta divergencia de KL) está sesgado hacia un subconjunto pequeño del espacio de Hilbert, lo que limita la capacidad discriminativa del kernel cuántico.
 
-\subsection{Test de ventaja cuántica basado en datos (Huang et al., 2021)}
+\subsection{Cota de ventaja basada en datos (Huang et al., 2021)}
 
-\citet{huang2021} propusieron un test estadístico explícito para determinar si un dataset puede beneficiarse de la computación cuántica. El test se basa en la \textit{prediction difference} entre el kernel cuántico y el mejor kernel clásico sobre el conjunto de entrenamiento. Si $\varepsilon_{cl}$ es el error del mejor clasificador clásico y $\varepsilon_Q$ es el error del QSVM, la ventaja cuántica ocurre cuando:
+\citet{huang2021} propusieron un diagrama de decisión para evaluar la ventaja potencial de un modelo cuántico con un número fijo de datos de entrenamiento. Dado un kernel $K$ y $N$ datos, el error de predicción está acotado por $c\sqrt{s_K(N)/N}$, donde $s_K(N)=\lVert w\rVert^2$ es la complejidad del modelo entrenado. Para dos kernels $K_1$ y $K_2$ con $\mathrm{Tr}\,K_1=\mathrm{Tr}\,K_2=N$ se cumple
 
 \begin{equation}
-    \varepsilon_{cl} - \varepsilon_Q \geq \Omega\left(\frac{g(K_Q, K_{cl})^2}{\sqrt{n}}\right)
+    s_{K_1}(N) \leq g(K_1\Vert K_2)^2\, s_{K_2}(N),
+    \qquad
+    g(K_1\Vert K_2)=\sqrt{\bigl\lVert \sqrt{K_2}\,K_1^{-1}\sqrt{K_2}\bigr\rVert_\infty},
     \label{eq:huang_bound}
 \end{equation}
 
-donde $g(K_Q, K_{cl})$ es la diferencia geométrica entre los kernels. Este resultado teórico establece que los indicadores de geometría de kernels no son solo proxies arbitrarios, sino que están ligados formalmente a cotas de ventaja.
+de modo que, si $g(K_C\Vert K_Q)$ es pequeña, el modelo clásico es competitivo o mejor que el cuántico. Si es grande, existe un conjunto de etiquetas para el que el modelo cuántico predice mejor, pero eso no implica que ocurra en un dataset concreto. Este resultado liga los indicadores de geometría de kernels con cotas de error de predicción, y es la base teórica de la diferencia geométrica $g$ usada en este trabajo; no es un test estadístico de significación.
 
 % =====================================================================
 \section{Resultados prometedores de la literatura}
@@ -86,17 +95,17 @@ donde $g(K_Q, K_{cl})$ es la diferencia geométrica entre los kernels. Este resu
 
 La Tabla~\ref{tab:lit_indicadores} resume los indicadores propuestos en la literatura, su fundamento teórico, su complejidad computacional y su conexión con la ventaja cuántica demostrada.
 
-\begin{table}[h]
+\begin{table}[ht]
 \centering
 \small
-\begin{tabular}{p{3.2cm}p{2.8cm}p{2.2cm}p{4.5cm}}
+\begin{tabular}{>{\raggedright\arraybackslash}p{3.1cm}>{\raggedright\arraybackslash}p{2.7cm}>{\raggedright\arraybackslash}p{2.5cm}>{\raggedright\arraybackslash}p{4.0cm}}
 \hline
-\textbf{Indicador} & \textbf{Referencia} & \textbf{Complejidad} & \textbf{Conexión teórica} \\
+\textbf{Indicador} & \textbf{Base conceptual} & \textbf{Complejidad} & \textbf{Relación con la literatura} \\
 \hline
-Kernel alignment $A(K_Q, K_y)$ & \citet{cortes2012, huang2021} & $O(n^2)$ & Cota PAC-Bayes; condición para ventaja supervisada \\
-Entropía espectral $H(K_Q)$ & \citet{thanasilp2022} & $O(n^3)$ & Indicador inverso de concentración exponencial \\
-Distancia Frobenius $d_F$ & \citet{liu2021} & $O(n^2)$ & Proxy de no-aproximabilidad clásica \\
-Diferencia geométrica $g$ & \citet{huang2021} & $O(n^2)$ & Cota explícita en la desigualdad de ventaja \\
+Kernel alignment $A(K_Q, K_y)$ & \citet{cortes2012, huang2021} & $O(n^2)$ & Mide el ajuste kernel--etiquetas; no es por sí sola condición de ventaja \\
+Entropía espectral $H(K_Q)$ & \citet{thanasilp2022} & $O(n^3)$ & Proxy propio de la concentración del kernel descrita por esos autores \\
+Distancia Frobenius $d_F$ & \citet{liu2021} & $O(n^2)$ & Proxy propio de la dificultad de aproximación clásica \\
+Diferencia geométrica $g$ & \citet{huang2021} & $O(n^2)$ & Aparece en la cota $s_{K_1}\leq g^2 s_{K_2}$ de la Ec.~\ref{eq:huang_bound} \\
 Expressibility & \citet{sim2019} & $O(2^n)$ & Capacidad de exploración del espacio de Hilbert \\
 \hline
 \end{tabular}
@@ -104,30 +113,29 @@ Expressibility & \citet{sim2019} & $O(2^n)$ & Capacidad de exploración del espa
 \label{tab:lit_indicadores}
 \end{table}
 
-El consenso emergente en la literatura \citep{huang2021, thanasilp2022, schuld2021kernels} es que ningún indicador individual es condición suficiente para la ventaja; la combinación de $A(K_Q, K_y) > A(K_{cl}, K_y)$ (el kernel cuántico está más alineado con las etiquetas) y $d_F > \epsilon$ (el kernel cuántico es genuinamente diferente del clásico) es la condición más robusta identificada hasta la fecha.
+La literatura \citep{huang2021, thanasilp2022, schuld2021kernels} indica que ningún indicador individual es condición suficiente para la ventaja; la combinación de $A(K_Q, K_y) > A(K_{cl}, K_y)$ (el kernel cuántico está más alineado con las etiquetas) y $d_F > \epsilon$ (el kernel cuántico es genuinamente diferente del clásico) es la combinación que se adopta como criterio operativo en este trabajo.
 
 % =====================================================================
 \section{Aplicación a los datasets del TFM}
 \label{sec:aplicacion_cuanticidad}
 % =====================================================================
 
-Se implementaron los cinco indicadores anteriores sobre los tres datasets del TFM utilizando el Notebook~08 (\texttt{08\_test\_cuanticidad\_datasets.ipynb}). Para cada dataset se calculó la matriz de kernel cuántico $K_Q$ (ZZFeatureMap, 2 qubits, tras reducción PCA a 2 dimensiones) y la mejor matriz de kernel clásico $K_{RBF}^*$ (búsqueda de $\sigma$ óptimo por validación cruzada).
+Se implementaron los cinco indicadores anteriores sobre los datasets reales del TFM (SKG Incidentes y Telco Churn) utilizando el Notebook~08 (\texttt{08\_test\_cuanticidad\_datasets.ipynb}). Para cada dataset se calculó la matriz de kernel cuántico $K_Q$ (ZZFeatureMap, 2 qubits, tras reducción PCA a 2 dimensiones) y la mejor matriz de kernel clásico $K_{RBF}^*$ (búsqueda de $\sigma$ óptimo por validación cruzada).
 
 \subsection{Resultados cuantitativos}
 
-\begin{table}[h]
+\begin{table}[ht]
 \centering
 \small
-\begin{tabular}{lcccccc}
+\begin{tabular}{lccccccc}
 \hline
-\textbf{Dataset} & $A(K_Q, K_y)$ & $A(K_{RBF}, K_y)$ & $H(K_Q)$ & $H(K_{RBF})$ & $d_F$ & \textbf{Ventaja QSVM} \\
+\textbf{Dataset} & $A(K_Q,K_y)$ & $A(K_{cl},K_y)$ & $H(K_Q)$ & $H(K_{cl})$ & $d_F$ & $\Delta_{\mathrm{RBF}}$ & \textbf{$\Delta_{\mathrm{op}}$} \\
 \hline
-Cuántico-nativo  & 0.018 & 0.047 & 2.275 & 2.241 & 0.353 & $+$0.0 pp \\
-SKG Incidentes   & 0.040 & 0.050 & 2.155 & 1.967 & 0.369 & $\mathbf{+8.3}$ \textbf{pp} \\
-Telco Churn      & 0.190 & 0.170 & 2.333 & 3.465 & 0.346 & $+$0.0 pp \\
+SKG Incidentes   & 0.040 & 0.050 & 2.155 & 1.967 & 0.369 & $+8.3^\dagger$ & $\mathbf{-4.0}$ \\
+Telco Churn      & 0.190 & 0.170 & 2.333 & 3.465 & 0.346 & $+$0.0 & $\mathbf{-3.8}$ \\
 \hline
 \end{tabular}
-\caption{Indicadores de cuanticidad calculados sobre los tres datasets del TFM (Notebook~08, ZZFeatureMap 2 qubits, PCA 2D, $n=80$ muestras estratificadas). La ventaja QSVM es la diferencia de precisión QSVM $-$ SVM-RBF en una partición 70/30.}
+\caption{Indicadores de cuanticidad (Notebook~08, ZZFeatureMap 2~qubits, PCA~2D, $n=80$). Geometría vs.\ kernel clásico de referencia; $\Delta_{\mathrm{RBF}}$ = QSVM$-$SVM-RBF en el split NB08 (baseline débil). Columna $\Delta_{\mathrm{op}}$ = accuracy(QSVM)$-$accuracy(\textbf{mejor clásico}) en \textbf{clasificación} (Notebook~06): SKG $-4.0$~pp, Telco $-3.8$~pp vs Gradient Boosting --- no es una métrica geométrica. $^\dagger$SKG $+8.3$~pp vs RBF es artefacto ---bajo $\mathcal{Q}_{\mathrm{rob}}$ y frente al stack clásico SKG es \texttt{classical}.}
 \label{tab:indicadores_resultados}
 \end{table}
 
@@ -136,95 +144,141 @@ Telco Churn      & 0.190 & 0.170 & 2.333 & 3.465 & 0.346 & $+$0.0 pp \\
 \begin{figure}[ht]
 \centering
 \includegraphics[width=0.95\textwidth]{../POCs/data/output/figures/08_test_cuanticidad_datasets.png}
-\caption{Comparativa de indicadores de cuanticidad sobre los tres datasets del TFM (Notebook~08). Paneles superiores: kernel alignment diferencial ($\Delta A$), alineación cuántica y clásica, y entropía espectral. Paneles inferiores: distancia de Frobenius $d_F$, diferencia geométrica $g$ y score $\mathcal{Q}(\mathcal{D})$ vs.\ ventaja empírica QSVM. El dataset SKG Incidentes obtiene el mayor score $\mathcal{Q}=+0.352$ y la mayor ventaja ($+8.3$ pp).}
+\caption{Perfil vectorial $\mathcal{Q}(\mathcal{D})=(\Delta A,d_F,\Delta H)$ sobre SKG y Telco (Notebook~08). Fila superior: componentes del vector. Fila inferior: alineaciones, entropías de apoyo y el escalar ponderado $w^\top\mathcal{Q}$ (experimento; \textbf{no} regla de adopción). Telco queda dominado por $\Delta H$ ($-1.131$). La decisión operativa usa $\Delta_{\mathrm{op}}$ (Tabla~\ref{tab:indicadores_resultados}), no el escalar.}
 \label{fig:indicadores_cuanticidad}
 \end{figure}
 
-\begin{figure}[ht]
-\centering
-\includegraphics[width=0.95\textwidth]{../POCs/data/output/figures/08_kernel_heatmaps_comparativa.png}
-\caption{Matrices de kernel cuántico $K_Q$ y clásico $K_{RBF}$ para los tres datasets, ordenadas por clase. La estructura de bloques —presente en SKG Incidentes— indica buena separabilidad cuántica. En Telco Churn, el kernel clásico muestra una estructura de bloques más marcada que el cuántico, coherente con la ausencia de ventaja.}
-\label{fig:kernel_heatmaps}
-\end{figure}
+\paragraph{Nota sobre visuales de matrices de kernel.}
+Las matrices $K_Q$/$K_{cl}$ viven en memoria durante la ejecución del Notebook~08 y \textbf{no se serializaron} como artefactos. Un heatmap o ``contraste de bloques'' regenerado a posteriori (sin re-ejecutar el notebook) sería construcción ilustrativa, no medición. Por criterio de este TFM (\emph{nada forzado ni construido a mano}) esa figura se \textbf{retira} del cuerpo; la geometría se reporta solo vía los indicadores tabulares ($d_F$, $g$, $\Delta A$, $\Delta H$).
 
 \subsection{Análisis: \textquestiondown{}Predicen los indicadores la ventaja QSVM?}
 
-Los resultados de la Tabla~\ref{tab:indicadores_resultados} permiten evaluar el poder predictivo de cada indicador. El ranking de ventaja empírica es: SKG Incidentes ($+8.3$ pp) $>$ Cuántico-nativo ($0.0$ pp) $=$ Telco Churn ($0.0$ pp).
+Con dos datasets reales y ninguna ventaja operativa en ellos, los indicadores no pueden validarse como predictores de ventaja: no hay ningún caso positivo que identificar. La Tabla~\ref{tab:indicadores_resultados} distingue dos lecturas. Bajo el protocolo NB08 vs.\ un baseline RBF débil, SKG ($+8.3$~pp) supera a Telco ($0.0$~pp) ---lectura \textbf{engañosa}---; frente al mejor clásico ambos son negativos (SKG $-4.0$~pp, Telco $-3.8$~pp), con una diferencia de $0.2$~pp que equivale a una fracción de acierto (Sección~\ref{sec:qml_v2_revision}). El score $\mathcal{Q}(\mathcal{D})$ (calculado vs.\ kernel clásico de referencia) da SKG $+0.352$ y Telco $-0.050$: un $\mathcal{Q}$ positivo en SKG coexiste con $\Delta_{\mathrm{op}}<0$, de modo que $\mathcal{Q}>0$ vs.\ un baseline débil \textbf{no} autoriza desplegar el módulo cuántico.
 
-El score compuesto $\mathcal{Q}(\mathcal{D})$ reproduce exactamente este ranking: $\mathcal{Q}(\text{SKG})=+0.352 > \mathcal{Q}(\text{Q-nativo})=+0.286 > \mathcal{Q}(\text{Telco})=-0.050$, con correlación de Spearman $\rho_S = +0.866$ sobre los tres datasets. El análisis de barrido sintético ($\alpha \in [0,1]$, $n=9$) confirma la monotonía: $\rho_S = +0.833$ ($p = 0.005$).
+El barrido sintético NB08 ($n=9$, $X$ fijo + mezcla de etiquetas) muestra $\rho_S(\alpha,\Delta A)=+0.833$ ($p=0.005$). Es una comprobación del comportamiento del instrumento y no un resultado de ventaja: mezclar etiquetas cuánticas aumenta la alineación con el kernel por construcción. Bajo ese protocolo $d_F$ y $H$ son constantes y $\rho_S(\alpha,\mathrm{ventaja})\approx 0.34$ (n.s.); \textbf{no} se afirma que $\mathcal{Q}$ prediga ventaja.
 
-Sin embargo, el análisis individual de los componentes revela matices importantes:
+El análisis individual de los componentes revela matices importantes:
 \begin{itemize}
-    \item $\Delta A$ (diferencia de alineación) es negativa en dos de los tres datasets: el kernel cuántico está \emph{peor} alineado con las etiquetas que el RBF en el régimen de 2 qubits + PCA. No obstante, $\rho_S(\Delta A, \text{ventaja}) = 0.000$ sobre datasets reales, frente a $\rho_S = +0.833$ en el barrido sintético. La discrepancia sugiere que el régimen de 2 qubits + PCA suprime la señal de $\Delta A$ en datos reales.
-    \item $d_F$ y $g$ predicen correctamente el ranking con $\rho_S = +0.866$ sobre los tres datasets.
-    \item $\Delta H$ es el indicador más volátil: $\mathcal{Q}(\text{Telco})$ está dominado por $\Delta H = -1.131$, que detecta correctamente la concentración exponencial del kernel cuántico sobre Telco Churn.
+    \item $\Delta A$ es pequeña en ambos datasets en el régimen 2~qubits + PCA ($-0.010$ en SKG y $+0.020$ en Telco): el PCA agresivo suprime la señal de $\Delta A$ en datos reales.
+    \item $\Delta H$ es el indicador más volátil: $\mathcal{Q}$ de Telco está dominado por $\Delta H=-1.131$ (concentración espectral).
+    \item $d_F$ es similar en ambos datasets ($0.369$ y $0.346$): no discrimina entre ellos, y no sustituye la comparación contra el mejor clásico ni el veredicto $\mathcal{Q}_{\mathrm{rob}}$.
 \end{itemize}
 
 \paragraph{Caveat estadístico.}
-Con $n=3$ datasets, $\rho_S = +0.866$ es la máxima correlación de Spearman posible con un empate y no constituye una validación de alta potencia estadística. La evidencia cuantitativa principal es el barrido sintético ($n=9$, $p=0.005$). La validación sobre más datasets es trabajo futuro explícito (Capítulo~\ref{cap:futuro}).
+Con $n=2$ datasets no es posible estimar correlaciones entre $\mathcal{Q}$ y la ventaja operativa. Validar el perfil exige más datasets y, sobre todo, casos en los que exista una ventaja demostrable ---un criterio que ningún dato real de este TFM cumple---, además de un barrido \emph{structure-aware} donde $d_F$ y $H$ también varíen. Es trabajo futuro explícito (Capítulo~\ref{cap:futuro}).
+
+\paragraph{Debilidades metodológicas expuestas (integridad de resultados).}
+Un buen TFM se discute desde lo medido, no desde lo deseable. Aquí se exponen límites \textbf{sin alterar cifras}:
+\begin{itemize}
+    \item Barrido $\alpha$ con $X$ fijo: $d_F$, $H$ y $g$ constantes ---no valida monotonía de todos los factores de $\mathcal{Q}$.
+    \item Ventaja NB08 vs.\ RBF en SKG ($+8.3$~pp) es artefacto de baseline débil; el $\Delta_{\mathrm{op}}$ viene de otro protocolo (Caso~1 / NB06) y \textbf{no} se mezcla con los indicadores del NB08.
+    \item $n=2$ no sostiene ninguna correlación entre $\mathcal{Q}$ y ventaja operativa.
+    \item No hay dumps de $K$ en artefactos: no se inventan heatmaps.
+    \item Series de rotación NB09: PNG del notebook; no regenerar con curvas proxy.
+    \item Componentes $\Delta A$/$d_F$/$\Delta H$ \emph{post} re-uploading no están en el log NB09: no se inventan (solo $Q$ y Adv post están verificados).
+\end{itemize}
 
 \begin{figure}[ht]
 \centering
 \includegraphics[width=0.92\textwidth]{../POCs/data/output/figures/08_barrido_sintetico_alpha.png}
-\caption{Barrido sintético de cuanticidad: score $\mathcal{Q}(\mathcal{D})$ (eje izquierdo) y ventaja empírica del QSVM en pp (eje derecho) en función del parámetro $\alpha \in [0,1]$, que controla la fracción de estructura cuántica en el dataset. La correlación de Spearman entre ambas series es $\rho_S = +0.833$ ($p = 0.005$, $n=9$), validando el poder predictivo del score. En $\alpha \gtrsim 0.5$ el score predice consistentemente ventaja positiva; por debajo de ese umbral, el QSVM no supera a los clásicos.}
+\caption{Barrido sintético NB08 (calibración del indicador): $\alpha$ = fracción de etiquetas cuánticas con $X$ fijo. $\Delta A$ crece con $\alpha$ ($\rho_S=+0.833$, $p=0.005$). $d_F$ y $H(K_Q)$ son constantes por diseño (los kernels no dependen de las etiquetas). La ventaja supervisada es ruidosa ($\rho_S(\alpha,\mathrm{ventaja})\approx 0.34$). El número $0.833$ es $\rho(\alpha,\Delta A)$, \textbf{no} $\rho(\mathcal{Q},\mathrm{ventaja})$.}
 \label{fig:barrido_sintetico_alpha}
-\end{figure}
-
-\begin{figure}[!htbp]
-\centering
-\includegraphics[width=0.88\textwidth]{../POCs/data/output/figures/08_correlacion_indicadores_ventaja.png}
-\caption{Correlación de Spearman de cada indicador de cuanticidad individual ($\Delta A$, $d_F$, $g$, $\Delta H$) con la ventaja empírica del QSVM, calculada sobre el barrido sintético ($n=9$) y sobre los tres datasets reales ($n=3$). $d_F$ y $g$ son los predictores más robustos en ambos regímenes; $\Delta A$ pierde poder predictivo en datos reales por la supresión de señal del régimen de 2~qubits + PCA (Notebook~08).}
-\label{fig:correlacion_indicadores_body}
 \end{figure}
 
 \subsection{Análisis de sensibilidad: impacto de la reducción dimensional}
 
 Un hallazgo metodológico relevante emerge al comparar la configuración base (2 qubits + PCA 2D) con una configuración alternativa (4 qubits + SelectKBest por información mutua). Con 2 qubits + PCA, la varianza explicada es del $31.8\%$ en SKG y $30.7\%$ en Telco. La Tabla~\ref{tab:sensibilidad_dim} muestra que aumentar a 4 qubits con selección de features discriminativas \emph{reduce} $\mathcal{Q}(\mathcal{D})$ en ambos datasets.
 
-\begin{table}[h]
+\begin{table}[ht]
 \centering
 \small
 \begin{tabular}{llcccc}
 \hline
-\textbf{Dataset} & \textbf{Config.} & $\mathcal{Q}(\mathcal{D})$ & $\Delta A$ & $d_F$ & \textbf{Ventaja} \\
+\textbf{Dataset} & \textbf{Config.} & $\mathcal{Q}(\mathcal{D})$ & $\Delta A$ & $d_F$ & \textbf{$\Delta$ vs RBF} \\
 \hline
-SKG Incidentes & 2Q + PCA       & $+0.352$ & $-0.010$ & $0.369$ & $+8.3$ pp \\
-               & 4Q + SelectKBest & $-0.128$ & $-0.033$ & $0.197$ & $+8.3$ pp \\
+SKG Incidentes & 2Q + PCA       & $+0.352$ & $-0.010$ & $0.369$ & $+8.3$ pp$^\dagger$ \\
+               & 4Q + SelectKBest & $-0.128$ & $-0.033$ & $0.197$ & $+8.3$ pp$^\dagger$ \\
 Telco Churn    & 2Q + PCA       & $-0.050$ & $+0.020$ & $0.346$ & $+0.0$ pp \\
                & 4Q + SelectKBest & $-0.155$ & $+0.055$ & $0.234$ & $-4.2$ pp \\
 \hline
 \end{tabular}
-\caption{Análisis de sensibilidad dimensional (Notebook~08, §11). Con 4 qubits + SelectKBest, las features seleccionadas son altamente discriminativas para el clasificador clásico, lo que reduce $d_F$ y, con ello, $\mathcal{Q}(\mathcal{D})$.}
+\caption{Sensibilidad dimensional (Notebook~08, §11). Columna $\Delta$ vs RBF $=$ QSVM$-$SVM-RBF del protocolo NB08 (\textbf{no} $\Delta_{\mathrm{op}}$). $^\dagger$SKG $+8.3$~pp vs RBF es artefacto: operativo $-4.0$~pp y $\mathcal{Q}_{\mathrm{rob}}$ da \texttt{classical}. Con SelectKBest, $d_F$ (y $\mathcal{Q}$) caen porque el clásico aprovecha mejor features discriminativas.}
 \label{tab:sensibilidad_dim}
 \end{table}
 
 La interpretación es que el \texttt{ZZFeatureMap} captura mejor la cuanticidad cuando los datos tienen baja información mutua con la clase (como las primeras componentes PCA), porque en ese caso el kernel clásico RBF también rinde mal y $d_F$ es alto. Features altamente informativas permiten que el clasificador clásico mejore más que el cuántico. Este hallazgo implica que $\mathcal{Q}(\mathcal{D})$ debe interpretarse siempre en el contexto de la reducción dimensional aplicada: mide la cuanticidad del subespacio proyectado, no del dataset completo.
 
 % =====================================================================
-\section{Propuesta teórica: score compuesto de cuanticidad}
+\section{Propuesta teórica: perfil (vector) de cuanticidad}
 \label{sec:score_cuanticidad}
 % =====================================================================
 
-Sobre la base de la literatura revisada y los resultados empíricos obtenidos, se propone un \textbf{score compuesto de cuanticidad} $\mathcal{Q}(\mathcal{D})$ que integra los indicadores individuales en un único valor normalizado:
+Sobre la base de la literatura y la evidencia empírica, se propone tratar la cuanticidad como un \textbf{vector de métricas} que se inspecciona componente a componente ---no como un único escalar de decisión:
 
 \begin{equation}
-    \mathcal{Q}(\mathcal{D}) = w_1 \cdot \Delta A + w_2 \cdot \hat{d}_F + w_3 \cdot \Delta H
+    \mathcal{Q}(\mathcal{D})
+    \;=\;
+    \bigl(\Delta A,\; \hat{d}_F,\; \Delta H,\; \hat{g}\bigr)
     \label{eq:score_cuanticidad}
 \end{equation}
 
 donde:
 \begin{itemize}
-    \item $\Delta A = A(K_Q, K_y) - A(K_{RBF}, K_y)$: diferencia de alineación cuántica vs. clásica
-    \item $\hat{d}_F = d_F / d_{F,\max}$: distancia de Frobenius normalizada por el máximo teórico
+    \item $\Delta A = A(K_Q, K_y) - A(K_{RBF}, K_y)$: diferencia de alineación cuántica vs.\ clásica
+    \item $\hat{d}_F = d_F / d_{F,\mathrm{ref}}$: distancia de Frobenius normalizada (aquí, respecto al máximo entre datasets del protocolo)
     \item $\Delta H = H(K_Q) - H(K_{RBF})$: diferencia de entropía espectral
-    \item $w_1, w_2, w_3 \geq 0$: pesos con $\sum w_i = 1$, estimados por regresión sobre los resultados experimentales
+    \item $\hat{g} = g / g_{\mathrm{ref}}$: diferencia geométrica de \citet{huang2021},
+    \[ g=\sqrt{\bigl\|\sqrt{K_Q}\,(K_{RBF}+\lambda I)^{-1}\sqrt{K_Q}\bigr\|_2}, \]
+    con kernels normalizados a $\mathrm{Tr}\,K=n$ y $\lambda=10^{-3}$; normalizada por el máximo entre casos del protocolo, igual que $\hat d_F$. Mide cuánto \emph{no} reproduce el RBF la geometría del kernel cuántico: es condición necesaria, no suficiente, de ventaja, y no usa $y$.
 \end{itemize}
 
-Un $\mathcal{Q}(\mathcal{D}) > 0$ indica que el kernel cuántico tiene ventaja estructural sobre el clásico en las tres dimensiones; un $\mathcal{Q}(\mathcal{D}) < 0$ predice que el QSVM no superará al SVM clásico. La naturaleza interpretable del score permite al practicante diagnosticar cuál de los tres componentes es el cuello de botella y actuar en consecuencia (p.ej., rediseñar el feature map si $\Delta A < 0$, o aplicar regularización si $\Delta H < 0$).
+Puede ampliarse con otras entradas ($\Delta_{\mathrm{op}}$, veredicto $\mathcal{Q}_{\mathrm{rob}}$, etc.). La lectura es la de un \emph{perfil}: p.~ej.\ Telco muestra cuello en $\Delta H$; SKG puede tener $\hat{d}_F$ alto y aun así $\Delta_{\mathrm{op}}<0$.
 
-\paragraph{Relación con la cota de Huang et al.}
-Este score es coherente con la cota teórica de \citet{huang2021}: si $\Delta A > 0$ y $\hat{d}_F > 0$, la diferencia geométrica $g(K_Q, K_{cl})$ es positiva, activando la cota inferior de ventaja en la Ecuación~\ref{eq:huang_bound}. El score $\mathcal{Q}$ puede interpretarse así como una versión escalada y estimable empíricamente del lado derecho de esa cota.
+\paragraph{Por qué no colapsar a un escalar $w^\top\mathcal{Q}$.}
+En el Notebook~08 se calculó también $q=w_1\Delta A+w_2\hat{d}_F+w_3\Delta H$ con pesos fijos $(0.4,0.3,0.3)$; con $\hat g$ como cuarto término la convención del protocolo unificado es $\mathcal{Q}_{\mathrm{comp}}=0.4\,\Delta A+0.2\,\hat d_F+0.2\,\Delta H+0.2\,\hat g$ (se conserva $0.4$ para $\Delta A$ y el resto se reparte a partes iguales; es una convención, no un ajuste). Ese escalar mezcla escalas distintas ($\hat{d}_F\!\approx\!1$ empuja $q>0$ aunque $\Delta A<0$; $\Delta H$ puede dominar) y \textbf{ordena mal} frente a $\Delta_{\mathrm{op}}$: SKG maximiza $q$ ($+0.35$) con $\Delta_{\mathrm{op}}=-4.0$~pp. Por criterio de este TFM, el escalar \textbf{no} se usa como regla de adopción; se conserva solo como experimento negativo. La forma útil de $\mathcal{Q}(\mathcal{D})$ es el \textbf{vector}.
 
+\begin{figure}[ht]
+\centering
+\includegraphics[width=0.95\textwidth]{../POCs/data/output/figures/08_estructura_comparativa_casos_uso.png}
+\caption{Comparativa de estructura cuántica en un solo gráfico: \textbf{un panel por indicador} ---alineación $\Delta A$, entropía espectral $\Delta H$, distancia de Frobenius $d_F$, diferencia geométrica $g$ y compuesto $\mathcal{Q}$, los indicadores de la Tabla de indicadores implementados---; en cada panel el eje X son los \textbf{casos de uso} (clasificación, regresión, anomalías y optimización) y las barras de cada grupo son los datasets reales o de referencia (SKG y Telco, Friedman o \texttt{moons}; en optimización, asignación / MaxCut / TSP). Protocolo unificado (ZZ 2~qubits, $n{=}60$, 3 repeats, RBF Frobenius-best). En optimización, $\Delta H$, $d_F$ y $g$ dependen solo del número de bits (asignación y TSP comparten $X$ y $K_Q$); lo que distingue un problema de otro es $\Delta A$. $X$ son todos los bitstrings del espacio de búsqueda e $y$ la energía del QUBO (paisaje), \emph{no} el rendimiento de QAOA. La banda azul del panel de $\Delta A$ es el control nulo ($y$ permutada, $\pm2\sigma$): ningún dataset supera el ruido de $\Delta A$. $\Delta H$, $d_F$ y $g$ quedan casi planos, con la excepción de anomalías-SKG, atribuible a que los outliers a $8\sigma$ comprimen el escalado MinMax de los inliers (artefacto de codificación). $\mathcal{Q}=0.4\,\Delta A+0.2\,\hat d_F+0.2\,\Delta H+0.2\,\hat g$ (con $\hat d_F=d_F/\max d_F$ y $\hat g=g/\max g$) lo dominan indicadores planos: se muestra por completitud, no como regla de decisión. CSV: \texttt{estructura\_por\_caso\_uso.csv}; notebook~11.}
+\label{fig:estructura_tres_casos}
+\end{figure}
+
+\begin{figure}[ht]
+\centering
+\includegraphics[width=0.85\textwidth]{../POCs/data/output/figures/08_perfil_clasificacion.png}
+\caption{Detalle \textbf{clasificación} (todos los datasets de la familia). Auxiliar a la Fig.~\ref{fig:estructura_tres_casos}.}
+\label{fig:perfil_clasificacion}
+\end{figure}
+
+\begin{figure}[ht]
+\centering
+\includegraphics[width=0.85\textwidth]{../POCs/data/output/figures/08_perfil_regresion.png}
+\caption{Detalle \textbf{regresión}. Auxiliar a la Fig.~\ref{fig:estructura_tres_casos}.}
+\label{fig:perfil_regresion}
+\end{figure}
+
+\begin{figure}[ht]
+\centering
+\includegraphics[width=0.85\textwidth]{../POCs/data/output/figures/08_perfil_anomalias.png}
+\caption{Detalle \textbf{anomalías}. Auxiliar a la Fig.~\ref{fig:estructura_tres_casos}.}
+\label{fig:perfil_anomalias}
+\end{figure}
+
+\begin{figure}[ht]
+\centering
+\includegraphics[width=0.85\textwidth]{../POCs/data/output/figures/08_perfil_optimizacion.png}
+\caption{Detalle \textbf{optimización} (paisaje QUBO de asignación $n{=}3$, MaxCut $n{=}10$ y TSP $n{=}4$). Las mismas tres métricas y escalas que en los demás casos. Con 2~qubits frente a 9--10 variables, PCA(2) retiene $\approx\!1/3$ de la varianza de los bitstrings: es una limitación del diseño, y el resultado no implica nada sobre el rendimiento de QAOA. Auxiliar a la Fig.~\ref{fig:estructura_tres_casos}.}
+\label{fig:perfil_optimizacion}
+\end{figure}
+
+\paragraph{Interpretación frente a la literatura (sin forzar umbrales).}
+\begin{itemize}
+    \item \textbf{$\Delta A$ (Cortes/Huang).} Con el protocolo unificado (RBF Frobenius-best), $\Delta A\le 0$ en todos los datasets reales y de referencia salvo en el paisaje MaxCut: va de $-0.01$ (clasificación-SKG) y $-0.01$ (anomalías-\texttt{moons}) a $-0.32$ (Friedman) y $-0.25$ (anomalías-SKG, afectada por el escalado de los outliers). $\Delta A<0$ significa que el RBF se alinea mejor con $y$, no una ``estructura negativa''. Frente al control nulo ($y$ permutada, $\approx+0.03\pm0.02$) ningún dato real ni paisaje de optimización queda por encima del ruido; en optimización $\Delta A$ vale $-0.08$ (asignación), $+0.04$ (MaxCut, dentro del ruido) y $-0.07$ (TSP). El barrido $\alpha$ de NB08 muestra $\rho_S(\alpha,\Delta A)=0.833$ como calibración del indicador.
+    \item \textbf{$d_F$ (Liu).} En el protocolo unificado $d_F\approx 0.01$ en \emph{todos} los datasets de las cuatro familias (también $g\approx 76$--$85$ con la definición de Huang, $\lambda=10^{-3}$; la versión previa con norma de Frobenius y $\varepsilon=10^{-6}$ daba $\approx 3\cdot10^{3}$, un artefacto del condicionamiento del RBF): el kernel ZZ es distinto del RBF, pero $d_F$ \textbf{casi no discrimina} entre datasets.
+    \item \textbf{$\Delta H$ (Thanasilp).} Con baseline Frobenius-best, $\Delta H$ queda positivo y similar ($\sim 1.7$--$2.0$) en las cuatro familias, salvo anomalías-SKG ($0.44$), donde los outliers a $8\sigma$ comprimen a los inliers en el MinMax (artefacto de escala, no estructura); no se interpreta un ``mínimo $\Delta H$'' como señal de estructura (ese patrón pertenecía al protocolo NB08 con otro baseline clásico).
+\end{itemize}
+La lectura coherente con \citet{liu2021} y \citet{huang2021} es que una ventaja exigiría una \textbf{alineación kernel--datos} que no se mide en ningún dataset real de este TFM. En optimización la medición es sobre el paisaje QUBO con 2~qubits (PCA retiene $\approx1/3$ de la varianza): no hay evidencia de estructura, y la limitación es del diseño. Las figuras de estructura \textbf{no} incluyen accuracy/$R^2$/AUC --- esas son métricas de tarea distintas y se reportan en los capítulos de evaluación.
 % =====================================================================
 \section{Mapeos cuántico-compatibles: revisión de la literatura}
 \label{sec:lit_mapeos}
@@ -232,7 +286,7 @@ Este score es coherente con la cota teórica de \citet{huang2021}: si $\Delta A 
 
 \subsection{El problema de la representación cuántica de datos clásicos}
 
-El resultado central de \citet{schuld2021kernels} es que la calidad del aprendizaje cuántico está completamente determinada por el mapa de codificación de datos $\phi: \mathcal{X} \rightarrow \mathcal{H}$. Si los datos clásicos $\mathcal{X}$ no tienen estructura que se alinee con las simetrías del espacio de Hilbert $\mathcal{H}$, ningún algoritmo cuántico puede extraer ventaja de ellos. La pregunta es, entonces, si existe una transformación previa $\psi: \mathcal{X} \rightarrow \mathcal{Z}$ tal que los datos transformados $\mathcal{Z}$ sí tengan dicha estructura.
+El resultado central de \citet{schuld2021kernels} es que los modelos cuánticos supervisados son métodos de kernel, cuyo kernel viene determinado por el mapa de codificación de datos $\phi: \mathcal{X} \rightarrow \mathcal{H}$. De ahí se desprende que la elección de la codificación es decisiva; en la hipótesis de este trabajo, si los datos clásicos $\mathcal{X}$ no tienen estructura alineada con ese kernel, es improbable que el modelo cuántico extraiga ventaja de ellos. La pregunta es, entonces, si existe una transformación previa $\psi: \mathcal{X} \rightarrow \mathcal{Z}$ tal que los datos transformados $\mathcal{Z}$ sí tengan dicha estructura.
 
 \subsection{Quantum metric learning (Lloyd et al., 2020)}
 
@@ -242,13 +296,13 @@ La limitación principal es computacional: el entrenamiento del mapa variacional
 
 \subsection{Data re-uploading (Pérez-Salinas et al., 2020)}
 
-\citet{perezSalinas2020} introdujeron la técnica de \textit{data re-uploading}: en lugar de codificar los datos una sola vez al inicio del circuito, se re-codifican en múltiples capas del circuito, intercalando operaciones parametrizadas. Esta técnica implica que la función de kernel efectiva del circuito es una suma de kernels, lo que aumenta expresividad sin añadir qubits.
+\citet{perezSalinas2020} introdujeron la técnica de \textit{data re-uploading}: en lugar de codificar los datos una sola vez al inicio del circuito, se re-codifican en múltiples capas del circuito, intercalando operaciones parametrizadas. Esta técnica aumenta la expresividad del modelo sin añadir qubits.
 
 Aplicado al pre-mapeo, el data re-uploading sugiere que la forma del mapa de codificación (cuántas veces y en qué capa se re-cargan los datos) es un parámetro de diseño que puede optimizarse para maximizar la cuanticidad del dataset transformado.
 
 \subsection{Quantum-aware dimensionality reduction}
 
-Una línea emergente propone incorporar la geometría del espacio de Hilbert cuántico directamente en el proceso de reducción de dimensionalidad. \citet{haug2023} propone usar la distancia inducida por el kernel cuántico como métrica de proximidad para algoritmos de reducción no lineal (UMAP, ISOMAP), creando una representación de menor dimensión que preserva las distancias cuánticas en lugar de las euclídeas.
+Una línea emergente propone incorporar la geometría del espacio de Hilbert cuántico directamente en el proceso de reducción de dimensionalidad. Este trabajo explora esa idea como estrategia propia (Q-UMAP/MDS, sección~\ref{sec:aplicacion_mapeos}): usar la distancia inducida por el kernel cuántico como métrica de proximidad para algoritmos de reducción no lineal, de modo que la representación de menor dimensión preserve las distancias cuánticas en lugar de las euclídeas. No procede de \citet{haug2023}, cuya contribución es la estimación del kernel mediante medidas aleatorizadas.
 
 \subsection{Feature engineering basado en la función de kernel objetivo}
 
@@ -283,35 +337,35 @@ Se aplica UMAP usando la distancia de kernel cuántico $d_Q(x_i, x_j) = 1 - K_Q(
 
 La Tabla~\ref{tab:resultados_mapeos} resume los resultados de las cuatro estrategias implementadas en el Notebook~09. La Figura~\ref{fig:mapeos_comparativa} muestra los efectos sobre $\mathcal{Q}(\mathcal{D})$ y la ventaja empírica.
 
-\begin{table}[h]
+\begin{table}[ht]
 \centering
 \small
 \begin{tabular}{llcccc}
 \hline
-\textbf{Pre-mapeo} & \textbf{Dataset} & $\mathcal{Q}$ (antes) & $\mathcal{Q}$ (después) & $\Delta\mathcal{Q}$ & \textbf{Ventaja QSVM} \\
+\textbf{Pre-mapeo} & \textbf{Dataset} & $\mathcal{Q}$ (antes) & $\mathcal{Q}$ (después) & $\Delta\mathcal{Q}$ & \textbf{$\Delta$ vs RBF} \\
 \hline
 Features ZZ-compat.    & SKG Incidentes & $+0.163$ & $-0.203$ & $-0.366$ $\downarrow$ & $+12.5$ pp \\
 Features ZZ-compat.    & Telco Churn    & $-0.228$ & $+0.136$ & $+0.364$ $\uparrow$ & $+4.2$ pp \\
 Rotación max. $d_F$    & SKG Incidentes & $+0.163$ & $+0.170$ & $+0.007$ $\uparrow$ & $+0.0$ pp \\
 Rotación max. $d_F$    & Telco Churn    & $-0.228$ & $+0.096$ & $+0.323$ $\uparrow$ & $+4.2$ pp \\
-\textbf{Re-uploading reps=3} & \textbf{SKG} & $+0.163$ & $+0.212$ & $\mathbf{+0.049}$ $\uparrow$ & $\mathbf{+16.7}$ \textbf{pp} \\
-\textbf{Re-uploading reps=3} & \textbf{Telco} & $-0.228$ & $+0.167$ & $\mathbf{+0.395}$ $\uparrow$ & $\mathbf{+4.2}$ \textbf{pp} \\
-Q-UMAP/MDS             & SKG Incidentes & $+0.163$ & $+0.054$ & $-0.109$ $\downarrow$ & $-8.3$ pp \\
-Q-UMAP/MDS             & Telco Churn    & $-0.228$ & $-0.248$ & $-0.020$ $\downarrow$ & $+4.2$ pp \\
+Re-uploading reps=3    & SKG Incidentes & $+0.163$ & $+0.212$ & $+0.049$ $\uparrow$ & $+16.7$ pp \\
+Re-uploading reps=3    & Telco Churn    & $-0.228$ & $+0.167$ & $+0.395$ $\uparrow$ & $+4.2$ pp \\
+Q-UMAP/MDS             & SKG Incidentes & $+0.163$ & $-0.018$ & $-0.181$ $\downarrow$ & $-29.2$ pp \\
+Q-UMAP/MDS             & Telco Churn    & $-0.228$ & $+0.071$ & $+0.299$ $\uparrow$ & $+0.0$ pp \\
 \hline
 \end{tabular}
-\caption{Variación del score $\mathcal{Q}(\mathcal{D})$ y de la ventaja QSVM antes y después de cada estrategia de pre-mapeo (Notebook~09). El re-uploading con $\text{reps}=3$ es la única estrategia que mejora simultáneamente $\mathcal{Q}$ y la ventaja empírica en ambos datasets. La columna Q-UMAP usa MDS como fallback (umap-learn no disponible).}
+\caption{Variación de $\mathcal{Q}(\mathcal{D})$ y de $\Delta$ QSVM$-$RBF tras cada pre-mapeo (Notebook~09). Aquí $\mathcal{Q}=0.4\,\Delta A+0.3\,d_F+0.3\,\Delta H$ con $d_F$ sin normalizar, 2~qubits y 80 muestras, de modo que sus valores base (SKG $+0.163$, Telco $-0.228$) no son comparables con los de la Tabla~\ref{tab:indicadores_resultados} (Notebook~08, protocolo con $\hat d_F$ normalizada). Cifras \textbf{vs.\ RBF solamente}; no equivalen a ventaja operativa vs.\ GB/RF. Bajo $\mathcal{Q}_{\mathrm{rob}}$ (Sección~\ref{sec:qml_v2_revision}) Telco y SKG permanecen \texttt{classical} (la rotación en SKG cambia geometría, sin lift de accuracy garantizado). Q-UMAP usa MDS como fallback; sus cifras cambiaron al reejecutar con scikit-learn~1.9 (cambió la inicialización por defecto de MDS), por lo que es inestable y no se interpreta; las demás filas se reprodujeron exactamente.}
 \label{tab:resultados_mapeos}
 \end{table}
 
 \begin{figure}[ht]
 \centering
 \includegraphics[width=0.95\textwidth]{../POCs/data/output/figures/09_mapeos_comparativa.png}
-\caption{Efecto de las cuatro estrategias de pre-mapeo sobre $\mathcal{Q}(\mathcal{D})$ (paneles izquierdos) y la ventaja QSVM en pp (paneles derechos), para SKG Incidentes (fila superior) y Telco Churn (fila inferior). Verde = mejora sobre baseline; rojo = empeoramiento.}
+\caption{Efecto de las cuatro estrategias de pre-mapeo sobre $\mathcal{Q}(\mathcal{D})$ (izq.) y $\Delta$ QSVM$-$RBF en pp (der.), para SKG (arriba) y Telco (abajo). Azul = mejora y gris = empeora vs.\ baseline del protocolo NB09. Interpretar siempre como vs.\ RBF; SKG y Telco son \texttt{classical} bajo el stack clásico y bajo $\mathcal{Q}_{\mathrm{rob}}$.}
 \label{fig:mapeos_comparativa}
 \end{figure}
 
-El resultado más destacado es la disociación observada en la Estrategia~2 para SKG: $\mathcal{Q}$ mejora marginalmente ($+0.007$) pero la ventaja empírica cae $-8.3$ pp. Esto confirma que $\mathcal{Q}(\mathcal{D})$ es una cota de capacidad teórica, no un predictor determinista del rendimiento bajo muestras finitas.
+El resultado más destacado es la disociación en la Estrategia~2 para SKG: $\mathcal{Q}$ sube marginalmente ($+0.007$) pero $\Delta$ vs.\ RBF cae $-8.3$~pp. Esto confirma que $\mathcal{Q}(\mathcal{D})$ es una cota de capacidad geométrica, no un predictor determinista de accuracy bajo $n$ finito ---ni una licencia para llamar a SKG cuántico-compatible.
 
 % =====================================================================
 \section{Propuesta teórica: framework de representación cuántico-compatible}
@@ -321,25 +375,25 @@ El resultado más destacado es la disociación observada en la Estrategia~2 para
 Sobre la base de los resultados empíricos y la revisión de la literatura, se propone un \textbf{framework de representación cuántico-compatible (QCR)} que sistematiza el proceso de adecuación de datos clásicos a algoritmos cuánticos:
 
 \begin{enumerate}
-    \item \textbf{Diagnóstico}: Calcular $\mathcal{Q}(\mathcal{D})$ sobre el dataset original. Si $\mathcal{Q} > \theta$ (umbral empírico), proceder directamente al QSVM. Si $\mathcal{Q} \leq \theta$, continuar.
+    \item \textbf{Diagnóstico}: Calcular $\mathcal{Q}(\mathcal{D})$ (y, cuando esté disponible, $\mathcal{Q}_{\mathrm{rob}}$) y comparar también frente al \textbf{mejor clásico} (GB/RF), no solo RBF. Un $\mathcal{Q}$ favorable vs.\ RBF \textbf{no} autoriza por sí solo a desplegar QSVM (contraejemplo: SKG).
 
-    \item \textbf{Identificación del cuello de botella}: Analizar qué componente de $\mathcal{Q}$ es más negativo:
+    \item \textbf{Identificación del cuello de botella}: Si el diagnóstico sugiere explorar pre-mapeo, analizar qué componente de $\mathcal{Q}$ es más negativo:
     \begin{itemize}
-        \item Si $\Delta A < 0$: el kernel cuántico no está alineado con las etiquetas → aplicar la estrategia de features ZZ-compatible.
-        \item Si $\hat{d}_F \approx 0$: el kernel cuántico es redundante con el clásico → aplicar la rotación de máxima divergencia.
-        \item Si $\Delta H < 0$: el kernel cuántico exhibe concentración → aplicar regularización del feature map o data re-uploading.
+        \item Si $\Delta A < 0$: el kernel cuántico no está alineado con las etiquetas → features ZZ-compatible.
+        \item Si $\hat{d}_F \approx 0$: el kernel cuántico es redundante con el clásico → rotación de máxima divergencia.
+        \item Si $\Delta H < 0$: concentración espectral → regularización del feature map o data re-uploading.
     \end{itemize}
 
-    \item \textbf{Pre-mapeo}: Aplicar la transformación $\psi$ identificada en el paso anterior. Recalcular $\mathcal{Q}(\psi(\mathcal{D}))$.
+    \item \textbf{Pre-mapeo}: Aplicar la transformación $\psi$ candidata. Recalcular los indicadores de $\mathcal{Q}$ y la ventaja frente al stack clásico fuerte.
 
-    \item \textbf{Verificación}: Si $\mathcal{Q}(\psi(\mathcal{D})) > \theta$, entrenar QSVM sobre $\psi(\mathcal{D})$. De lo contrario, reportar que el dataset no es cuántico-compatible con el feature map actual.
+    \item \textbf{Verificación}: Solo si la geometría \emph{y} la métrica supervisada frente a GB/RF son favorables, entrenar QSVM sobre los datos transformados. En caso contrario, reportar \texttt{classical} / no cuántico-compatible con el feature map actual.
 \end{enumerate}
 
 \paragraph{Validación empírica del Framework QCR.}
 El framework se aplicó a los dos datasets reales (Notebook~09, §10). Los resultados son:
 \begin{itemize}
-    \item \textbf{SKG Incidentes}: $\mathcal{Q}=+0.163 > \theta=0$. El QCR diagnostica compatibilidad directa y no aplica transformación, lo que es correcto: el QSVM ya obtiene $+8.3$ pp de ventaja sobre el SVM-RBF.
-    \item \textbf{Telco Churn}: $\mathcal{Q}=-0.228 \leq \theta=0$. Cuello de botella: $\Delta H = -1.131$ (concentración espectral). Transformación recomendada: re-uploading adaptativo. Resultado: $\mathcal{Q}: -0.228 \rightarrow +0.167$, ventaja: $0.0 \rightarrow +4.2$ pp $\uparrow$.
+    \item \textbf{SKG Incidentes}: $\mathcal{Q}=+0.163$ frente a RBF, \textbf{pero no hay ventaja operativa}. Frente a GB/RF la ventaja desaparece; bajo $\mathcal{Q}_{\mathrm{rob}}$ (Sección~\ref{sec:qml_v2_revision}) el veredicto es \texttt{classical}. Lectura: $\mathcal{Q}>0$ vs.\ un único baseline RBF \textbf{no} implica compatibilidad operativa.
+    \item \textbf{Telco Churn}: $\mathcal{Q}=-0.228$. Cuello de botella: $\Delta H = -1.131$ (concentración espectral). En Notebook~09, re-uploading $reps=3$ elevaba $\mathcal{Q}$ y $+4.2$~pp vs.\ RBF; bajo $\mathcal{Q}_{\mathrm{rob}}$ Telco permanece \texttt{classical}. Evidencia preliminar, no rescate robusto.
 \end{itemize}
 
 % -------------------------------------------------------------------
@@ -351,46 +405,43 @@ El framework QCR es, en su esencia, el intento operativo de verificar la siguien
 
 \begin{conjetura}[Espacio de Representación Cuántico-Compatible]
 \label{conj:qcr}
-Sea $\mathcal{D} = \{(\mathbf{x}_i, y_i)\}_{i=1}^n \subset \mathcal{X} \times \mathcal{Y}$ un dataset con distribución arbitraria y sin estructura cuántica nativa $(\mathcal{Q}(\mathcal{D}) \leq 0)$. La conjetura establece que existen:
+Sea $\mathcal{D} = \{(\mathbf{x}_i, y_i)\}_{i=1}^n \subset \mathcal{X} \times \mathcal{Y}$ un dataset con distribución arbitraria y sin estructura cuántica conocida. La conjetura establece que existen:
 \begin{enumerate}
-  \item Un \textbf{espacio de representación cuántico-compatible} $\mathcal{Z}$,
-  \item Una transformación $\psi: \mathcal{X} \rightarrow \mathcal{Z}$ computable en tiempo polinómico,
-  \item Un modelo cuántico óptimo $f_Q^*: \mathcal{Z} \rightarrow \mathcal{Y}$,
+  \item Un \textbf{espacio de representación} $\mathcal{Z}$,
+  \item Un \textbf{isomorfismo} $\psi: \mathcal{X} \rightarrow \mathcal{Z}$, de modo que se conserven la estructura y la información del dato, y cuya \textbf{imagen tenga estructura cuántica},
+  \item Un modelo cuántico $f_Q^*: \mathcal{Z} \rightarrow \mathcal{Y}$,
 \end{enumerate}
-tales que el ciclo completo de inferencia
+con un mapa de vuelta $\rho = \psi^{-1}$, de modo que el ciclo completo de inferencia
 \begin{equation}
   \mathbf{x}
   \;\xrightarrow{\;\psi\;}\;
   \mathbf{z}
   \;\xrightarrow{\;f_Q^*\;}\;
   \hat{y}
-  \;\Big[\xrightarrow{\;\psi^{-1}\;}\; \mathbf{x}^* \;\text{(solo en optimización)}\Big]
+  \;\Big[\xrightarrow{\;\rho=\psi^{-1}\;}\; \mathbf{x}^* \;\text{(solo en optimización)}\Big]
   \label{eq:ciclo_qcr}
 \end{equation}
-satisface simultáneamente:
-\begin{itemize}
-  \item $\mathcal{Q}(\psi(\mathcal{D})) > 0$ \quad (el dataset transformado es cuántico-compatible en $\mathcal{Z}$),
-  \item $\varepsilon(f_Q^* \circ \psi) \leq \varepsilon(f_C^*)$ \quad (la tasa de error cuántica en $\mathcal{Z}$ no supera a la del mejor predictor clásico $f_C^*$ en $\mathcal{X}$).
-\end{itemize}
-En problemas de \emph{clasificación y regresión}, la predicción $\hat{y} \in \mathcal{Y}$ es directamente interpretable en el espacio original sin necesidad de transformación inversa. En problemas de \emph{optimización}, la solución cuántica óptima $\mathbf{z}^* = \arg\min_{\mathbf{z} \in \mathcal{Z}} C(\mathbf{z})$ debe mapearse de vuelta al espacio de decisión original mediante $\psi^{-1}(\mathbf{z}^*)$ para recuperar la solución factible en $\mathcal{X}$.
+sea posible. No se fija todavía un criterio cuantitativo de «estructura cuántica» de la imagen: queda por precisar.
+
+En problemas de \emph{clasificación y regresión}, la predicción $\hat{y} \in \mathcal{Y}$ es directamente interpretable en el espacio original sin necesidad de transformación inversa. En problemas de \emph{optimización}, la solución cuántica óptima $\mathbf{z}^* = \arg\min_{\mathbf{z} \in \mathcal{Z}} C(\mathbf{z})$ debe mapearse de vuelta al espacio de decisión original mediante $\rho(\mathbf{z}^*)=\psi^{-1}(\mathbf{z}^*)$ para recuperar la solución factible en $\mathcal{X}$.
 \end{conjetura}
 
 \paragraph{Implicaciones de la conjetura.}
 La Conjetura~\ref{conj:qcr} es no trivial por tres razones:
 
 \begin{enumerate}
-  \item \textbf{Existencia del espacio $\mathcal{Z}$}: La conjetura afirma que, para cualquier distribución de datos clásica, existe al menos un espacio en el que dicha distribución adquiere estructura cuántica explotable. Esto no implica que $\mathcal{Z}$ sea único ni que $\psi$ sea eficientemente encontrable: la existencia es la afirmación mínima necesaria para que el programa de investigación sea científicamente coherente.
+  \item \textbf{Existencia del espacio $\mathcal{Z}$}: La conjetura afirma que, para cualquier distribución de datos clásica, existe al menos un espacio, isomorfo al original, cuya imagen tiene estructura cuántica explotable. Esto no implica que $\mathcal{Z}$ sea único ni que $\psi$ sea eficientemente encontrable: la existencia es la afirmación mínima necesaria para que el programa de investigación sea científicamente coherente.
 
-  \item \textbf{Computabilidad polinómica de $\psi$}: Si $\psi$ tuviese coste exponencial, la ventaja cuántica en $\mathcal{Z}$ no se traduciría en ventaja global. La condición de polinomialidad es la que distingue la conjetura de la trivialidad: siempre es posible construir un mapeo exponencialmente costoso que haga cuántico cualquier dataset, pero tal mapeo no sería útil en la práctica.
+  \item \textbf{Forma y coste de $\psi$}: no se conoce con certeza la forma de $\psi$; la analogía es la transformada de Fourier, que conserva la información y es invertible. El coste de calcular $\psi$ debe contabilizarse en las aplicaciones: si fuese exponencial, la ventaja cuántica en $\mathcal{Z}$ no se traduciría en ventaja global, y siempre es posible construir un mapeo costoso que haga cuántico cualquier dataset sin utilidad práctica.
 
-  \item \textbf{El back-mapping $\psi^{-1}$ en optimización}: Para clasificación y regresión, el ciclo no requiere volver al espacio original porque la etiqueta $\hat{y}$ pertenece a $\mathcal{Y}$, no a $\mathcal{X}$. Sin embargo, en problemas de optimización combinatoria, la solución cuántica $\mathbf{z}^*$ debe ser decodificable en términos de decisiones reales (asignación de agentes, rutas, activos financieros). Esto impone que $\psi$ sea invertible o, al menos, que exista un decodificador $\psi^{-1}$ que preserve la factibilidad de la solución.
+  \item \textbf{El back-mapping $\psi^{-1}$ en optimización}: Para clasificación y regresión, el ciclo no requiere volver al espacio original porque la etiqueta $\hat{y}$ pertenece a $\mathcal{Y}$, no a $\mathcal{X}$. Sin embargo, en problemas de optimización combinatoria, la solución cuántica $\mathbf{z}^*$ debe ser decodificable en términos de decisiones reales (asignación de agentes, rutas, activos financieros). Al ser $\psi$ un isomorfismo, el mapa de vuelta es su inversa $\rho=\psi^{-1}$, que debe preservar la factibilidad de la solución.
 \end{enumerate}
 
 \paragraph{Estado de la conjetura.}
-La Conjetura~\ref{conj:qcr} es actualmente \textbf{abierta}: no existe demostración general de existencia ni contraejemplo conocido. El alcance de este TFM es \textbf{plantearla formalmente} y aportar evidencia preliminar (Notebook~09: re-uploading en Telco elevaba $\mathcal{Q}$ y $+4.2$~pp bajo ese protocolo; QML~v2 con $\mathcal{Q}_{\mathrm{rob}}$ matiza el rescate a rotación en SKG sin lift garantizado de accuracy). Eso muestra plausibilidad operativa del programa, no una demostración. Su prueba formal requiere:
+La Conjetura~\ref{conj:qcr} es actualmente \textbf{abierta}: no existe demostración general de existencia ni contraejemplo conocido. El alcance de este TFM es \textbf{plantearla formalmente} y aportar evidencia preliminar (Notebook~09: re-uploading en Telco elevaba $\mathcal{Q}$ y $+4.2$~pp \emph{vs.\ RBF}; QML~v2 con $\mathcal{Q}_{\mathrm{rob}}$ deja Telco \texttt{classical} y en SKG solo un cambio geométrico \texttt{try-ZZ} por rotación, \textbf{sin} lift de accuracy). Eso muestra plausibilidad del programa, no un rescate operativo ni una demostración. Su estudio formal requiere:
 \begin{itemize}
-  \item Caracterizar la clase de distribuciones $p(\mathbf{x}, y)$ para las que existe $\psi$ polinómico con $\mathcal{Q}(\psi(\mathcal{D})) > 0$.
-  \item Demostrar que la ventaja cuántica en $\mathcal{Z}$ se traduce en ventaja en $\mathcal{X}$ bajo condiciones de invarianza: $\varepsilon(f_Q^* \circ \psi) \leq \varepsilon(f_C^*)$.
+  \item Precisar qué significa que la imagen de $\psi$ tenga estructura cuántica, sin asumir de antemano que un indicador concreto lo caracterice.
+  \item Caracterizar la clase de distribuciones $p(\mathbf{x}, y)$ para las que existe un isomorfismo $\psi$ de ese tipo y de coste de cálculo asumible.
   \item Proporcionar un algoritmo de construcción de $\psi$ con garantías de aproximación.
 \end{itemize}
 Esta hoja de ruta formal se desarrolla en el Capítulo~\ref{cap:futuro}.
@@ -411,12 +462,12 @@ Esta hoja de ruta formal se desarrolla en el Capítulo~\ref{cap:futuro}.
   % Nodo de entrada
   \node[terminal] (start) at (0, 0) {Dataset $\mathcal{D}$};
 
-  % Decisión 1: Q > theta?
-  \node[decision] (d1) at (0, -1.4) {$\mathcal{Q}(\mathcal{D}) > \theta$?};
+  % Decisión 1: perfil favorable (insuficiente solo; exige también stack clásico)
+  \node[decision] (d1) at (0, -1.4) {Perfil $\mathcal{Q}$ favorable \emph{y}\\vence a GB/RF?};
   \draw[arr] (start) -- (d1);
 
-  % Sí → QSVM directamente
-  \node[terminal] (qsvm) at (4.5, -1.4) {Entrenar QSVM\\sobre $\mathcal{D}$};
+  % Sí → QSVM (solo si también gana al stack clásico fuerte)
+  \node[terminal] (qsvm) at (4.5, -1.4) {Probar QSVM\\(no auto-deploy)};
   \draw[arr] (d1) -- node[above, font=\scriptsize]{Sí} (qsvm);
 
   % No → Identificar cuello de botella
@@ -446,33 +497,33 @@ Esta hoja de ruta formal se desarrolla en el Capítulo~\ref{cap:futuro}.
   \draw[arr] (d4) -- node[left, font=\scriptsize]{Sí} (t3);
 
   % Convergencia → verificación
-  \node[action] (verify) at (0, -7.2) {Recalcular $\mathcal{Q}(\psi(\mathcal{D}))$};
+  \node[action] (verify) at (0, -7.2) {Recalcular indicadores\\y ventaja};
   \draw[arr] (t1) |- (verify);
   \draw[arr] (t2) -- (verify);
   \draw[arr] (t3) |- (verify);
 
   % Decisión final
-  \node[decision] (d5) at (0, -8.55) {$\mathcal{Q}(\psi(\mathcal{D})) > \theta$?};
+  \node[decision] (d5) at (0, -8.55) {\textquestiondown{}Vence a GB/RF\\tras $\psi$?};
   \draw[arr] (verify) -- (d5);
 
   % Resultado Sí
-  \node[terminal] (qsvm2) at (3.8, -8.55) {Entrenar QSVM\\sobre $\psi(\mathcal{D})$};
+  \node[terminal] (qsvm2) at (3.8, -8.55) {Probar QSVM\\sobre datos transformados};
   \draw[arr] (d5) -- node[above, font=\scriptsize]{Sí} (qsvm2);
 
   % Resultado No
   \node[terminal, draw=red!55!black, fill=red!6] (fallback) at (-3.8, -8.55)
-    {Reportar no\\cuántico-compatible};
+    {Reportar \texttt{classical}\\(no compatible con el mapa)};
   \draw[arr] (d5) -- node[above, font=\scriptsize]{No} (fallback);
 
 \end{tikzpicture}
-\caption{Diagrama de decisión del Framework QCR. Cada rama del árbol identifica el cuello de botella en $\mathcal{Q}(\mathcal{D})$ ($\Delta A$, $\hat{d}_F$ o $\Delta H$) y aplica la transformación $\psi$ correspondiente. El proceso termina con una verificación del score recalculado antes de entrenar el QSVM.}
+\caption{Diagrama de decisión del Framework QCR. Un $\mathcal{Q}$ favorable frente a RBF \textbf{no} basta: se exige también ventaja frente a GB/RF (contraejemplo SKG). Cada rama identifica el cuello ($\Delta A$, $\hat{d}_F$, $\Delta H$) y aplica $\psi$; la verificación final es geométrica \emph{y} supervisada.}
 \label{fig:qcr_flowchart}
 \end{figure}
 
 \begin{figure}[ht]
 \centering
 \includegraphics[width=0.90\textwidth]{../POCs/data/output/figures/09_qcr_framework_diagnostico.png}
-\caption{Framework QCR aplicado a los dos datasets del TFM. Izquierda: SKG Incidentes ya es cuántico-compatible (no requiere pre-mapeo). Derecha: Telco Churn con cuello de botella $\Delta H$; el re-uploading reps=3 corrige el déficit espectral y lleva $\mathcal{Q}$ a territorio positivo.}
+\caption{Diagnóstico $\mathcal{Q}(\mathcal{D})$ en los datasets reales del TFM (NB08, mismo protocolo): SKG y Telco. SKG: $\mathcal{Q}>0$ vs.\ RBF pero GB/RF ganan ($\Delta_{\mathrm{op}}=-4.0$~pp; QML~v2: \texttt{classical}). Telco: cuello $\Delta H=-1.131$ y $\Delta_{\mathrm{op}}=-3.8$~pp. Misma lectura que en los casos de uso de clasificación / regresión / anomalías.}
 \label{fig:qcr_diagnostico}
 \end{figure}
 
@@ -480,7 +531,7 @@ Esta hoja de ruta formal se desarrolla en el Capítulo~\ref{cap:futuro}.
 El framework tiene tres propiedades deseables: (i) es \textbf{interpretable}, porque cada transformación tiene una justificación geométrica explícita; (ii) es \textbf{modular}, porque el diagnóstico y el pre-mapeo son componentes independientes que pueden combinarse; y (iii) es \textbf{falseable}, porque la hipótesis ``el pre-mapeo incrementa $\mathcal{Q}$'' es una predicción verificable empíricamente.
 
 \paragraph{Limitaciones y trabajo futuro.}
-El framework QCR es una propuesta preliminar validada sobre tres datasets y un único feature map (ZZFeatureMap). Las generalizaciones necesarias son: (a) extender a otros feature maps (PauliFeatureMap, IQP Encoding); (b) demostrar que $\mathcal{Q} > \theta$ es condición suficiente ---no solo necesaria--- para la ventaja, lo que requeriría la demostración teórica delineada en el Capítulo~\ref{cap:futuro}; (c) evaluar el coste del pre-mapeo frente al beneficio de ventaja cuántica obtenida.
+El framework QCR es una propuesta preliminar evaluada sobre dos datasets reales y un único feature map (ZZFeatureMap), sin ningún caso de ventaja que contrastar. Las generalizaciones necesarias son: (a) extender a otros feature maps (PauliFeatureMap, IQP Encoding); (b) demostrar que un perfil $\mathcal{Q}$ favorable es condición suficiente ---no solo necesaria--- para la ventaja, lo que requeriría la demostración teórica delineada en el Capítulo~\ref{cap:futuro}; (c) evaluar el coste del pre-mapeo frente al beneficio de ventaja cuántica obtenida.
 
 % =====================================================================
 \section{Revisión endurecida QML~v2 (protocolos justos)}
@@ -489,27 +540,24 @@ El framework QCR es una propuesta preliminar validada sobre tres datasets y un �
 
 Los notebooks 01--10 constituyen el \textbf{registro experimental original} del TFM. En paralelo se endureció un paquete reproducible \texttt{POCs/qml\_v2/} con protocolos Table~A/B, métricas multi-repeat y decodificación nombrada. Esta sección documenta dónde el protocolo justo \textbf{matiza} (no invalida el mensaje cualitativo) las cifras de los notebooks.
 
-\paragraph{Principio transversal (alineación, no monopolio de ZZ).}
-La ventaja no se atribuye al \texttt{ZZFeatureMap} como objeto mágico, sino a la \textbf{alineación entre el generador del dato y el feature map} del kernel. ZZ es el mapa con el que se ejecutó el corpus empírico principal de este TFM; la misma lógica de diagnóstico ($\mathcal{Q}$), pre-mapeo (QCR) y Table~A/B aplica a otros mapas (PauliFeatureMap, IQP, re-uploading, kernels de evolución). Cambiar el mapa cambia \emph{qué} datos se benefician, no el protocolo.
-
-\paragraph{Validación cruzada ZZ vs Pauli-Y.}
-El módulo \texttt{qml\_v2.feature\_map\_alignment} construye dos generadores sintéticos ($y=\mathrm{sign}(\langle\mathrm{obs}\rangle)$ bajo ZZ o bajo Pauli-Y con puertas $Y$/$YY$) y evalúa QSVM-ZZ, QSVM-PauliY y SVM-RBF sobre la misma matriz de ángulos ($n=120$, 5 repeats). Resultado: el \textbf{par emparejado} gana en cada fila --- generador ZZ $\Rightarrow$ QSVM-ZZ $0.828$ vs RBF $0.478$; generador Pauli-Y $\Rightarrow$ QSVM-PauliY $0.550$ vs RBF $0.517$, mientras el kernel ZZ \emph{desalineado} cae a $0.406$. La ventaja sigue al mapa alineado; ZZ no es el único mapa admisible.
+\paragraph{Principio transversal (ZZ no es el único mapa).}
+ZZ es el mapa con el que se ejecutó el corpus empírico principal de este TFM; la misma lógica de diagnóstico ($\mathcal{Q}$), pre-mapeo (QCR) y Table~A/B aplica a otros mapas (PauliFeatureMap, IQP, re-uploading, kernels de evolución). Cambiar el mapa cambia \emph{qué} datos podrían beneficiarse, no el protocolo; comparar mapas sobre datos reales queda como trabajo futuro.
 
 \paragraph{Clasificación (Table~A).}
-Bajo features emparejadas ($n=200$, 10 repeats), el dataset cuántico-nativo sigue mostrando ventaja clara: QSVM $88.8\%\pm5.8$ frente a Gradient Boosting $52.3\%\pm6.0$ ($\Delta\approx +36.5$~pp). Telco y SKG siguen siendo clásicos o empate (Telco $\Delta\approx -23.8$~pp en Table~A; SKG tie). La cifra histórica $+38.3$~pp del Notebook~01 permanece como referencia del protocolo original; la conclusión operativa no cambia.
+Bajo features emparejadas ($n=200$, 10 repeats), el QSVM queda por debajo del mejor clásico en ambos datasets (Telco $\Delta\approx -23.8$~pp en Table~A; SKG $-3.2$~pp). La cifra de $-3.8$~pp del Notebook~01 en Telco permanece como referencia del protocolo original; la conclusión operativa no cambia.
 
 \paragraph{Score robusto $\mathcal{Q}_{\mathrm{rob}}$.}
 El score de los notebooks se revisó a
 \[
 \mathcal{Q}_{\mathrm{rob}}=\Delta A_c+\lambda\cdot\sigma(\kappa\Delta A_c)\cdot\hat d_F,
 \]
-con alineación centrada frente al mejor RBF por Frobenius (sin mirar etiquetas) y geometría \emph{gateada} por $\Delta A$. Veredictos ($n=80$, 5 repeats): nativo \texttt{try-ZZ} ($\mathcal{Q}_{\mathrm{rob}}\approx +0.21$, ventaja $+30$~pp); Telco y SKG \texttt{classical}. El barrido sintético $\alpha$ mantiene Spearman$(\alpha,\mathcal{Q}_{\mathrm{rob}})=1$.
+con alineación centrada frente al mejor RBF por Frobenius (sin mirar etiquetas) y geometría \emph{gateada} por $\Delta A$. Veredictos ($n=80$, 5 repeats): Telco y SKG \texttt{classical}. El barrido sintético $\alpha$ mantiene Spearman$(\alpha,\mathcal{Q}_{\mathrm{rob}})=1$ como calibración del instrumento.
 
 \paragraph{QCR bajo $\mathcal{Q}_{\mathrm{rob}}$.}
 Con el score robusto, el premapa óptimo empírico (\texttt{qcr\_auto\_best}) \textbf{no} reproduce el relato Notebook~09 de ``re-uploading $reps=3$ salva Telco ($+4.2$~pp)''. Telco permanece \texttt{classical} tras los premapas. SKG sí cambia de veredicto con \textbf{rotación} ($\theta\approx 74^\circ$): $\mathcal{Q}_{\mathrm{rob}}$ pasa a \texttt{try-ZZ} y la ventaja kernel sube $\approx +5.6$~pp; un probe de clasificación Table~A posterior \textbf{no} traduce eso en lift de accuracy QSVM. Lectura: QCR es filtro de geometría, no garantía de lift supervisado. Las tablas del Notebook~09 se conservan como evidencia del protocolo original; las cifras de esta sección son las de referencia para decisiones operativas.
 
 \paragraph{Familias añadidas en QML~v2.}
-Además de clasificación/regresión/optimización: clustering espectral ZZ; anomalías one-class (\textbf{Caso~8}); TSP cerrado justo (\textbf{Caso~5}, \texttt{tsp\_optimization}: NN+2-opt = QAOA = exacto en Colombia $n=4$); forecasting por lags (\textbf{Caso~9}, \texttt{timeseries}: QK-SVR gana solo en \texttt{zz\_lag}).
+Además de clasificación/regresión/optimización: clustering espectral ZZ; anomalías one-class (\textbf{Caso~8}); TSP cerrado justo (\textbf{Caso~5}, \texttt{tsp\_optimization}: NN+2-opt = QAOA = exacto en Colombia $n=4$); forecasting por lags (\textbf{Caso~9}, \texttt{timeseries}: los clásicos superan al QK-SVR en \texttt{sine} y \texttt{skg\_speed}).
 
 % =====================================================================
 \section{Síntesis del capítulo}
@@ -519,9 +567,9 @@ Además de clasificación/regresión/optimización: clustering espectral ZZ; ano
 Este capítulo ha presentado dos contribuciones originales del TFM:
 
 \begin{enumerate}
-    \item \textbf{Tests de cuanticidad}: Una revisión sistemática de los indicadores propuestos en la literatura (kernel alignment, entropía espectral, distancia de Frobenius, diferencia geométrica de Huang), su implementación sobre los tres datasets del TFM, y la propuesta de un score compuesto $\mathcal{Q}(\mathcal{D})$ que integra los indicadores con respaldo teórico en la cota de \citet{huang2021}.
+    \item \textbf{Tests de cuanticidad}: Revisión de indicadores de la literatura (alineación, entropía espectral, Frobenius, diferencia geométrica de Huang), su medición en los datasets reales, y la propuesta de $\mathcal{Q}(\mathcal{D})$ como \textbf{vector}/perfil ---con el escalar ponderado descartado como regla de adopción tras el contraejemplo SKG.
 
     \item \textbf{Framework QCR y Conjetura del Espacio de Representación Cuántico-Compatible}: Un procedimiento de cuatro pasos para diagnosticar la cuanticidad de un dataset, identificar el cuello de botella estructural y aplicar la transformación de pre-mapeo adecuada, con verificación del incremento de $\mathcal{Q}$ antes de entrenar el modelo cuántico. El framework es la materialización operativa de la Conjetura~\ref{conj:qcr}: dado un dataset sin estructura cuántica, existe una transformación $\psi: \mathcal{X} \rightarrow \mathcal{Z}$ que lo hace cuántico-compatible, el modelo cuántico se entrena en $\mathcal{Z}$, y la predicción (o, en optimización, la solución óptima $\psi^{-1}(\mathbf{z}^*)$) se interpreta en el espacio original $\mathcal{X}$.
 \end{enumerate}
 
-Ambas contribuciones son preliminares en el sentido de que el corpus empírico principal usa un único feature map operativo (\texttt{ZZFeatureMap}), con una validación cruzada adicional ZZ vs Pauli-Y (Sección~\ref{sec:qml_v2_revision}) que confirma el principio general: la ventaja aparece cuando el feature map ---ZZ u otro--- está alineado con el generador del dato. Su extensión a IQP/re-uploading a escala y la demostración formal constituyen la hoja de ruta del Capítulo~\ref{cap:futuro}.
+Ambas contribuciones son preliminares en el sentido de que el corpus empírico principal usa un único feature map operativo (\texttt{ZZFeatureMap}) y no dispone de ningún caso de ventaja operativa con el que contrastar el perfil. Su extensión a otros feature maps (IQP, re-uploading), a más datasets y a más qubits, y la demostración formal, constituyen la hoja de ruta del Capítulo~\ref{cap:futuro}.

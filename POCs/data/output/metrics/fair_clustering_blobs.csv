@@ -1,0 +1,8 @@
+dataset,table,model,ari_mean,ari_std,nmi_mean,nmi_std,n_samples,n_features,pca_var,n_repeats,delta_ari_vs_best_classical
+blobs,A_matched_features,Agglomerative,1.0,0.0,1.0,0.0,120,2,0.9685989414633129,5,
+blobs,A_matched_features,KMeans,1.0,0.0,1.0,0.0,120,2,0.9685989414633129,5,
+blobs,A_matched_features,Spectral-RBF,1.0,0.0,1.0,0.0,120,2,0.9685989414633129,5,
+blobs,A_matched_features,Spectral-ZZ,0.003600483696508039,0.013780068144914368,0.010524555230707461,0.01260395541577729,120,2,0.9685989414633129,5,-0.996399516303492
+blobs,B_matched_n_full_features,Agglomerative [full features],1.0,0.0,1.0,0.0,120,4,,5,
+blobs,B_matched_n_full_features,KMeans [full features],1.0,0.0,1.0,0.0,120,4,,5,
+blobs,B_matched_n_full_features,Spectral-RBF [full features],1.0,0.0,1.0,0.0,120,4,,5,

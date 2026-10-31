@@ -1,0 +1,7 @@
+Modelo,Accuracy,Tipo,Dataset
+QSVC (FidelityQK),0.5666666666666667,Cuántico,SKG Incidentes
+SVM-RBF,0.6066666666666667,Clásico,SKG Incidentes
+SVM-Poly,0.6,Clásico,SKG Incidentes
+SVM-Linear,0.58,Clásico,SKG Incidentes
+Gradient Boosting,0.5933333333333334,Clásico,SKG Incidentes
+Random Forest,0.5266666666666666,Clásico,SKG Incidentes

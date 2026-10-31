@@ -18,8 +18,9 @@ Framework: diagnose bottleneck → apply recommended ψ → re-score with
 from __future__ import annotations
 
 import json
+from collections.abc import Callable
 from dataclasses import asdict, dataclass
-from typing import Any, Callable
+from typing import Any
 
 import numpy as np
 import pandas as pd
@@ -27,22 +28,15 @@ from sklearn.decomposition import PCA
 from sklearn.model_selection import StratifiedShuffleSplit
 from sklearn.preprocessing import MinMaxScaler
 
-from qml_v2.classification import (
-    REPO_ROOT,
-    encode_for_zz_kernel,
-    load_skg_incidents,
-    load_telco,
-    make_quantum_native,
-    repo_paths,
-    subsample_stratified,
-)
+from qml_v2.classification import encode_for_zz_kernel, kernel_dataset_jobs, subsample_stratified
+from qml_v2.kernels import zz_fidelity_kernel
+from qml_v2.outputs import REPO_ROOT, apply_overrides, dataset_names, make_parser, metrics_dir
 from qml_v2.quantumness import (
     QuantumnessConfig,
     best_rbf_kernel,
     frobenius_distance,
     kernel_alignment,
     quantumness_score_robust,
-    zz_fidelity_kernel,
 )
 
 
@@ -72,9 +66,7 @@ def _to_zz(
     seed: int,
 ) -> tuple[np.ndarray, np.ndarray]:
     Xs, ys = subsample_stratified(X, y, cfg.n_sample, seed)
-    Xq, _, _ = encode_for_zz_kernel(
-        Xs, Xs, cfg.n_qubits, seed, already_zz_space=already_zz_space
-    )
+    Xq, _, _ = encode_for_zz_kernel(Xs, Xs, cfg.n_qubits, seed, already_zz_space=already_zz_space)
     return Xq, ys
 
 
@@ -96,9 +88,7 @@ def quick_Q_rob(
     A_cl = kernel_alignment(K_rbf, y, centered=True)
     d_F = frobenius_distance(K_Q, K_rbf, normalize=True)
     delta_A = A_Q - A_cl
-    rob = quantumness_score_robust(
-        delta_A, d_F, lambda_geom=lambda_geom, gate_kappa=gate_kappa
-    )
+    rob = quantumness_score_robust(delta_A, d_F, lambda_geom=lambda_geom, gate_kappa=gate_kappa)
     return {
         "Q_rob": rob["Q_rob"],
         "delta_A": delta_A,
@@ -110,6 +100,7 @@ def quick_Q_rob(
 # ---------------------------------------------------------------------------
 # Pre-maps ψ
 # ---------------------------------------------------------------------------
+
 
 def apply_zz_interactions(Xq: np.ndarray, n_qubits: int | None = None) -> np.ndarray:
     """Add ZZ-style interaction features, project back to n_qubits angles."""
@@ -155,14 +146,10 @@ def make_rotation_premap(theta: float) -> Callable[[np.ndarray, np.ndarray], tup
     return _premap
 
 
-def select_best_rotation(
-    Xq: np.ndarray, y: np.ndarray, cfg: QCRConfig, seed: int
-) -> tuple[float, pd.DataFrame]:
+def select_best_rotation(Xq: np.ndarray, y: np.ndarray, cfg: QCRConfig, seed: int) -> tuple[float, pd.DataFrame]:
     """Pick θ maximizing Q_rob on a selection subset (not the eval repeats)."""
     if len(y) > cfg.select_n:
-        sss = StratifiedShuffleSplit(
-            n_splits=1, train_size=cfg.select_n, random_state=seed
-        )
+        sss = StratifiedShuffleSplit(n_splits=1, train_size=cfg.select_n, random_state=seed)
         idx, _ = next(sss.split(Xq, y))
         X_sel, y_sel = Xq[idx], y[idx]
     else:
@@ -189,13 +176,9 @@ def select_best_rotation(
     return best_theta, pd.DataFrame(rows)
 
 
-def select_best_reps(
-    Xq: np.ndarray, y: np.ndarray, cfg: QCRConfig, seed: int
-) -> tuple[int, pd.DataFrame]:
+def select_best_reps(Xq: np.ndarray, y: np.ndarray, cfg: QCRConfig, seed: int) -> tuple[int, pd.DataFrame]:
     if len(y) > cfg.select_n:
-        sss = StratifiedShuffleSplit(
-            n_splits=1, train_size=cfg.select_n, random_state=seed
-        )
+        sss = StratifiedShuffleSplit(n_splits=1, train_size=cfg.select_n, random_state=seed)
         idx, _ = next(sss.split(Xq, y))
         X_sel, y_sel = Xq[idx], y[idx]
     else:
@@ -224,6 +207,7 @@ def select_best_reps(
 # Evaluate with robust quantumness
 # ---------------------------------------------------------------------------
 
+
 def _qn_cfg(cfg: QCRConfig, zz_reps: int | None = None) -> QuantumnessConfig:
     return QuantumnessConfig(
         n_qubits=cfg.n_qubits,
@@ -251,9 +235,7 @@ def score_transformed(
     # Xq already ZZ-ready; feed as native so encode does not re-scale
     qcfg = _qn_cfg(cfg, zz_reps=zz_reps)
     # compute_indicators will subsample again from Xq — OK if len≈n_sample
-    r = compute_indicators(
-        Xq, y, qcfg, already_zz_space=True, dataset=f"{dataset}:{strategy}"
-    )
+    r = compute_indicators(Xq, y, qcfg, already_zz_space=True, dataset=f"{dataset}:{strategy}")
     r.pop("_repeats", None)
     r["strategy"] = strategy
     r["dataset"] = dataset
@@ -277,6 +259,7 @@ def diagnose_bottleneck(base: dict[str, Any]) -> str:
 # Driver
 # ---------------------------------------------------------------------------
 
+
 def run_dataset_qcr(
     name: str,
     X: np.ndarray,
@@ -288,9 +271,7 @@ def run_dataset_qcr(
 
     print(f"\n=== QCR {name} ===")
     qcfg = _qn_cfg(cfg)
-    base = compute_indicators(
-        X, y, qcfg, already_zz_space=already_zz_space, dataset=f"{name}:baseline"
-    )
+    base = compute_indicators(X, y, qcfg, already_zz_space=already_zz_space, dataset=f"{name}:baseline")
     base.pop("_repeats", None)
     base["strategy"] = "baseline"
     base["dataset"] = name
@@ -312,43 +293,34 @@ def run_dataset_qcr(
     print(
         f"zz_interactions: Q_rob={r1['Q_rob']:+.3f} ΔA={r1['delta_A']:+.3f} "
         f"adv={r1.get('advantage_pp', float('nan')):+.1f}pp → {r1['verdict']}  "
-        f"(ΔQ={r1['Q_rob']-base['Q_rob']:+.3f})"
+        f"(ΔQ={r1['Q_rob'] - base['Q_rob']:+.3f})"
     )
 
     # Strategy 2: rotation (2D only)
     if cfg.n_qubits == 2:
         theta, sweep = select_best_rotation(Xq, yq, cfg, cfg.random_state + 1)
         X_rot = apply_rotation(Xq, theta)
-        r2 = score_transformed(
-            X_rot, yq, cfg, dataset=name, strategy=f"rotation_θ={theta:.3f}"
-        )
+        r2 = score_transformed(X_rot, yq, cfg, dataset=name, strategy=f"rotation_θ={theta:.3f}")
         r2["theta"] = theta
         rows.append(r2)
         print(
             f"rotation θ={np.degrees(theta):.1f}°: Q_rob={r2['Q_rob']:+.3f} "
             f"ΔA={r2['delta_A']:+.3f} adv={r2.get('advantage_pp', float('nan')):+.1f}pp "
-            f"→ {r2['verdict']}  (ΔQ={r2['Q_rob']-base['Q_rob']:+.3f})"
+            f"→ {r2['verdict']}  (ΔQ={r2['Q_rob'] - base['Q_rob']:+.3f})"
         )
-        metrics = repo_paths()["metrics"]
-        metrics.mkdir(parents=True, exist_ok=True)
-        sweep.to_csv(metrics / f"qml_v2_qcr_{name}_rotation_sweep.csv", index=False)
+        sweep.to_csv(metrics_dir() / f"qml_v2_qcr_{name}_rotation_sweep.csv", index=False)
 
     # Strategy 3: re-uploading
     best_reps, reps_sweep = select_best_reps(Xq, yq, cfg, cfg.random_state + 2)
-    r3 = score_transformed(
-        Xq, yq, cfg, dataset=name, strategy=f"reuploading_reps={best_reps}", zz_reps=best_reps
-    )
+    r3 = score_transformed(Xq, yq, cfg, dataset=name, strategy=f"reuploading_reps={best_reps}", zz_reps=best_reps)
     r3["reps"] = best_reps
     rows.append(r3)
     print(
         f"reuploading reps={best_reps}: Q_rob={r3['Q_rob']:+.3f} ΔA={r3['delta_A']:+.3f} "
         f"adv={r3.get('advantage_pp', float('nan')):+.1f}pp → {r3['verdict']}  "
-        f"(ΔQ={r3['Q_rob']-base['Q_rob']:+.3f})"
+        f"(ΔQ={r3['Q_rob'] - base['Q_rob']:+.3f})"
     )
-    repo_paths()["metrics"].mkdir(parents=True, exist_ok=True)
-    reps_sweep.to_csv(
-        repo_paths()["metrics"] / f"qml_v2_qcr_{name}_reps_sweep.csv", index=False
-    )
+    reps_sweep.to_csv(metrics_dir() / f"qml_v2_qcr_{name}_reps_sweep.csv", index=False)
 
     # Auto: heuristic recommendation + best empirical ΔQ among tried strategies
     rec = diagnose_bottleneck(base)
@@ -370,11 +342,10 @@ def run_dataset_qcr(
     rows.append(heur)
     print(
         f"qcr_auto_best→{best_emp['strategy']}: Q_rob={auto['Q_rob']:+.3f} "
-        f"(ΔQ={auto['Q_rob']-base['Q_rob']:+.3f}) → {auto['verdict']}"
+        f"(ΔQ={auto['Q_rob'] - base['Q_rob']:+.3f}) → {auto['verdict']}"
     )
     print(
-        f"qcr_heuristic→{rec}: Q_rob={heur['Q_rob']:+.3f} "
-        f"(ΔQ={heur['Q_rob']-base['Q_rob']:+.3f}) → {heur['verdict']}"
+        f"qcr_heuristic→{rec}: Q_rob={heur['Q_rob']:+.3f} (ΔQ={heur['Q_rob'] - base['Q_rob']:+.3f}) → {heur['verdict']}"
     )
     return rows
 
@@ -397,23 +368,6 @@ def run_all(
             random_state=cfg.random_state,
         )
 
-    jobs: list[tuple[str, np.ndarray, np.ndarray, bool]] = []
-    if "quantum_native" in datasets:
-        X, y = make_quantum_native(
-            n_samples=max(cfg.n_sample * 2, 120),
-            n_qubits=cfg.n_qubits,
-            reps=cfg.zz_reps,
-            entanglement=cfg.entanglement,
-            random_state=cfg.random_state,
-        )
-        jobs.append(("quantum_native", X, y, True))
-    if "telco" in datasets:
-        X, y, _ = load_telco()
-        jobs.append(("telco", X, y, False))
-    if "skg" in datasets:
-        X, y, _ = load_skg_incidents()
-        jobs.append(("skg", X, y, False))
-
     all_rows: list[dict[str, Any]] = []
     report = [
         "# QCR results (QML v2 — robust Q_rob)",
@@ -424,15 +378,13 @@ def run_all(
         "",
     ]
 
-    for name, X, y, native in jobs:
+    for name, X, y, native in kernel_dataset_jobs(datasets, max(cfg.n_sample * 2, 120), cfg):
         rows = run_dataset_qcr(name, X, y, cfg, already_zz_space=native)
         all_rows.extend(rows)
         base = rows[0]
         report.append(f"## {name}")
         report.append("")
-        report.append(
-            f"Baseline: Q_rob={base['Q_rob']:+.4f} → {base['verdict']}"
-        )
+        report.append(f"Baseline: Q_rob={base['Q_rob']:+.4f} → {base['verdict']}")
         report.append("")
         report.append("```")
         df = pd.DataFrame(rows)
@@ -455,8 +407,7 @@ def run_all(
         report.append("")
 
     out = pd.DataFrame(all_rows)
-    metrics = repo_paths()["metrics"]
-    metrics.mkdir(parents=True, exist_ok=True)
+    metrics = metrics_dir()
     out.to_csv(metrics / "qml_v2_qcr_all.csv", index=False)
     (metrics / "qml_v2_qcr_config.json").write_text(json.dumps(asdict(cfg), indent=2))
     path = REPO_ROOT / "BUSINESS" / "qcr_v2_results.md"
@@ -482,35 +433,18 @@ def run_classification_probe(
     )
 
     qcfg = QCRConfig(random_state=random_state)
-    if dataset == "skg":
-        X, y, _ = load_skg_incidents()
-        native = False
-    elif dataset == "telco":
-        X, y, _ = load_telco()
-        native = False
-    elif dataset == "quantum_native":
-        X, y = make_quantum_native(
-            n_samples=max(n_total * 2, 120),
-            n_qubits=qcfg.n_qubits,
-            reps=qcfg.zz_reps,
-            entanglement=qcfg.entanglement,
-            random_state=random_state,
-        )
-        native = True
-    else:
+    jobs = kernel_dataset_jobs((dataset,), max(n_total * 2, 120), qcfg)
+    if not jobs:
         raise ValueError(dataset)
+    _, X, y, native = jobs[0]
 
     if theta is None:
         Xq, yq = _to_zz(X, y, qcfg, native, random_state)
         theta, _ = select_best_rotation(Xq, yq, qcfg, random_state)
         print(f"Selected θ={theta:.4f} rad on Q_rob selection split")
 
-    fcfg = FairConfig(
-        n_total=n_total, n_repeats=n_repeats, random_state=random_state
-    )
-    base = run_fair_dataset(
-        dataset, X, y, fcfg, already_zz_space=native, include_table_b=False
-    )
+    fcfg = FairConfig(n_total=n_total, n_repeats=n_repeats, random_state=random_state)
+    base = run_fair_dataset(dataset, X, y, fcfg, already_zz_space=native, include_table_b=False)
     rot = run_fair_dataset(
         dataset,
         X,
@@ -524,49 +458,30 @@ def run_classification_probe(
     rows = base + rot
     summary = summarize(rows)
     print(advantage_report(summary))
-    metrics = repo_paths()["metrics"]
-    metrics.mkdir(parents=True, exist_ok=True)
     out = pd.DataFrame([asdict(r) for r in rows])
     out["dataset"] = dataset
     out["qcr_theta"] = theta
-    out.to_csv(metrics / f"qml_v2_qcr_classprobe_{dataset}.csv", index=False)
+    out.to_csv(metrics_dir() / f"qml_v2_qcr_classprobe_{dataset}.csv", index=False)
     return summary
 
 
-def main() -> None:
-    import argparse
+FLAGS = ("n_sample", "n_repeats")
 
-    p = argparse.ArgumentParser(description="QML v2 QCR pre-maps for robust Q_rob")
-    p.add_argument("--quick", action="store_true")
-    p.add_argument("--n-sample", type=int, default=None)
-    p.add_argument("--n-repeats", type=int, default=None)
-    p.add_argument(
-        "--datasets",
-        default="quantum_native,telco,skg",
-        help="quantum_native,telco,skg",
-    )
-    p.add_argument(
+
+def main() -> None:
+    parser = make_parser("QML v2 QCR pre-maps for robust Q_rob", "quantum_native,telco,skg", FLAGS)
+    parser.add_argument(
         "--class-probe",
         default=None,
         help="Optional: run Table A classification probe on dataset (e.g. skg)",
     )
-    p.add_argument("--class-n-total", type=int, default=200)
-    p.add_argument("--class-n-repeats", type=int, default=5)
-    args = p.parse_args()
-    cfg = QCRConfig()
-    if args.n_sample is not None:
-        cfg.n_sample = args.n_sample
-    if args.n_repeats is not None:
-        cfg.n_repeats = args.n_repeats
-    names = tuple(s.strip() for s in args.datasets.split(",") if s.strip())
+    parser.add_argument("--class-n-total", type=int, default=200)
+    parser.add_argument("--class-n-repeats", type=int, default=5)
+    args = parser.parse_args()
     if args.class_probe:
-        run_classification_probe(
-            args.class_probe,
-            n_total=args.class_n_total,
-            n_repeats=args.class_n_repeats,
-        )
+        run_classification_probe(args.class_probe, n_total=args.class_n_total, n_repeats=args.class_n_repeats)
     else:
-        run_all(cfg=cfg, datasets=names, quick=args.quick)
+        run_all(cfg=apply_overrides(QCRConfig(), args, FLAGS), datasets=dataset_names(args), quick=args.quick)
 
 
 if __name__ == "__main__":

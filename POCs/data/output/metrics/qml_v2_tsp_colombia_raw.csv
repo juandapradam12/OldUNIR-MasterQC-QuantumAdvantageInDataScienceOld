@@ -1,0 +1,8 @@
+instance_id,n,family,model,cost,gap_vs_exact,approx_ratio,feasible,time_s,tour
+0,4,colombia,BruteForce-opt,1867.6284955850542,0.0,1.0,True,3.314018249511719e-05,Bogotá → Cali → Medellín → Barranquilla → Bogotá
+0,4,colombia,NearestNeighbor,2124.5693771439555,0.13757601266327427,0.8790621363919379,True,1.239776611328125e-05,Bogotá → Medellín → Cali → Barranquilla → Bogotá
+0,4,colombia,NN-MS,1934.2321422145199,0.03566214950506061,0.9655658464277145,True,2.8371810913085938e-05,Cali → Bogotá → Medellín → Barranquilla → Cali
+0,4,colombia,NN+2-opt,1867.6284955850542,0.0,1.0,True,5.8650970458984375e-05,Bogotá → Cali → Medellín → Barranquilla → Bogotá
+0,4,colombia,Random-tour,2124.5693771439555,0.13757601266327427,0.8790621363919379,True,0.00021696090698242188,Bogotá → Medellín → Cali → Barranquilla → Bogotá
+0,4,colombia,SA-QUBO,1867.6284955850542,0.0,1.0,True,0.5160131454467773,Bogotá → Barranquilla → Medellín → Cali → Bogotá
+0,4,colombia,QAOA-p1,1867.6284955850542,0.0,1.0,True,436.0112006664276,Bogotá → Barranquilla → Medellín → Cali → Bogotá

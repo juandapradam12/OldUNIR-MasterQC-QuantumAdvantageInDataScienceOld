@@ -1,0 +1,36 @@
+dataset,repeat,model,table,roc_auc,avg_precision,f1_anomaly,n_train_inliers,n_test,n_test_outliers,n_features,pca_var_explained
+skg_injected,0,IsolationForest,A_matched_features,0.9906976744186047,0.9428571428571428,0.7692307692307693,101,48,5,2,0.5907007915232649
+skg_injected,0,OCSVM-RBF,A_matched_features,1.0,1.0,0.9090909090909091,101,48,5,2,0.5907007915232649
+skg_injected,0,LOF,A_matched_features,1.0,1.0,0.9090909090909091,101,48,5,2,0.5907007915232649
+skg_injected,0,OCSVM-ZZ,A_matched_features,0.6372093023255814,0.22225274725274724,0.13333333333333333,101,48,5,2,0.5907007915232649
+skg_injected,0,IsolationForest [full features],B_matched_n_full_features,0.9813953488372094,0.9111111111111111,0.6666666666666666,101,48,5,7,
+skg_injected,0,OCSVM-RBF [full features],B_matched_n_full_features,1.0,1.0,0.625,101,48,5,7,
+skg_injected,0,LOF [full features],B_matched_n_full_features,0.9953488372093022,0.9666666666666666,0.6666666666666666,101,48,5,7,
+skg_injected,1,IsolationForest,A_matched_features,0.9767441860465116,0.7916666666666665,0.7142857142857143,101,48,5,2,0.613917148708385
+skg_injected,1,OCSVM-RBF,A_matched_features,0.9627906976744186,0.5961904761904762,0.6666666666666666,101,48,5,2,0.613917148708385
+skg_injected,1,LOF,A_matched_features,0.9627906976744186,0.6961904761904762,0.6666666666666666,101,48,5,2,0.613917148708385
+skg_injected,1,OCSVM-ZZ,A_matched_features,0.627906976744186,0.1838242675199197,0.2727272727272727,101,48,5,2,0.613917148708385
+skg_injected,1,IsolationForest [full features],B_matched_n_full_features,0.986046511627907,0.9028571428571428,0.8333333333333334,101,48,5,7,
+skg_injected,1,OCSVM-RBF [full features],B_matched_n_full_features,0.9767441860465117,0.7142857142857143,0.5555555555555556,101,48,5,7,
+skg_injected,1,LOF [full features],B_matched_n_full_features,0.9627906976744186,0.6961904761904761,0.6666666666666666,101,48,5,7,
+skg_injected,2,IsolationForest,A_matched_features,0.972093023255814,0.8444444444444443,0.5555555555555556,101,48,5,2,0.5916006193471248
+skg_injected,2,OCSVM-RBF,A_matched_features,1.0,1.0,0.6666666666666666,101,48,5,2,0.5916006193471248
+skg_injected,2,LOF,A_matched_features,1.0,1.0,0.5882352941176471,101,48,5,2,0.5916006193471248
+skg_injected,2,OCSVM-ZZ,A_matched_features,0.7348837209302326,0.30857142857142855,0.5,101,48,5,2,0.5916006193471248
+skg_injected,2,IsolationForest [full features],B_matched_n_full_features,1.0,1.0,0.5555555555555556,101,48,5,7,
+skg_injected,2,OCSVM-RBF [full features],B_matched_n_full_features,1.0,1.0,0.45454545454545453,101,48,5,7,
+skg_injected,2,LOF [full features],B_matched_n_full_features,1.0,1.0,0.6666666666666666,101,48,5,7,
+skg_injected,3,IsolationForest,A_matched_features,0.9953488372093022,0.9666666666666667,0.8333333333333334,101,48,5,2,0.609064062304965
+skg_injected,3,OCSVM-RBF,A_matched_features,1.0,1.0,0.7692307692307693,101,48,5,2,0.609064062304965
+skg_injected,3,LOF,A_matched_features,1.0,1.0,0.9090909090909091,101,48,5,2,0.609064062304965
+skg_injected,3,OCSVM-ZZ,A_matched_features,0.7069767441860465,0.5080606060606061,0.4,101,48,5,2,0.609064062304965
+skg_injected,3,IsolationForest [full features],B_matched_n_full_features,0.9953488372093022,0.9666666666666667,0.8,101,48,5,7,
+skg_injected,3,OCSVM-RBF [full features],B_matched_n_full_features,1.0,1.0,0.5263157894736842,101,48,5,7,
+skg_injected,3,LOF [full features],B_matched_n_full_features,1.0,1.0,0.9090909090909091,101,48,5,7,
+skg_injected,4,IsolationForest,A_matched_features,0.9953488372093022,0.9666666666666667,0.7142857142857143,101,48,5,2,0.5872902824495554
+skg_injected,4,OCSVM-RBF,A_matched_features,1.0,1.0,0.7692307692307693,101,48,5,2,0.5872902824495554
+skg_injected,4,LOF,A_matched_features,1.0,1.0,0.7142857142857143,101,48,5,2,0.5872902824495554
+skg_injected,4,OCSVM-ZZ,A_matched_features,0.7627906976744186,0.46223227752639523,0.3076923076923077,101,48,5,2,0.5872902824495554
+skg_injected,4,IsolationForest [full features],B_matched_n_full_features,1.0,1.0,0.8333333333333334,101,48,5,7,
+skg_injected,4,OCSVM-RBF [full features],B_matched_n_full_features,1.0,1.0,0.5882352941176471,101,48,5,7,
+skg_injected,4,LOF [full features],B_matched_n_full_features,1.0,1.0,0.9090909090909091,101,48,5,7,

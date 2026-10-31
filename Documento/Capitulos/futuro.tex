@@ -9,7 +9,7 @@ Los resultados obtenidos en este trabajo abren múltiples líneas de investigaci
 La limitación más significativa de este trabajo es que todos los experimentos se han realizado en simulación clásica mediante el simulador de vectores de estado de Qiskit. Si bien la simulación exacta garantiza resultados sin ruido y es reproducible, no refleja las condiciones reales del hardware cuántico actual. Las siguientes extensiones son prioritarias:
 
 \begin{itemize}
-    \item \textbf{Ejecución en IBM Quantum (procesadores Eagle/Osprey/Heron):} los notebooks están diseñados para ser ejecutados directamente en hardware real mediante el cambio del backend de simulación a un procesador IBM Quantum. El principal desafío será el ruido de decoherencia, que degradará la calidad del kernel cuántico. Se necesitará implementar técnicas de mitigación de errores (\textit{error mitigation}) como ZNE (\textit{Zero-Noise Extrapolation}) o técnicas de regularización del kernel \citep{haug2023}.
+    \item \textbf{Ejecución en IBM Quantum (procesadores Eagle/Osprey/Heron):} los notebooks están diseñados para ser ejecutados directamente en hardware real mediante el cambio del backend de simulación a un procesador IBM Quantum. El principal desafío será el ruido de decoherencia, que degradará la calidad del kernel cuántico. Se necesitará implementar técnicas de mitigación de errores (\textit{error mitigation}) como ZNE (\textit{Zero-Noise Extrapolation}) o esquemas de mitigación específicos del kernel, como el que proponen \citet{haug2023} sin coste adicional de circuitos.
     \item \textbf{Análisis de la degradación del rendimiento con ruido:} comparar sistemáticamente los resultados obtenidos con el simulador ideal frente al hardware ruidoso para cuantificar la reducción de ventaja cuántica debida al ruido.
     \item \textbf{Acceso a hardware cuántico de SKG:} si la empresa obtiene acceso a servicios de computación cuántica en la nube (IBM Quantum, Azure Quantum, Amazon Braket), sería posible ejecutar los experimentos de optimización QAOA sobre los datos reales de movilidad directamente en hardware.
 \end{itemize}
@@ -19,7 +19,7 @@ La limitación más significativa de este trabajo es que todos los experimentos 
 El coste $O(n^2)$ de la evaluación del kernel cuántico es el principal obstáculo para su aplicación a datasets grandes. Las siguientes líneas permitirían abordar este problema:
 
 \begin{itemize}
-    \item \textbf{Kernels cuánticos aleatorizados (RFF-QK):} aplicar la técnica de características aleatorias de Fourier (\textit{Random Fourier Features}) adaptada al contexto cuántico \citep{haug2023}, que permite aproximar el kernel cuántico en tiempo $O(n)$.
+    \item \textbf{Kernels cuánticos con medidas aleatorizadas:} estimar el kernel cuántico mediante medidas aleatorizadas \citep{haug2023}, de modo que el tiempo de cómputo cuántico crece linealmente con el tamaño del dataset (y cuadráticamente el posprocesado clásico), a costa de un coste exponencial en el número de qubits.
     \item \textbf{Particionado y agregación (\textit{ensemble} cuántico):} entrenar múltiples QSVM sobre subconjuntos del dataset y combinar sus predicciones, reduciendo el tamaño efectivo del problema de kernel.
     \item \textbf{Caché y precómputo de kernels:} para experimentos repetitivos, el almacenamiento de las matrices de kernel evaluadas en disco permitiría reutilizar los cálculos sin necesidad de re-ejecutar las simulaciones cuánticas.
 \end{itemize}
@@ -43,7 +43,7 @@ La instancia real presenta una estructura más compleja que el MDS: los agentes 
 \begin{itemize}
     \item \textbf{Formulación QUBO de asignación ponderada:} la función de coste incorpora la distancia Haversine entre agente y foco, ponderada por criticidad del incidente. La formulación QUBO resultante tiene estructura similar al \textit{Weighted Set Cover}, que es también NP-difícil \citep{garey1979} y se mapea directamente a un Hamiltoniano de Ising.
 
-    \item \textbf{Validación cruzada sobre \texttt{agents.csv}:} el dataset contiene 10--20 agentes y 5--10 zonas geoespaciales activas, lo que equivale a $n \in [50, 200]$ variables binarias en la codificación QUBO estándar (una por par agente-zona). Esta escala es viable en hardware IBM Eagle (127 qubits) con $p = 1$ y representa la primera instancia real de QAOA sobre datos operativos de SKG.
+    \item \textbf{Validación cruzada sobre \texttt{agents.csv}:} el dataset contiene 58\,245 lecturas GPS de 753 dispositivos repartidos en 19 localidades. Con las 19 bases por localidad y los 10 focos que el Notebook~02 obtiene para los choques de los miércoles a las 8~h, el problema completo tiene $10\times19=190$ variables binarias en la codificación QUBO estándar (una por par foco-agente), sin contar las variables de holgura de las restricciones. Esa cifra excede un procesador IBM de 127 a 156 qubits (Eagle, Heron) y exigiría descomponer el problema; además, el acoplamiento denso de la codificación QUBO obliga a insertar puertas SWAP sobre la conectividad \textit{heavy-hex}, de modo que la limitación práctica será el ruido y no solo el número de qubits. Con $p = 1$ sería la primera instancia de QAOA sobre datos operativos de SKG, aún no ejecutada.
 
     \item \textbf{Comparativa con el solver clásico existente:} el módulo \texttt{optimizacion-recursos-campo} ya implementa el solver clásico PuLP/SCIP. La comparativa directa QAOA vs ILP sobre los mismos datos reales completaría la evidencia empírica del TFM con un caso de uso operativamente relevante.
 
@@ -57,7 +57,7 @@ Esta extensión convertiría el prototipo híbrido descrito en la Sección~\ref{
 Los experimentos con VQC y QAOA utilizaron configuraciones conservadoras ($p=1$, \texttt{reps=2}) para garantizar la ejecución en simulación. Las siguientes mejoras podrían incrementar la ventaja cuántica:
 
 \begin{itemize}
-    \item \textbf{QAOA con mayor profundidad ($p > 1$):} estudios previos \citep{zhou2020} demuestran que la calidad de la solución mejora monotónamente con $p$. Evaluar $p \in \{2, 3, 4\}$ sobre las instancias de optimización de SKG.
+    \item \textbf{QAOA con mayor profundidad ($p > 1$):} \citet{zhou2020} observan numéricamente, en MaxCut sobre grafos regulares, que la calidad de la solución mejora al aumentar $p$. Evaluar $p \in \{2, 3, 4\}$ sobre las instancias de optimización de SKG.
     \item \textbf{Optimizadores avanzados:} sustituir COBYLA por optimizadores cuánticos más eficientes como SPSA (\textit{Simultaneous Perturbation Stochastic Approximation}) o métodos de gradiente analítico (\textit{parameter-shift rule}) para acelerar la convergencia.
     \item \textbf{Ansätze específicos del problema:} diseñar circuitos variacionales adaptados a la estructura del problema de optimización (por ejemplo, ansätze con simetría de permutación para problemas de asignación).
 \end{itemize}
@@ -77,19 +77,20 @@ El prototipo híbrido cuántico-clásico conceptual diseñado en este trabajo re
 Finalmente, desde una perspectiva académica, las siguientes extensiones teóricas complementarían los resultados empíricos:
 
 \begin{itemize}
-    \item \textbf{Certificación de ventaja cuántica:} aplicar los tests estadísticos propuestos por \cite{huang2021} para certificar formalmente si los datasets reales de SKG presentan la propiedad de separación cuántica-clásica necesaria para garantizar ventaja.
+    \item \textbf{Certificación de ventaja cuántica:} calcular la diferencia geométrica y las cotas de complejidad de \cite{huang2021} sobre los datasets reales de SKG, como criterio necesario (no suficiente) de ventaja potencial.
+    \item \textbf{Aplicaciones con estructura cuántica natural:} identificar problemas de ciencia de datos cuya estructura sea cuántica sin haber sido fabricada para el kernel (datos de química o física de materiales, o cuyo coste clásico crezca de forma demostrable) y repetir allí el protocolo de este TFM.
     \item \textbf{Análisis de barren plateaus:} estudiar la presencia de gradientes exponencialmente pequeños en los VQC entrenados, evaluando si las configuraciones utilizadas están afectadas por este fenómeno \citep{cerezo2023}.
 \end{itemize}
 
 \section[Extensión del score de cuanticidad]{Extensión del score de cuanticidad $\mathcal{Q}(\mathcal{D})$}
 
-El Capítulo~\ref{cap:investigacion_original} propone y valida empíricamente el score compuesto $\mathcal{Q}(\mathcal{D}) = w_1 \Delta A + w_2 \hat{d}_F + w_3 \Delta H$ como predictor del ranking de ventaja QSVM, con $\rho_S = 0.833$ ($p=0.005$) en un barrido sintético de nueve configuraciones. Sin embargo, la validación sobre los tres datasets reales del TFM ($n=3$) constituye evidencia orientativa, no concluyente. Las siguientes extensiones son necesarias para consolidar el resultado:
+El Capítulo~\ref{cap:investigacion_original} propone el score compuesto $\mathcal{Q}(\mathcal{D}) = w_1 \Delta A + w_2 \hat{d}_F + w_3 \Delta H + w_4 \hat{g}$. El barrido NB08 ($n=9$, $X$ fijo) muestra $\rho_S(\alpha,\Delta A)=0.833$ ($p=0.005$), pero es una calibración del instrumento y \textbf{no} valida a $\mathcal{Q}$ como predictor de ventaja ($d_F$/$H$ quedaron constantes). Con $n=2$ conjuntos reales comparables no hay base para estimarlo. Extensiones necesarias:
 
 \begin{itemize}
-    \item \textbf{Validación sobre benchmarks con ventaja garantizada:} evaluar $\mathcal{Q}(\mathcal{D})$ sobre datasets de Bravyi et al. (2020) donde existe separación cuántico-clásica demostrada formalmente, verificando que $\mathcal{Q} > 0$ en todos ellos.
-    \item \textbf{Optimización de los pesos $(w_1, w_2, w_3)$:} los pesos actuales $(0.4, 0.3, 0.3)$ son heurísticos. Una regresión supervisada sobre un corpus de datasets anotados con su ventaja QSVM real permitiría calibrarlos de forma óptima.
-    \item \textbf{Extensión a más feature maps:} el módulo \texttt{feature\_map\_alignment} ya contrastó ZZ vs Pauli-Y en sintéticos. Queda escalar a \texttt{IQP Encoding}, \texttt{TwoLocal} y datasets reales, recalibrando $\mathcal{Q}$ por familia de circuito.
-    \item \textbf{Certificación estadística de ventaja:} aplicar los tests estadísticos de \cite{huang2021} para certificar formalmente si los datasets reales de SKG presentan la propiedad de separación cuántica-clásica necesaria para garantizar ventaja, más allá de la estimación empírica del score.
+    \item \textbf{Validación sobre benchmarks con ventaja garantizada:} evaluar $\mathcal{Q}(\mathcal{D})$ sobre problemas con separación cuántico-clásica demostrada formalmente que no dependan de etiquetar con el propio kernel (p.~ej.\ \citealp{liu2021}), comprobando si los indicadores detectan esa estructura. Es el paso que falta para que el perfil sea algo más que un diagnóstico a priori.
+    \item \textbf{Optimización de los pesos $(w_1, w_2, w_3, w_4)$:} los pesos actuales $(0.4, 0.2, 0.2, 0.2)$ son una convención heurística. Una regresión supervisada sobre un corpus de datasets anotados con su ventaja QSVM real permitiría calibrarlos de forma óptima.
+    \item \textbf{Extensión a más feature maps:} este TFM solo evalúa \texttt{ZZFeatureMap}. Queda contrastar \texttt{Pauli}, \texttt{IQP Encoding} y \texttt{TwoLocal} sobre los mismos conjuntos reales y de referencia.
+    \item \textbf{Certificación estadística de ventaja:} calcular la diferencia geométrica y las cotas de complejidad de \cite{huang2021} sobre los datasets reales de SKG como criterio necesario (no suficiente) de ventaja potencial, más allá de la estimación empírica del score.
     \item \textbf{Análisis de barren plateaus:} estudiar la presencia de gradientes exponencialmente pequeños en los VQC entrenados, evaluando si las configuraciones utilizadas están afectadas por este fenómeno \citep{cerezo2023}.
 \end{itemize}
 
@@ -99,11 +100,11 @@ La combinación de la propuesta del score $\mathcal{Q}$, su validación empíric
 \section{Extensión a aprendizaje cuántico no supervisado}
 \label{sec:futuro_no_supervisado}
 
-El Caso de uso~8 (Capítulos~\ref{cap:metodologia} y~\ref{sec:eval_anomaly}) ya incorpora una primera familia \textbf{one-class}: detección de anomalías con OCSVM-ZZ frente a IsolationForest / LOF / OCSVM-RBF, con ventaja cuando la novedad está alineada con el feature map (\texttt{zz\_phase} es la familia que valida ese principio para ZZ). Extender a otros mapas (Pauli, IQP) y a clustering espectral / Q-means / autoencoders temporales queda como trabajo futuro.
+El Caso de uso~8 (Capítulos~\ref{cap:metodologia} y~\ref{sec:eval_anomaly}) ya incorpora una primera familia \textbf{one-class}: detección de anomalías con OCSVM-ZZ frente a IsolationForest / LOF / OCSVM-RBF, sin ventaja sobre los clásicos en los conjuntos evaluados. Extender a otros mapas (Pauli, IQP) y a clustering espectral / Q-means / autoencoders temporales queda como trabajo futuro.
 
 \paragraph{Algoritmos candidatos (pendientes).}
 \begin{itemize}
-  \item \textbf{Q-means \citep{kerenidis2019}:} versión cuántica del algoritmo $k$-means que aprovecha la representación en amplitudes para calcular centroides y distancias en tiempo sublineal. Aplicable al clustering de incidentes de tráfico por zona geoespacial o por patrón horario, un problema que SKG Tecnología aborda actualmente con $k$-means clásico. El módulo QML~v2 \texttt{clustering.py} (Spectral-ZZ) es un primer paso empírico; Q-means con qRAM sigue siendo futuro.
+  \item \textbf{Q-means \citep{kerenidis2019qmeans}:} versión cuántica del algoritmo $k$-means que aprovecha la representación en amplitudes para calcular centroides y distancias en tiempo sublineal. Aplicable al clustering de incidentes de tráfico por zona geoespacial o por patrón horario, un problema que SKG Tecnología aborda actualmente con $k$-means clásico. El módulo QML~v2 \texttt{clustering.py} (Spectral-ZZ) es un primer paso empírico; Q-means con qRAM sigue siendo futuro.
 
   \item \textbf{Quantum PCA (qPCA) \citep{lloyd2014}:} extracción de componentes principales mediante estimación de fase cuántica aplicada al operador de densidad del dataset. Relevante para la reducción dimensional de los datasets de movilidad antes de aplicar el QSVM, potencialmente superando la PCA clásica en datasets con estructura cuántica implícita.
 
@@ -115,19 +116,19 @@ El Caso de uso~8 (Capítulos~\ref{cap:metodologia} y~\ref{sec:eval_anomaly}) ya 
 \paragraph{Casos de uso directos en SKG Tecnología.}
 \begin{itemize}
   \item \textbf{Clustering de incidentes:} agrupar los 27.326 incidentes del NUSE Bogotá por patrón de características (hora, zona, tipo) sin etiquetas previas. El Spectral-ZZ QML~v2 mostró ARI débil; Q-means / VQE-$k$-means son la siguiente referencia.
-  \item \textbf{Detección de anomalías en velocidades:} extender el Caso~8 (hoy spikes inyectados / novedad alineada al mapa en \texttt{zz\_phase}) a \texttt{bctraveltimes\_history.csv} con autoencoders o scores temporales, sin convertir el problema en fraude etiquetado.
+  \item \textbf{Detección de anomalías en velocidades:} extender el Caso~8 (hoy spikes inyectados) a \texttt{bctraveltimes\_history.csv} con autoencoders o scores temporales, sin convertir el problema en fraude etiquetado.
   \item \textbf{Segmentación no supervisada de agentes:} usar clustering cuántico sobre \texttt{agents.csv} para identificar perfiles de agente latentes, mejorando la asignación a zonas de seguridad.
 \end{itemize}
 
 \paragraph{Limitaciones actuales a superar.}
-Las implementaciones NISQ de algoritmos cuánticos no supervisados son más experimentales que las supervisadas: Q-means requiere acceso eficiente a la memoria RAM cuántica (qRAM), cuya implementación física sigue siendo un problema abierto \citep{biamonte2017}; Quantum PCA basado en estimación de fase requiere circuitos profundos incompatibles con los dispositivos NISQ actuales. Por ello, en el corto plazo la línea más viable es la comparativa de \textbf{clustering cuántico variacional} (VQE aplicado a la minimización de la función de coste de $k$-means) frente al $k$-means clásico, siguiendo el mismo protocolo de tres datasets (cuántico-nativo, SKG real, dataset público de referencia) establecido en este TFM.
+Las implementaciones NISQ de algoritmos cuánticos no supervisados son más experimentales que las supervisadas: Q-means requiere acceso eficiente a la memoria RAM cuántica (qRAM), cuya implementación física sigue siendo un problema abierto \citep{biamonte2017}; Quantum PCA basado en estimación de fase requiere circuitos profundos incompatibles con los dispositivos NISQ actuales. Por ello, en el corto plazo la línea más viable es la comparativa de \textbf{clustering cuántico variacional} (VQE aplicado a la minimización de la función de coste de $k$-means) frente al $k$-means clásico, siguiendo el mismo protocolo con datos SKG reales y datasets públicos de referencia establecido en este TFM.
 
 \paragraph{Ventaja teórica en complejidad.}
-Uno de los argumentos más sólidos a favor del aprendizaje no supervisado cuántico es la reducción de complejidad computacional que ofrecen los algoritmos más maduros. Q-means \citep{kerenidis2019} tiene complejidad $O(\text{poly}(\log N, k, d, 1/\varepsilon))$, exponencialmente mejor que el $O(Nkd)$ del $k$-means clásico en función del número de muestras $N$, número de clusters $k$ y dimensionalidad $d$. Quantum PCA \citep{lloyd2014} calcula los vectores propios dominantes del operador de densidad en tiempo $O(\log N)$, frente al $O(N d^2)$ de la PCA clásica. Esta reducción exponencial de complejidad es particularmente relevante para los datasets de movilidad de SKG Tecnología, donde $N > 80.000$ registros y la PCA clásica ya constituye un cuello de botella en pipelines de tiempo real. Con hardware cuántico tolerante a fallos, estos algoritmos podrían transformar radicalmente la viabilidad del aprendizaje no supervisado a escala operativa.
+Uno de los argumentos más sólidos a favor del aprendizaje no supervisado cuántico es la reducción de complejidad computacional que ofrecen los algoritmos más maduros. Q-means \citep{kerenidis2019qmeans} tiene un tiempo por iteración polilogarítmico en el número de muestras $N$ (y polinómico en $k$, $d$ y la precisión), frente al $O(Nkd)$ del $k$-means clásico, bajo la hipótesis de que los datos estén almacenados en una qRAM. Quantum PCA \citep{lloyd2014} permite extraer los vectores propios dominantes de una matriz de densidad en tiempo polilogarítmico en la dimensión, también bajo supuestos de acceso a los datos y de que la matriz sea aproximadamente de bajo rango. Esta reducción de complejidad, condicionada a esos supuestos, sería particularmente relevante para los datasets de movilidad de SKG Tecnología, donde $N > 80.000$ registros y la PCA clásica ya constituye un cuello de botella en pipelines de tiempo real. Conviene matizarlo: \citet{tang2021} muestra que, si los algoritmos clásicos disponen de un modelo de acceso a los datos análogo a la preparación de estados que asumen los cuánticos, la aceleración exponencial del PCA cuántico desaparece. Con hardware tolerante a fallos y esos supuestos, estos algoritmos podrían mejorar la escala del aprendizaje no supervisado, pero la ventaja respecto a los mejores métodos clásicos sigue sin estar demostrada en datos reales.
 
 \section{Extensión del Framework QCR}
 
-El Framework QCR (Quantum-Compatible Representation) se \textbf{plantea formalmente} en el Capítulo~\ref{cap:investigacion_original} (definición, protocolo, Conjetura~\ref{conj:qcr}) con evidencia preliminar: Notebook~09 (re-uploading $reps=3$ en Telco) y revisión QML~v2 (Sección~\ref{sec:qml_v2_revision}), donde el rescate robusto observable es la rotación en SKG, no Telco. Este TFM no pretende cerrar la conjetura. Quedan líneas de extensión claras:
+El Framework QCR (Quantum-Compatible Representation) se \textbf{plantea formalmente} en el Capítulo~\ref{cap:investigacion_original} (definición, protocolo, Conjetura~\ref{conj:qcr}) con evidencia preliminar: Notebook~09 (re-uploading $reps=3$ elevaba $\mathcal{Q}$ en Telco \emph{vs.\ RBF}) y revisión QML~v2 (Sección~\ref{sec:qml_v2_revision}), donde Telco permanece \texttt{classical} y SKG solo muestra un cambio geométrico \texttt{try-ZZ} por rotación, sin lift de accuracy. No se ha observado estructura cuántica en SKG ni en Telco. Este TFM no pretende cerrar la conjetura. Quedan líneas de extensión claras:
 
 % -------------------------------------------------------------------
 \subsection{Demostración de la Conjetura del Espacio de Representación Cuántico-Compatible}
@@ -142,27 +143,27 @@ La contribución teórica central del Capítulo~\ref{cap:investigacion_original}
   \mathbf{z}
   \;\xrightarrow{\;f_Q^*\;}\;
   \hat{y}
-  \;\Big[\xrightarrow{\;\psi^{-1}\;}\; \mathbf{x}^* \;\text{(solo en optimización)}\Big]
+  \;\Big[\xrightarrow{\;\rho=\psi^{-1}\;}\; \mathbf{x}^* \;\text{(solo en optimización)}\Big]
 \end{equation}
 
-donde $\psi: \mathcal{X} \rightarrow \mathcal{Z}$ es una transformación polinómica que convierte cualquier dataset clásico en cuántico-compatible. Esta conjetura permanece abierta, y su demostración o refutación constituye la línea de investigación post-TFM de mayor impacto potencial. La hoja de ruta propuesta es la siguiente:
+donde $\psi: \mathcal{X} \rightarrow \mathcal{Z}$ es un isomorfismo, por analogía con la transformada de Fourier, cuya imagen tiene estructura cuántica y cuya forma no se conoce con certeza. Esta conjetura permanece abierta, y su demostración o refutación constituye la línea de investigación post-TFM de mayor impacto potencial. La hoja de ruta propuesta es la siguiente:
 
 \begin{enumerate}
-  \item \textbf{Caracterización de la clase de distribuciones $p(\mathbf{x},y)$ para las que existe $\psi$ polinómico.} \\
-  Determinar si la existencia de $\psi$ depende de propiedades universales de la distribución (como suavidad, separabilidad de clases o estructura espectral) o si existen distribuciones para las cuales ninguna $\psi$ polinómica produce $\mathcal{Q}(\psi(\mathcal{D})) > 0$. Un contraejemplo de esta segunda hipótesis constituiría una refutación de la conjetura.
+  \item \textbf{Caracterización de la clase de distribuciones $p(\mathbf{x},y)$ para las que existe $\psi$.} \\
+  Determinar si la existencia de $\psi$ depende de propiedades universales de la distribución (como suavidad, separabilidad de clases o estructura espectral) o si existen distribuciones para las cuales ninguna $\psi$ tiene una imagen con estructura cuántica. Un contraejemplo de esta segunda hipótesis constituiría una refutación de la conjetura.
 
-  \item \textbf{Demostración de invarianza de error: $\varepsilon(f_Q^* \circ \psi) \leq \varepsilon(f_C^*)$.} \\
-  Probar que la ventaja cuántica obtenida en $\mathcal{Z}$ no se destruye al componer con $\psi$. Esto requiere una cota de la distorsión informacional introducida por $\psi$ ---análoga a la preservación de separabilidad en PCA de kernels--- en términos del score $\mathcal{Q}$ y de la cota de Huang et al.\ \citep{huang2021}.
+  \item \textbf{Definición de la estructura cuántica de la imagen y coste de $\psi$.} \\
+  Precisar qué propiedad de la imagen de $\psi$ constituye estructura cuántica ---sin presuponer que un indicador concreto la caracterice--- y acotar el coste de calcular $\psi$, que debe contabilizarse en las aplicaciones.
 
-  \item \textbf{Back-mapping $\psi^{-1}$ con garantías de factibilidad en optimización.} \\
-  Para problemas combinatorios (asignación de agentes, rutas, portafolio), la solución cuántica óptima $\mathbf{z}^* \in \mathcal{Z}$ debe decodificarse en una solución factible $\psi^{-1}(\mathbf{z}^*) \in \mathcal{X}$. Hay que demostrar que $\psi$ admite un decodificador que preserva la factibilidad de las restricciones QUBO bajo la transformación inversa, o diseñar un decodificador aproximado con cota de penalización controlada.
+  \item \textbf{Mapa de vuelta $\rho=\psi^{-1}$ con garantías de factibilidad en optimización.} \\
+  Para problemas combinatorios (asignación de agentes, rutas, portafolio), la solución cuántica óptima $\mathbf{z}^* \in \mathcal{Z}$ debe decodificarse en una solución factible $\rho(\mathbf{z}^*) \in \mathcal{X}$. Hay que demostrar que $\psi$ admite un decodificador que preserva la factibilidad de las restricciones QUBO bajo la transformación inversa, o diseñar un decodificador aproximado con cota de penalización controlada.
 
   \item \textbf{Algoritmo de búsqueda de $\psi$ con garantías de aproximación.} \\
   El re-uploading adaptativo encontrado empíricamente en el Notebook~09 es solo una instancia particular de $\psi$ en un espacio de búsqueda mucho mayor. Desarrollar un algoritmo de búsqueda ---posiblemente variacional, tipo quantum metric learning \citep{lloyd2020}--- que encuentre $\psi$ óptima con garantías de convergencia y complejidad polinómica en el tamaño del dataset.
 \end{enumerate}
 
 \paragraph{Impacto potencial.}
-Si la Conjetura~\ref{conj:qcr} se demostrara en su forma fuerte ---es decir, si existiera $\psi$ polinómica para toda distribución--- implicaría que la computación cuántica puede ofrecer ventaja sobre \emph{cualquier} dataset clásico, dado el preprocesamiento adecuado. Aunque el horizonte temporal de esta demostración es incierto, incluso su versión débil ---existencia de $\psi$ para familias específicas de distribuciones--- tendría un impacto metodológico directo en el diseño de pipelines de aprendizaje automático cuántico en entornos empresariales.
+Si la Conjetura~\ref{conj:qcr} se demostrara en su forma fuerte ---es decir, si existiera $\psi$ para toda distribución--- implicaría que la computación cuántica puede ofrecer ventaja sobre \emph{cualquier} dataset clásico, dado el preprocesamiento adecuado. Aunque el horizonte temporal de esta demostración es incierto, incluso su versión débil ---existencia de $\psi$ para familias específicas de distribuciones--- tendría un impacto metodológico directo en el diseño de pipelines de aprendizaje automático cuántico en entornos empresariales.
 
 \subsection{Extensiones operativas del framework}
 
@@ -220,7 +221,7 @@ La combinación del score $\mathcal{Q}(\mathcal{D})$ y el Framework QCR --- vali
   \node[item, draw=violet!45, fill=violet!5, below=0.35cm of h3] (l1)
     {\textbf{Corrección de errores}\\\scriptsize hardware tolerante a fallos};
   \node[item, draw=violet!45, fill=violet!5, below=0.25cm of l1] (l2)
-    {\textbf{Demostración Conjetura QCR}\\\scriptsize $\exists\,\psi$ polinómica; back-mapping $\psi^{-1}$};
+    {\textbf{Demostración Conjetura QCR}\\\scriptsize $\exists\,\psi$; back-mapping $\psi^{-1}$};
   \node[item, draw=violet!45, fill=violet!5, below=0.25cm of l2] (l3)
     {\textbf{QCR generalizado}\\\scriptsize PauliMap + IQP + TwoLocal};
   \node[item, draw=violet!45, fill=violet!5, below=0.25cm of l3] (l4)
@@ -233,7 +234,7 @@ La combinación del score $\mathcal{Q}(\mathcal{D})$ y el Framework QCR --- vali
   \draw[->, very thick, gray!50] (7.05, -3.5) -- (7.75, -3.5);
 
 \end{tikzpicture}
-\caption{Roadmap de trabajo futuro organizado en tres horizontes temporales. Las líneas de investigación de corto plazo (azul) son directamente ejecutables con el hardware actual; las de medio plazo (naranja) requieren hardware mejorado o mayor volumen de datos; las de largo plazo (violeta) dependen de avances en hardware tolerante a fallos y consolidación teórica, incluyendo la demostración de la Conjetura~\ref{conj:qcr}.}
+\caption{Roadmap de trabajo futuro organizado en tres horizontes temporales. Las líneas de investigación de corto plazo (azul) son directamente ejecutables con el hardware actual; las de medio plazo (azul oscuro) requieren hardware mejorado o mayor volumen de datos; las de largo plazo (gris) dependen de avances en hardware tolerante a fallos y consolidación teórica, incluyendo la demostración de la Conjetura~\ref{conj:qcr}.}
 \label{fig:roadmap_futuro}
 \end{figure}
 

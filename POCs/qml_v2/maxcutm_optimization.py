@@ -29,7 +29,7 @@ import networkx as nx
 import numpy as np
 import pandas as pd
 
-from qml_v2.classification import REPO_ROOT, repo_paths
+from qml_v2.outputs import REPO_ROOT, repo_paths
 
 
 @dataclass
@@ -101,15 +101,13 @@ def random_cut(G: nx.Graph, random_state: int = 0) -> tuple[float, np.ndarray]:
     return cut_value(G, bits), bits
 
 
-def greedy_maxcut(
-    G: nx.Graph, random_state: int = 0, n_restarts: int = 1
-) -> tuple[float, np.ndarray]:
+def greedy_maxcut(G: nx.Graph, random_state: int = 0, n_restarts: int = 1) -> tuple[float, np.ndarray]:
     """Multi-start local greedy: flip nodes that improve the cut."""
     rng = np.random.RandomState(random_state)
     n = G.number_of_nodes()
     best_val = -1.0
     best_bits = np.zeros(n, dtype=int)
-    for r in range(max(1, n_restarts)):
+    for _r in range(max(1, n_restarts)):
         bits = rng.randint(0, 2, size=n)
         improved = True
         while improved:
@@ -129,9 +127,7 @@ def greedy_maxcut(
     return best_val, best_bits
 
 
-def qaoa_maxcut(
-    G: nx.Graph, p: int, maxiter: int, random_state: int
-) -> tuple[float, np.ndarray, float]:
+def qaoa_maxcut(G: nx.Graph, p: int, maxiter: int, random_state: int) -> tuple[float, np.ndarray, float]:
     from qiskit.primitives import StatevectorSampler
     from qiskit_algorithms import QAOA
     from qiskit_algorithms.optimizers import COBYLA
@@ -204,9 +200,7 @@ def run_suite(cfg: OptConfig | None = None, quick: bool = False) -> pd.DataFrame
         )
 
         t0 = time.time()
-        g_val, g_bits = greedy_maxcut(
-            G, random_state=seed, n_restarts=cfg.greedy_restarts
-        )
+        g_val, g_bits = greedy_maxcut(G, random_state=seed, n_restarts=cfg.greedy_restarts)
         rows.append(
             OptResult(
                 graph_id=g_id,
@@ -220,9 +214,7 @@ def run_suite(cfg: OptConfig | None = None, quick: bool = False) -> pd.DataFrame
             )
         )
 
-        q_val, q_bits, q_time = qaoa_maxcut(
-            G, p=cfg.qaoa_p, maxiter=cfg.cobyla_maxiter, random_state=seed
-        )
+        q_val, q_bits, q_time = qaoa_maxcut(G, p=cfg.qaoa_p, maxiter=cfg.cobyla_maxiter, random_state=seed)
         rows.append(
             OptResult(
                 graph_id=g_id,
@@ -237,9 +229,9 @@ def run_suite(cfg: OptConfig | None = None, quick: bool = False) -> pd.DataFrame
         )
         print(
             f"graph {g_id}: edges={m}  opt={opt_val:.0f}  "
-            f"rand={r_val:.0f} ({r_val/opt_val:.3f})  "
-            f"greedy={g_val:.0f} ({g_val/opt_val:.3f})  "
-            f"qaoa={q_val:.0f} ({q_val/opt_val:.3f})  t={q_time:.1f}s"
+            f"rand={r_val:.0f} ({r_val / opt_val:.3f})  "
+            f"greedy={g_val:.0f} ({g_val / opt_val:.3f})  "
+            f"qaoa={q_val:.0f} ({q_val / opt_val:.3f})  t={q_time:.1f}s"
         )
 
     df = pd.DataFrame([asdict(r) for r in rows])

@@ -1,0 +1,41 @@
+metodo,configuracion,semilla,reinicios,reinicios_factibles,factible,coste,activos,tiempo_s,brecha_pct,optimo
+VQE,penalizacion_alta,0,5,5,True,0.058601229871933835,"EC, AAPL, MSFT",7.57,34.04616979528733,False
+VQE,penalizacion_alta,1,5,5,True,0.04371719830669424,"EC, CIB, MSFT",7.96,0.0,True
+VQE,penalizacion_alta,2,5,5,True,0.15433197767973925,"CIB, MSFT, GOOGL",7.95,253.02348653963722,False
+VQE,penalizacion_alta,3,5,5,True,0.13682005229593502,"EC, MSFT, GOOGL",7.54,212.96619544575051,False
+VQE,penalizacion_alta,4,5,5,True,0.04371719830669424,"EC, CIB, MSFT",7.72,0.0,True
+VQE,penalizacion_alta,5,5,5,True,0.07155831791538136,"CIB, AAPL, MSFT",7.83,63.68459253351542,False
+VQE,penalizacion_alta,6,5,5,True,0.07155831791538136,"CIB, AAPL, MSFT",7.08,63.68459253351542,False
+VQE,penalizacion_alta,7,5,5,True,0.08906239267150318,"EC, CIB, AAPL",7.36,103.72392587167556,False
+VQE,penalizacion_alta,8,5,5,True,0.08906239267150318,"EC, CIB, AAPL",7.26,103.72392587167556,False
+VQE,penalizacion_alta,9,5,5,True,0.04371719830669424,"EC, CIB, MSFT",14.12,0.0,True
+QAOA,penalizacion_alta,0,5,5,True,0.04371719830669424,"EC, CIB, MSFT",648.88,0.0,True
+QAOA,penalizacion_alta,1,5,5,True,0.058601229871933835,"EC, AAPL, MSFT",561.81,34.04616979528733,False
+QAOA,penalizacion_alta,2,5,5,True,0.04371719830669424,"EC, CIB, MSFT",728.66,0.0,True
+QAOA,penalizacion_alta,3,5,5,True,0.04371719830669424,"EC, CIB, MSFT",681.78,0.0,True
+QAOA,penalizacion_alta,4,5,5,True,0.04371719830669424,"EC, CIB, MSFT",646.44,0.0,True
+QAOA,penalizacion_alta,5,5,5,True,0.04371719830669424,"EC, CIB, MSFT",724.41,0.0,True
+QAOA,penalizacion_alta,6,5,5,True,0.04371719830669424,"EC, CIB, MSFT",775.03,0.0,True
+QAOA,penalizacion_alta,7,5,5,True,0.36039567065522204,"CIB, GOOGL, AMZN",706.24,724.3796140065913,False
+QAOA,penalizacion_alta,8,5,5,True,0.08906239267150318,"EC, CIB, AAPL",748.27,103.72392587167556,False
+QAOA,penalizacion_alta,9,5,5,True,0.15433197767973925,"CIB, MSFT, GOOGL",616.47,253.02348653963722,False
+VQE,penalizacion_baja,0,1,0,False,,,2.07,,False
+VQE,penalizacion_baja,1,1,0,False,,,1.95,,False
+VQE,penalizacion_baja,2,1,0,False,,,1.99,,False
+VQE,penalizacion_baja,3,1,0,False,,,2.24,,False
+VQE,penalizacion_baja,4,1,0,False,,,2.06,,False
+VQE,penalizacion_baja,5,1,0,False,,,2.37,,False
+VQE,penalizacion_baja,6,1,0,False,,,2.3,,False
+VQE,penalizacion_baja,7,1,0,False,,,2.21,,False
+VQE,penalizacion_baja,8,1,0,False,,,2.02,,False
+VQE,penalizacion_baja,9,1,0,False,,,2.03,,False
+QAOA,penalizacion_baja,0,1,0,False,,,56.61,,False
+QAOA,penalizacion_baja,1,1,0,False,,,67.53,,False
+QAOA,penalizacion_baja,2,1,0,False,,,63.72,,False
+QAOA,penalizacion_baja,3,1,0,False,,,67.63,,False
+QAOA,penalizacion_baja,4,1,0,False,,,58.45,,False
+QAOA,penalizacion_baja,5,1,0,False,,,65.64,,False
+QAOA,penalizacion_baja,6,1,0,False,,,61.3,,False
+QAOA,penalizacion_baja,7,1,0,False,,,55.96,,False
+QAOA,penalizacion_baja,8,1,0,False,,,62.21,,False
+QAOA,penalizacion_baja,9,1,0,False,,,48.37,,False
