@@ -476,7 +476,7 @@ def qaoa_tsp(
     qp = build_tsp_qp(D, fix_depot=fix_depot)
     best_route: list[int] | None = None
     best_L = float("inf")
-    t0 = time.time()
+    t0 = time.perf_counter()
     for r in range(max(1, restarts)):
         seed = random_state + 17 * r
         algorithm_globals.random_seed = seed
@@ -490,7 +490,7 @@ def qaoa_tsp(
         L = tour_length(D, route)
         if L < best_L:
             best_L, best_route = L, route
-    return best_route, time.time() - t0
+    return best_route, time.perf_counter() - t0
 
 
 def _append_scored(
@@ -558,7 +558,7 @@ def run_suite(cfg: TSPConfig | None = None, quick: bool = False) -> pd.DataFrame
         D, names = make_instance(cfg.family, cfg.n, seed)
         n = cfg.n
 
-        t0 = time.time()
+        t0 = time.perf_counter()
         exact = brute_force_tsp(D, fix_depot=cfg.fix_depot)
         exact_L = tour_length(D, exact)
         _append_scored(
@@ -570,11 +570,11 @@ def run_suite(cfg: TSPConfig | None = None, quick: bool = False) -> pd.DataFrame
             D=D,
             route=exact,
             exact_L=exact_L,
-            time_s=time.time() - t0,
+            time_s=time.perf_counter() - t0,
             names=names,
         )
 
-        t0 = time.time()
+        t0 = time.perf_counter()
         nn = nearest_neighbor(D, start=0)
         _append_scored(
             rows,
@@ -585,11 +585,11 @@ def run_suite(cfg: TSPConfig | None = None, quick: bool = False) -> pd.DataFrame
             D=D,
             route=nn,
             exact_L=exact_L,
-            time_s=time.time() - t0,
+            time_s=time.perf_counter() - t0,
             names=names,
         )
 
-        t0 = time.time()
+        t0 = time.perf_counter()
         nn_ms = nearest_neighbor_multistart(D, n_starts=cfg.nn_starts)
         _append_scored(
             rows,
@@ -600,11 +600,11 @@ def run_suite(cfg: TSPConfig | None = None, quick: bool = False) -> pd.DataFrame
             D=D,
             route=nn_ms,
             exact_L=exact_L,
-            time_s=time.time() - t0,
+            time_s=time.perf_counter() - t0,
             names=names,
         )
 
-        t0 = time.time()
+        t0 = time.perf_counter()
         nn2 = nn_plus_two_opt(D, n_starts=cfg.nn_starts)
         _append_scored(
             rows,
@@ -615,11 +615,11 @@ def run_suite(cfg: TSPConfig | None = None, quick: bool = False) -> pd.DataFrame
             D=D,
             route=nn2,
             exact_L=exact_L,
-            time_s=time.time() - t0,
+            time_s=time.perf_counter() - t0,
             names=names,
         )
 
-        t0 = time.time()
+        t0 = time.perf_counter()
         rnd = random_tour(D, random_state=seed)
         _append_scored(
             rows,
@@ -630,12 +630,12 @@ def run_suite(cfg: TSPConfig | None = None, quick: bool = False) -> pd.DataFrame
             D=D,
             route=rnd,
             exact_L=exact_L,
-            time_s=time.time() - t0,
+            time_s=time.perf_counter() - t0,
             names=names,
         )
 
         if cfg.run_sa:
-            t0 = time.time()
+            t0 = time.perf_counter()
             sa_route, _ = sa_qubo_tsp(
                 D,
                 fix_depot=cfg.fix_depot,
@@ -652,7 +652,7 @@ def run_suite(cfg: TSPConfig | None = None, quick: bool = False) -> pd.DataFrame
                 D=D,
                 route=sa_route,
                 exact_L=exact_L,
-                time_s=time.time() - t0,
+                time_s=time.perf_counter() - t0,
                 names=names,
             )
 
