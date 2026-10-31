@@ -10,27 +10,29 @@
 \label{anx:notebooks}
 % =====================================================================
 
-La Tabla~\ref{tab:notebooks} describe los diez notebooks Jupyter que implementan las pruebas de concepto del TFM. Todos se encuentran en el directorio \texttt{POCs/notebooks/} del repositorio y son reproducibles con el entorno especificado en \texttt{POCs/requirements.txt}.
+La Tabla~\ref{tab:notebooks} describe los notebooks Jupyter que implementan las pruebas de concepto del TFM. Todos se encuentran en el directorio \texttt{POCs/notebooks/} del repositorio y son reproducibles con el entorno especificado en \texttt{POCs/requirements.txt}.
 
 \begin{table}[ht]
 \centering
 \footnotesize
 \setlength{\tabcolsep}{4pt}
-\renewcommand{\arraystretch}{1.2}
+\renewcommand{\arraystretch}{1.1}
 \begin{tabularx}{\linewidth}{@{}c >{\raggedright\arraybackslash}p{4.2cm} >{\raggedright\arraybackslash}X >{\raggedright\arraybackslash}p{3.4cm}@{}}
 \toprule
 \textbf{Nb.} & \textbf{Archivo} & \textbf{Descripción} & \textbf{Datasets} \\
 \midrule
-01 & \nolinkurl{01_clasificacion_quantum_vs_clasico} & QSVM vs Gradient Boosting, RF, SVM-RBF, Regresión Logística & Cuántico-nativo, SKG Incidentes, Telco Churn \\[3pt]
-02 & \nolinkurl{02_optimizacion_QAOA_vs_clasico} & Localización-asignación exacta (PuLP) y subproblema de 10 focos: fuerza bruta, Greedy y QAOA ($p=1,2$, 5 semillas) & \texttt{incidents\_\allowbreak movility.csv}, \texttt{agents.csv} (SKG) \\[3pt]
-03 & \nolinkurl{03_regresion_VQC_vs_clasico} & QK-SVR vs XGBoost, RF, SVR-RBF, Ridge & Cuántico-nativo, SKG Corredores, Friedman~\#1 \\[3pt]
-04 & \nolinkurl{04_portafolio_VQE_QAOA_vs_clasico} & VQE/QAOA (10 semillas, vía \texttt{qml\_v2.portfolio}) vs fuerza bruta y Greedy en selección de portafolio & Precios reales de cierre ajustado (Yahoo Finance, 6 acciones, 2022--2023, 501 sesiones) \\[3pt]
-05 & \nolinkurl{05_tsp_QUBO_vs_clasico} & Fuerza bruta, Nearest Neighbor, NN+2-opt, SA-QUBO y QAOA ($p=1$, 9 qubits) en TSP cerrado & 12 capitales colombianas (distancias haversine); el subproblema cuántico usa las 4 primeras \\[3pt]
-06 & \nolinkurl{06_quantum_kernel_advantage} & Análisis del umbral de ventaja del kernel cuántico & Cuántico-nativo, SKG, Telco ($n \in \{50,\dots,150\}$) \\[3pt]
-07 & \nolinkurl{07_resumen_ventaja_cuantica} & Síntesis visual de resultados comparativos & Todos \\[3pt]
-08 & \nolinkurl{08_test_cuanticidad_datasets} & Score $\mathcal{Q}(D)$: kernel alignment, Frobenius, entropía espectral & Cuántico-nativo, SKG, Telco \\[3pt]
-09 & \nolinkurl{09_mapeo_cuantico_compatible} & Framework QCR: cuatro estrategias de pre-mapeo & Cuántico-nativo, SKG, Telco \\[3pt]
-10 & \nolinkurl{10_dominante_minimo_QAOA_vs_clasico} & Paradigma híbrido QAOA-COBYLA en MDS (Caso~7) & Red social sintética, grafos Erdős-Rényi \\
+01 & \nolinkurl{01_clasificacion_quantum_vs_clasico} & QSVM vs Gradient Boosting, RF, SVM-RBF, Regresión Logística & Cuántico-nativo, SKG Incidentes, Telco Churn \\[1pt]
+02 & \nolinkurl{02_optimizacion_QAOA_vs_clasico} & Localización-asignación exacta (PuLP) y subproblema de 10 focos: fuerza bruta, Greedy y QAOA ($p=1,2$, 5 semillas) & \texttt{incidents\_\allowbreak movility.csv}, \texttt{agents.csv} (SKG) \\[1pt]
+03 & \nolinkurl{03_regresion_VQC_vs_clasico} & QK-SVR vs XGBoost, RF, SVR-RBF, Ridge & Cuántico-nativo, SKG Corredores, Friedman~\#1 \\[1pt]
+04 & \nolinkurl{04_portafolio_VQE_QAOA_vs_clasico} & VQE/QAOA (10 semillas, vía \texttt{qml\_v2.portfolio}) vs fuerza bruta y Greedy en selección de portafolio & Precios reales de cierre ajustado (Yahoo Finance, 6 acciones, 2022--2023, 501 sesiones) \\[1pt]
+05 & \nolinkurl{05_tsp_QUBO_vs_clasico} & Fuerza bruta, Nearest Neighbor, NN+2-opt, SA-QUBO y QAOA ($p=1$, 9 qubits) en TSP cerrado & 12 capitales colombianas (distancias haversine); el subproblema cuántico usa las 4 primeras \\[1pt]
+06 & \nolinkurl{06_quantum_kernel_advantage} & Análisis del umbral de ventaja del kernel cuántico & Cuántico-nativo, SKG, Telco ($n \in \{50,\dots,150\}$) \\[1pt]
+07 & \nolinkurl{07_resumen_ventaja_cuantica} & Síntesis visual de resultados comparativos & Todos \\[1pt]
+08 & \nolinkurl{08_test_cuanticidad_datasets} & Score $\mathcal{Q}(D)$: kernel alignment, Frobenius, entropía espectral & Cuántico-nativo, SKG, Telco \\[1pt]
+09 & \nolinkurl{09_mapeo_cuantico_compatible} & Framework QCR: cuatro estrategias de pre-mapeo & Cuántico-nativo, SKG, Telco \\[1pt]
+10 & \nolinkurl{10_dominante_minimo_QAOA_vs_clasico} & Paradigma híbrido QAOA-COBYLA en MDS (Caso~7) & Red social sintética, grafos Erdős-Rényi \\[1pt]
+11 & \nolinkurl{11_estructura_cuantica_por_caso_uso} & Indicadores de estructura $\mathcal{Q}(D)$ en cuatro familias con el mismo protocolo & Cuántico-nativo, SKG, Telco, paisajes QUBO \\[1pt]
+12 & \nolinkurl{12_series_temporales_forecasting} & Series temporales por lags (Caso~9): QK-SVR vs Ridge, SVR-RBF y GB & \texttt{zz\_lag}, \texttt{sine}, corredores SKG \\
 \bottomrule
 \end{tabularx}
 \caption{Catálogo de notebooks de pruebas de concepto. Todos ejecutables con las dependencias del Anexo~\ref{anx:entorno}.}

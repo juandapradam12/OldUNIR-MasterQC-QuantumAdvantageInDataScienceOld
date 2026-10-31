@@ -38,7 +38,7 @@ El Caso~8 (OCSVM con kernel ZZ vs IsolationForest / LOF / OCSVM-RBF) muestra ven
 El Caso~5 (TSP cerrado, no VRP) con protocolo QML~v2 muestra QAOA-$p$1 = NN+2-opt = exacto (1867.6~km en Colombia $n=4$). El aporte es de modelado QUBO y decodificación factible, no de ventaja temporal frente a 2-opt.
 
 \item \textbf{Forecasting por lags sigue el mismo principio de alineación.}
-El Caso~9: QK-SVR-ZZ gana en \texttt{zz\_lag} (MAE $0.056$ vs Ridge $0.414$); en \texttt{sine} y \texttt{skg\_speed} gana el clásico. No es ``series cuánticas'', sino target alineado al mapa.
+El Caso~9: QK-SVR-ZZ gana en \texttt{zz\_lag} (MAE $0.056$ vs Ridge $0.414$); en \texttt{sine} y en la velocidad de corredores SKG gana el clásico (MAE $2.80$ de Ridge frente a $13.59$ del QK-SVR, igual al de predecir la media del entrenamiento). No es ``series cuánticas'', sino target alineado al mapa.
 
 \item \textbf{Un segundo mapa (Pauli-Y) confirma que la ventaja sigue al emparejamiento.}
 Tabla cruzada ($n=120$, 5 repeats): generador ZZ $\Rightarrow$ QSVM-ZZ $0.828$ (RBF $0.478$); generador Pauli-Y $\Rightarrow$ QSVM-PauliY $0.550$ (RBF $0.517$), y el kernel ZZ desalineado cae a $0.406$. ZZ es el mapa del corpus principal; no es el único admisible.

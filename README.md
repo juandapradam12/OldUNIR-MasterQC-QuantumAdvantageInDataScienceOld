@@ -57,7 +57,7 @@ Building on these observations, the thesis advances two research proposals. Firs
 | 6 | Classification (threshold setting) | Quantum kernel SVM | Advantage contingent on native structure |
 | 7 | Combinatorial optimization (dominating set) | Hybrid QAOA | Ties exact ILP on the 6-node network (mean P(opt) 5.7%, p = 3); on Erdős–Rényi graphs (n = 6–15) QAOA reaches a minimum dominating set in 2 of 5 instances vs 5 of 5 for ILP and Greedy (−60 pp) |
 | 8 | Clustering-related (one-class anomalies) | OCSVM with ZZ kernel | Advantage only when novelty is map-aligned |
-| 9 | Forecasting (lag windows) | Quantum-kernel SVR | Advantage only when the target is map-aligned |
+| 9 | Forecasting (lag windows) | Quantum-kernel SVR | Advantage only when the target is map-aligned (MAE 0.056 vs 0.414 for Ridge on the native series); on SKG corridor speeds Ridge reaches 2.80 vs 13.59 for the quantum kernel, which matches a train-mean predictor |
 
 Implementation: Qiskit (exact statevector simulation). Reproducible protocols and tests live under `POCs/`.
 

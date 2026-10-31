@@ -1101,12 +1101,50 @@ def caso9() -> list[Hecho]:
     )
     skg_cl = skg[(skg["table"].str.startswith("A")) & (skg["model"] != "QK-SVR-ZZ")].nsmallest(1, "mae_mean").iloc[0]
     h.append(
-        Hecho(9, "skg_speed", (f(skg_cl.mae_mean, 2), f(fila(skg, "QK-SVR-ZZ").mae_mean, 1)), en("eval", caso=9), "skg")
+        Hecho(9, "skg_speed", (f(skg_cl.mae_mean, 2), f(fila(skg, "QK-SVR-ZZ").mae_mean, 2)), en("eval", caso=9), "skg")
     )
     cfg9 = json.loads((METRICS / "qml_v2_timeseries_config.json").read_text(encoding="utf-8"))
+    h.append(Hecho(9, "Configuración", (str(cfg9["n_total"]), str(cfg9["n_repeats"])), en("desa", caso=9), "zz_lag"))
+    pares = max(cfg9["n_total"] * 2, 240)
+    puntos_sine = max(cfg9["n_total"] * 3, 400)
+    fuente_ts = (POCS / "qml_v2" / "timeseries.py").read_text(encoding="utf-8")
+    ruido = float(re.search(r"def make_sine_series\([^)]*noise: float = ([\d.]+)", fuente_ts).group(1))
+    skg_n = pd.read_csv(RAIZ / "Datos" / "bctraveltimes_history.csv", usecols=["tid"])["tid"].value_counts()
     h.append(
-        Hecho(9, "Configuración", (str(cfg9["n_total"]), str(cfg9["n_repeats"])), en("eval", "desa", caso=9), "n=160")
+        Hecho(9, "Partición temporal", (str(round((1 - cfg9["test_size"]) * 100)),), en("desa", caso=9), "División")
     )
+    h.append(Hecho(9, "Tamaño del pool zz_lag", (str(pares),), en("desa", caso=9), "zz_lag"))
+    h.append(Hecho(9, "Serie sine", (str(puntos_sine), f(ruido, 2)), en("desa", caso=9), "sine"))
+    h.append(Hecho(9, "Corredores SKG", (str(skg_n.max()), str(len(skg_n))), en("desa", caso=9), "skg_speed"))
+    h.append(Hecho(9, "Defensa: nativo", (f(q.mae_mean, 3), f(ridge.mae_mean, 3)), en("defensa"), "vs 0.414 de Ridge"))
+    h.append(
+        Hecho(
+            9,
+            "Defensa: SKG",
+            (f(skg_cl.mae_mean, 2), f(fila(skg, "QK-SVR-ZZ").mae_mean, 2)),
+            en("defensa"),
+            "persistencia",
+        )
+    )
+    h.append(
+        Hecho(
+            9,
+            "Defensa: sine",
+            (f(sine_cl.mae_mean, 3), f(fila(sine, "QK-SVR-ZZ").mae_mean, 3)),
+            en("defensa"),
+            "media del entrenamiento",
+        )
+    )
+    h.append(
+        Hecho(
+            9,
+            "README: Caso 9",
+            (f(q.mae_mean, 3), f(ridge.mae_mean, 3), f(skg_cl.mae_mean, 2), f(fila(skg, "QK-SVR-ZZ").mae_mean, 2)),
+            en("readme"),
+            "Forecasting",
+        )
+    )
+    h.append(Hecho(9, "Repeticiones", (str(cfg9["n_repeats"]),), en("eval", caso=9), "repeticiones"))
     h.append(
         Hecho(
             9,
@@ -1117,10 +1155,53 @@ def caso9() -> list[Hecho]:
                 f(sine_cl.mae_mean, 3),
                 f(fila(sine, "QK-SVR-ZZ").mae_mean, 3),
                 f(skg_cl.mae_mean, 2),
-                f(fila(skg, "QK-SVR-ZZ").mae_mean, 1),
+                f(fila(skg, "QK-SVR-ZZ").mae_mean, 2),
             ),
             en("desa", caso=9),
             "zz_lag",
+        )
+    )
+    refs = csv("fair_timeseries_references.csv").set_index(["dataset", "reference"])["mae_mean"]
+    zz_others = [fila(zz, m).mae_mean for m in ("SVR-RBF", "GradientBoosting")]
+    sine_b = sine[sine["table"].str.startswith("B")].nsmallest(1, "mae_mean").iloc[0]
+    skg_b = skg[skg["table"].str.startswith("B")].nsmallest(1, "mae_mean").iloc[0]
+    skg_q = fila(skg, "QK-SVR-ZZ")
+    h.append(
+        Hecho(
+            9,
+            "zz_lag: otros clásicos y media del entrenamiento",
+            (*(f(v, 3) for v in zz_others), f(refs["zz_lag", "train_mean"], 3)),
+            en("eval", caso=9),
+            "zz_lag",
+        )
+    )
+    h.append(
+        Hecho(
+            9,
+            "sine: media del entrenamiento y Tabla B",
+            (f(refs["sine", "train_mean"], 3), f(sine_b.mae_mean, 3)),
+            en("eval", caso=9),
+            "sine",
+        )
+    )
+    h.append(
+        Hecho(
+            9,
+            "skg_speed: dispersión, referencias y Tabla B",
+            (
+                pm(skg_cl.mae_mean, skg_cl.mae_std, 2),
+                pm(skg_q.mae_mean, skg_q.mae_std, 2),
+                f(refs["skg_speed", "train_mean"], 2),
+                f(refs["skg_speed", "persistence"], 2),
+                f(skg_b.mae_mean, 2),
+            ),
+            en("eval", caso=9),
+            "skg_speed",
+        )
+    )
+    h.append(
+        Hecho(
+            9, "skg_speed: ventanas por corredor", (str(int(skg_q.n_train + skg_q.n_test)),), en("desa", caso=9), "138"
         )
     )
     sint = csv("07_sintesis_resultados.csv")
@@ -1464,7 +1545,11 @@ def caso5() -> list[Hecho]:
             "Sobre las 12 capitales",
         ),
         Hecho(
-            5, "Memoria de la evolución densa de 16 qubits (GiB)", (str(2**32 * 16 // 2**30),), en("desa", caso=5), "64"
+            5,
+            "Memoria de la evolución densa de 16 qubits (GiB)",
+            ("16", str(2**32 * 16 // 2**30)),
+            en("desa", caso=5),
+            "64",
         ),
         Hecho(5, "Resumen / abstract", (f(exacto),), en("resumen", "abstract"), "TSP"),
         Hecho(5, "Conclusiones", (f(exacto),), en("conc"), "Caso 5"),

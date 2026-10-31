@@ -682,44 +682,54 @@ IsolationForest, OCSVM-RBF, LOF y \textbf{OCSVM-ZZ} (kernel de fidelidad sobre \
 \label{sec:caso9_timeseries}
 % =====================================================================
 
-Este caso extiende la familia de kernels a \textbf{series temporales} con un protocolo justo de un paso adelantado: la predicción $y_t$ se construye solo con una ventana de lags del pasado. No es un bake-off frente a ARIMA. Implementación: \texttt{POCs/qml\_v2/timeseries.py}.
+Este caso extiende la familia de kernels a \textbf{series temporales} con un protocolo justo de predicción un paso adelante: $y_t$ se estima únicamente a partir de una ventana de los valores anteriores (\textit{lags}). No es una comparación frente a ARIMA o Prophet: la pregunta es si un kernel ZZ sobre el vector de lags supera a regresores clásicos que ven \emph{los mismos lags}. Implementación: \texttt{POCs/qml\_v2/timeseries.py}; cuaderno: Notebook~12.
 
 \subsection{Protocolo}
 
 \begin{itemize}
-  \item \textbf{Tabla~A:} mismos $n_{\mathrm{lags}}=n_q$ features para QK-SVR-ZZ, Ridge, SVR-RBF y Gradient Boosting.
-  \item \textbf{Tabla~B:} los clásicos reciben lags extra + features cíclicas de hora (mismo $n$ de train).
-  \item Splits \textbf{ordenados en el tiempo} (train = pasado, test = futuro). Configuración reportada: $n=160$, 5 repeticiones, $n_q=2$.
+  \item \textbf{Tabla~A:} QK-SVR (kernel de fidelidad ZZ, $n_q=2$ qubits), Ridge, SVR-RBF y Gradient Boosting reciben las mismas $n_{\mathrm{lags}}=n_q=2$ variables.
+  \item \textbf{Tabla~B:} los clásicos reciben además 4 lags adicionales, media y desviación de la ventana y, en la serie SKG, la hora del día en codificación cíclica (mismas muestras de entrenamiento).
+  \item \textbf{División temporal:} el 70\,\% inicial de la serie es entrenamiento y el 30\,\% final es prueba, sin barajar, de modo que no hay fuga de información del futuro. 5 repeticiones.
+  \item \textbf{Referencias ingenuas:} el MAE de la \emph{persistencia} ($\hat y_t=y_{t-1}$) y el de predecir la media del entrenamiento sobre las mismas ventanas de prueba, para interpretar el error absoluto de cada modelo.
 \end{itemize}
 
 \subsection{Datasets e hipótesis}
 
+La Figura~\ref{fig:ts_datasets} muestra los tres conjuntos.
+
 \begin{itemize}
-  \item \texttt{zz\_lag}: ventana de lags en espacio de ángulos; objetivo $=\langle ZZ\rangle$ de esa ventana $\Rightarrow$ alineación con el mapa ZZ validado en este TFM.
-  \item \texttt{sine}: serie periódica clásica + ruido $\Rightarrow$ clásico.
-  \item \texttt{skg\_speed}: un corredor de velocidad SKG (práctica) $\Rightarrow$ clásico, sobre todo en Table~B.
+  \item \texttt{zz\_lag} (cuántico-nativo): pares de lags $(y_{t-2},y_{t-1})$ en $[-\pi,\pi]^2$ y objetivo $y_t=\langle ZZ\rangle$ del estado preparado por el mapa ZZ con esos ángulos, de modo que target y feature map están alineados por construcción. Los pares son independientes entre sí: es el control nativo del protocolo, no una serie con dinámica propia. Cada repetición toma 160 ventanas de un conjunto de 320.
+  \item \texttt{sine} (referencia sintética): $\sin(2\pi t/24)+0.3\sin(2\pi t/7)$ más ruido gaussiano ($\sigma=0.15$), 480 puntos; cada repetición toma una ventana contigua de 160. Periodicidad clásica.
+  \item \texttt{skg\_speed} (SKG, datos de práctica): velocidad de los corredores viales de Bogotá (\texttt{bctraveltimes\_history.csv}; 582 corredores con una lectura cada 5 minutos durante 12~h). Cada repetición usa un corredor distinto (los 5 con más lecturas, 144 cada uno, 138 ventanas), de forma que las repeticiones no reutilizan la misma serie.
 \end{itemize}
 
-\subsection{Resultados (Table~A)}
+\begin{figure}[ht]
+\centering
+\includegraphics[width=\textwidth]{../POCs/data/output/figures/12_series_datasets.png}
+\caption{Datasets del Caso~9. Izquierda: \texttt{zz\_lag}, con los dos lags como ejes y el objetivo $\langle ZZ\rangle$ como color. Centro y derecha: \texttt{sine} y un corredor de \texttt{skg\_speed}, con la zona de prueba (futuro) sombreada. Fuente: Notebook~12.}
+\label{fig:ts_datasets}
+\end{figure}
+
+\subsection{Resultados (Tabla~A)}
 
 \begin{table}[ht]
 \centering
 \small
 \begin{tabular}{llcc}
 \hline
-\textbf{Dataset} & \textbf{Mejor Table~A} & \textbf{MAE} & \textbf{Lectura} \\
+\textbf{Dataset} & \textbf{Mejor Tabla~A} & \textbf{MAE} & \textbf{Lectura} \\
 \hline
-\texttt{zz\_lag} & \textbf{QK-SVR-ZZ} & \textbf{0.056} vs Ridge 0.414 & Target $=\langle ZZ\rangle$ \\
-\texttt{sine} & SVR-RBF & 0.260 vs ZZ 0.662 & Periodicidad clásica \\
-\texttt{skg\_speed} & Ridge & 3.10 vs ZZ 13.2 & Práctica; clásico \\
+\texttt{zz\_lag} & \textbf{QK-SVR-ZZ} & \textbf{0.056} frente a Ridge 0.414 & Target $=\langle ZZ\rangle$ \\
+\texttt{sine} & SVR-RBF & 0.260 frente a QK-SVR 0.662 & Periodicidad clásica \\
+\texttt{skg\_speed} & Ridge & 2.80 frente a QK-SVR 13.59 & Práctica; clásico \\
 \hline
 \end{tabular}
-\caption{Caso~9. Ventaja solo cuando el generador del target está alineado con el feature map (aquí ZZ en \texttt{zz\_lag}).}
+\caption{Caso~9. MAE en test (media de 5 repeticiones). Ventaja solo cuando el generador del target está alineado con el feature map (aquí ZZ en \texttt{zz\_lag}). Fuente: \texttt{fair\_timeseries\_*.csv}.}
 \label{tab:timeseries_dev}
 \end{table}
 
 \paragraph{Lectura.}
-Mismo principio transversal que clasificación y anomalías: no ``ZZ gana en series'', sino ``el mapa alineado gana; ZZ es el que medimos''. En el corredor SKG, invertir en features clásicas (Table~B) es la opción operativa.
+Mismo principio transversal que en clasificación y anomalías: no ``ZZ gana en series'', sino ``el mapa alineado gana; ZZ es el que medimos''. Fuera del régimen nativo el kernel ZZ de 2 qubits no extrae señal: su MAE coincide con el de predecir la media del entrenamiento ($0.662$ frente a $0.658$ en \texttt{sine}; $13.59$ frente a $13.61$ en \texttt{skg\_speed}), mientras que Ridge se sitúa en el nivel de la persistencia ($2.80$ frente a $2.75$ en SKG). En el corredor SKG la opción operativa es, por tanto, un modelo lineal sobre lags (o la propia persistencia); añadir variables clásicas (Tabla~B) no mejora el resultado con series de solo 138 ventanas.
 
 % =====================================================================
 \section{Prototipo de arquitectura híbrida cuántico-clásica}

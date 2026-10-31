@@ -371,16 +371,23 @@ La ventaja en anomalías aparece cuando lo ``raro'' \emph{no} es estar lejos, si
 \label{sec:eval_timeseries}
 % =====================================================================
 
-Los resultados de \texttt{qml\_v2.timeseries} ($n=160$, 5 repeats, splits temporales) confirman el mismo patrón de alineación en el dominio secuencial (Tabla~\ref{tab:timeseries_dev}).
+Los resultados de \texttt{qml\_v2.timeseries} (5 repeticiones, división temporal 70/30; Figura~\ref{fig:ts_mae}) confirman el patrón de alineación en el dominio secuencial (Tabla~\ref{tab:timeseries_dev}).
+
+\begin{figure}[ht]
+\centering
+\includegraphics[width=\textwidth]{../POCs/data/output/figures/12_series_mae.png}
+\caption{MAE en test (media $\pm$ desviación sobre 5 repeticiones) del Caso~9. Azul: QK-SVR-ZZ; gris oscuro: clásicos con los mismos lags (Tabla~A); gris claro: clásicos con variables adicionales (Tabla~B, marcados con *). Líneas horizontales: media del entrenamiento (discontinua) y persistencia (punteada). Fuente: \texttt{fair\_timeseries\_*.csv}, Notebook~12.}
+\label{fig:ts_mae}
+\end{figure}
 
 \begin{itemize}
-  \item \texttt{zz\_lag}: QK-SVR-ZZ MAE $0.056\pm0.007$ ($R^2\approx 0.98$) frente a Ridge $0.414$ --- target $=\langle ZZ\rangle$ de la ventana de lags.
-  \item \texttt{sine}: SVR-RBF MAE $0.260$ vs QK-SVR $0.662$ --- periodicidad clásica.
-  \item \texttt{skg\_speed}: Ridge MAE $3.10$ vs QK-SVR $13.2$ --- corredor de práctica; Table~B refuerza el clásico.
+  \item \texttt{zz\_lag}: QK-SVR-ZZ MAE $0.056\pm0.007$ ($R^2=0.98$) frente a Ridge $0.414$, SVR-RBF $0.435$ y Gradient Boosting $0.465$; la media del entrenamiento da $0.404$, de modo que los clásicos no mejoran el predictor trivial. Ventaja por construcción: el target es $\langle ZZ\rangle$ de la ventana.
+  \item \texttt{sine}: SVR-RBF $0.260$ y Ridge $0.266$ frente a QK-SVR $0.662$, que coincide con la media del entrenamiento ($0.658$). Con las variables de la Tabla~B los clásicos mejoran ligeramente ($0.244$).
+  \item \texttt{skg\_speed}: Ridge $2.80\pm0.63$ frente a QK-SVR $13.59\pm5.68$ (media del entrenamiento: $13.61$). Ridge queda al nivel de la persistencia ($2.75$); con las variables de la Tabla~B el mejor clásico es Gradient Boosting ($3.24$), peor que Ridge con solo 2 lags.
 \end{itemize}
 
 \paragraph{Interpretación.}
-La ventaja no es ``usar un kernel cuántico en series temporales'', sino alinear el generador del target con el feature map. ZZ es el mapa del corpus; un mapa distinto beneficiaría otra familia de series. Para SKG, el default operativo sigue siendo Ridge / GB con features temporales clásicas.
+La ventaja no es ``usar un kernel cuántico en series temporales'', sino alinear el generador del target con el feature map. Fuera del régimen nativo, el kernel ZZ con 2 qubits y $\varepsilon=0.1$ obtiene el mismo MAE que un predictor de la media del entrenamiento, es decir, no extrae señal de los lags. En la serie SKG, con solo 138 ventanas por corredor, ni siquiera los clásicos superan de forma clara a la persistencia, por lo que el valor operativo reside en el modelo lineal sobre lags y no en kernels más expresivos. ZZ es el mapa del corpus; un mapa distinto beneficiaría otra familia de series.
 
 % =====================================================================
 \section{Síntesis comparativa y discusión general}
@@ -404,7 +411,7 @@ La Tabla~\ref{tab:sintesis} sintetiza los resultados principales del estudio com
 6 & QSVM (umbral) & $+8.9$ pp ($n=150$, una partición) & $-4.0$ pp (clásico) & $-3.8$ pp vs GB (clásico) \\
 7 & QAOA MDS ($p=3$) & \multicolumn{3}{>{\centering\arraybackslash}p{8.0cm}}{Red de 6 nodos: empate con ILP ($0$ pp); ER $n=6$--$15$: $-60$ pp de instancias con MDS óptimo (2/5 frente a 5/5)} \\
 8 & OCSVM-ZZ & \textbf{+31.2 pp AUC} (\texttt{zz\_phase}) & $-29.9$ pp (inyectado) & $-29.1$ pp (moons), $-50.8$ pp (blobs) \\
-9 & QK-SVR lags & \textbf{+86.6\% MAE} (\texttt{zz\_lag}) & $-325.2\%$ (\texttt{skg\_speed}) & $-154.9\%$ (\texttt{sine}) \\
+9 & QK-SVR lags & \textbf{+86.6\% MAE} (\texttt{zz\_lag}) & $-385.6\%$ (\texttt{skg\_speed}) & $-154.9\%$ (\texttt{sine}) \\
 \hline
 \end{tabular}
 \caption{Síntesis cuántico vs clásico, generada por \texttt{scripts/sintesis\_resultados.py} a partir de las salidas ejecutadas. Positivo = favorece al método cuántico; unidades: pp de exactitud (CU1, CU6), $\Delta R^2$ (CU2), pp de AUC (CU8) y mejora relativa del MAE (CU9). Negrita = ventaja sobre el mejor clásico. En kernels, la ventaja aparece \textbf{solo} en el régimen cuántico-nativo (datos generados por el propio mapa); en SKG y Telco gana GB/RF (Telco $-3.8$~pp frente a Gradient Boosting). Los Casos~1, 2 y~6 usan una sola partición con 45--60 puntos de test (granularidad de $\pm2.2$~pp).}
